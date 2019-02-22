@@ -443,7 +443,7 @@ def padding(state):
 
 def parse_info(state):
     """(10.5.1) Read a parse_info header."""
-    assert read_uint_lit(state, 4) == 0x42424344  # 'BBCR'
+    assert read_uint_lit(state, 4) == 0x42424344  # 'BBCD'
     state.parse_code = read_uint_lit(state, 1)
     state.next_parse_offset = read_uint_lit(state, 4)
     state.previous_parse_offset = read_uint_lit(state, 4)

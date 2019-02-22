@@ -345,3 +345,33 @@ def test_read_sintb():
     assert toy_vc2.read_sintb(state) == 0
     assert toy_vc2.read_sintb(state) == 0
     assert toy_vc2.read_sintb(state) == 0
+
+
+@pytest.mark.parametrize("fn", [toy_vc2.auxiliary_data, toy_vc2.padding])
+def test_auxiliary_data_and_padding(fn):
+    state = toy_vc2.State(BytesIO(b"\xAA"*100 + b"\xF1"))
+    
+    state.next_parse_offset = 13 + 100
+    fn(state)
+    
+    # Should have advanced to correct place
+    assert toy_vc2.read_nbits(state, 8) == 0xF1
+
+
+@pytest.mark.parametrize("valid_id", [True, False])
+def test_parse_info(valid_id):
+    state = toy_vc2.State(BytesIO(
+        (b"BBCD" if valid_id else b"nope") +
+        b"\xE8" +  # high_quality_picture
+        b"\x12\x34\x56\x78" +
+        b"\x90\xAB\xCD\xEF"
+    ))
+    
+    if valid_id:
+        toy_vc2.parse_info(state)
+        state.parse_code == 0xE8
+        state.next_parse_offset == 0x12345678
+        state.previous_parse_offset == 0x90ABCDEF
+    else:
+        with pytest.raises(Exception):
+            toy_vc2.parse_info(state)
