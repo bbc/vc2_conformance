@@ -1,6 +1,6 @@
 import math
 
-from sentinel import Sentinel
+from sentinels import Sentinel
 
 from enum import Enum
 
@@ -9,8 +9,6 @@ from attr import attrs, attrib
 from fractions import Fraction
 
 from collections import defaultdict
-
-from builtins import slice as py_slice
 
 L = Sentinel("L")
 H = Sentinel("H")
@@ -520,7 +518,7 @@ def decode_sequence(stream):
             assert video_parameters is None
             video_parameters = sequence_header()
         elif is_picture(state):
-            is is_fragment(state):
+            if is_fragment(state):
                 fragment_parse(state)
                 if state.fragmented_picture_done:
                     decoded_pictures.append(picture_decode(state))
@@ -565,16 +563,16 @@ def parse_parameters(state):
     
     # (11.2.1) Values must be byte-for-byte identical in every parse parameters
     # block read.
-    assert state.major_version is None or state.major_version = major_version
+    assert state.major_version is None or state.major_version == major_version
     state.major_version = major_version
     
-    assert state.minor_version is None or state.minor_version = minor_version
+    assert state.minor_version is None or state.minor_version == minor_version
     state.minor_version = minor_version
     
-    assert state.profile is None or state.profile = profile
+    assert state.profile is None or state.profile == profile
     state.profile = profile
     
-    assert state.level is None or state.level = level
+    assert state.level is None or state.level == level
     state.level = level
 
 
@@ -720,7 +718,7 @@ def pixel_aspect_ratio(state, video_parameters):  # Erata: called 'aspect_ratio'
 
 def clean_area(state, video_parameters):
     """(11.4.8) Override clean area parameter."""
-    custom_clean_area_flag = read_bool(state):
+    custom_clean_area_flag = read_bool(state)
     if custom_clean_area_flag:
         video_parameters.clean_width = read_uint(state)
         video_parameters.clean_height = read_uint(state)
@@ -729,7 +727,7 @@ def clean_area(state, video_parameters):
 
 def signal_range(state, video_parameters):
     """(11.4.9) Override signal parameter."""
-    custom_signal_range_flag = read_bool(state):
+    custom_signal_range_flag = read_bool(state)
     if custom_signal_range_flag:
         index = read_uint(state)
         if index == 0:
@@ -742,7 +740,7 @@ def signal_range(state, video_parameters):
 
 def color_spec(state, video_parameters):
     """(11.4.10.1) Override color specification parameter."""
-    custom_color_spec_flag = read_bool(state):
+    custom_color_spec_flag = read_bool(state)
     if custom_color_spec_flag:
         index = read_uint(state)
         preset_color_spec(video_parameters, index)
@@ -1005,7 +1003,7 @@ class ColorSpecificiation(object):
     transfer_function_index = attrib()
     """Index into PRESET_TRANSFER_FUNCTIONS (Table 11.9)."""
     
-    @static
+    @classmethod
     def from_names(cls, description,
                    color_primaries, color_matrix, transfer_function):
         """Utility function to create instances given names not indices."""
@@ -1022,8 +1020,8 @@ class ColorSpecificiation(object):
         assert color_matrix_index is not None
         
         transfer_function_index = None
-        for index, transfer_function in PRESET_TRANSFER_FUNCTIONS.items():
-            if transfer_function.description == transfer_function:
+        for index, tf in PRESET_TRANSFER_FUNCTIONS.items():
+            if tf.description == transfer_function:
                 transfer_function_index = index
         assert transfer_function_index is not None
         
@@ -1383,7 +1381,7 @@ def dc_prediction(band):
             elif x > 0 and y == 0:
                 prediction = band[0][x - 1]
             elif x == 0 and y > 0:
-                prediction = band[y = 1][0]
+                prediction = band[y - 1][0]
             else:
                 prediction = 0
             band[y][x] += prediction
@@ -1476,7 +1474,7 @@ def ld_slice(state, sx, sy):
     state.bits_left = slice_bits_left
     color_diff_slice_band(state, 0, LL, sx, sy)
     for level in range(1, state.dwt_depth + 1):
-        for each orient in [HL, LH, HH]:
+        for orient in [HL, LH, HH]:
             color_diff_slice_band(state, level, orient, sx, sy)
     flush_inputb(state)
 
@@ -1919,7 +1917,7 @@ LIFTING_FILTER_PARAMETERS = {
             LiftingStage(lift_type=3, S=4, L=4, D=-1, taps=[-1, 9, 9, -1]),
         ],
         filter_bit_shift=1,
-    )
+    ),
     1: LiftingFilterParameters(
         name="LeGall (5,3)",
         stages=[
@@ -1927,7 +1925,7 @@ LIFTING_FILTER_PARAMETERS = {
             LiftingStage(lift_type=3, S=1, L=2, D=0, taps=[1, 1]),
         ],
         filter_bit_shift=1,
-    )
+    ),
     2: LiftingFilterParameters(
         name="Deslauriers-Dubuc (13,7)",
         stages=[
@@ -1935,7 +1933,7 @@ LIFTING_FILTER_PARAMETERS = {
             LiftingStage(lift_type=3, S=4, L=4, D=-1, taps=[-1, 9, 9, -1]),
         ],
         filter_bit_shift=1,
-    )
+    ),
     3: LiftingFilterParameters(
         name="Haar filter with no shift",
         stages=[
@@ -1943,7 +1941,7 @@ LIFTING_FILTER_PARAMETERS = {
             LiftingStage(lift_type=3, S=0, L=1, D=0, taps=[1]),
         ],
         filter_bit_shift=0,
-    )
+    ),
     4: LiftingFilterParameters(
         name="Haar filter with single shift",
         stages=[
@@ -1951,7 +1949,7 @@ LIFTING_FILTER_PARAMETERS = {
             LiftingStage(lift_type=3, S=0, L=1, D=0, taps=[1]),
         ],
         filter_bit_shift=1,
-    )
+    ),
     5: LiftingFilterParameters(
         name="Fidelity filter",
         stages=[
@@ -1959,7 +1957,7 @@ LIFTING_FILTER_PARAMETERS = {
             LiftingStage(lift_type=2, S=8, L=8, D=-3, taps=[-8, 21, -46, 161, 161, -46, 21, -8]),
         ],
         filter_bit_shift=0,
-    )
+    ),
     6: LiftingFilterParameters(
         name="Integer lifting approximation to Daubechies (9,7)",
         stages=[
@@ -1969,7 +1967,7 @@ LIFTING_FILTER_PARAMETERS = {
             LiftingStage(lift_type=3, S=12, L=2, D=0, taps=[6497, 6497]),
         ],
         filter_bit_shift=1,
-    )
+    ),
 }
 """
 (15.4.4.3) Filter definitions taken from (Table 15.1 to 15.6) using the indices
@@ -2034,959 +2032,959 @@ DEFAULT_QUANTISATION_MATRICES = {
     # (Table D.1) Deslauriers-Dubuc (9,7)
     (0, 0): {
         (0, 0): {
-            0: {LL: 0}
+            0: {LL: 0},
         },
         (0, 1): {
-            0: {LL: 5}
-            1: {HL: 3, LH: 3, HH: 0}
+            0: {LL: 5},
+            1: {HL: 3, LH: 3, HH: 0},
         },
         (0, 2): {
-            0: {LL: 5}
-            1: {HL: 3, LH: 3, HH: 0}
-            2: {HL: 4, LH: 4, HH: 1}
+            0: {LL: 5},
+            1: {HL: 3, LH: 3, HH: 0},
+            2: {HL: 4, LH: 4, HH: 1},
         },
         (0, 3): {
-            0: {LL: 5}
-            1: {HL: 3, LH: 3, HH: 0}
-            2: {HL: 4, LH: 4, HH: 1}
-            3: {HL: 5, LH: 5, HH: 2}
+            0: {LL: 5},
+            1: {HL: 3, LH: 3, HH: 0},
+            2: {HL: 4, LH: 4, HH: 1},
+            3: {HL: 5, LH: 5, HH: 2},
         },
         (0, 4): {
-            0: {LL: 5}
-            1: {HL: 3, LH: 3, HH: 0}
-            2: {HL: 4, LH: 4, HH: 1}
-            3: {HL: 5, LH: 5, HH: 2}
-            4: {HL: 6, LH: 6, HH: 3}
+            0: {LL: 5},
+            1: {HL: 3, LH: 3, HH: 0},
+            2: {HL: 4, LH: 4, HH: 1},
+            3: {HL: 5, LH: 5, HH: 2},
+            4: {HL: 6, LH: 6, HH: 3},
         },
         (1, 0): {
-            0: {L: 3}
-            1: {H: 0}
+            0: {L: 3},
+            1: {H: 0},
         },
         (1, 1): {
-            0: {L: 3}
-            1: {H: 0}
-            2: {HL: 3, LH: 3, HH: 0}
+            0: {L: 3},
+            1: {H: 0},
+            2: {HL: 3, LH: 3, HH: 0},
         },
         (1, 2): {
-            0: {L: 3}
-            1: {H: 0}
-            2: {HL: 3, LH: 3, HH: 0}
-            3: {HL: 4, LH: 4, HH: 1}
+            0: {L: 3},
+            1: {H: 0},
+            2: {HL: 3, LH: 3, HH: 0},
+            3: {HL: 4, LH: 4, HH: 1},
         },
         (1, 3): {
-            0: {L: 3}
-            1: {H: 0}
-            2: {HL: 3, LH: 3, HH: 0}
-            3: {HL: 4, LH: 4, HH: 1}
-            4: {HL: 5, LH: 5, HH: 2}
+            0: {L: 3},
+            1: {H: 0},
+            2: {HL: 3, LH: 3, HH: 0},
+            3: {HL: 4, LH: 4, HH: 1},
+            4: {HL: 5, LH: 5, HH: 2},
         },
         (1, 4): {
-            0: {L: 3}
-            1: {H: 0}
-            2: {HL: 3, LH: 3, HH: 0}
-            3: {HL: 4, LH: 4, HH: 1}
-            4: {HL: 5, LH: 5, HH: 2}
-            5: {HL: 6, LH: 6, HH: 3}
+            0: {L: 3},
+            1: {H: 0},
+            2: {HL: 3, LH: 3, HH: 0},
+            3: {HL: 4, LH: 4, HH: 1},
+            4: {HL: 5, LH: 5, HH: 2},
+            5: {HL: 6, LH: 6, HH: 3},
         },
         (2, 0): {
-            0: {L: 3}
-            1: {H: 0}
-            2: {H: 3}
+            0: {L: 3},
+            1: {H: 0},
+            2: {H: 3},
         },
         (2, 1): {
-            0: {L: 3}
-            1: {H: 0}
-            2: {H: 3}
-            3: {HL: 5, LH: 5, HH: 3}
+            0: {L: 3},
+            1: {H: 0},
+            2: {H: 3},
+            3: {HL: 5, LH: 5, HH: 3},
         },
         (2, 2): {
-            0: {L: 3}
-            1: {H: 0}
-            2: {H: 3}
-            3: {HL: 5, LH: 5, HH: 3}
-            4: {HL: 6, LH: 6, HH: 4}
+            0: {L: 3},
+            1: {H: 0},
+            2: {H: 3},
+            3: {HL: 5, LH: 5, HH: 3},
+            4: {HL: 6, LH: 6, HH: 4},
         },
         (2, 3): {
-            0: {L: 3}
-            1: {H: 0}
-            2: {H: 3}
-            3: {HL: 5, LH: 5, HH: 3}
-            4: {HL: 6, LH: 6, HH: 4}
-            5: {HL: 7, LH: 7, HH: 5}
+            0: {L: 3},
+            1: {H: 0},
+            2: {H: 3},
+            3: {HL: 5, LH: 5, HH: 3},
+            4: {HL: 6, LH: 6, HH: 4},
+            5: {HL: 7, LH: 7, HH: 5},
         },
         (3, 0): {
-            0: {L: 3}
-            1: {H: 0}
-            2: {H: 3}
-            3: {H: 5}
+            0: {L: 3},
+            1: {H: 0},
+            2: {H: 3},
+            3: {H: 5},
         },
         (3, 1): {
-            0: {L: 3}
-            1: {H: 0}
-            2: {H: 3}
-            3: {H: 5}
-            4: {HL: 8, LH: 8, HH: 5}
+            0: {L: 3},
+            1: {H: 0},
+            2: {H: 3},
+            3: {H: 5},
+            4: {HL: 8, LH: 8, HH: 5},
         },
         (3, 2): {
-            0: {L: 3}
-            1: {H: 0}
-            2: {H: 3}
-            3: {H: 5}
-            4: {HL: 8, LH: 8, HH: 5}
-            5: {HL: 9, LH: 9, HH: 6}
+            0: {L: 3},
+            1: {H: 0},
+            2: {H: 3},
+            3: {H: 5},
+            4: {HL: 8, LH: 8, HH: 5},
+            5: {HL: 9, LH: 9, HH: 6},
         },
         (4, 0): {
-            0: {L: 3}
-            1: {H: 0}
-            2: {H: 3}
-            3: {H: 5}
-            4: {H: 8}
+            0: {L: 3},
+            1: {H: 0},
+            2: {H: 3},
+            3: {H: 5},
+            4: {H: 8},
         },
         (4, 1): {
-            0: {L: 3}
-            1: {H: 0}
-            2: {H: 3}
-            3: {H: 5}
-            4: {H: 8}
-            5: {HL: 10, LH: 10, HH: 8}
+            0: {L: 3},
+            1: {H: 0},
+            2: {H: 3},
+            3: {H: 5},
+            4: {H: 8},
+            5: {HL: 10, LH: 10, HH: 8},
         },
     },
     # (Table D.2) LeGall (5,3)
     (1, 1): {
         (0, 0): {
-            0: {LL: 0}
+            0: {LL: 0},
         },
         (0, 1): {
-            0: {LL: 4}
-            1: {HL: 2, LH: 2, HH: 0}
+            0: {LL: 4},
+            1: {HL: 2, LH: 2, HH: 0},
         },
         (0, 2): {
-            0: {LL: 4}
-            1: {HL: 2, LH: 2, HH: 0}
-            2: {HL: 4, LH: 4, HH: 2}
+            0: {LL: 4},
+            1: {HL: 2, LH: 2, HH: 0},
+            2: {HL: 4, LH: 4, HH: 2},
         },
         (0, 3): {
-            0: {LL: 4}
-            1: {HL: 2, LH: 2, HH: 0}
-            2: {HL: 4, LH: 4, HH: 2}
-            3: {HL: 5, LH: 5, HH: 3}
+            0: {LL: 4},
+            1: {HL: 2, LH: 2, HH: 0},
+            2: {HL: 4, LH: 4, HH: 2},
+            3: {HL: 5, LH: 5, HH: 3},
         },
         (0, 4): {
-            0: {LL: 4}
-            1: {HL: 2, LH: 2, HH: 0}
-            2: {HL: 4, LH: 4, HH: 2}
-            3: {HL: 5, LH: 5, HH: 3}
-            4: {HL: 7, LH: 7, HH: 5}
+            0: {LL: 4},
+            1: {HL: 2, LH: 2, HH: 0},
+            2: {HL: 4, LH: 4, HH: 2},
+            3: {HL: 5, LH: 5, HH: 3},
+            4: {HL: 7, LH: 7, HH: 5},
         },
         (1, 0): {
-            0: {L: 2}
-            1: {H: 0}
+            0: {L: 2},
+            1: {H: 0},
         },
         (1, 1): {
-            0: {L: 2}
-            1: {H: 0}
-            2: {HL: 3, LH: 3, HH: 1}
+            0: {L: 2},
+            1: {H: 0},
+            2: {HL: 3, LH: 3, HH: 1},
         },
         (1, 2): {
-            0: {L: 2}
-            1: {H: 0}
-            2: {HL: 3, LH: 3, HH: 1}
-            3: {HL: 4, LH: 4, HH: 2}
+            0: {L: 2},
+            1: {H: 0},
+            2: {HL: 3, LH: 3, HH: 1},
+            3: {HL: 4, LH: 4, HH: 2},
         },
         (1, 3): {
-            0: {L: 2}
-            1: {H: 0}
-            2: {HL: 3, LH: 3, HH: 1}
-            3: {HL: 4, LH: 4, HH: 2}
-            4: {HL: 6, LH: 6, HH: 4}
+            0: {L: 2},
+            1: {H: 0},
+            2: {HL: 3, LH: 3, HH: 1},
+            3: {HL: 4, LH: 4, HH: 2},
+            4: {HL: 6, LH: 6, HH: 4},
         },
         (1, 4): {
-            0: {L: 2}
-            1: {H: 0}
-            2: {HL: 3, LH: 3, HH: 1}
-            3: {HL: 4, LH: 4, HH: 2}
-            4: {HL: 6, LH: 6, HH: 4}
-            5: {HL: 8, LH: 8, HH: 6}
+            0: {L: 2},
+            1: {H: 0},
+            2: {HL: 3, LH: 3, HH: 1},
+            3: {HL: 4, LH: 4, HH: 2},
+            4: {HL: 6, LH: 6, HH: 4},
+            5: {HL: 8, LH: 8, HH: 6},
         },
         (2, 0): {
-            0: {L: 2}
-            1: {H: 0}
-            2: {H: 3}
+            0: {L: 2},
+            1: {H: 0},
+            2: {H: 3},
         },
         (2, 1): {
-            0: {L: 2}
-            1: {H: 0}
-            2: {H: 3}
-            3: {HL: 6, LH: 6, HH: 4}
+            0: {L: 2},
+            1: {H: 0},
+            2: {H: 3},
+            3: {HL: 6, LH: 6, HH: 4},
         },
         (2, 2): {
-            0: {L: 2}
-            1: {H: 0}
-            2: {H: 3}
-            3: {HL: 6, LH: 6, HH: 4}
-            4: {HL: 7, LH: 7, HH: 5}
+            0: {L: 2},
+            1: {H: 0},
+            2: {H: 3},
+            3: {HL: 6, LH: 6, HH: 4},
+            4: {HL: 7, LH: 7, HH: 5},
         },
         (2, 3): {
-            0: {L: 2}
-            1: {H: 0}
-            2: {H: 3}
-            3: {HL: 6, LH: 6, HH: 4}
-            4: {HL: 7, LH: 7, HH: 5}
-            5: {HL: 9, LH: 9, HH: 7}
+            0: {L: 2},
+            1: {H: 0},
+            2: {H: 3},
+            3: {HL: 6, LH: 6, HH: 4},
+            4: {HL: 7, LH: 7, HH: 5},
+            5: {HL: 9, LH: 9, HH: 7},
         },
         (3, 0): {
-            0: {L: 2}
-            1: {H: 0}
-            2: {H: 3}
-            3: {H: 6}
+            0: {L: 2},
+            1: {H: 0},
+            2: {H: 3},
+            3: {H: 6},
         },
         (3, 1): {
-            0: {L: 2}
-            1: {H: 0}
-            2: {H: 3}
-            3: {H: 6}
-            4: {HL: 8, LH: 8, HH: 6}
+            0: {L: 2},
+            1: {H: 0},
+            2: {H: 3},
+            3: {H: 6},
+            4: {HL: 8, LH: 8, HH: 6},
         },
         (3, 2): {
-            0: {L: 2}
-            1: {H: 0}
-            2: {H: 3}
-            3: {H: 6}
-            4: {HL: 8, LH: 8, HH: 6}
-            5: {HL: 10, LH: 10, HH: 8}
+            0: {L: 2},
+            1: {H: 0},
+            2: {H: 3},
+            3: {H: 6},
+            4: {HL: 8, LH: 8, HH: 6},
+            5: {HL: 10, LH: 10, HH: 8},
         },
         (4, 0): {
-            0: {L: 2}
-            1: {H: 0}
-            2: {H: 3}
-            3: {H: 6}
-            4: {H: 8}
+            0: {L: 2},
+            1: {H: 0},
+            2: {H: 3},
+            3: {H: 6},
+            4: {H: 8},
         },
         (4, 1): {
-            0: {L: 2}
-            1: {H: 0}
-            2: {H: 3}
-            3: {H: 6}
-            4: {H: 8}
-            5: {HL: 11, LH: 11, HH: 9}
+            0: {L: 2},
+            1: {H: 0},
+            2: {H: 3},
+            3: {H: 6},
+            4: {H: 8},
+            5: {HL: 11, LH: 11, HH: 9},
         },
     },
     # (Table D.3) Deslauriers-Dubuc (13,7)
     (2, 2): {
         (0, 0): {
-            0: {LL: 0}
+            0: {LL: 0},
         },
         (0, 1): {
-            0: {LL: 5}
-            1: {HL: 3, LH: 3, HH: 0}
+            0: {LL: 5},
+            1: {HL: 3, LH: 3, HH: 0},
         },
         (0, 2): {
-            0: {LL: 5}
-            1: {HL: 3, LH: 3, HH: 0}
-            2: {HL: 4, LH: 4, HH: 1}
+            0: {LL: 5},
+            1: {HL: 3, LH: 3, HH: 0},
+            2: {HL: 4, LH: 4, HH: 1},
         },
         (0, 3): {
-            0: {LL: 5}
-            1: {HL: 3, LH: 3, HH: 0}
-            2: {HL: 4, LH: 4, HH: 1}
-            3: {HL: 5, LH: 5, HH: 2}
+            0: {LL: 5},
+            1: {HL: 3, LH: 3, HH: 0},
+            2: {HL: 4, LH: 4, HH: 1},
+            3: {HL: 5, LH: 5, HH: 2},
         },
         (0, 4): {
-            0: {LL: 5}
-            1: {HL: 3, LH: 3, HH: 0}
-            2: {HL: 4, LH: 4, HH: 1}
-            3: {HL: 5, LH: 5, HH: 2}
-            4: {HL: 6, LH: 6, HH: 3}
+            0: {LL: 5},
+            1: {HL: 3, LH: 3, HH: 0},
+            2: {HL: 4, LH: 4, HH: 1},
+            3: {HL: 5, LH: 5, HH: 2},
+            4: {HL: 6, LH: 6, HH: 3},
         },
         (1, 0): {
-            0: {L: 3}
-            1: {H: 0}
+            0: {L: 3},
+            1: {H: 0},
         },
         (1, 1): {
-            0: {L: 3}
-            1: {H: 0}
-            2: {HL: 3, LH: 3, HH: 0}
+            0: {L: 3},
+            1: {H: 0},
+            2: {HL: 3, LH: 3, HH: 0},
         },
         (1, 2): {
-            0: {L: 3}
-            1: {H: 0}
-            2: {HL: 3, LH: 3, HH: 0}
-            3: {HL: 4, LH: 4, HH: 1}
+            0: {L: 3},
+            1: {H: 0},
+            2: {HL: 3, LH: 3, HH: 0},
+            3: {HL: 4, LH: 4, HH: 1},
         },
         (1, 3): {
-            0: {L: 3}
-            1: {H: 0}
-            2: {HL: 3, LH: 3, HH: 0}
-            3: {HL: 4, LH: 4, HH: 1}
-            4: {HL: 5, LH: 5, HH: 2}
+            0: {L: 3},
+            1: {H: 0},
+            2: {HL: 3, LH: 3, HH: 0},
+            3: {HL: 4, LH: 4, HH: 1},
+            4: {HL: 5, LH: 5, HH: 2},
         },
         (1, 4): {
-            0: {L: 3}
-            1: {H: 0}
-            2: {HL: 3, LH: 3, HH: 0}
-            3: {HL: 4, LH: 4, HH: 1}
-            4: {HL: 5, LH: 5, HH: 2}
-            5: {HL: 6, LH: 6, HH: 3}
+            0: {L: 3},
+            1: {H: 0},
+            2: {HL: 3, LH: 3, HH: 0},
+            3: {HL: 4, LH: 4, HH: 1},
+            4: {HL: 5, LH: 5, HH: 2},
+            5: {HL: 6, LH: 6, HH: 3},
         },
         (2, 0): {
-            0: {L: 3}
-            1: {H: 0}
-            2: {H: 3}
+            0: {L: 3},
+            1: {H: 0},
+            2: {H: 3},
         },
         (2, 1): {
-            0: {L: 3}
-            1: {H: 0}
-            2: {H: 3}
-            3: {HL: 5, LH: 5, HH: 2}
+            0: {L: 3},
+            1: {H: 0},
+            2: {H: 3},
+            3: {HL: 5, LH: 5, HH: 2},
         },
         (2, 2): {
-            0: {L: 3}
-            1: {H: 0}
-            2: {H: 3}
-            3: {HL: 5, LH: 5, HH: 2}
-            4: {HL: 6, LH: 6, HH: 4}
+            0: {L: 3},
+            1: {H: 0},
+            2: {H: 3},
+            3: {HL: 5, LH: 5, HH: 2},
+            4: {HL: 6, LH: 6, HH: 4},
         },
         (2, 3): {
-            0: {L: 3}
-            1: {H: 0}
-            2: {H: 3}
-            3: {HL: 5, LH: 5, HH: 2}
-            4: {HL: 6, LH: 6, HH: 4}
-            5: {HL: 7, LH: 7, HH: 5}
+            0: {L: 3},
+            1: {H: 0},
+            2: {H: 3},
+            3: {HL: 5, LH: 5, HH: 2},
+            4: {HL: 6, LH: 6, HH: 4},
+            5: {HL: 7, LH: 7, HH: 5},
         },
         (3, 0): {
-            0: {L: 3}
-            1: {H: 0}
-            2: {H: 3}
-            3: {H: 5}
+            0: {L: 3},
+            1: {H: 0},
+            2: {H: 3},
+            3: {H: 5},
         },
         (3, 1): {
-            0: {L: 3}
-            1: {H: 0}
-            2: {H: 3}
-            3: {H: 5}
-            4: {HL: 8, LH: 8, HH: 5}
+            0: {L: 3},
+            1: {H: 0},
+            2: {H: 3},
+            3: {H: 5},
+            4: {HL: 8, LH: 8, HH: 5},
         },
         (3, 2): {
-            0: {L: 3}
-            1: {H: 0}
-            2: {H: 3}
-            3: {H: 5}
-            4: {HL: 8, LH: 8, HH: 5}
-            5: {HL: 9, LH: 9, HH: 6}
+            0: {L: 3},
+            1: {H: 0},
+            2: {H: 3},
+            3: {H: 5},
+            4: {HL: 8, LH: 8, HH: 5},
+            5: {HL: 9, LH: 9, HH: 6},
         },
         (4, 0): {
-            0: {L: 3}
-            1: {H: 0}
-            2: {H: 3}
-            3: {H: 5}
-            4: {H: 8}
+            0: {L: 3},
+            1: {H: 0},
+            2: {H: 3},
+            3: {H: 5},
+            4: {H: 8},
         },
         (4, 1): {
-            0: {L: 3}
-            1: {H: 0}
-            2: {H: 3}
-            3: {H: 5}
-            4: {H: 8}
-            5: {HL: 10, LH: 10, HH: 8}
+            0: {L: 3},
+            1: {H: 0},
+            2: {H: 3},
+            3: {H: 5},
+            4: {H: 8},
+            5: {HL: 10, LH: 10, HH: 8},
         },
     },
     # (Table D.4) Haar with no shift
     (3, 3): {
         (0, 0): {
-            0: {LL: 0}
+            0: {LL: 0},
         },
         (0, 1): {
-            0: {LL: 8}
-            1: {HL: 4, LH: 4, HH: 0}
+            0: {LL: 8},
+            1: {HL: 4, LH: 4, HH: 0},
         },
         (0, 2): {
-            0: {LL: 12}
-            1: {HL: 8, LH: 8, HH: 4}
-            2: {HL: 4, LH: 4, HH: 0}
+            0: {LL: 12},
+            1: {HL: 8, LH: 8, HH: 4},
+            2: {HL: 4, LH: 4, HH: 0},
         },
         (0, 3): {
-            0: {LL: 16}
-            1: {HL: 12, LH: 12, HH: 8}
-            2: {HL: 8, LH: 8, HH: 4}
-            3: {HL: 4, LH: 4, HH: 0}
+            0: {LL: 16},
+            1: {HL: 12, LH: 12, HH: 8},
+            2: {HL: 8, LH: 8, HH: 4},
+            3: {HL: 4, LH: 4, HH: 0},
         },
         (0, 4): {
-            0: {LL: 20}
-            1: {HL: 16, LH: 16, HH: 12}
-            2: {HL: 12, LH: 12, HH: 8}
-            3: {HL: 8, LH: 8, HH: 4}
-            4: {HL: 4, LH: 4, HH: 0}
+            0: {LL: 20},
+            1: {HL: 16, LH: 16, HH: 12},
+            2: {HL: 12, LH: 12, HH: 8},
+            3: {HL: 8, LH: 8, HH: 4},
+            4: {HL: 4, LH: 4, HH: 0},
         },
         (1, 0): {
-            0: {L: 4}
-            1: {H: 0}
+            0: {L: 4},
+            1: {H: 0},
         },
         (1, 1): {
-            0: {L: 10}
-            1: {H: 6}
-            2: {HL: 4, LH: 4, HH: 0}
+            0: {L: 10},
+            1: {H: 6},
+            2: {HL: 4, LH: 4, HH: 0},
         },
         (1, 2): {
-            0: {L: 14}
-            1: {H: 10}
-            2: {HL: 8, LH: 8, HH: 4}
-            3: {HL: 4, LH: 4, HH: 0}
+            0: {L: 14},
+            1: {H: 10},
+            2: {HL: 8, LH: 8, HH: 4},
+            3: {HL: 4, LH: 4, HH: 0},
         },
         (1, 3): {
-            0: {L: 18}
-            1: {H: 14}
-            2: {HL: 12, LH: 12, HH: 8}
-            3: {HL: 8, LH: 8, HH: 4}
-            4: {HL: 4, LH: 4, HH: 0}
+            0: {L: 18},
+            1: {H: 14},
+            2: {HL: 12, LH: 12, HH: 8},
+            3: {HL: 8, LH: 8, HH: 4},
+            4: {HL: 4, LH: 4, HH: 0},
         },
         (1, 4): {
-            0: {L: 22}
-            1: {H: 18}
-            2: {HL: 16, LH: 16, HH: 12}
-            3: {HL: 12, LH: 12, HH: 8}
-            4: {HL: 8, LH: 8, HH: 4}
-            5: {HL: 4, LH: 4, HH: 0}
+            0: {L: 22},
+            1: {H: 18},
+            2: {HL: 16, LH: 16, HH: 12},
+            3: {HL: 12, LH: 12, HH: 8},
+            4: {HL: 8, LH: 8, HH: 4},
+            5: {HL: 4, LH: 4, HH: 0},
         },
         (2, 0): {
-            0: {L: 6}
-            1: {H: 2}
-            2: {H: 0}
+            0: {L: 6},
+            1: {H: 2},
+            2: {H: 0},
         },
         (2, 1): {
-            0: {L: 12}
-            1: {H: 8}
-            2: {H: 6}
-            3: {HL: 4, LH: 4, HH: 0}
+            0: {L: 12},
+            1: {H: 8},
+            2: {H: 6},
+            3: {HL: 4, LH: 4, HH: 0},
         },
         (2, 2): {
-            0: {L: 16}
-            1: {H: 12}
-            2: {H: 10}
-            3: {HL: 8, LH: 8, HH: 4}
-            4: {HL: 4, LH: 4, HH: 0}
+            0: {L: 16},
+            1: {H: 12},
+            2: {H: 10},
+            3: {HL: 8, LH: 8, HH: 4},
+            4: {HL: 4, LH: 4, HH: 0},
         },
         (2, 3): {
-            0: {L: 20}
-            1: {H: 16}
-            2: {H: 14}
-            3: {HL: 12, LH: 12, HH: 8}
-            4: {HL: 8, LH: 8, HH: 4}
-            5: {HL: 4, LH: 4, HH: 0}
+            0: {L: 20},
+            1: {H: 16},
+            2: {H: 14},
+            3: {HL: 12, LH: 12, HH: 8},
+            4: {HL: 8, LH: 8, HH: 4},
+            5: {HL: 4, LH: 4, HH: 0},
         },
         (3, 0): {
-            0: {L: 8}
-            1: {H: 4}
-            2: {H: 2}
-            3: {H: 0}
+            0: {L: 8},
+            1: {H: 4},
+            2: {H: 2},
+            3: {H: 0},
         },
         (3, 1): {
-            0: {L: 14}
-            1: {H: 10}
-            2: {H: 8}
-            3: {H: 6}
-            4: {HL: 4, LH: 4, HH: 0}
+            0: {L: 14},
+            1: {H: 10},
+            2: {H: 8},
+            3: {H: 6},
+            4: {HL: 4, LH: 4, HH: 0},
         },
         (3, 2): {
-            0: {L: 18}
-            1: {H: 14}
-            2: {H: 12}
-            3: {H: 10}
-            4: {HL: 8, LH: 8, HH: 4}
-            5: {HL: 4, LH: 4, HH: 0}
+            0: {L: 18},
+            1: {H: 14},
+            2: {H: 12},
+            3: {H: 10},
+            4: {HL: 8, LH: 8, HH: 4},
+            5: {HL: 4, LH: 4, HH: 0},
         },
         (4, 0): {
-            0: {L: 10}
-            1: {H: 6}
-            2: {H: 4}
-            3: {H: 2}
-            4: {H: 0}
+            0: {L: 10},
+            1: {H: 6},
+            2: {H: 4},
+            3: {H: 2},
+            4: {H: 0},
         },
         (4, 1): {
-            0: {L: 16}
-            1: {H: 12}
-            2: {H: 10}
-            3: {H: 8}
-            4: {H: 6}
-            5: {HL: 4, LH: 4, HH: 0}
+            0: {L: 16},
+            1: {H: 12},
+            2: {H: 10},
+            3: {H: 8},
+            4: {H: 6},
+            5: {HL: 4, LH: 4, HH: 0},
         },
     },
     # (Table D.5) Haar with single shift per level
     (4, 4): {
         (0, 0): {
-            0: {LL: 0}
+            0: {LL: 0},
         },
         (0, 1): {
-            0: {LL: 8}
-            1: {HL: 4, LH: 4, HH: 0}
+            0: {LL: 8},
+            1: {HL: 4, LH: 4, HH: 0},
         },
         (0, 2): {
-            0: {LL: 8}
-            1: {HL: 4, LH: 4, HH: 0}
-            2: {HL: 4, LH: 4, HH: 0}
+            0: {LL: 8},
+            1: {HL: 4, LH: 4, HH: 0},
+            2: {HL: 4, LH: 4, HH: 0},
         },
         (0, 3): {
-            0: {LL: 8}
-            1: {HL: 4, LH: 4, HH: 0}
-            2: {HL: 4, LH: 4, HH: 0}
-            3: {HL: 4, LH: 4, HH: 0}
+            0: {LL: 8},
+            1: {HL: 4, LH: 4, HH: 0},
+            2: {HL: 4, LH: 4, HH: 0},
+            3: {HL: 4, LH: 4, HH: 0},
         },
         (0, 4): {
-            0: {LL: 8}
-            1: {HL: 4, LH: 4, HH: 0}
-            2: {HL: 4, LH: 4, HH: 0}
-            3: {HL: 4, LH: 4, HH: 0}
-            4: {HL: 4, LH: 4, HH: 0}
+            0: {LL: 8},
+            1: {HL: 4, LH: 4, HH: 0},
+            2: {HL: 4, LH: 4, HH: 0},
+            3: {HL: 4, LH: 4, HH: 0},
+            4: {HL: 4, LH: 4, HH: 0},
         },
         (1, 0): {
-            0: {L: 4}
-            1: {H: 0}
+            0: {L: 4},
+            1: {H: 0},
         },
         (1, 1): {
-            0: {L: 6}
-            1: {H: 2}
-            2: {HL: 4, LH: 4, HH: 0}
+            0: {L: 6},
+            1: {H: 2},
+            2: {HL: 4, LH: 4, HH: 0},
         },
         (1, 2): {
-            0: {L: 6}
-            1: {H: 2}
-            2: {HL: 4, LH: 4, HH: 0}
-            3: {HL: 4, LH: 4, HH: 0}
+            0: {L: 6},
+            1: {H: 2},
+            2: {HL: 4, LH: 4, HH: 0},
+            3: {HL: 4, LH: 4, HH: 0},
         },
         (1, 3): {
-            0: {L: 6}
-            1: {H: 2}
-            2: {HL: 4, LH: 4, HH: 0}
-            3: {HL: 4, LH: 4, HH: 0}
-            4: {HL: 4, LH: 4, HH: 0}
+            0: {L: 6},
+            1: {H: 2},
+            2: {HL: 4, LH: 4, HH: 0},
+            3: {HL: 4, LH: 4, HH: 0},
+            4: {HL: 4, LH: 4, HH: 0},
         },
         (1, 4): {
-            0: {L: 6}
-            1: {H: 2}
-            2: {HL: 4, LH: 4, HH: 0}
-            3: {HL: 4, LH: 4, HH: 0}
-            4: {HL: 4, LH: 4, HH: 0}
-            5: {HL: 4, LH: 4, HH: 0}
+            0: {L: 6},
+            1: {H: 2},
+            2: {HL: 4, LH: 4, HH: 0},
+            3: {HL: 4, LH: 4, HH: 0},
+            4: {HL: 4, LH: 4, HH: 0},
+            5: {HL: 4, LH: 4, HH: 0},
         },
         (2, 0): {
-            0: {L: 4}
-            1: {H: 0}
-            2: {H: 2}
+            0: {L: 4},
+            1: {H: 0},
+            2: {H: 2},
         },
         (2, 1): {
-            0: {L: 4}
-            1: {H: 0}
-            2: {H: 2}
-            3: {HL: 4, LH: 4, HH: 0}
+            0: {L: 4},
+            1: {H: 0},
+            2: {H: 2},
+            3: {HL: 4, LH: 4, HH: 0},
         },
         (2, 2): {
-            0: {L: 4}
-            1: {H: 0}
-            2: {H: 2}
-            3: {HL: 4, LH: 4, HH: 0}
-            4: {HL: 4, LH: 4, HH: 0}
+            0: {L: 4},
+            1: {H: 0},
+            2: {H: 2},
+            3: {HL: 4, LH: 4, HH: 0},
+            4: {HL: 4, LH: 4, HH: 0},
         },
         (2, 3): {
-            0: {L: 4}
-            1: {H: 0}
-            2: {H: 2}
-            3: {HL: 4, LH: 4, HH: 0}
-            4: {HL: 4, LH: 4, HH: 0}
-            5: {HL: 4, LH: 4, HH: 0}
+            0: {L: 4},
+            1: {H: 0},
+            2: {H: 2},
+            3: {HL: 4, LH: 4, HH: 0},
+            4: {HL: 4, LH: 4, HH: 0},
+            5: {HL: 4, LH: 4, HH: 0},
         },
         (3, 0): {
-            0: {L: 4}
-            1: {H: 0}
-            2: {H: 2}
-            3: {H: 4}
+            0: {L: 4},
+            1: {H: 0},
+            2: {H: 2},
+            3: {H: 4},
         },
         (3, 1): {
-            0: {L: 4}
-            1: {H: 0}
-            2: {H: 2}
-            3: {H: 4}
-            4: {HL: 6, LH: 6, HH: 2}
+            0: {L: 4},
+            1: {H: 0},
+            2: {H: 2},
+            3: {H: 4},
+            4: {HL: 6, LH: 6, HH: 2},
         },
         (3, 2): {
-            0: {L: 4}
-            1: {H: 0}
-            2: {H: 2}
-            3: {H: 4}
-            4: {HL: 6, LH: 6, HH: 2}
-            5: {HL: 6, LH: 6, HH: 2}
+            0: {L: 4},
+            1: {H: 0},
+            2: {H: 2},
+            3: {H: 4},
+            4: {HL: 6, LH: 6, HH: 2},
+            5: {HL: 6, LH: 6, HH: 2},
         },
         (4, 0): {
-            0: {L: 4}
-            1: {H: 0}
-            2: {H: 2}
-            3: {H: 4}
-            4: {H: 6}
+            0: {L: 4},
+            1: {H: 0},
+            2: {H: 2},
+            3: {H: 4},
+            4: {H: 6},
         },
         (4, 1): {
-            0: {L: 4}
-            1: {H: 0}
-            2: {H: 2}
-            3: {H: 4}
-            4: {H: 6}
-            5: {HL: 8, LH: 8, HH: 4}
+            0: {L: 4},
+            1: {H: 0},
+            2: {H: 2},
+            3: {H: 4},
+            4: {H: 6},
+            5: {HL: 8, LH: 8, HH: 4},
         },
     },
     # (Table D.6) Fidelity
     (5, 5): {
         (0, 0): {
-            0: {LL: 0}
+            0: {LL: 0},
         },
         (0, 1): {
-            0: {LL: 0}
-            1: {HL: 4, LH: 4, HH: 8}
+            0: {LL: 0},
+            1: {HL: 4, LH: 4, HH: 8},
         },
         (0, 2): {
-            0: {LL: 0}
-            1: {HL: 4, LH: 4, HH: 8}
-            2: {HL: 8, LH: 8, HH: 12}
+            0: {LL: 0},
+            1: {HL: 4, LH: 4, HH: 8},
+            2: {HL: 8, LH: 8, HH: 12},
         },
         (0, 3): {
-            0: {LL: 0}
-            1: {HL: 4, LH: 4, HH: 8}
-            2: {HL: 8, LH: 8, HH: 12}
-            3: {HL: 13, LH: 13, HH: 17}
+            0: {LL: 0},
+            1: {HL: 4, LH: 4, HH: 8},
+            2: {HL: 8, LH: 8, HH: 12},
+            3: {HL: 13, LH: 13, HH: 17},
         },
         (0, 4): {
-            0: {LL: 0}
-            1: {HL: 4, LH: 4, HH: 8}
-            2: {HL: 8, LH: 8, HH: 12}
-            3: {HL: 13, LH: 13, HH: 17}
-            4: {HL: 17, LH: 17, HH: 21}
+            0: {LL: 0},
+            1: {HL: 4, LH: 4, HH: 8},
+            2: {HL: 8, LH: 8, HH: 12},
+            3: {HL: 13, LH: 13, HH: 17},
+            4: {HL: 17, LH: 17, HH: 21},
         },
         (1, 0): {
-            0: {L: 0}
-            1: {H: 4}
+            0: {L: 0},
+            1: {H: 4},
         },
         (1, 1): {
-            0: {L: 0}
-            1: {H: 4}
-            2: {HL: 6, LH: 6, HH: 10}
+            0: {L: 0},
+            1: {H: 4},
+            2: {HL: 6, LH: 6, HH: 10},
         },
         (1, 2): {
-            0: {L: 0}
-            1: {H: 4}
-            2: {HL: 6, LH: 6, HH: 10}
-            3: {HL: 11, LH: 11, HH: 15}
+            0: {L: 0},
+            1: {H: 4},
+            2: {HL: 6, LH: 6, HH: 10},
+            3: {HL: 11, LH: 11, HH: 15},
         },
         (1, 3): {
-            0: {L: 0}
-            1: {H: 4}
-            2: {HL: 6, LH: 6, HH: 10}
-            3: {HL: 11, LH: 11, HH: 15}
-            4: {HL: 15, LH: 15, HH: 19}
+            0: {L: 0},
+            1: {H: 4},
+            2: {HL: 6, LH: 6, HH: 10},
+            3: {HL: 11, LH: 11, HH: 15},
+            4: {HL: 15, LH: 15, HH: 19},
         },
         (1, 4): {
-            0: {L: 0}
-            1: {H: 4}
-            2: {HL: 6, LH: 6, HH: 10}
-            3: {HL: 11, LH: 11, HH: 15}
-            4: {HL: 15, LH: 15, HH: 19}
-            5: {HL: 19, LH: 19, HH: 23}
+            0: {L: 0},
+            1: {H: 4},
+            2: {HL: 6, LH: 6, HH: 10},
+            3: {HL: 11, LH: 11, HH: 15},
+            4: {HL: 15, LH: 15, HH: 19},
+            5: {HL: 19, LH: 19, HH: 23},
         },
         (2, 0): {
-            0: {L: 0}
-            1: {H: 4}
-            2: {H: 6}
+            0: {L: 0},
+            1: {H: 4},
+            2: {H: 6},
         },
         (2, 1): {
-            0: {L: 0}
-            1: {H: 4}
-            2: {H: 6}
-            3: {HL: 8, LH: 8, HH: 12}
+            0: {L: 0},
+            1: {H: 4},
+            2: {H: 6},
+            3: {HL: 8, LH: 8, HH: 12},
         },
         (2, 2): {
-            0: {L: 0}
-            1: {H: 4}
-            2: {H: 6}
-            3: {HL: 8, LH: 8, HH: 12}
-            4: {HL: 13, LH: 13, HH: 17}
+            0: {L: 0},
+            1: {H: 4},
+            2: {H: 6},
+            3: {HL: 8, LH: 8, HH: 12},
+            4: {HL: 13, LH: 13, HH: 17},
         },
         (2, 3): {
-            0: {L: 0}
-            1: {H: 4}
-            2: {H: 6}
-            3: {HL: 8, LH: 8, HH: 12}
-            4: {HL: 13, LH: 13, HH: 17}
-            5: {HL: 17, LH: 17, HH: 21}
+            0: {L: 0},
+            1: {H: 4},
+            2: {H: 6},
+            3: {HL: 8, LH: 8, HH: 12},
+            4: {HL: 13, LH: 13, HH: 17},
+            5: {HL: 17, LH: 17, HH: 21},
         },
         (3, 0): {
-            0: {L: 0}
-            1: {H: 4}
-            2: {H: 6}
-            3: {H: 8}
+            0: {L: 0},
+            1: {H: 4},
+            2: {H: 6},
+            3: {H: 8},
         },
         (3, 1): {
-            0: {L: 0}
-            1: {H: 4}
-            2: {H: 6}
-            3: {H: 8}
-            4: {HL: 11, LH: 11, HH: 15}
+            0: {L: 0},
+            1: {H: 4},
+            2: {H: 6},
+            3: {H: 8},
+            4: {HL: 11, LH: 11, HH: 15},
         },
         (3, 2): {
-            0: {L: 0}
-            1: {H: 4}
-            2: {H: 6}
-            3: {H: 8}
-            4: {HL: 11, LH: 11, HH: 15}
-            5: {HL: 15, LH: 15, HH: 19}
+            0: {L: 0},
+            1: {H: 4},
+            2: {H: 6},
+            3: {H: 8},
+            4: {HL: 11, LH: 11, HH: 15},
+            5: {HL: 15, LH: 15, HH: 19},
         },
         (4, 0): {
-            0: {L: 0}
-            1: {H: 4}
-            2: {H: 6}
-            3: {H: 8}
-            4: {H: 11}
+            0: {L: 0},
+            1: {H: 4},
+            2: {H: 6},
+            3: {H: 8},
+            4: {H: 11},
         },
         (4, 1): {
-            0: {L: 0}
-            1: {H: 4}
-            2: {H: 6}
-            3: {H: 8}
-            4: {H: 11}
+            0: {L: 0},
+            1: {H: 4},
+            2: {H: 6},
+            3: {H: 8},
+            4: {H: 11},
         },
     },
     # (Table D.7) Daubechies (9,7)
     (6, 6): {
         (0, 0): {
-            0: {LL: 0}
+            0: {LL: 0},
         },
         (0, 1): {
-            0: {LL: 3}
-            1: {HL: 1, LH: 1, HH: 0}
+            0: {LL: 3},
+            1: {HL: 1, LH: 1, HH: 0},
         },
         (0, 2): {
-            0: {LL: 3}
-            1: {HL: 1, LH: 1, HH: 0}
-            2: {HL: 4, LH: 4, HH: 2}
+            0: {LL: 3},
+            1: {HL: 1, LH: 1, HH: 0},
+            2: {HL: 4, LH: 4, HH: 2},
         },
         (0, 3): {
-            0: {LL: 3}
-            1: {HL: 1, LH: 1, HH: 0}
-            2: {HL: 4, LH: 4, HH: 2}
-            3: {HL: 6, LH: 6, HH: 5}
+            0: {LL: 3},
+            1: {HL: 1, LH: 1, HH: 0},
+            2: {HL: 4, LH: 4, HH: 2},
+            3: {HL: 6, LH: 6, HH: 5},
         },
         (0, 4): {
-            0: {LL: 3}
-            1: {HL: 1, LH: 1, HH: 0}
-            2: {HL: 4, LH: 4, HH: 2}
-            3: {HL: 6, LH: 6, HH: 5}
-            4: {HL: 9, LH: 9, HH: 7}
+            0: {LL: 3},
+            1: {HL: 1, LH: 1, HH: 0},
+            2: {HL: 4, LH: 4, HH: 2},
+            3: {HL: 6, LH: 6, HH: 5},
+            4: {HL: 9, LH: 9, HH: 7},
         },
         (1, 0): {
-            0: {L: 1}
-            1: {H: 0}
+            0: {L: 1},
+            1: {H: 0},
         },
         (1, 1): {
-            0: {L: 1}
-            1: {H: 0}
-            2: {HL: 3, LH: 3, HH: 2}
+            0: {L: 1},
+            1: {H: 0},
+            2: {HL: 3, LH: 3, HH: 2},
         },
         (1, 2): {
-            0: {L: 1}
-            1: {H: 0}
-            2: {HL: 3, LH: 3, HH: 2}
-            3: {HL: 6, LH: 6, HH: 4}
+            0: {L: 1},
+            1: {H: 0},
+            2: {HL: 3, LH: 3, HH: 2},
+            3: {HL: 6, LH: 6, HH: 4},
         },
         (1, 3): {
-            0: {L: 1}
-            1: {H: 0}
-            2: {HL: 3, LH: 3, HH: 2}
-            3: {HL: 6, LH: 6, HH: 4}
-            4: {HL: 8, LH: 8, HH: 7}
+            0: {L: 1},
+            1: {H: 0},
+            2: {HL: 3, LH: 3, HH: 2},
+            3: {HL: 6, LH: 6, HH: 4},
+            4: {HL: 8, LH: 8, HH: 7},
         },
         (1, 4): {
-            0: {L: 1}
-            1: {H: 0}
-            2: {HL: 3, LH: 3, HH: 2}
-            3: {HL: 6, LH: 6, HH: 4}
-            4: {HL: 8, LH: 8, HH: 7}
-            5: {HL: 11, LH: 11, HH: 9}
+            0: {L: 1},
+            1: {H: 0},
+            2: {HL: 3, LH: 3, HH: 2},
+            3: {HL: 6, LH: 6, HH: 4},
+            4: {HL: 8, LH: 8, HH: 7},
+            5: {HL: 11, LH: 11, HH: 9},
         },
         (2, 0): {
-            0: {L: 1}
-            1: {H: 0}
-            2: {H: 3}
+            0: {L: 1},
+            1: {H: 0},
+            2: {H: 3},
         },
         (2, 1): {
-            0: {L: 1}
-            1: {H: 0}
-            2: {H: 3}
-            3: {HL: 6, LH: 6, HH: 5}
+            0: {L: 1},
+            1: {H: 0},
+            2: {H: 3},
+            3: {HL: 6, LH: 6, HH: 5},
         },
         (2, 2): {
-            0: {L: 1}
-            1: {H: 0}
-            2: {H: 3}
-            3: {HL: 6, LH: 6, HH: 5}
-            4: {HL: 9, LH: 9, HH: 8}
+            0: {L: 1},
+            1: {H: 0},
+            2: {H: 3},
+            3: {HL: 6, LH: 6, HH: 5},
+            4: {HL: 9, LH: 9, HH: 8},
         },
         (2, 3): {
-            0: {L: 1}
-            1: {H: 0}
-            2: {H: 3}
-            3: {HL: 6, LH: 6, HH: 5}
-            4: {HL: 9, LH: 9, HH: 8}
-            5: {HL: 11, LH: 11, HH: 10}
+            0: {L: 1},
+            1: {H: 0},
+            2: {H: 3},
+            3: {HL: 6, LH: 6, HH: 5},
+            4: {HL: 9, LH: 9, HH: 8},
+            5: {HL: 11, LH: 11, HH: 10},
         },
         (3, 0): {
-            0: {L: 1}
-            1: {H: 0}
-            2: {H: 3}
-            3: {H: 6}
+            0: {L: 1},
+            1: {H: 0},
+            2: {H: 3},
+            3: {H: 6},
         },
         (3, 1): {
-            0: {L: 1}
-            1: {H: 0}
-            2: {H: 3}
-            3: {H: 6}
-            4: {HL: 10, LH: 10, HH: 8}
+            0: {L: 1},
+            1: {H: 0},
+            2: {H: 3},
+            3: {H: 6},
+            4: {HL: 10, LH: 10, HH: 8},
         },
         (3, 2): {
-            0: {L: 1}
-            1: {H: 0}
-            2: {H: 3}
-            3: {H: 6}
-            4: {HL: 10, LH: 10, HH: 8}
-            5: {HL: 12, LH: 12, HH: 11}
+            0: {L: 1},
+            1: {H: 0},
+            2: {H: 3},
+            3: {H: 6},
+            4: {HL: 10, LH: 10, HH: 8},
+            5: {HL: 12, LH: 12, HH: 11},
         },
         (4, 0): {
-            0: {L: 1}
-            1: {H: 0}
-            2: {H: 3}
-            3: {H: 6}
-            4: {H: 10}
+            0: {L: 1},
+            1: {H: 0},
+            2: {H: 3},
+            3: {H: 6},
+            4: {H: 10},
         },
         (4, 1): {
-            0: {L: 1}
-            1: {H: 0}
-            2: {H: 3}
-            3: {H: 6}
-            4: {H: 10}
+            0: {L: 1},
+            1: {H: 0},
+            2: {H: 3},
+            3: {H: 6},
+            4: {H: 10},
         },
     },
     # (Table D.8) Horizontal Only: LeGall (5,3), Vertical Only: Haar (no shift)
     (1, 3): {
         (0, 0): {
-            0: {LL: 0}
+            0: {LL: 0},
         },
         (0, 1): {
-            0: {LL: 6}
-            1: {HL: 4, LH: 2, HH: 0}
+            0: {LL: 6},
+            1: {HL: 4, LH: 2, HH: 0},
         },
         (0, 2): {
-            0: {LL: 6}
-            1: {HL: 4, LH: 2, HH: 0}
-            2: {HL: 5, LH: 3, HH: 1}
+            0: {LL: 6},
+            1: {HL: 4, LH: 2, HH: 0},
+            2: {HL: 5, LH: 3, HH: 1},
         },
         (0, 3): {
-            0: {LL: 6}
-            1: {HL: 4, LH: 2, HH: 0}
-            2: {HL: 5, LH: 3, HH: 1}
-            3: {HL: 6, LH: 4, HH: 2}
+            0: {LL: 6},
+            1: {HL: 4, LH: 2, HH: 0},
+            2: {HL: 5, LH: 3, HH: 1},
+            3: {HL: 6, LH: 4, HH: 2},
         },
         (0, 4): {
-            0: {LL: 6}
-            1: {HL: 4, LH: 2, HH: 0}
-            2: {HL: 5, LH: 3, HH: 1}
-            3: {HL: 6, LH: 4, HH: 2}
-            4: {HL: 6, LH: 5, HH: 2}
+            0: {LL: 6},
+            1: {HL: 4, LH: 2, HH: 0},
+            2: {HL: 5, LH: 3, HH: 1},
+            3: {HL: 6, LH: 4, HH: 2},
+            4: {HL: 6, LH: 5, HH: 2},
         },
         (1, 0): {
-            0: {L: 2}
-            1: {H: 0}
+            0: {L: 2},
+            1: {H: 0},
         },
         (1, 1): {
-            0: {L: 3}
-            1: {H: 1}
-            2: {HL: 4, LH: 2, HH: 0}
+            0: {L: 3},
+            1: {H: 1},
+            2: {HL: 4, LH: 2, HH: 0},
         },
         (1, 2): {
-            0: {L: 3}
-            1: {H: 1}
-            2: {HL: 4, LH: 2, HH: 0}
-            3: {HL: 5, LH: 3, HH: 1}
+            0: {L: 3},
+            1: {H: 1},
+            2: {HL: 4, LH: 2, HH: 0},
+            3: {HL: 5, LH: 3, HH: 1},
         },
         (1, 3): {
-            0: {L: 3}
-            1: {H: 1}
-            2: {HL: 4, LH: 2, HH: 0}
-            3: {HL: 5, LH: 3, HH: 1}
-            4: {HL: 6, LH: 4, HH: 2}
+            0: {L: 3},
+            1: {H: 1},
+            2: {HL: 4, LH: 2, HH: 0},
+            3: {HL: 5, LH: 3, HH: 1},
+            4: {HL: 6, LH: 4, HH: 2},
         },
         (1, 4): {
-            0: {L: 3}
-            1: {H: 1}
-            2: {HL: 4, LH: 2, HH: 0}
-            3: {HL: 5, LH: 3, HH: 1}
-            4: {HL: 6, LH: 4, HH: 2}
-            5: {HL: 6, LH: 5, HH: 2}
+            0: {L: 3},
+            1: {H: 1},
+            2: {HL: 4, LH: 2, HH: 0},
+            3: {HL: 5, LH: 3, HH: 1},
+            4: {HL: 6, LH: 4, HH: 2},
+            5: {HL: 6, LH: 5, HH: 2},
         },
         (2, 0): {
-            0: {L: 2}
-            1: {H: 0}
-            2: {H: 3}
+            0: {L: 2},
+            1: {H: 0},
+            2: {H: 3},
         },
         (2, 1): {
-            0: {L: 2}
-            1: {H: 0}
-            2: {H: 3}
-            3: {HL: 6, LH: 4, HH: 2}
+            0: {L: 2},
+            1: {H: 0},
+            2: {H: 3},
+            3: {HL: 6, LH: 4, HH: 2},
         },
         (2, 2): {
-            0: {L: 2}
-            1: {H: 0}
-            2: {H: 3}
-            3: {HL: 6, LH: 4, HH: 2}
-            4: {HL: 6, LH: 5, HH: 2}
+            0: {L: 2},
+            1: {H: 0},
+            2: {H: 3},
+            3: {HL: 6, LH: 4, HH: 2},
+            4: {HL: 6, LH: 5, HH: 2},
         },
         (2, 3): {
-            0: {L: 2}
-            1: {H: 0}
-            2: {H: 3}
-            3: {HL: 6, LH: 4, HH: 2}
-            4: {HL: 6, LH: 5, HH: 2}
-            5: {HL: 7, LH: 5, HH: 3}
+            0: {L: 2},
+            1: {H: 0},
+            2: {H: 3},
+            3: {HL: 6, LH: 4, HH: 2},
+            4: {HL: 6, LH: 5, HH: 2},
+            5: {HL: 7, LH: 5, HH: 3},
         },
         (3, 0): {
-            0: {L: 2}
-            1: {H: 0}
-            2: {H: 3}
-            3: {H: 6}
+            0: {L: 2},
+            1: {H: 0},
+            2: {H: 3},
+            3: {H: 6},
         },
         (3, 1): {
-            0: {L: 2}
-            1: {H: 0}
-            2: {H: 3}
-            3: {H: 6}
-            4: {HL: 8, LH: 7, HH: 4}
+            0: {L: 2},
+            1: {H: 0},
+            2: {H: 3},
+            3: {H: 6},
+            4: {HL: 8, LH: 7, HH: 4},
         },
         (3, 2): {
-            0: {L: 2}
-            1: {H: 0}
-            2: {H: 3}
-            3: {H: 6}
-            4: {HL: 8, LH: 7, HH: 4}
-            5: {HL: 9, LH: 7, HH: 5}
+            0: {L: 2},
+            1: {H: 0},
+            2: {H: 3},
+            3: {H: 6},
+            4: {HL: 8, LH: 7, HH: 4},
+            5: {HL: 9, LH: 7, HH: 5},
         },
         (4, 0): {
-            0: {L: 2}
-            1: {H: 0}
-            2: {H: 3}
-            3: {H: 6}
-            4: {H: 8}
+            0: {L: 2},
+            1: {H: 0},
+            2: {H: 3},
+            3: {H: 6},
+            4: {H: 8},
         },
         (4, 1): {
-            0: {L: 2}
-            1: {H: 0}
-            2: {H: 3}
-            3: {H: 6}
-            4: {H: 8}
-            5: {HL: 11, LH: 9, HH: 7}
+            0: {L: 2},
+            1: {H: 0},
+            2: {H: 3},
+            3: {H: 6},
+            4: {H: 8},
+            5: {HL: 11, LH: 9, HH: 7},
         },
     },
 }

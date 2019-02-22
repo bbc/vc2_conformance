@@ -95,7 +95,7 @@ for (dwt_depth_ho, dwt_depth), quant_matrix in sorted(out.items()):
     print("    ({}, {}): {{".format(dwt_depth_ho, dwt_depth))
     
     for level, subbands in sorted(quant_matrix.items()):
-        print("        {}: {{{}}}".format(
+        print("        {}: {{{}}},".format(
             level, 
             ", ".join(
                 "{}: {}".format(subband, value)
