@@ -31,6 +31,12 @@ pic_num = Sentinel("pic_num")
 
 @attrs
 class State(object):
+    
+    def __attrs_post_init__(self):
+        # (A.2.1) Load the first byte on startup ('A decoder is deemed to
+        # maintain a copy of the current byte').
+        read_byte(self)
+    
     ################################################################################
     # (A) Low-level data (de)coding definitions
     ################################################################################
@@ -265,13 +271,22 @@ def height(a):
 ################################################################################
 
 def read_byte(state):
-    """(A.2.2) Read the next byte in the stream"""
-    state.current_byte = bytearray(state.stream.read(1))[0]
-    state.next_bit = 7
+    """(A.2.2) Read the next byte in the stream into the buffer"""
+    # NB: The test here is added beyond the scope of the test since the spec
+    # assumes an infinate length file while in practice the file will not have
+    # infinite length.
+    byte = state.stream.read(1)
+    if len(byte) == 1:
+        state.current_byte = bytearray(byte)[0]
+        state.next_bit = 7
+    else:
+        # End of file (these values should cause any future reads to fail)
+        state.current_byte = None
+        state.next_bit = None
 
 
 def read_bit(state):
-    """(A.2.3) Read the next bit in the stream"""
+    """(A.2.3) Read and return the next bit in the stream."""
     assert state.current_byte is not None
     assert state.next_bit is not None
     bit = (state.current_byte >> state.next_bit) & 1
@@ -302,18 +317,19 @@ def read_nbits(state, n):
     val = 0
     for i in range(n):
         val <<= 1
-        val += read_bit()
+        val += read_bit(state)
     return val
 
 
 def read_uint_lit(state, n):
     """(A.3.4) Read an aligned n-byte unsigned integer."""
-    byte_align()
-    return read_nbits(8 * n)
+    byte_align(state)
+    return read_nbits(state, 8 * n)
 
 
 def read_bitb(state):
     """(A.4.2) Read bit from current bounded block."""
+    assert state.bits_left is not None
     if state.bits_left == 0:
         return 1
     else:
@@ -328,6 +344,7 @@ def read_boolb(state):
 
 def flush_inputb(state):
     """(A.4.2) Flush all remaining bits in the current bounded block."""
+    assert state.bits_left is not None
     while state.bits_left > 0:
         read_bit(state)
         state.bits_left -= 1
@@ -412,22 +429,24 @@ def auxiliary_data(state):
     """(10.4.4) Read an auxiliary data block."""
     byte_align(state)
     for i in range(state.next_parse_offset - PARSE_INFO_HEADER_BYTES):
-        read_byte(state)
+        # Erata: is eroneously 'read_byte' in the spec
+        read_uint_lit(state, 1)
 
 
 def padding(state):
     """(10.4.5) Read a padding data block."""
     byte_align(state)
     for i in range(state.next_parse_offset - PARSE_INFO_HEADER_BYTES):
-        read_byte(state)
+        # Erata: is eroneously 'read_byte' in the spec
+        read_uint_lit(state, 1)
 
 
 def parse_info(state):
     """(10.5.1) Read a parse_info header."""
     assert read_uint_lit(state, 4) == 0x42424344  # 'BBCR'
-    state.parse_code = read_byte()
-    state.next_parse_offset = read_uint_lit(4)
-    state.previous_parse_offset = read_uint_lit(4)
+    state.parse_code = read_uint_lit(state, 1)
+    state.next_parse_offset = read_uint_lit(state, 4)
+    state.previous_parse_offset = read_uint_lit(state, 4)
 
 
 class ParseCodes(Enum):
@@ -506,7 +525,8 @@ def using_dc_prediction(state):
 
 def decode_sequence(stream):
     """
-    (10.6.1) Informative. Stream decode loop.
+    (10.6.1) Informative. Stream decode loop (a 'useful' alternative to
+    parse_sequence()).
     """
     state = State(stream=stream)
     video_parameters = None
