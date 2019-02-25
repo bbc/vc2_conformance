@@ -597,7 +597,10 @@ def parse_parameters(state):
 
 
 def source_parameters(state, base_video_format):
-    """(11.4.1) Parse the video source parameters."""
+    """
+    (11.4.1) Parse the video source parameters. Returns a VideoParameters
+    object.
+    """
     video_parameters = set_source_defaults(base_video_format)
     
     frame_size(state, video_parameters)
@@ -628,7 +631,7 @@ class VideoParameters(object):
     
     source_sampling = attrib()
     """
-    (11.4.5) An index in the enum SourceSampling (e.g. progressive/interlace).
+    (11.4.5) An index in the enum SourceSampling (e.g. progressive/interlaced).
     """
     
     top_field_first = attrib()
@@ -808,13 +811,13 @@ def picture_dimensions(state, video_parameters, picture_coding_mode):
     state.color_diff_height = state.luma_height
     
     color_diff_format_index = video_parameters.color_diff_format_index
-    if color_diff_format_index == ColorDifferenceSamplingFormats.color_4_2_2:
+    if color_diff_format_index == ColorDifferenceSamplingFormats.color_4_2_2.value:
         state.color_diff_width //= 2
-    if color_diff_format_index == ColorDifferenceSamplingFormats.color_4_2_0:
+    if color_diff_format_index == ColorDifferenceSamplingFormats.color_4_2_0.value:
         state.color_diff_width //= 2
         state.color_diff_height //= 2
     
-    if picture_coding_mode == PictureCodingMode.pictures_are_fields:
+    if picture_coding_mode == PictureCodingMode.pictures_are_fields.value:
         state.luma_height //= 2
         state.color_diff_height //= 2
 

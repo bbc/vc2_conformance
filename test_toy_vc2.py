@@ -375,3 +375,433 @@ def test_parse_info(valid_id):
     else:
         with pytest.raises(Exception):
             toy_vc2.parse_info(state)
+
+
+def test_parse_parameters():
+    # 0b0000_1001_0110_1011 = 0x096B
+    #   '----''-' '-''----'
+    #      3   1   2    4
+    state = toy_vc2.State(BytesIO(b"\x09\x6B" + b"\x09\x6B" + b"\xFF"))
+    
+    toy_vc2.parse_parameters(state)
+    assert state.major_version == 3
+    assert state.minor_version == 1
+    assert state.profile == 2
+    assert state.level == 6
+    
+    # If repeated and same, should be no problem
+    toy_vc2.parse_parameters(state)
+    assert state.major_version == 3
+    assert state.minor_version == 1
+    assert state.profile == 2
+    assert state.level == 6
+    
+    # If repeated and not same, should fail (spec requires that streams do not
+    # change these (11.2.1))
+    with pytest.raises(Exception):
+        toy_vc2.parse_parameters(state)
+
+
+class TestSourceParameters(object):
+    
+    def test_no_overrides(self):
+        # Exactly 8 'false' bools for disabling any overrides.
+        state = toy_vc2.State(BytesIO(b"\x00"))
+        
+        # Arbitrary choice for this test: check loading of 'HD1080i-50' base
+        # video format (12).
+        video_parameters = toy_vc2.source_parameters(state, 12)
+        
+        assert video_parameters.frame_width == 1920
+        assert video_parameters.frame_height == 1080
+        
+        assert video_parameters.color_diff_format_index == (
+            toy_vc2.ColorDifferenceSamplingFormats.color_4_2_2.value)
+        
+        assert video_parameters.source_sampling == (
+            toy_vc2.SourceSampling.interlaced.value)
+        
+        assert video_parameters.top_field_first is True
+        
+        assert video_parameters.frame_rate_numer == 25
+        assert video_parameters.frame_rate_denom == 1
+        
+        assert video_parameters.pixel_aspect_ratio_numer == 1
+        assert video_parameters.pixel_aspect_ratio_denom == 1
+        
+        assert video_parameters.clean_width == 1920
+        assert video_parameters.clean_height == 1080
+        assert video_parameters.left_offset == 0
+        assert video_parameters.top_offset == 0
+        
+        assert video_parameters.luma_offset == 64
+        assert video_parameters.luma_excursion == 876
+        assert video_parameters.color_diff_offset == 512
+        assert video_parameters.color_diff_excursion == 896
+        
+        assert video_parameters.color_primaries is (
+            toy_vc2.PRESET_COLOR_PRIMARIES[0])
+        
+        assert video_parameters.color_matrix is (
+            toy_vc2.PRESET_COLOR_MATRICES[0])
+        
+        assert video_parameters.transfer_function is (
+            toy_vc2.PRESET_TRANSFER_FUNCTIONS[0])
+    
+    def test_override_frame_size(self):
+        # 0x9_____6____0___3____
+        # 0b1_001_011_0000000_11
+        #   | `+' `+' `--+--' `+
+        #   |  |   |     |     |
+        #   |  |   |     |     +- Arbitrary filler bits...
+        #   |  |   |     +- Don't override anything else
+        #   |  |   +-Height (2)
+        #   |  +- Width (1)
+        #   +- Override dimensions
+        state = toy_vc2.State(BytesIO(b"\x96\x03"))
+        
+        # Arbitrary choice for this test: check loading of 'HD1080i-50' base
+        # video format (12).
+        video_parameters = toy_vc2.source_parameters(state, 12)
+        
+        assert video_parameters.frame_width == 1
+        assert video_parameters.frame_height == 2
+    
+    def test_override_color_diff_sampling_format(self):
+        # 0x6______0___7____F
+        # 0b0_1_1_000000_1111111
+        #     | | `--+-' `+'
+        #     | |    |    |
+        #     | |    |    +- Arbitrary filler bits...
+        #     | |    +- Don't override anything else
+        #     | +- Format index (0)
+        #     +- Override color diff sampling format
+        state = toy_vc2.State(BytesIO(b"\x60\x7F"))
+        
+        # Arbitrary choice for this test: check loading of 'HD1080i-50' base
+        # video format (12).
+        video_parameters = toy_vc2.source_parameters(state, 12)
+        
+        assert video_parameters.color_diff_format_index == 0
+    
+    def test_scan_format(self):
+        # 0x3______0___7____F___
+        # 0b00_1_1_00000_1111111
+        #      | | `-+-' `+'
+        #      | |   |    |
+        #      | |   |    +- Arbitrary filler bits...
+        #      | |   +- Don't override anything else
+        #      | +- Progressive (0)
+        #      +- Override scan format
+        state = toy_vc2.State(BytesIO(b"\x30\x7F"))
+        
+        # Arbitrary choice for this test: check loading of 'HD1080i-50' base
+        # video format (12).
+        video_parameters = toy_vc2.source_parameters(state, 12)
+        
+        assert video_parameters.source_sampling == 0
+    
+    def test_frame_rate_indexed(self):
+        # 0x1_____2____1____F___
+        # 0b000_1_001_0000_11111
+        #       | `-' `-+' `+'
+        #       |  |    |   |
+        #       |  |    |   +- Arbitrary filler bits...
+        #       |  |    +- Don't override anything else
+        #       |  +- 24/1.001 (1)
+        #       +- Override frame rate
+        state = toy_vc2.State(BytesIO(b"\x12\x1F"))
+        
+        # Arbitrary choice for this test: check loading of 'HD1080i-50' base
+        # video format (12).
+        video_parameters = toy_vc2.source_parameters(state, 12)
+        
+        assert video_parameters.frame_rate_numer == 24000
+        assert video_parameters.frame_rate_denom == 1001
+    
+    def test_frame_rate_custom(self):
+        # 0x1_____9_____6____1____
+        # 0b000_1_1_001_011_0000_1
+        #       | - `+'`+'  `-+' |
+        #       | |  |  |     |  |
+        #       | |  |  |     |  +- Arbitrary filler bit...
+        #       | |  |  |     +- Don't override anything else
+        #       | |  |  +- Denominator (2)
+        #       | |  +- Numerator (1)
+        #       | +- Custom frame rate (0)
+        #       +- Override frame rate
+        state = toy_vc2.State(BytesIO(b"\x19\x61"))
+        
+        # Arbitrary choice for this test: check loading of 'HD1080i-50' base
+        # video format (12).
+        video_parameters = toy_vc2.source_parameters(state, 12)
+        
+        assert video_parameters.frame_rate_numer == 1
+        assert video_parameters.frame_rate_denom == 2
+    
+    def test_pixel_aspect_ratio_indexed(self):
+        # 0x0____B_____1____F___
+        # 0b0000_1_011_000_11111
+        #        | `-' `+' `-+-'
+        #        |  |   |    |
+        #        |  |   |    +- Arbitrary filler bits...
+        #        |  |   +- Don't override anything else
+        #        |  +- 10:11 (2)
+        #        +- Override pixel aspect ratio
+        state = toy_vc2.State(BytesIO(b"\x0B\x1F"))
+        
+        # Arbitrary choice for this test: check loading of 'HD1080i-50' base
+        # video format (12).
+        video_parameters = toy_vc2.source_parameters(state, 12)
+        
+        assert video_parameters.pixel_aspect_ratio_numer == 10
+        assert video_parameters.pixel_aspect_ratio_denom == 11
+    
+    def test_pixel_aspect_ratio_custom(self):
+        # 0x0____C_____B_____1____
+        # 0b0000_1_1_001_011_000_1
+        #        | - `+' `+' `+' |
+        #        | |  |   |   |  |
+        #        | |  |   |   |  +- Arbitrary filler bit...
+        #        | |  |   |   +- Don't override anything else
+        #        | |  |   +- Denominator (2)
+        #        | |  +- Numerator (1)
+        #        | +- Custom pixel aspect ratio (0)
+        #        +- Override pixel aspect ratio
+        state = toy_vc2.State(BytesIO(b"\x0C\xB1"))
+        
+        # Arbitrary choice for this test: check loading of 'HD1080i-50' base
+        # video format (12).
+        video_parameters = toy_vc2.source_parameters(state, 12)
+        
+        assert video_parameters.pixel_aspect_ratio_numer == 1
+        assert video_parameters.pixel_aspect_ratio_denom == 2
+    
+    def test_clean_area(self):
+        # 0x0___4_____B_____0___8____C____
+        # 0b00000_1_001_011_00001_00011_00
+        #         | `+' `+' `-+-' `-+-' `+
+        #         |  |   |    |     |    |
+        #         |  |   |    |     |    +- Don't override anything else
+        #         |  |   |    |     +- Top offset (4)
+        #         |  |   |    +- Left offset (3)
+        #         |  |   +- Clean height (2)
+        #         |  +- Clean width (1)
+        #         +- Override clean area
+        state = toy_vc2.State(BytesIO(b"\x04\xB0\x8C"))
+        
+        # Arbitrary choice for this test: check loading of 'HD1080i-50' base
+        # video format (12).
+        video_parameters = toy_vc2.source_parameters(state, 12)
+        
+        assert video_parameters.clean_width == 1
+        assert video_parameters.clean_height == 2
+        assert video_parameters.left_offset == 3
+        assert video_parameters.top_offset == 4
+    
+    def test_signal_range_indexed(self):
+        # 0x0___2_____D_____F___
+        # 0b000000_1_011_0_11111
+        #          | `-' + `-+-'
+        #          |  |  |   |
+        #          |  |  |   +- Arbitrary filler bits...
+        #          |  |  +- Don't override anything else
+        #          |  +- '8-bit video' (2)
+        #          +- Override signal range
+        state = toy_vc2.State(BytesIO(b"\x02\xDF"))
+        
+        # Arbitrary choice for this test: check loading of 'HD1080i-50' base
+        # video format (12).
+        video_parameters = toy_vc2.source_parameters(state, 12)
+        
+        assert video_parameters.luma_offset == 16
+        assert video_parameters.luma_excursion == 219
+        assert video_parameters.color_diff_offset == 128
+        assert video_parameters.color_diff_excursion == 224
+    
+    def test_signal_range_custom(self):
+        # 0x0___3______2____C____2____3____7____F___
+        # 0b000000_1_1_001_011_00001_00011_0_1111111
+        #          | | `+' `+' `-+-' `-+-' | `--+--'
+        #          | |  |   |    |     |   |    |
+        #          | |  |   |    |     |   |    +- Arbitrary filler bits...
+        #          | |  |   |    |     |   +- Don't override anything else
+        #          | |  |   |    |     +- Color diff excursion (4)
+        #          | |  |   |    +- Color diff offset (3)
+        #          | |  |   +- Luma excursion (2)
+        #          | |  +- Luma offset (1)
+        #          | +- Custom signal range (0)
+        #          +- Override signal range
+        state = toy_vc2.State(BytesIO(b"\x03\x2C\x23\x7F"))
+        
+        # Arbitrary choice for this test: check loading of 'HD1080i-50' base
+        # video format (12).
+        video_parameters = toy_vc2.source_parameters(state, 12)
+        
+        assert video_parameters.luma_offset == 1
+        assert video_parameters.luma_excursion == 2
+        assert video_parameters.color_diff_offset == 3
+        assert video_parameters.color_diff_excursion == 4
+    
+    def test_color_spec_indexed(self):
+        # 0x0___1_____1___F____
+        # 0b0000000_1_00011_111
+        #           | `---' `+'
+        #           |   |    |
+        #           |   |    +- Arbitrary filler bits...
+        #           |   +- 'D-Cinema' (4)
+        #           +- Override color specifications
+        state = toy_vc2.State(BytesIO(b"\x01\x1F"))
+        
+        # Arbitrary choice for this test: check loading of 'HD1080i-50' base
+        # video format (12).
+        video_parameters = toy_vc2.source_parameters(state, 12)
+        
+        assert video_parameters.color_primaries is (
+            toy_vc2.PRESET_COLOR_PRIMARIES[3])  # D-Cinema
+        
+        assert video_parameters.color_matrix is (
+            toy_vc2.PRESET_COLOR_MATRICES[2])  # Reversible
+        
+        assert video_parameters.transfer_function is (
+            toy_vc2.PRESET_TRANSFER_FUNCTIONS[3])  # D-Cinema
+    
+    def test_color_spec_custom_defaults(self):
+        # 0x0___1_____8_______F___
+        # 0b0000000_1_1_0_0_0_1111
+        #           | | | | | `-+'
+        #           | | | | |   |
+        #           | | | | |   +- Arbitrary filler bits...
+        #           | | | | +- No custom transfer function
+        #           | | | +-No custom matrix
+        #           | | +- No custom color primaries
+        #           | +- Custom color spec
+        #           +- Override color-spec
+        state = toy_vc2.State(BytesIO(b"\x01\x8F"))
+        
+        # Arbitrary choice for this test: check loading of 'HD1080i-50' base
+        # video format (12).
+        video_parameters = toy_vc2.source_parameters(state, 12)
+        
+        assert video_parameters.color_primaries is (
+            toy_vc2.PRESET_COLOR_PRIMARIES[0])
+        
+        assert video_parameters.color_matrix is (
+            toy_vc2.PRESET_COLOR_MATRICES[0])
+        
+        assert video_parameters.transfer_function is (
+            toy_vc2.PRESET_TRANSFER_FUNCTIONS[0])
+    
+    def test_color_spec_custom(self):
+        # 0x0___1_____C_____D_____C_____3____
+        # 0b0000000_1_1_1_001_1_011_1_00001_1
+        #           | | | `+' | `+' | `-+-' |
+        #           | | |  |  |  |  |   |   |
+        #           | | |  |  |  |  |   |   +- Arbitrary filler bit...
+        #           | | |  |  |  |  |   +- D-Cinema transfer function (3)
+        #           | | |  |  |  |  +- Custom transfer function
+        #           | | |  |  |  +- Reversible (2)
+        #           | | |  |  +- Custom matrix
+        #           | | |  +- SDTV-525 (1)
+        #           | | +- Custom color primaries
+        #           | +- Custom color spec
+        #           +- Override color-spec
+        state = toy_vc2.State(BytesIO(b"\x01\xCD\xC3"))
+        
+        # Arbitrary choice for this test: check loading of 'HD1080i-50' base
+        # video format (12).
+        video_parameters = toy_vc2.source_parameters(state, 12)
+        
+        assert video_parameters.color_primaries is (
+            toy_vc2.PRESET_COLOR_PRIMARIES[1])
+        
+        assert video_parameters.color_matrix is (
+            toy_vc2.PRESET_COLOR_MATRICES[2])
+        
+        assert video_parameters.transfer_function is (
+            toy_vc2.PRESET_TRANSFER_FUNCTIONS[3])
+
+
+@pytest.mark.parametrize(
+    "color_diff_format_index,picture_coding_mode,"
+    "luma_width,luma_height,color_diff_width,color_diff_height", [
+        (toy_vc2.ColorDifferenceSamplingFormats.color_4_4_4.value,
+         toy_vc2.PictureCodingMode.pictures_are_frames.value,
+         1920, 1080, 1920, 1080),
+        (toy_vc2.ColorDifferenceSamplingFormats.color_4_2_2.value,
+         toy_vc2.PictureCodingMode.pictures_are_frames.value,
+         1920, 1080, 960, 1080),
+        (toy_vc2.ColorDifferenceSamplingFormats.color_4_2_0.value,
+         toy_vc2.PictureCodingMode.pictures_are_frames.value,
+         1920, 1080, 960, 540),
+        (toy_vc2.ColorDifferenceSamplingFormats.color_4_2_0.value,
+         toy_vc2.PictureCodingMode.pictures_are_fields.value,
+         1920, 540, 960, 270),
+    ],
+)
+def test_picture_dimensions(dummy_stream,
+        color_diff_format_index, picture_coding_mode,
+        luma_width, luma_height, color_diff_width, color_diff_height):
+    state = toy_vc2.State(dummy_stream)
+    
+    vp = toy_vc2.VideoParameters(
+        frame_width=1920,
+        frame_height=1080,
+        color_diff_format_index=color_diff_format_index,
+        source_sampling=toy_vc2.SourceSampling.interlaced.value,
+        top_field_first=True,
+        frame_rate_numer=1,
+        frame_rate_denom=1,
+        pixel_aspect_ratio_numer=1,
+        pixel_aspect_ratio_denom=1,
+        clean_width=1920,
+        clean_height=1080,
+        left_offset=0,
+        top_offset=0,
+        luma_offset=0,
+        luma_excursion=1023,
+        color_diff_offset=512,
+        color_diff_excursion=1023,
+        color_primaries=toy_vc2.PRESET_COLOR_PRIMARIES[0],
+        color_matrix=toy_vc2.PRESET_COLOR_MATRICES[0],
+        transfer_function=toy_vc2.PRESET_TRANSFER_FUNCTIONS[0],
+    )
+    
+    toy_vc2.picture_dimensions(state, vp, picture_coding_mode)
+    
+    assert state.luma_width == luma_width
+    assert state.luma_height == luma_height
+    assert state.color_diff_width == color_diff_width
+    assert state.color_diff_height == color_diff_height
+
+
+def test_video_depth(dummy_stream):
+    state = toy_vc2.State(dummy_stream)
+    
+    vp = toy_vc2.VideoParameters(
+        frame_width=1920,
+        frame_height=1080,
+        color_diff_format_index=toy_vc2.ColorDifferenceSamplingFormats.color_4_4_4.value,
+        source_sampling=toy_vc2.SourceSampling.interlaced.value,
+        top_field_first=True,
+        frame_rate_numer=1,
+        frame_rate_denom=1,
+        pixel_aspect_ratio_numer=1,
+        pixel_aspect_ratio_denom=1,
+        clean_width=1920,
+        clean_height=1080,
+        left_offset=0,
+        top_offset=0,
+        luma_offset=0,
+        luma_excursion=1023,
+        color_diff_offset=128,
+        color_diff_excursion=255,
+        color_primaries=toy_vc2.PRESET_COLOR_PRIMARIES[0],
+        color_matrix=toy_vc2.PRESET_COLOR_MATRICES[0],
+        transfer_function=toy_vc2.PRESET_TRANSFER_FUNCTIONS[0],
+    )
+    
+    toy_vc2.video_depth(state, vp)
+    
+    assert state.luma_depth == 10
+    assert state.color_diff_depth == 8
