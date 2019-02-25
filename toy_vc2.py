@@ -1,5 +1,7 @@
 import math
 
+import logging
+
 from sentinels import Sentinel
 
 from enum import Enum
@@ -443,10 +445,17 @@ def padding(state):
 
 def parse_info(state):
     """(10.5.1) Read a parse_info header."""
-    assert read_uint_lit(state, 4) == 0x42424344  # 'BBCD'
+    magic_word = read_uint_lit(state, 4)
     state.parse_code = read_uint_lit(state, 1)
     state.next_parse_offset = read_uint_lit(state, 4)
     state.previous_parse_offset = read_uint_lit(state, 4)
+    
+    logging.debug("parse_info: magic_word = 0x%08X", magic_word)
+    logging.debug("parse_info: parse_code = %d", state.parse_code)
+    logging.debug("parse_info: next_parse_offset = %d", state.next_parse_offset)
+    logging.debug("parse_info: previous_parse_offset = %d", state.previous_parse_offset)
+    
+    assert magic_word == 0x42424344  # 'BBCD'
 
 
 class ParseCodes(Enum):
@@ -470,22 +479,22 @@ class ParseCodes(Enum):
 
 def is_seq_header(state):
     """(10.5.2) (Table 10.2)"""
-    return state.parse_code == ParseCodes.sequence_header
+    return state.parse_code == ParseCodes.sequence_header.value
 
 
 def is_end_of_sequence(state):
     """(10.5.2) (Table 10.2)"""
-    return state.parse_code == ParseCodes.end_of_sequence
+    return state.parse_code == ParseCodes.end_of_sequence.value
 
 
 def is_auxiliary_data(state):
     """(10.5.2) (Table 10.2)"""
-    return (state.parse_code & 0xF8) == ParseCodes.auxiliary_data
+    return (state.parse_code & 0xF8) == ParseCodes.auxiliary_data.value
 
 
 def is_padding_data(state):
     """(10.5.2) (Table 10.2)"""
-    return state.parse_code == ParseCodes.auxiliary_data
+    return state.parse_code == ParseCodes.auxiliary_data.value
 
 
 def is_picture(state):
@@ -495,12 +504,12 @@ def is_picture(state):
 
 def is_ld_picture(state):
     """(10.5.2) (Table 10.2) NB: Includes low-delay fragments."""
-    return (state.parse_code & 0xF8) == ParseCodes.low_delay_picture
+    return (state.parse_code & 0xF8) == ParseCodes.low_delay_picture.value
 
 
 def is_hq_picture(state):
     """(10.5.2) (Table 10.2) NB: Includes high-quality fragments."""
-    return (state.parse_code & 0xF8) == ParseCodes.high_quality_picture
+    return (state.parse_code & 0xF8) == ParseCodes.high_quality_picture.value
 
 
 def is_fragment(state):
@@ -510,12 +519,12 @@ def is_fragment(state):
 
 def is_ld_fragment(state):
     """(10.5.2) (Table 10.2)"""
-    return (state.parse_code & 0xFC) == ParseCodes.low_delay_picture_fragment
+    return (state.parse_code & 0xFC) == ParseCodes.low_delay_picture_fragment.value
 
 
 def is_hq_fragment(state):
     """(10.5.2) (Table 10.2)"""
-    return (state.parse_code & 0xFC) == ParseCodes.high_quality_picture_fragment
+    return (state.parse_code & 0xFC) == ParseCodes.high_quality_picture_fragment.value
 
 
 def using_dc_prediction(state):
