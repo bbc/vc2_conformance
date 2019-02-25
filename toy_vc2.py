@@ -544,19 +544,26 @@ def decode_sequence(stream):
     parse_info(state)
     while not is_end_of_sequence(state):
         if is_seq_header(state):
-            assert video_parameters is None
-            video_parameters = sequence_header()
+            logging.debug("decode_sequence: Sequence Header")
+            new_video_parameters = sequence_header(state)
+            assert (video_parameters is None or
+                new_video_parameters == video_parameters)
+            video_parameters = new_video_parameters
         elif is_picture(state):
             if is_fragment(state):
+                logging.debug("decode_sequence: Fragment")
                 fragment_parse(state)
                 if state.fragmented_picture_done:
                     decoded_pictures.append(picture_decode(state))
             else:
+                logging.debug("decode_sequence: Picture")
                 picture_parse(state)
                 decoded_pictures.append(picture_decode(state))
         elif is_auxiliary_data(state):  # Excluded in spec pseudo code
+            logging.debug("decode_sequence: Auxiliary Data")
             auxiliary_data(state)
         elif is_padding_data(state):  # Excluded in spec pseudo code
+            logging.debug("decode_sequence: Padding")
             padding(state)
         parse_info(state)
     
@@ -1236,7 +1243,7 @@ def picture_parse(state):
 
 def picture_header(state):
     """(12.2)"""
-    state.picture_number = read_uint_lit(4)
+    state.picture_number = read_uint_lit(state, 4)
 
 def wavelet_transform(state):
     """(12.3)"""
@@ -1256,6 +1263,11 @@ def transform_parameters(state):
     
     slice_parameters(state)
     quant_matrix(state)
+    
+    logging.debug("transform_parameters: Wavelet: %d depth %d",
+        state.wavelet_index, state.dwt_depth)
+    logging.debug("transform_parameters: Horizontal-Only Wavelet: %d depth %d",
+        state.wavelet_index_ho, state.dwt_depth_ho)
 
 def extended_transform_parameters(state):
     """(12.4.4.1) Read horizontal only transform parameters."""
@@ -1278,18 +1290,30 @@ def slice_parameters(state):
     if is_hq_picture(state):
         state.slice_prefix_bytes = read_uint(state)
         state.slice_size_scaler = read_uint(state)
+    
+    logging.debug("slice_parameters: %d x-slices, %d y-slices",
+        state.slices_x, state.slices_y)
+    if is_ld_picture(state):
+        logging.debug("slice_parameters: slice_bytes = %d/%d",
+            state.slice_bytes_numerator,
+            state.slice_bytes_denominator)
+    if is_hq_picture(state):
+        logging.debug("slice_parameters: slice_prefix_bytes = %d",
+            state.slice_prefix_bytes)
+        logging.debug("slice_parameters: slice_size_scaler = %d",
+            state.slice_size_scaler)
 
 def quant_matrix(state):
     """(12.4.5.3) Read quantisation matrix"""
     custom_quant_matrix = read_bool(state)
     if custom_quant_matrix:
         if state.dwt_depth_ho == 0:
-            state.quant_matrix[0][LL] = read_uint()
+            state.quant_matrix[0][LL] = read_uint(state)
         else:
             # Read horizontal-only part
-            state.quant_matrix[0][L] = read_uint()
+            state.quant_matrix[0][L] = read_uint(state)
             for level in range(1, state.dwt_depth_ho + 1):
-                state.quant_matrix[level][H] = read_uint()
+                state.quant_matrix[level][H] = read_uint(state)
         
         # Read 2D part
         for level in range(state.dwt_depth_ho + 1,
@@ -1299,6 +1323,13 @@ def quant_matrix(state):
             state.quant_matrix[level][HH] = read_uint(state)
     else:
         set_quant_matrix(state)
+    
+    for level, entries in sorted(state.quant_matrix.items()):
+        logging.debug("quant_matrix: Level %d: %s",
+            level,
+            ", ".join("{}: {}".format(
+                key._name, value) for key, value in entries.items()),
+        )
 
 
 def set_quant_matrix(state):
@@ -1438,6 +1469,9 @@ def transform_data(state):
             dc_prediction(state.y_transform[0][L])
             dc_prediction(state.c1_transform[0][L])
             dc_prediction(state.c2_transform[0][L])
+    
+    logging.debug("transform_data: read %d slices",
+        state.slices_x * state.slices_y)
 
 
 def initialize_wavelet_data(state, comp):
@@ -1486,12 +1520,14 @@ def ld_slice(state, sx, sy):
     
     state.bits_left = slice_y_length
     if state.dwt_depth_ho == 0:
-        luma_slice_band(state, 0, LL, sx, sy)
+        # Erata: standard says 'luma_slice_band(state, 0, LL, sx, sy)'
+        slice_band(state, state.y_transform, 0, LL, sx, sy)
         for level in range(1, state.dwt_depth + 1):
             for orient in [HL, LH, HH]:
                 slice_band(state, state.y_transform, level, orient, sx, sy)
     else:
-        luma_slice_band(0, L, sx, sy)
+        # Erata: standard says 'luma_slice_band(state, 0, L, sx, sy)'
+        slice_band(state, state.y_transform, 0, L, sx, sy)
         for level in range(1, state.dwt_depth_ho + 1):
             slice_band(state, state.y_transform, level, H, sx, sy)
         for level in range(state.dwt_depth_ho + 1, 
@@ -1683,7 +1719,7 @@ def fragment_data(state):
 def picture_decode(state):
     """
     (15.2) Decode (inverse wavelet transform, clip and offset) a picture and
-    return it.
+    return it (in the same format as state.current_picture).
     """
     state.current_picture = {}
     state.current_picture[pic_num] = state.picture_number
@@ -1691,6 +1727,8 @@ def picture_decode(state):
     inverse_wavelet_transform(state)
     clip_picture(state, state.current_picture)
     offset_picture(state, state.current_picture)
+    
+    logging.debug("picture_decode: picture decoded, clipped and offset")
     
     return state.current_picture
 
@@ -2024,7 +2062,7 @@ def idwt_pad_removal(state, pic, c):
 def clip_picture(state, current_picture):
     """(15.5) Clip values to valid signal ranges."""
     for c in [Y, C1, C2]:
-        clip_component(state, currernt_picture[c], c)
+        clip_component(state, current_picture[c], c)
 
 
 def clip_component(state, comp_data, c):
