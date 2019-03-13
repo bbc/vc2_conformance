@@ -21,6 +21,7 @@ def main():
     for picture in decoded_pictures:
         luma = picture[Y]
         im = np.zeros((h, w))
+        print(len(luma), len(luma[0]), w, h)
         for y in range(h):
             for x in range(w):
                 im[y, x] = luma[y][x] / float(video_parameters.luma_excursion)
