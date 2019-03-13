@@ -12,8 +12,6 @@ from the bitstream description in the standard and thus is more difficult to
 directly verify.
 """
 
-from contextlib import contextmanager
-
 from collections import Iterable
 
 
@@ -268,6 +266,17 @@ class BitstreamValue(object):
             self.offset,
             self.bits_past_eof,
         )
+    
+    def __str__(self):
+        """
+        The string representation used for human-readable representations of a
+        value. By convention values which contain any bits past the EOF (or end
+        of a bounded block) are shown with an asterisk afterwards.
+        """
+        if self.bits_past_eof:
+            return "{!r}*".format(self.value)
+        else:
+            return str(self.value)
 
 
 class Bool(BitstreamValue):
@@ -357,6 +366,14 @@ class ByteAlign(NBits):
         else:
             self.length = 0
             self._bits_past_eof = 0
+    
+    def __str__(self):
+        if self.length:
+            bits = self.value
+            bits &= (1 << self.length) - 1
+            return "<padding 0b{:{}b}>".format(self.length, bits)
+        else:
+            return ""
 
 
 class UInt(BitstreamValue):
@@ -458,166 +475,10 @@ class SInt(UInt):
         self._value = orig_value
 
 
-class BoundedBlock(BitstreamValue):
-    """
-    Low-level construct. A bounded data-block as described in (A.4.2).
-    
-    The :py:math:`read` and :py:meth:`write` methods of this class should be
-    used with ``with`` structures like so to get bounded readers/writers to
-    pass to other values::
-    
-        uints = [UInt() for _ in range(100)]
-        
-        block = BoundedBlock(10)  # A 10-bit long bounded block
-
-        # Reading from a bounded block
-        with block.read(reader) as bounded_reader:
-            for uint in uints:
-                uint.read(bounded_reader)
-        
-        # Writing to a bounded block
-        with block.write(writer) as bounded_writer:
-            for uint in uints:
-                uint.write(bounded_writer)
-    
-    Remaining bits will be flushed automatically when the ``with`` block exits.
-    
-    Any bits read beyond the end of the bounded block will be read as being
-    beyond the 'end of file' (and should treated by the readers as 1s). This
-    means that values read from past the end of the bounded block will be
-    labelled as coming from the first bit after the end of the block and will
-    have bits_past_eof set to their length.
-    
-    If any bits remain unread within the bounded block, these padding bits will
-    be read when the ``with`` block ends and will be assigned to the
-    :py:attr:`value` field and :py:attr:`unused_bits` will be set to the length
-    of this padding field.
-    
-    When writing to a bounded block, all bits written past the end of the
-    bounded block will be checked to ensure they're 1. A :py:exc:`ValueError`
-    will be thrown otherwise. All writes past the end of the block will not
-    advance the 'tell' value.
-    """
-    
-    def __init__(self, length=0, value=0):
-        # NB: Set first so that repr will work later if the validator fails on
-        # the main constructor.
-        self._unused_bits = None
-        
-        super(BoundedBlock, self).__init__(value, length)
-    
-    @property
-    def unused_bits(self):
-        """
-        When this block was last serialised/deserialised, the number of unused
-        bits left in the block. None otherwise.
-        """
-        return self._unused_bits
-    
-    class BoundedReader(object):
-        """A wrapper around a :py:class:`BitstreamReader`."""
-        
-        def __init__(self, reader, length):
-            self._reader = reader
-            self.bits_remaining = length
-            self.bits_past_eof = 0
-        
-        def read_bit(self):
-            if self.bits_remaining > 0:
-                bit = self._reader.read_bit()
-                
-                self.bits_remaining -= 1
-                if bit is None:
-                    self.bits_past_eof += 1
-                
-                return bit
-            else:
-                return None
-        
-        def tell(self):
-            return self._reader.tell()
-        
-        def seek(self, *args, **kwargs):
-            raise NotImplementedError("Seek not supported in BoundedBlock")
-    
-    class BoundedWriter(object):
-        """A wrapper around a :py:class:`BitstreamWriter`."""
-        
-        def __init__(self, writer, length):
-            self._writer = writer
-            self.bits_remaining = length
-        
-        def write_bit(self, value):
-            if self.bits_remaining > 0:
-                self.bits_remaining -= 1
-                return self._writer.write_bit(value)
-            else:
-                if not value:
-                    raise ValueError(
-                        "Cannot write 0s past the end of a BoundedBlock.")
-        
-        def tell(self):
-            return self._writer.tell()
-        
-        def seek(self, *args, **kwargs):
-            raise NotImplementedError("Seek not supported in BoundedBlock")
-        
-        def flush(self):
-            return self._writer.flush()
-    
-    
-    @contextmanager
-    def read(self, reader):
-        """A context manager providing a bounded reader."""
-        self._offset = reader.tell()
-        
-        bounded_reader = BoundedBlock.BoundedReader(reader, self.length)
-        
-        yield bounded_reader
-        # NB: We intentionally don't flush the rest of the block if an
-        # exception is raiesd (which is probably what you'd expect)
-        
-        self._unused_bits = bounded_reader.bits_remaining
-        
-        # Read any remaining bits in the block
-        self._value = 0
-        self._bits_past_eof = bounded_reader.bits_past_eof
-        for i in range(bounded_reader.bits_remaining):
-            bit = reader.read_bit()
-            self._value <<= 1
-            self._value |= bit if bit is not None else 1
-            self._bits_past_eof += int(bit is None)
-    
-    @contextmanager
-    def write(self, writer):
-        """A context manager providing a bounded writer."""
-        self._offset = writer.tell()
-        
-        bounded_writer = BoundedBlock.BoundedWriter(writer, self.length)
-        
-        yield bounded_writer
-        # NB: We intentionally don't add the padding if an exception is raiesd
-        # (which is probably what you'd expect)
-        
-        self._unused_bits = bounded_writer.bits_remaining
-        
-        # Write padding bits, as required
-        for i in range(bounded_writer.bits_remaining-1, -1, -1):
-            writer.write_bit((self.value >> i) & 1)
-    
-    def __repr__(self):
-        return "<{} value={!r} length={!r} offset={!r} bits_past_eof={!r} unused_bits={!r}>".format(
-            self.__class__.__name__,
-            self.value,
-            self.length,
-            self.offset,
-            self.bits_past_eof,
-            self.unused_bits,
-        )
-
 class Concatenation(BitstreamValue):
     r"""
-    A concatenation of a fixed set of :py:class:`BitstreamValue`\ s.
+    Composite value. A concatenation of a fixed set of
+    :py:class:`BitstreamValue`\ s.
     
     The :py:attr:`value` should be an (ordered, preferably immutable) iterable
     of :py:class:`BitstreamValue` classes. These values will be
@@ -679,109 +540,79 @@ class Concatenation(BitstreamValue):
             self.__class__.__name__,
             " ".join(repr(v) for v in self.values)
         )
-
-class Option(BitstreamValue):
-    r"""
-    An option type consisting of two :py:class:`BitstreamValue`\ s.
     
-    The first value indicates whether the second value can be found in the
-    bitstream or whether it is absent.
+    def __str__(self):
+        return "\n".join(str(v) for v in self.value)
+
+class Maybe(BitstreamValue):
+    r"""
+    Composite value. An 'maybe' type for bitstream values which may sometimes
+    be omitted.
     
     This type may be used to describe the bitstream sequences such as
-    ``scan_format`` (11.4.5) where a flag or index indicates if another value
-    will follow immediately after or not::
+    ``scan_format`` (11.4.5) where a flag or index is used to control whether
+    or not a value is omitted or included.
     
         custom_scan_format_flag = Bool()
         source_sampling = UInt()
         
-        scan_format = Option(custom_scan_format_flag, source_sampling)
+        scan_format = Concatenation(
+            custom_scan_format_flag,
+            Maybe(
+                source_sampling,
+                lambda: custom_scan_format_flag.value,
+            ),
+        )
     """
     
-    def __init__(self, flag_value, value_value, inverted=False):
+    def __init__(self, value, flag_fn):
         """
         Parameters
         ==========
-        flag_value : :py:class:`BitstreamValue`
-            A value which appears first in the bitstream. If this value is
-            truthy, ``value_value`` will follow in the bitstream. If
-            ``flag_value`` is falsy, ``value_value`` will not appear in the
-            bitstream. Stored as :py:attr:`Option.flag`.
         value_value : :py:class:`BitstreamValue`
-            The value which may (or may not) be include in the bitstream.
-            Stored as :py:attr:`Option.value`.
-        inverted : bool
-            If set to True, inverts the meaning of the flag_value (making
-            truthy values omit the value and falsey values include it).
+            The value which may (or may not) be included in the bitstream.
+            Stored as :py:attr:`Maybe.value`.
+        flag_fn : callable
+            This function will be called with no arguments and should return
+            True if :py:attr:`Maybe.value` is to be included in the bitstream
+            and False otherwise.
+            
+            This function will generally be a simple computation based on a
+            previously read or written :py:class:`BitstreamValue`. For example,
+            it may be a lambda function which returns the
+            :py:class:`BitstreamValue.value` of a :py:class:`Bool`.
         """
-        self._flag = flag_value
-        self._inverted = inverted
+        self.flag_fn = flag_fn
         
-        super(Option, self).__init__(value_value, length=None)
-        self._validate_flag()
+        super(Maybe, self).__init__(value, length=None)
     
     def _validate(self, value, length):
         if not isinstance(value, BitstreamValue):
             raise ValueError(
-                "Option values must be BitstreamValues.")
+                "Maybe.value must be BitstreamValues.")
     
-    def _validate_flag(self, flag):
-        if not isinstance(flag, BitstreamValue):
-            raise ValueError(
-                "Option flags must be BitstreamValues.")
     
     @property
     def flag(self):
         """
-        The flag :py:class:`BitstreamValue` which dictates whether the
-        :py:attr:`Option.value` appears in the bitstream.
-        """
-        return self._flag
-    
-    @flag.setter
-    def flag(self, flag)
-        self._validate_flag(flag)
-        self._flag = flag
-    
-    @property
-    def inverted(self):
-        """Should the meaning of the :py:attr:`Option.flag` be inverted?"""
-        return self._inverted
-    
-    @inverted.setter
-    def inverted(self, inverted):
-        self._inverted = inverted
-    
-    @property
-    def value_present(self):
-        """
-        True if :py:attr:`Option.value` is/will be included in the bitstream,
+        True if :py:attr:`Maybe.value` should be included in the bitstream,
         False otherwise.
         """
-        value_present = bool(self.flag.value)
-        if self.inverted:
-            value_present = not value_present
-        
-        return value_present
+        return bool(self.flag_fn())
     
     @property
     def length(self):
-        if self.value_present:
-            if self.flag.length is None or self.value.length is None:
-                return None
-            else:
-                return self.flag.length + self.value.length
+        if self.flag:
+            return self.value.length
         else:
-            return self.flag.length
+            return 0
     
     @property
     def bits_past_eof(self):
-        if self.value_present:
-            if self.flag.bits_past_eof is None or self.value.bits_past_eof is None:
-                return None
-            else:
-                return self.flag.bits_past_eof + self.value.bits_past_eof
+        if self.flag:
+            return self.value.bits_past_eof
         else:
-            return self.flag.bits_past_eof
+            return 0
     
     def read(self, reader):
         """
@@ -791,8 +622,7 @@ class Option(BitstreamValue):
         """
         self._offset = reader.tell()
         
-        self.flag.read(reader)
-        if self.value_present:
+        if self.flag:
             self.value.read(reader)
     
     def write(self, writer):
@@ -804,6 +634,176 @@ class Option(BitstreamValue):
         """
         self._offset = writer.tell()
         
-        self.flag.write(writer)
-        if self.value_present:
+        if self.flag:
             self.value.write(writer)
+    
+    def __repr__(self):
+        return "<{} {!r} flag={}>".format(
+            self.__class__.__name__,
+            self.value,
+            self.flag,
+        )
+    
+    def __str__(self):
+        if self.flag:
+            return str(self.value)
+        else:
+            return ""
+
+
+class BoundedBlock(BitstreamValue):
+    """
+    Composite value. A fixed-size bounded data-block as described in (A.4.2) which
+    contains a :py:class:`BitstreamValue`.
+    
+    When reading the contained value, any bits beyond the bounding size will be
+    read as if past the end of the file (and treated as '1'). Likewise when
+    writing, any bits beyond the bounding size will not be written (but will be
+    checked to ensure they're '1' otherwise a :py:exc:`ValueError` is thrown).
+    
+    If any excess bits are left after reading/writing the contents, the least
+    significant bits from the Python integer :py:attr:`pad_value` will be
+    read-from/written-to the remaining space and :py:attr:`unused_bits` will be
+    updated accordingly.
+    
+    An example use for this block might be to represent a represent a set of
+    transform values in the bitstream. For example, the following contrived
+    example shows a series of signed variable-length integers contained in a
+    one byte block::
+    
+        coeffs = Concatenation(SInt(), SInt(), SInt(), SInt())
+        coeffs_block = BoundedBlock(coeffs, 8)
+    """
+    
+    def __init__(self, value, length, pad_value=0):
+        # NB: Set first so that repr will work later if the validator fails on
+        # the main constructor.
+        self._pad_value = pad_value
+        self._unused_bits = None
+        
+        super(BoundedBlock, self).__init__(value, length)
+    
+    def _validate(self, value, length):
+        if not isinstance(value, BitstreamValue):
+            raise ValueError(
+                "BoundedBlock.value must be a BitstreamValue.")
+    
+    @property
+    def pad_value(self):
+        """The bit pattern to use to fill any unused space in the block."""
+        return self._pad_value
+    
+    @pad_value.setter
+    def pad_value(self, pad_value):
+        self._pad_value = pad_value
+    
+    @property
+    def unused_bits(self):
+        """
+        When this block was last serialised/deserialised, the number of unused
+        bits left in the block. None otherwise.
+        """
+        return self._unused_bits
+    
+    class BoundedReader(object):
+        """A wrapper around a :py:class:`BitstreamReader`."""
+        
+        def __init__(self, reader, length):
+            self._reader = reader
+            self.bits_remaining = length
+            self.bits_past_eof = 0
+        
+        def read_bit(self):
+            if self.bits_remaining > 0:
+                bit = self._reader.read_bit()
+                
+                self.bits_remaining -= 1
+                if bit is None:
+                    self.bits_past_eof += 1
+                
+                return bit
+            else:
+                return None
+        
+        def tell(self):
+            return self._reader.tell()
+        
+        def seek(self, *args, **kwargs):
+            raise NotImplementedError("Seek not supported in BoundedBlock")
+    
+    class BoundedWriter(object):
+        """A wrapper around a :py:class:`BitstreamWriter`."""
+        
+        def __init__(self, writer, length):
+            self._writer = writer
+            self.bits_remaining = length
+        
+        def write_bit(self, value):
+            if self.bits_remaining > 0:
+                self.bits_remaining -= 1
+                return self._writer.write_bit(value)
+            else:
+                if not value:
+                    raise ValueError(
+                        "Cannot write 0s past the end of a BoundedBlock.")
+        
+        def tell(self):
+            return self._writer.tell()
+        
+        def seek(self, *args, **kwargs):
+            raise NotImplementedError("Seek not supported in BoundedBlock")
+        
+        def flush(self):
+            return self._writer.flush()
+    
+    
+    def read(self, reader):
+        """A context manager providing a bounded reader."""
+        self._offset = reader.tell()
+        
+        bounded_reader = BoundedBlock.BoundedReader(reader, self.length)
+        
+        self.value.read(bounded_reader)
+        
+        self._unused_bits = bounded_reader.bits_remaining
+        
+        # Read any remaining bits in the block
+        self._pad_value = 0
+        self._bits_past_eof = bounded_reader.bits_past_eof
+        for i in range(bounded_reader.bits_remaining):
+            bit = reader.read_bit()
+            self._pad_value <<= 1
+            self._pad_value |= bit if bit is not None else 1
+            self._bits_past_eof += int(bit is None)
+    
+    def write(self, writer):
+        """A context manager providing a bounded writer."""
+        self._offset = writer.tell()
+        
+        bounded_writer = BoundedBlock.BoundedWriter(writer, self.length)
+        
+        self.value.write(bounded_writer)
+        
+        self._unused_bits = bounded_writer.bits_remaining
+        
+        # Write padding bits, as required
+        for i in range(bounded_writer.bits_remaining-1, -1, -1):
+            writer.write_bit((self._pad_value >> i) & 1)
+    
+    def __repr__(self):
+        return "<{} value={!r} length={!r} pad_value={!r} unused_bits={!r}>".format(
+            self.__class__.__name__,
+            self.value,
+            self.length,
+            self.pad_value,
+            self.unused_bits,
+        )
+
+    def __str__(self):
+        padding = ""
+        if self.unused_bits:
+            bits = self.value
+            bits &= (1 << self.unused_bits) - 1
+            padding = "\n<unused bits 0b{:{}b}>".format(self.unused_bits, bits)
+        
+        return "{}{}".format(str(self.value), padding)

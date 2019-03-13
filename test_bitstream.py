@@ -629,150 +629,6 @@ class TestSInt(object):
         assert r.tell() == w.tell()
 
 
-class TestBoundedBlock(object):
-    
-    def test_read(self):
-        r = bitstream.BitstreamReader(BytesIO(b"\x12\x34\x56"))
-        b = bitstream.BoundedBlock(8)
-        
-        # Read exactly the whole block
-        with b.read(r) as br:
-            n1 = bitstream.NBits(length=4)
-            n2 = bitstream.NBits(length=4)
-            
-            n1.read(br)
-            n2.read(br)
-            
-            assert n1.value == 0x1
-            assert n1.offset == (0, 7)
-            assert n1.bits_past_eof == 0
-            
-            assert n2.value == 0x2
-            assert n2.offset == (0, 3)
-            assert n2.bits_past_eof == 0
-        
-        assert b.offset == (0, 7)
-        assert b.value == 0
-        assert b.unused_bits == 0
-        assert b.bits_past_eof == 0
-        
-        
-        # Read less than the whole block
-        with b.read(r) as br:
-            n3 = bitstream.NBits(length=4)
-            
-            n3.read(br)
-            
-            assert n3.value == 0x3
-            assert n3.offset == (1, 7)
-            assert n3.bits_past_eof == 0
-        
-        assert b.value == 0x4
-        assert b.offset == (1, 7)
-        assert b.unused_bits == 4
-        assert b.bits_past_eof == 0
-        
-        # Read more than the whole block
-        with b.read(r) as br:
-            n4 = bitstream.NBits(length=4)
-            n5 = bitstream.NBits(length=8)
-            
-            n4.read(br)
-            n5.read(br)
-            
-            assert n4.value == 0x5
-            assert n4.offset == (2, 7)
-            assert n4.bits_past_eof == 0
-            
-            assert n5.value == 0x6F
-            assert n5.offset == (2, 3)
-            assert n5.bits_past_eof == 4
-        
-        assert b.value == 0
-        assert b.offset == (2, 7)
-        assert b.unused_bits == 0
-        assert b.bits_past_eof == 0
-    
-    def test_read_past_end(self):
-        # If the block extends past the end of the file, both the block and its
-        # contents should have bits_past_eof set accordingly, in addition to
-        # any bits beyond the end of the block.
-        r = bitstream.BitstreamReader(BytesIO(b"\x12"))
-        b = bitstream.BoundedBlock(16)
-        
-        with b.read(r) as br:
-            u = bitstream.NBits(length=24)
-            u.read(br)
-            
-            assert u.value == 0x12FFFF
-            assert u.bits_past_eof == 8 + 8
-        
-        assert b.value == 0
-        assert b.bits_past_eof == 8
-    
-    def test_write(self):
-        f = BytesIO()
-        w = bitstream.BitstreamWriter(f)
-        b = bitstream.BoundedBlock(8)
-        b.value = 0xAB
-        
-        # Write exactly the whole block
-        with b.write(w) as bw:
-            n1 = bitstream.NBits(0x1, 4)
-            n2 = bitstream.NBits(0x2, 4)
-            
-            n1.write(bw)
-            n2.write(bw)
-            
-            assert n1.offset == (0, 7)
-            assert n2.offset == (0, 3)
-        
-        assert b.unused_bits == 0
-        assert b.offset == (0, 7)
-        
-        # Write less than the whole block
-        with b.write(w) as bw:
-            n3 = bitstream.NBits(0x3, 4)
-            
-            n3.write(bw)
-            
-            assert n3.offset == (1, 7)
-        
-        assert b.unused_bits == 4
-        assert b.offset == (1, 7)
-        
-        # Write more than the whole block
-        with b.write(w) as bw:
-            n4 = bitstream.NBits(0x4, 4)
-            n5 = bitstream.NBits(0x5, 4)
-            n6 = bitstream.NBits(0xF, 4)
-            n7 = bitstream.NBits(0xF, 4)
-            
-            n4.write(bw)
-            n5.write(bw)
-            n6.write(bw)
-            n7.write(bw)
-            
-            assert n4.offset == (2, 7)
-            assert n5.offset == (2, 3)
-            assert n6.offset == (3, 7)
-            assert n7.offset == (3, 7)
-        
-        assert b.unused_bits == 0
-        assert b.offset == (2, 7)
-        
-        assert f.getvalue() == b"\x12\x3B\x45"
-    
-    def test_write_zero_past_end_of_block_fails(self):
-        w = bitstream.BitstreamWriter(BytesIO())
-        b = bitstream.BoundedBlock(8)
-        
-        with b.write(w) as bw:
-            n = bitstream.NBits(0, 16)
-            with pytest.raises(ValueError):
-                n.write(bw)
-
-
 class TestConcatenation(object):
     
     def test_validate(self):
@@ -879,3 +735,214 @@ class TestConcatenation(object):
         # After reading/writing, the value becomes known
         c.read(r)
         assert c.bits_past_eof == 2
+
+
+class TestMaybe(object):
+    
+    def test_validation(self):
+        u1 = bitstream.UInt()
+        u2 = bitstream.UInt()
+        
+        # OK
+        m = bitstream.Maybe(u1, lambda: False)
+        assert m.value is u1
+        assert m.flag_fn() is False
+        
+        # OK
+        m.value = u2
+        m.flag_fn = lambda: True
+        
+        assert m.value is u2
+        assert m.flag_fn() is True
+        
+        # Not OK
+        with pytest.raises(ValueError):
+            bitstream.Maybe(lambda: False, u1)
+        with pytest.raises(ValueError):
+            m.value = lambda: False
+        
+        assert m.value is u2
+    
+    def test_value_present(self):
+        value = bitstream.UInt()
+        
+        # Should cast to bool
+        m = bitstream.Maybe(value, lambda: 123)
+        assert m.flag is True
+        m.flag_fn = lambda: None
+        assert m.flag is False
+    
+    def test_length(self):
+        value = bitstream.UInt()
+        
+        m = bitstream.Maybe(value, lambda: True)
+        
+        value.value = 3
+        
+        assert m.length == 5
+        
+        m.flag_fn = lambda: False
+        assert m.length == 0
+    
+    def test_bits_past_eof(self):
+        r = bitstream.BitstreamReader(BytesIO())
+        
+        value = bitstream.UInt()
+        
+        m = bitstream.Maybe(value, lambda: False)
+        
+        value.read(r)
+        
+        m.flag_fn = lambda: True
+        assert m.bits_past_eof == 1
+        
+        m.flag_fn = lambda: False
+        assert m.bits_past_eof == 0
+    
+    def test_read(self):
+        r = bitstream.BitstreamReader(BytesIO(b"\x00"))
+        
+        value = bitstream.UInt()
+        
+        m = bitstream.Maybe(value, lambda: False)
+        
+        m.flag_fn = lambda: False
+        m.read(r)
+        assert r.tell() == (0, 7)
+        assert m.offset == (0, 7)
+        assert value.offset is None  # Value not read
+        
+        m.flag_fn = lambda: True
+        m.read(r)
+        assert value.value == 15
+        assert r.tell() == (1, 7)
+        assert m.offset == (0, 7)
+        assert value.offset == (0, 7)  # Value was read
+    
+    def test_write(self):
+        f = BytesIO()
+        w = bitstream.BitstreamWriter(f)
+        
+        value = bitstream.UInt(15)
+        
+        m = bitstream.Maybe(value, lambda: False)
+        
+        m.flag_fn = lambda: False
+        m.write(w)
+        w.flush()
+        assert f.getvalue() == b""
+        assert w.tell() == (0, 7)
+        assert m.offset == (0, 7)
+        assert value.offset is None  # Value not written
+        
+        m.flag_fn = lambda: True
+        m.write(w)
+        w.flush()
+        assert f.getvalue() == b"\x00\x80"
+        assert w.tell() == (1, 6)
+        assert m.offset == (0, 7)
+        assert value.offset == (0, 7)  # Value was written
+
+
+class TestBoundedBlock(object):
+    
+    def test_read(self):
+        r = bitstream.BitstreamReader(BytesIO(b"\x12\x34\x56"))
+        
+        # Read exactly the whole block
+        n1 = bitstream.NBits(length=8)
+        b = bitstream.BoundedBlock(n1, 8)
+        b.read(r)
+        
+        assert n1.value == 0x12
+        assert n1.offset == (0, 7)
+        assert n1.bits_past_eof == 0
+        
+        assert b.offset == (0, 7)
+        assert b.pad_value == 0
+        assert b.unused_bits == 0
+        assert b.bits_past_eof == 0
+        
+        
+        # Read less than the whole block
+        n2 = bitstream.NBits(length=4)
+        b = bitstream.BoundedBlock(n2, 8)
+        b.read(r)
+            
+        assert n2.value == 0x3
+        assert n2.offset == (1, 7)
+        assert n2.bits_past_eof == 0
+        
+        assert b.pad_value == 0x4
+        assert b.offset == (1, 7)
+        assert b.unused_bits == 4
+        assert b.bits_past_eof == 0
+        
+        # Read more than the whole block
+        n3 = bitstream.NBits(length=12)
+        b = bitstream.BoundedBlock(n3, 8)
+        b.read(r)
+        
+        assert n3.value == 0x56F
+        assert n3.offset == (2, 7)
+        assert n3.bits_past_eof == 4
+        
+        assert b.pad_value == 0
+        assert b.offset == (2, 7)
+        assert b.unused_bits == 0
+        assert b.bits_past_eof == 0
+    
+    def test_read_past_end(self):
+        # If the block extends past the end of the file, both the block and its
+        # contents should have bits_past_eof set accordingly, in addition to
+        # any bits beyond the end of the block.
+        r = bitstream.BitstreamReader(BytesIO(b"\x12"))
+        
+        n = bitstream.NBits(length=24)
+        b = bitstream.BoundedBlock(n, 16)
+        b.read(r)
+        
+        assert n.value == 0x12FFFF
+        assert n.bits_past_eof == 8 + 8
+        
+        assert b.pad_value == 0
+        assert b.bits_past_eof == 8
+    
+    def test_write(self):
+        f = BytesIO()
+        w = bitstream.BitstreamWriter(f)
+        
+        # Write exactly the whole block
+        n1 = bitstream.NBits(0x12, 8)
+        b = bitstream.BoundedBlock(n1, 8, pad_value=0xAB)
+        b.write(w)
+        assert n1.offset == (0, 7)
+        assert b.unused_bits == 0
+        assert b.offset == (0, 7)
+        
+        # Write less than the whole block
+        n2 = bitstream.NBits(0x3, 4)
+        b = bitstream.BoundedBlock(n2, 8, pad_value=0xAB)
+        b.write(w)
+        assert n2.offset == (1, 7)
+        assert b.unused_bits == 4
+        assert b.offset == (1, 7)
+        
+        # Write more than the whole block
+        n3 = bitstream.NBits(0x45FF, 16)
+        b = bitstream.BoundedBlock(n3, 8, pad_value=0xAB)
+        b.write(w)
+        assert n3.offset == (2, 7)
+        assert b.unused_bits == 0
+        assert b.offset == (2, 7)
+        
+        assert f.getvalue() == b"\x12\x3B\x45"
+    
+    def test_write_zero_past_end_of_block_fails(self):
+        w = bitstream.BitstreamWriter(BytesIO())
+        
+        n = bitstream.NBits(0, 16)
+        b = bitstream.BoundedBlock(n, 8)
+        
+        with pytest.raises(ValueError):
+            b.write(w)
