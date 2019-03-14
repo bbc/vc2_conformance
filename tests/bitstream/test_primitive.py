@@ -3,6 +3,7 @@ import pytest
 from io import BytesIO
 
 from vc2_conformance import bitstream
+from vc2_conformance.bitstream.formatters import Hex
 
 
 class TestBool(object):
@@ -69,10 +70,17 @@ class TestBool(object):
         assert str(bitstream.Bool(True)) == "True"
         assert str(bitstream.Bool(False)) == "False"
         
+        assert str(bitstream.Bool(True, formatter=Hex())) == "0x1"
+        assert str(bitstream.Bool(False, formatter=Hex())) == "0x0"
+        
         # Value read past EOF should be marked
         b = bitstream.Bool()
         b.read(bitstream.BitstreamReader(BytesIO()))
         assert str(b) == "True*"
+        
+        b = bitstream.Bool(formatter=Hex())
+        b.read(bitstream.BitstreamReader(BytesIO()))
+        assert str(b) == "0x1*"
 
 
 class TestNBits(object):
@@ -173,11 +181,16 @@ class TestNBits(object):
     
     def test_str(self):
         assert str(bitstream.NBits(123, 32)) == "123"
+        assert str(bitstream.NBits(0x1234, 32, formatter=Hex())) == "0x1234"
         
         # Value read past EOF should be marked
         n = bitstream.NBits(length=8)
         n.read(bitstream.BitstreamReader(BytesIO()))
         assert str(n) == "255*"
+        
+        n = bitstream.NBits(length=8, formatter=Hex())
+        n.read(bitstream.BitstreamReader(BytesIO()))
+        assert str(n) == "0xFF*"
 
 
 class TestByteAlign(object):
@@ -422,11 +435,16 @@ class TestUInt(object):
     
     def test_str(self):
         assert str(bitstream.UInt(123)) == "123"
+        assert str(bitstream.UInt(0x1234, formatter=Hex())) == "0x1234"
         
         # Value read past EOF should be marked
         u = bitstream.UInt()
         u.read(bitstream.BitstreamReader(BytesIO(b"\x00")))
         assert str(u) == "15*"
+        
+        u = bitstream.UInt(formatter=Hex())
+        u.read(bitstream.BitstreamReader(BytesIO(b"\x00")))
+        assert str(u) == "0xF*"
 
 
 class TestSInt(object):
@@ -615,7 +633,14 @@ class TestSInt(object):
         assert str(bitstream.SInt(123)) == "123"
         assert str(bitstream.SInt(-123)) == "-123"
         
+        assert str(bitstream.SInt(0x1234, formatter=Hex())) == "0x1234"
+        assert str(bitstream.SInt(-0x1234, formatter=Hex())) == "-0x1234"
+        
         # Value read past EOF should be marked
         s = bitstream.SInt()
         s.read(bitstream.BitstreamReader(BytesIO(b"\x00")))
         assert str(s) == "-15*"
+        
+        s = bitstream.SInt(formatter=Hex())
+        s.read(bitstream.BitstreamReader(BytesIO(b"\x00")))
+        assert str(s) == "-0xF*"

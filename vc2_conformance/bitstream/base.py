@@ -14,9 +14,21 @@ class BitstreamValue(object):
     and :py:meth:`write` respectively).
     """
     
-    def __init__(self, value=None, length=0):
+    def __init__(self, value=None, length=0, formatter=str):
+        """
+        Parameters
+        ==========
+        value
+            The initial value for the bitstream entry.
+        length
+            The initial length for the bitstream entry.
+        formatter : function(value) -> string
+            The function to use when producing string representations of the
+            current value.
+        """
         self._value = value
         self._length = length
+        self._formatter = formatter
         self._offset = None
         self._bits_past_eof = None
         
@@ -45,6 +57,18 @@ class BitstreamValue(object):
     def length(self, length):
         self._validate(self.value, length)
         self._length = length
+    
+    @property
+    def formatter(self):
+        """
+        The formatting function to use when displaying this value. A function
+        which takes a value and returns a string.
+        """
+        return self._formatter
+    
+    @formatter.setter
+    def formatter(self, formatter):
+        self._formatter = formatter
     
     @property
     def offset(self):
@@ -81,9 +105,9 @@ class BitstreamValue(object):
                 "Bitstream value lengths must always be non-negative")
     
     def __repr__(self):
-        return "<{} value={!r} length={!r} offset={!r} bits_past_eof={!r}>".format(
+        return "<{} value={} length={!r} offset={!r} bits_past_eof={!r}>".format(
             self.__class__.__name__,
-            self.value,
+            self._formatter(self.value),
             self.length,
             self.offset,
             self.bits_past_eof,
@@ -96,7 +120,7 @@ class BitstreamValue(object):
         of a bounded block) are shown with an asterisk afterwards.
         """
         if self.bits_past_eof:
-            return "{!r}*".format(self.value)
+            return "{}*".format(self._formatter(self.value))
         else:
-            return str(self.value)
+            return self._formatter(self.value)
 

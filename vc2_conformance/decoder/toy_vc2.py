@@ -4,13 +4,14 @@ import logging
 
 from sentinels import Sentinel
 
-from enum import Enum
-
 from attr import attrs, attrib
 
 from fractions import Fraction
 
 from collections import defaultdict
+
+from vc2_conformance.tables import *
+
 
 L = Sentinel("L")
 H = Sentinel("H")
@@ -458,25 +459,6 @@ def parse_info(state):
     assert magic_word == 0x42424344  # 'BBCD'
 
 
-class ParseCodes(Enum):
-    """
-    (10.5.2) Valid parse_code values. Names not normative.
-    """
-    # VC-2 Syntax
-    sequence_header = 0x00
-    end_of_sequence = 0x10
-    auxiliary_data = 0x20
-    padding_data = 0x30
-    
-    # Pictures
-    low_delay_picture = 0xC8
-    high_quality_picture = 0xE8
-    
-    # Picture fragments
-    low_delay_picture_fragment = 0xCC
-    high_quality_picture_fragment = 0xEC
-
-
 def is_seq_header(state):
     """(10.5.2) (Table 10.2)"""
     return state.parse_code == ParseCodes.sequence_header.value
@@ -809,11 +791,6 @@ def transfer_function(state, video_parameters):
         index = read_uint(state)
         preset_transfer_function(video_parameters, index)
 
-class PictureCodingMode(Enum):
-    """(11.5)"""
-    pictures_are_frames = 0
-    pictures_are_fields = 1
-
 def set_coding_parameters(state, video_parameters, picture_coding_mode):
     """(11.6.1) Set picture coding mode parameter."""
     picture_dimensions(state, video_parameters, picture_coding_mode)
@@ -841,20 +818,6 @@ def video_depth(state, video_parameters):
     """(11.6.3) Compute the bits-per-sample for the decoded video."""
     state.luma_depth = intlog2(video_parameters.luma_excursion + 1)
     state.color_diff_depth = intlog2(video_parameters.color_diff_excursion + 1)
-
-
-class ColorDifferenceSamplingFormats(Enum):
-    """(11.4.4) Indices from (Table 11.2)"""
-    
-    color_4_4_4 = 0
-    color_4_2_2 = 1
-    color_4_2_0 = 2
-
-
-class SourceSampling(Enum):
-    """(11.4.5)"""
-    progressive = 0
-    interlaced = 1
 
 
 PRESET_FRAME_RATES = {

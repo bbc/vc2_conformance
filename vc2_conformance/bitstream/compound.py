@@ -75,6 +75,10 @@ class Concatenation(BitstreamValue):
         for v in self._value:
             v.write(writer)
     
+    @property
+    def formatter(self):
+        raise NotImplementedError("Concatenation does not have a formatter.")
+    
     def __getitem__(self, key):
         """Shorthand for ``concatenation.value[key]``"""
         return self._value[key]
@@ -158,6 +162,10 @@ class Maybe(BitstreamValue):
             return self.value.bits_past_eof
         else:
             return 0
+    
+    @property
+    def formatter(self):
+        raise NotImplementedError("Maybe does not have a formatter.")
     
     def read(self, reader):
         """
@@ -251,6 +259,10 @@ class BoundedBlock(BitstreamValue):
             return None
         else:
             return max(0, self.length - self.value.length)
+    
+    @property
+    def formatter(self):
+        raise NotImplementedError("BoundedReader does not have a formatter.")
     
     class BoundedReader(object):
         """A wrapper around a :py:class:`BitstreamReader`."""
@@ -527,7 +539,7 @@ class EnumValue(BitstreamValue):
         '123'
     """
     
-    def __init__(self, container, enum_type):
+    def __init__(self, container, enum_type, value=None):
         """
         Parameters
         ==========
@@ -536,11 +548,16 @@ class EnumValue(BitstreamValue):
         enum_type : :py:class:`Enum`
             An enumeration which defines names for the values ``value`` may
             hold.
+        value : object
+            Optionally the value to assign during construction.
         """
         self._container = container
         self._enum_type = enum_type
         super(EnumValue, self).__init__(None, None)
         self._validate_container(container)
+        
+        if value is not None:
+            self.value = value
     
     def _validate(self, value, length):
         # Constraints are enforced when the container's value is set
@@ -597,6 +614,10 @@ class EnumValue(BitstreamValue):
     def bits_past_eof(self):
         return self._container.bits_past_eof
     
+    @property
+    def formatter(self):
+        raise NotImplementedError("EnumValue does not have a formatter.")
+    
     def read(self, reader):
         self._container.read(reader)
     
@@ -611,3 +632,4 @@ class EnumValue(BitstreamValue):
             )
         else:
             return str(self._container)
+

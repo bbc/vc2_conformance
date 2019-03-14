@@ -517,9 +517,9 @@ class TestEnumValue(object):
         assert e.container is s
     
     def test_value(self):
-        e = bitstream.EnumValue(bitstream.UInt(1), ABC)
+        e = bitstream.EnumValue(bitstream.UInt(0), ABC, value=ABC.a)
         
-        # Initial value is coerced
+        # Initial value is converted from relevant type
         assert e.value is ABC.a
         assert e.container.value == 1
         

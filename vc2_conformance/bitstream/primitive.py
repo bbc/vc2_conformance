@@ -17,8 +17,8 @@ __all__ = [
 class Bool(BitstreamValue):
     """A boolean value, as per read_bool (A.3.2)"""
     
-    def __init__(self, value=False):
-        super(Bool, self).__init__(value, 1)
+    def __init__(self, value=False, formatter=str):
+        super(Bool, self).__init__(value, 1, formatter)
     
     def read(self, reader):
         self._offset = reader.tell()
@@ -34,8 +34,8 @@ class Bool(BitstreamValue):
 class NBits(BitstreamValue):
     """A fixed-width unsigned integer, as per read_nbits (A.3.3)"""
     
-    def __init__(self, value=0, length=0):
-        super(NBits, self).__init__(value, length)
+    def __init__(self, value=0, length=0, formatter=str):
+        super(NBits, self).__init__(value, length, formatter)
     
     def _validate(self, value, length):
         super(NBits, self)._validate(value, length)
@@ -80,6 +80,10 @@ class ByteAlign(NBits):
         # Nothing to validate
         pass
     
+    @property
+    def formatter(self):
+        raise NotImplementedError("ByteAlign does not have a formatter.")
+    
     def read(self, reader):
         self._offset = reader.tell()
         
@@ -118,8 +122,8 @@ class UInt(BitstreamValue):
     (A.4.3)
     """
     
-    def __init__(self, value=0):
-        super(UInt, self).__init__(value, None)
+    def __init__(self, value=0, formatter=str):
+        super(UInt, self).__init__(value, None, formatter)
     
     def _validate(self, value, length):
         if value < 0:
