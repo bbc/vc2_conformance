@@ -28,7 +28,7 @@ class Bool(BitstreamValue):
     
     def write(self, writer):
         self._offset = writer.tell()
-        writer.write_bit(self.value)
+        self._bits_past_eof = 1 - writer.write_bit(self.value)
 
 
 class NBits(BitstreamValue):
@@ -58,8 +58,9 @@ class NBits(BitstreamValue):
     def write(self, writer):
         self._offset = writer.tell()
 
+        self._bits_past_eof = 0
         for i in range(self.length-1, -1, -1):
-            writer.write_bit((self.value >> i) & 1)
+            self._bits_past_eof += 1 - writer.write_bit((self.value >> i) & 1)
 
 class ByteAlign(NBits):
     """
@@ -106,7 +107,7 @@ class ByteAlign(NBits):
         if self.length:
             bits = self.value
             bits &= (1 << self.length) - 1
-            return "<padding 0b{:{}b}>".format(self.length, bits)
+            return "<padding 0b{:0{}b}>".format(bits, self.length)
         else:
             return ""
 
@@ -155,11 +156,12 @@ class UInt(BitstreamValue):
         
         value = self.value + 1
         
+        self._bits_past_eof = 0
         for i in range(value.bit_length()-2, -1, -1):
-            writer.write_bit(0)
-            writer.write_bit((value >> i) & 1)
+            self._bits_past_eof += 1 - writer.write_bit(0)
+            self._bits_past_eof += 1 - writer.write_bit((value >> i) & 1)
 
-        writer.write_bit(1)
+        self._bits_past_eof += 1 - writer.write_bit(1)
 
 
 class SInt(UInt):
@@ -205,6 +207,6 @@ class SInt(UInt):
         
         # Write sign bit
         if self.value != 0:
-            writer.write_bit(orig_value < 0)
+            self._bits_past_eof += 1 - writer.write_bit(orig_value < 0)
         
         self._value = orig_value

@@ -111,6 +111,12 @@ class TestConcatenation(object):
         # After reading/writing, the value becomes known
         c.read(r)
         assert c.bits_past_eof == 2
+    
+    def test_str(self):
+        u1 = bitstream.UInt(10)
+        u2 = bitstream.UInt(20)
+        
+        assert str(bitstream.Concatenation(u1, u2)) == "10 20"
 
 
 class TestMaybe(object):
@@ -218,6 +224,11 @@ class TestMaybe(object):
         assert w.tell() == (1, 6)
         assert m.offset == (0, 7)
         assert value.offset == (0, 7)  # Value was written
+    
+    def test_str(self):
+        u = bitstream.UInt(10)
+        assert str(bitstream.Maybe(u, lambda: False)) == ""
+        assert str(bitstream.Maybe(u, lambda: True)) == "10"
 
 
 class TestBoundedBlock(object):
@@ -314,6 +325,24 @@ class TestBoundedBlock(object):
         
         assert f.getvalue() == b"\x12\x3B\x45"
     
+    def test_write_past_end(self):
+        # If the block extends past the end of the file, both the block and its
+        # contents should have bits_past_eof set accordingly, in addition to
+        # any bits beyond the end of the block.
+        w = bitstream.BitstreamWriter(BytesIO())
+        
+        # NB: To simulate a file which hits an EOF while writing we use another
+        # nested BoundedBlock. This is not a construct likely to appear in VC-2
+        # any time soon.
+        n = bitstream.NBits(0x12FFFF, length=24)
+        b = bitstream.BoundedBlock(n, 16, pad_value=-1)
+        bb = bitstream.BoundedBlock(b, length=8)
+        bb.write(w)
+        
+        assert n.bits_past_eof == 8 + 8
+        assert b.bits_past_eof == 8
+        assert bb.bits_past_eof == 0
+    
     def test_write_zero_past_end_of_block_fails(self):
         w = bitstream.BitstreamWriter(BytesIO())
         
@@ -322,3 +351,137 @@ class TestBoundedBlock(object):
         
         with pytest.raises(ValueError):
             b.write(w)
+    
+    def test_str(self):
+        u = bitstream.UInt(0)
+        s = bitstream.SInt(1)
+        b = bitstream.BoundedBlock(u, length=8, pad_value=0x0F)
+        
+        b.value = u
+        assert str(b) == "0 <padding 0b0001111>"
+        b.value = s
+        assert str(b) == "1 <padding 0b1111>"
+        
+        # Value the right length should have no padding
+        s.value = 7
+        b.value = s
+        assert str(b) == "7"
+        
+        # Value longer than supported should have no padding either
+        w = bitstream.BitstreamWriter(BytesIO())
+        u.value = 15
+        b.value = u
+        b.write(w)
+        assert str(b) == "15*"
+
+
+class TestLabelledConcatenation(object):
+    
+    def test_indexing(self):
+        u1 = bitstream.UInt()
+        u2 = bitstream.UInt()
+        u3 = bitstream.UInt()
+        l = bitstream.LabelledConcatenation("foo", None, "bar", ("u1", u1), None, u2, ("u3", u3))
+        
+        # Numerical indexing
+        assert l[0] == u1
+        assert l[1] == u2
+        assert l[2] == u3
+        assert l[:] == (u1, u2, u3)
+        
+        # Named indexing
+        assert l["u1"] == u1
+        assert l["u3"] == u3
+        
+        # Missing items
+        with pytest.raises(IndexError):
+            l[4]
+        with pytest.raises(KeyError):
+            l["u2"]
+        with pytest.raises(KeyError):
+            l["bar"]
+    
+    def test_bitstream_functions(self):
+        f = BytesIO()
+        w = bitstream.BitstreamWriter(f)
+        r = bitstream.BitstreamReader(BytesIO())
+        
+        u1 = bitstream.UInt()
+        u2 = bitstream.UInt()
+        u3 = bitstream.UInt()
+        l = bitstream.LabelledConcatenation("foo", None, "bar", ("u1", u1), None, u2, ("u3", u3))
+        
+        l.read(r)
+        
+        assert l.length == 3
+        assert l.bits_past_eof == 3
+        
+        u1.value = 1
+        u2.value = 2
+        u3.value = 3
+        
+        l.write(w)
+        
+        # 1     2   3     <excess>
+        # 0b001_011_00001_00000
+        # 0x2____C____2____0___
+        w.flush()
+        assert f.getvalue() == b"\x2C\x20"
+    
+    def test_str(self):
+        u1 = bitstream.UInt(10)
+        u2 = bitstream.UInt(20)
+        u3 = bitstream.UInt(30)
+        u4 = bitstream.UInt(40)
+        u5 = bitstream.UInt(50)
+        u6 = bitstream.UInt(60)
+        u7 = bitstream.UInt(70)
+        u8 = bitstream.UInt(80)
+        l = bitstream.LabelledConcatenation(
+            "Title",
+            ("U1", u1),
+            u2,
+            "Heading 1",
+            ("U3", u3),
+            u4,
+            "Heading 2",
+            ("U5", u5),
+            u6,
+            None,
+            ("U7", u7),
+            u8,
+        )
+        
+        assert str(l) == (
+            "Title\n"
+            "  U1: 10\n"
+            "  20\n"
+            "  Heading 1\n"
+            "    U3: 30\n"
+            "    40\n"
+            "  Heading 2\n"
+            "    U5: 50\n"
+            "    60\n"
+            "  U7: 70\n"
+            "  80"
+        )
+    
+    def test_str_optional_title(self):
+        u = bitstream.UInt(10)
+        
+        with_title = bitstream.LabelledConcatenation("foo", u)
+        assert str(with_title) == "foo\n  10"
+        
+        without_title = bitstream.LabelledConcatenation(None, u)
+        assert str(without_title) == "10"
+    
+    def test_str_hidden_entries(self):
+        u = bitstream.UInt(10)
+        m = bitstream.Maybe(u, lambda: True)
+        l = bitstream.LabelledConcatenation("Title", ("maybe", m), m)
+        
+        assert str(l) == "Title\n  maybe: 10\n  10"
+        
+        # Omit entries entirely whose values print as empty strings
+        m.flag_fn = lambda: False
+        assert str(l) == "Title"

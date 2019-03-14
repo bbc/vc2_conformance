@@ -128,6 +128,12 @@ class BitstreamWriter(object):
         ==========
         value :
             A truthy value (for 1) or a falsy value (for 0).
+        
+        Returns
+        =======
+        length : int
+            Returns 1 if the value was written, 0 if the bit was not written
+            (e.g. if trying to write past the end of the file)
         """
         # Clear the target bit
         self._current_byte &= ~(1 << self._next_bit)
@@ -137,6 +143,10 @@ class BitstreamWriter(object):
         self._next_bit -= 1
         if self._next_bit < 0:
             self._write_byte()
+        
+        # Assume we always suceeed (the return value is only ever '0' for
+        # BoundedBlock's BoundedWriter wrapper for this class).
+        return 1
     
     def tell(self):
         """

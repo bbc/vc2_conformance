@@ -33,6 +33,8 @@ class BitstreamValue(object):
     def value(self, value):
         self._validate(value, self.length)
         self._value = value
+        self._bits_past_eof = None
+        self._offset = None
     
     @property
     def length(self):
@@ -51,16 +53,20 @@ class BitstreamValue(object):
         offset into the stream where the first bit was read/written as a
         (bytes, bits) tuple (see :py:meth:`BitstreamReader.tell`). None
         otherwise.
+        
+        This value is cleared whenever the value is chagned.
         """
         return self._offset
     
     @property
     def bits_past_eof(self):
         """
-        If this value has been deseriallised from a bitstream but all or part of
-        the value was located past the end of the file (or past the end of a
-        :py:class:`BoundedBlock`), gives the number of bits beyond the end which
-        were read. Set to None otherwise.
+        If this value has been seriallised/deseriallised from a bitstream but
+        all or part of the value was located past the end of the file (or past
+        the end of a :py:class:`BoundedBlock`), gives the number of bits beyond
+        the end which were read/written. Set to None otherwise.
+        
+        This value is cleared whenever the value is chagned.
         """
         return self._bits_past_eof
     

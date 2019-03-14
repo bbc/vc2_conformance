@@ -53,8 +53,26 @@ class TestBool(object):
             b.value = bool(i % 2 == 0)
             b.write(w)
             assert b.offset == (0, 7-i)
+            assert b.bits_past_eof == 0
         
         assert f.getvalue() == b"\xAA"
+    
+    def test_write_past_eof(self):
+        w = bitstream.BitstreamWriter(BytesIO(b""))
+        bb = bitstream.BoundedBlock(bitstream.Bool(True), length=0)
+        bb.write(w)
+        
+        assert bb.value.offset == (0, 7)
+        assert bb.value.bits_past_eof == 1
+    
+    def test_str(self):
+        assert str(bitstream.Bool(True)) == "True"
+        assert str(bitstream.Bool(False)) == "False"
+        
+        # Value read past EOF should be marked
+        b = bitstream.Bool()
+        b.read(bitstream.BitstreamReader(BytesIO()))
+        assert str(b) == "True*"
 
 
 class TestNBits(object):
@@ -131,12 +149,35 @@ class TestNBits(object):
         n.value = 0xA
         n.write(w)
         assert n.offset == (0, 7)
+        assert n.bits_past_eof == 0
         
         n.value = 0x5
         n.write(w)
         assert n.offset == (0, 3)
+        assert n.bits_past_eof == 0
         
         assert f.getvalue() == b"\xA5"
+    
+    def test_write_past_eof(self):
+        w = bitstream.BitstreamWriter(BytesIO(b""))
+        
+        bb = bitstream.BoundedBlock(bitstream.NBits(0xFF, length=8), length=0)
+        bb.write(w)
+        assert bb.value.offset == (0, 7)
+        assert bb.value.bits_past_eof == 8
+        
+        bb = bitstream.BoundedBlock(bitstream.NBits(0xFF, length=8), length=4)
+        bb.write(w)
+        assert bb.value.offset == (0, 7)
+        assert bb.value.bits_past_eof == 4
+    
+    def test_str(self):
+        assert str(bitstream.NBits(123, 32)) == "123"
+        
+        # Value read past EOF should be marked
+        n = bitstream.NBits(length=8)
+        n.read(bitstream.BitstreamReader(BytesIO()))
+        assert str(n) == "255*"
 
 
 class TestByteAlign(object):
@@ -187,6 +228,7 @@ class TestByteAlign(object):
         assert b.offset == (0, 7)
         assert b.length == 0
         assert b.value == 0xFA
+        assert b.bits_past_eof == 0
 
         w.flush()
         assert f.getvalue() == b""
@@ -197,8 +239,36 @@ class TestByteAlign(object):
         assert b.offset == (0, 6)
         assert b.length == 7
         assert b.value == 0xFA
+        assert b.bits_past_eof == 0
         
         assert f.getvalue() == b"\x7A"
+    
+    def test_write_past_eof(self):
+        w = bitstream.BitstreamWriter(BytesIO(b""))
+        w.seek(0, 6)
+        
+        bb = bitstream.BoundedBlock(bitstream.ByteAlign(0xFF), length=4)
+        bb.write(w)
+        assert bb.value.offset == (0, 6)
+        assert bb.value.bits_past_eof == 3
+    
+    def test_str(self):
+        r = bitstream.BitstreamReader(BytesIO(b"\x0F"))
+        
+        # By default should be 'invisible'
+        b = bitstream.ByteAlign()
+        b.read(r)
+        assert str(b) == ""
+        
+        # Should become visible when needed
+        r.seek(0, 6)
+        b.read(r)
+        assert str(b) == "<padding 0b0001111>"
+        
+        # Should change length as required
+        r.seek(0, 4)
+        b.read(r)
+        assert str(b) == "<padding 0b01111>"
 
 
 class TestUInt(object):
@@ -283,13 +353,34 @@ class TestUInt(object):
         u.write(w)
         w.flush()
         assert u.offset == (0, 7)
+        assert u.bits_past_eof == 0
         assert f.getvalue() == b"\x80"
         
         u.value = 1
         u.write(w)
         w.flush()
         assert u.offset == (0, 6)
+        assert u.bits_past_eof == 0
         assert f.getvalue() == b"\x90"
+    
+    def test_write_past_eof(self):
+        w = bitstream.BitstreamWriter(BytesIO(b""))
+        w.seek(0, 6)
+        
+        # The even-bit falls off the end
+        bb = bitstream.BoundedBlock(bitstream.UInt(15), length=8)
+        bb.write(w)
+        assert bb.value.bits_past_eof == 1
+        
+        # The whole string falls off the end
+        bb = bitstream.BoundedBlock(bitstream.UInt(0), length=0)
+        bb.write(w)
+        assert bb.value.bits_past_eof == 1
+        
+        # The odd-bit falls falls off the end
+        bb = bitstream.BoundedBlock(bitstream.UInt(16), length=7)
+        bb.write(w)
+        assert bb.value.bits_past_eof == 2
     
     
     @pytest.mark.parametrize("value", [
@@ -328,6 +419,14 @@ class TestUInt(object):
         
         # Ammount read should be exactly the ammount written
         assert r.tell() == w.tell()
+    
+    def test_str(self):
+        assert str(bitstream.UInt(123)) == "123"
+        
+        # Value read past EOF should be marked
+        u = bitstream.UInt()
+        u.read(bitstream.BitstreamReader(BytesIO(b"\x00")))
+        assert str(u) == "15*"
 
 
 class TestSInt(object):
@@ -427,20 +526,46 @@ class TestSInt(object):
         s.write(w)
         w.flush()
         assert s.offset == (0, 7)
+        assert s.bits_past_eof == 0
         assert f.getvalue() == b"\x80"
         
         s.value = 1
         s.write(w)
         w.flush()
         assert s.offset == (0, 6)
+        assert s.bits_past_eof == 0
         assert f.getvalue() == b"\x90"
         
         s.value = -1
         s.write(w)
         w.flush()
         assert s.offset == (0, 2)
+        assert s.bits_past_eof == 0
         assert f.getvalue() == b"\x91\x80"
     
+    def test_write_past_eof(self):
+        w = bitstream.BitstreamWriter(BytesIO(b""))
+        w.seek(0, 6)
+        
+        # The whole string falls off the end
+        bb = bitstream.BoundedBlock(bitstream.SInt(0), length=0)
+        bb.write(w)
+        assert bb.value.bits_past_eof == 1
+        
+        # The even-bit and sign fall off the end
+        bb = bitstream.BoundedBlock(bitstream.SInt(-15), length=8)
+        bb.write(w)
+        assert bb.value.bits_past_eof == 2
+        
+        # The odd-bit and sign fall off the end
+        bb = bitstream.BoundedBlock(bitstream.SInt(-16), length=7)
+        bb.write(w)
+        assert bb.value.bits_past_eof == 3
+        
+        # The sign falls off the end
+        bb = bitstream.BoundedBlock(bitstream.SInt(-7), length=7)
+        bb.write(w)
+        assert bb.value.bits_past_eof == 1
     
     @pytest.mark.parametrize("value", [
         # Zero
@@ -485,5 +610,12 @@ class TestSInt(object):
         
         # Ammount read should be exactly the ammount written
         assert r.tell() == w.tell()
-
-
+    
+    def test_str(self):
+        assert str(bitstream.SInt(123)) == "123"
+        assert str(bitstream.SInt(-123)) == "-123"
+        
+        # Value read past EOF should be marked
+        s = bitstream.SInt()
+        s.read(bitstream.BitstreamReader(BytesIO(b"\x00")))
+        assert str(s) == "-15*"
