@@ -2,7 +2,7 @@ import pytest
 
 from io import BytesIO
 
-import toy_vc2
+import vc2_conformance.decoder.toy_vc2 as toy_vc2
 
 
 @pytest.fixture

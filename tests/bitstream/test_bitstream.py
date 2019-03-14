@@ -2,7 +2,7 @@ import pytest
 
 from io import BytesIO
 
-import bitstream
+import vc2_conformance.bitstream.bitstream as bitstream
 
 
 class TestBistreamReader(object):
