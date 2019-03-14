@@ -360,13 +360,10 @@ class LabelledConcatenation(Concatenation):
     Like :py:class:`Concatenation` except with labelled entries.
     """
     
-    def __init__(self, title, *names_values):
+    def __init__(self, *names_values):
         """
         Parameters
         ==========
-        title : str or None
-            The title to show at the top of the string representation of this
-            concatenation. If None, no title will be shown.
         names_values : (str, :py:class:`BitstreamValue`) or :py:class:`BitstreamValue` or str or None
             A series of entries to include in this concatenation.
 
@@ -377,12 +374,11 @@ class LabelledConcatenation(Concatenation):
             without a label.
             
             If a string, this specifies a heading to include in the printed
-            representation. All entries which follow the heading will be
-            indented.
+            representation. Increases the indent level for all following
+            values.
             
-            If None, resets the indentation.
+            Reduces the indentation level for all following levels.
         """
-        self._title = title
         self._names_values = names_values
         
         super(LabelledConcatenation, self).__init__(
@@ -411,15 +407,6 @@ class LabelledConcatenation(Concatenation):
         
         self._value = value
         self._names_values = _names_values
-    
-    @property
-    def title(self):
-        """The title to be shown in printed representations."""
-        return self._title
-    
-    @title.setter
-    def title(self, title):
-        self._title = title
     
     def __getitem__(self, key):
         r"""
@@ -465,25 +452,24 @@ class LabelledConcatenation(Concatenation):
     def __str__(self):
         body = []
         
-        indented = False
+        space = "  "
+        
+        indent_level = 0
         for nv in self._names_values:
             if nv is None:
-                indented = False
+                indent_level = max(0, indent_level - 1)
             elif isinstance(nv, str):
-                body.append(nv)
-                indented = True
+                body.append(indent(nv, space*indent_level))
+                indent_level += 1
             elif isinstance(nv, BitstreamValue):
                 string = str(nv)
                 if string:
-                    body.append(indent(string) if indented else string)
+                    body.append(indent(string, space*indent_level))
             else:
                 name, value = nv
                 string = str(value)
                 if string:
                     string = "{}: {}".format(name, string)
-                    body.append(indent(string) if indented else string)
-        
-        if self._title is not None:
-            body = [self._title] + [indent(l) for l in body]
+                    body.append(indent(string, space*indent_level))
         
         return "\n".join(body)

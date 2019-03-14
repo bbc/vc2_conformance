@@ -438,13 +438,17 @@ class TestLabelledConcatenation(object):
         u7 = bitstream.UInt(70)
         u8 = bitstream.UInt(80)
         l = bitstream.LabelledConcatenation(
-            "Title",
+            "Title 1",
             ("U1", u1),
             u2,
-            "Heading 1",
+            "Subheading 1",
             ("U3", u3),
             u4,
-            "Heading 2",
+            None,
+            None,
+            None,
+            None,
+            "Title 2",
             ("U5", u5),
             u6,
             None,
@@ -453,27 +457,18 @@ class TestLabelledConcatenation(object):
         )
         
         assert str(l) == (
-            "Title\n"
+            "Title 1\n"
             "  U1: 10\n"
             "  20\n"
-            "  Heading 1\n"
+            "  Subheading 1\n"
             "    U3: 30\n"
             "    40\n"
-            "  Heading 2\n"
-            "    U5: 50\n"
-            "    60\n"
-            "  U7: 70\n"
-            "  80"
+            "Title 2\n"
+            "  U5: 50\n"
+            "  60\n"
+            "U7: 70\n"
+            "80"
         )
-    
-    def test_str_optional_title(self):
-        u = bitstream.UInt(10)
-        
-        with_title = bitstream.LabelledConcatenation("foo", u)
-        assert str(with_title) == "foo\n  10"
-        
-        without_title = bitstream.LabelledConcatenation(None, u)
-        assert str(without_title) == "10"
     
     def test_str_hidden_entries(self):
         u = bitstream.UInt(10)
