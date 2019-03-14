@@ -358,6 +358,13 @@ class BoundedBlock(BitstreamValue):
 class LabelledConcatenation(Concatenation):
     """
     Like :py:class:`Concatenation` except with labelled entries.
+    
+    In terms of its bitstream formatting/behaviour, this is identical to
+    Concatenation. The principle difference are:
+    
+    * The ability to look-up values by name (not just index), e.g.
+      ``concat["foo"]``
+    * A richer str() representation with headings and labels.
     """
     
     def __init__(self, *names_values):
@@ -367,17 +374,18 @@ class LabelledConcatenation(Concatenation):
         names_values : (str, :py:class:`BitstreamValue`) or :py:class:`BitstreamValue` or str or None
             A series of entries to include in this concatenation.
 
-            If a (str, :py:class:`BitstreamValue`) tuple, this gives a value
-            and its corresponding label string (which must be unique).
+            * If a (str, :py:class:`BitstreamValue`) tuple, this gives a value
+              and its corresponding label string (which must be unique).
             
-            If just a :py:class:`BitstreamValue`, this gives a value to include
-            without a label.
+            * If just a :py:class:`BitstreamValue`, this gives a value to include
+              without a label.
             
-            If a string, this specifies a heading to include in the printed
-            representation. Increases the indent level for all following
-            values.
+            * If a string, this specifies a heading to include in the ``str()``
+              representation. Also increases the indent level for all following
+              values in the string.
             
-            Reduces the indentation level for all following levels.
+            * If None, reduces the indentation level for all following levels in
+              the ``str`` representation..
         """
         self._names_values = names_values
         
