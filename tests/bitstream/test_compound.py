@@ -1,6 +1,7 @@
 import pytest
 
 from io import BytesIO
+from enum import Enum
 
 from vc2_conformance import bitstream
 
@@ -480,3 +481,103 @@ class TestLabelledConcatenation(object):
         # Omit entries entirely whose values print as empty strings
         m.flag_fn = lambda: False
         assert str(l) == "Title"
+
+
+class ABC(Enum):
+    a = 1
+    b = 2
+    c = 3
+
+class DEF(Enum):
+    d = 1
+    e = 2
+    f = 3
+
+
+class TestEnumValue(object):
+    
+    def test_container_and_type(self):
+        u = bitstream.UInt(1)
+        s = bitstream.SInt(1)
+        
+        e = bitstream.EnumValue(u, ABC)
+        assert e.container is u
+        assert e.enum_type is ABC
+        
+        e.container = s
+        assert e.container is s
+        e.enum_type = DEF
+        assert e.enum_type is DEF
+        
+        # Bad container values
+        with pytest.raises(ValueError):
+            bitstream.EnumValue(123, ABC)
+        with pytest.raises(ValueError):
+            e.container = 123
+        assert e.container is s
+    
+    def test_value(self):
+        e = bitstream.EnumValue(bitstream.UInt(1), ABC)
+        
+        # Initial value is coerced
+        assert e.value is ABC.a
+        assert e.container.value == 1
+        
+        # Can change to new value
+        e.value = ABC.b
+        assert e.value is ABC.b
+        assert e.container.value == 2
+        
+        # Can change to an integer and it is coerced
+        e.value = 3
+        assert e.value is ABC.c
+        assert e.container.value == 3
+        
+        # Can change to out-of-range value and it is retained
+        e.value = 4
+        assert e.value == 4
+        assert e.container.value == 4
+        
+        # If the value is not allowed by the container, it isn't changed
+        with pytest.raises(ValueError):
+            e.value = -1
+        assert e.value == 4
+        assert e.container.value == 4
+    
+    def test_bitstream_behaviour(self):
+        e = bitstream.EnumValue(bitstream.NBits(length=8), ABC)
+        
+        assert e.offset is None
+        assert e.length == 8
+        assert e.bits_past_eof is None
+        
+        r = bitstream.BitstreamReader(BytesIO(b"\x01"))
+        r.read_bit()
+        e.read(r)
+        assert e.value is ABC.c
+        assert e.offset == (0, 6)
+        assert e.bits_past_eof == 1
+        
+        f = BytesIO()
+        w = bitstream.BitstreamWriter(f)
+        e.write(w)
+        assert e.offset == (0, 7)
+        assert e.bits_past_eof == 0
+        assert f.getvalue() == b"\x03"
+    
+    def test_str(self):
+        e = bitstream.EnumValue(bitstream.UInt(), ABC)
+        
+        # Enum value
+        e.value = 1
+        assert str(e) == "a (1)"
+        
+        # Non enum value
+        e.value = 0
+        assert str(e) == "0"
+        
+        # Past-EOF indicator should be included too, if present
+        r = bitstream.BitstreamReader(BytesIO(b"\x00"))
+        r.seek(0, 1)
+        e.read(r)
+        assert str(e) == "a (1*)"

@@ -7,12 +7,15 @@ from vc2_conformance.bitstream import BitstreamValue
 from vc2_conformance.bitstream._util import indent, concat_strings
 
 from collections import Iterable
+from enum import Enum
+
 
 __all__ = [
     "Concatenation",
     "Maybe",
     "BoundedBlock",
     "LabelledConcatenation",
+    "EnumValue",
 ]
 
 
@@ -481,3 +484,130 @@ class LabelledConcatenation(Concatenation):
                     body.append(indent(string, space*indent_level))
         
         return "\n".join(body)
+
+
+class EnumValue(BitstreamValue):
+    """
+    A wrapper for a :py:class:`BitstreamValue` which will attempt to coerce any
+    contained value into a valid :py:class:`Enum` value when possible.
+    
+    This wrapper has no impact on the bitstream representation of the
+    underlying value, but is intended to make using and printing the value more
+    explicit.
+    
+    For example::
+    
+        >>> class SourceSampling(Enum):
+        ...     progressive = 0
+        ...     interlaced = 1
+        >>> mode = EnumValue(UInt(), SourceSampling)
+        
+        >>> # Values are coerced into enum values
+        >>> mode.value
+        <SourceSampling.progressive: 0>
+        >>> mode.value = 1
+        >>> mode.value
+        <SourceSampling.interlaced: 1>
+        
+        >>> # Enum values can be passed in without having to be converted
+        >>> mode.value = SourceSampling.progressive
+        
+        >>> # The pretty-printer shows friendly names alongside the raw value
+        >>> str(mode)
+        'progressive (0)'
+        >>> mode.value = 1
+        >>> str(mode)
+        'interlaced (1)'
+        
+        >>> # Values not found in the enumeration are just left as-is
+        >>> mode.value = 123
+        >>> mode.value
+        123
+        >>> str(mode)
+        '123'
+    """
+    
+    def __init__(self, container, enum_type):
+        """
+        Parameters
+        ==========
+        container : :py:class:`BitstreamValue`
+            The value to be wrapped.
+        enum_type : :py:class:`Enum`
+            An enumeration which defines names for the values ``value`` may
+            hold.
+        """
+        self._container = container
+        self._enum_type = enum_type
+        super(EnumValue, self).__init__(None, None)
+        self._validate_container(container)
+    
+    def _validate(self, value, length):
+        # Constraints are enforced when the container's value is set
+        pass
+    
+    def _validate_container(self, container):
+        if not isinstance(container, BitstreamValue):
+            raise ValueError(
+                "EnumValue container must be a BitstreamValue")
+    
+    @property
+    def container(self):
+        """The :py:class:`BitstreamValue` which actually holds this value."""
+        return self._container
+    
+    @container.setter
+    def container(self, container):
+        self._validate_container(container)
+        self._container = container
+    
+    @property
+    def enum_type(self):
+        """The :py:class:`Enum` type used."""
+        return self._enum_type
+    
+    @enum_type.setter
+    def enum_type(self, enum_type):
+        self._enum_type = enum_type
+    
+    @property
+    def value(self):
+        """The value, if possible as a :py:attr:`enum_type` value."""
+        try:
+            return self._enum_type(self._container.value)
+        except ValueError:
+            return self._container.value
+    
+    @value.setter
+    def value(self, value):
+        try:
+            self._container.value = self._enum_type(value).value
+        except ValueError:
+            self._container.value = value
+    
+    @property
+    def length(self):
+        return self._container.length
+    
+    @property
+    def offset(self):
+        return self._container.offset
+    
+    @property
+    def bits_past_eof(self):
+        return self._container.bits_past_eof
+    
+    def read(self, reader):
+        self._container.read(reader)
+    
+    def write(self, writer):
+        self._container.write(writer)
+    
+    def __str__(self):
+        if isinstance(self.value, Enum):
+            return "{} ({})".format(
+                self.value.name,
+                str(self._container)
+            )
+        else:
+            return str(self._container)
