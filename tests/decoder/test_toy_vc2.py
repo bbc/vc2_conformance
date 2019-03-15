@@ -419,7 +419,7 @@ class TestSourceParameters(object):
             toy_vc2.ColorDifferenceSamplingFormats.color_4_2_2.value)
         
         assert video_parameters.source_sampling == (
-            toy_vc2.SourceSampling.interlaced.value)
+            toy_vc2.SourceSamplingModes.interlaced.value)
         
         assert video_parameters.top_field_first is True
         
@@ -726,16 +726,16 @@ class TestSourceParameters(object):
     "color_diff_format_index,picture_coding_mode,"
     "luma_width,luma_height,color_diff_width,color_diff_height", [
         (toy_vc2.ColorDifferenceSamplingFormats.color_4_4_4.value,
-         toy_vc2.PictureCodingMode.pictures_are_frames.value,
+         toy_vc2.PictureCodingModes.pictures_are_frames.value,
          1920, 1080, 1920, 1080),
         (toy_vc2.ColorDifferenceSamplingFormats.color_4_2_2.value,
-         toy_vc2.PictureCodingMode.pictures_are_frames.value,
+         toy_vc2.PictureCodingModes.pictures_are_frames.value,
          1920, 1080, 960, 1080),
         (toy_vc2.ColorDifferenceSamplingFormats.color_4_2_0.value,
-         toy_vc2.PictureCodingMode.pictures_are_frames.value,
+         toy_vc2.PictureCodingModes.pictures_are_frames.value,
          1920, 1080, 960, 540),
         (toy_vc2.ColorDifferenceSamplingFormats.color_4_2_0.value,
-         toy_vc2.PictureCodingMode.pictures_are_fields.value,
+         toy_vc2.PictureCodingModes.pictures_are_fields.value,
          1920, 540, 960, 270),
     ],
 )
@@ -748,7 +748,7 @@ def test_picture_dimensions(dummy_stream,
         frame_width=1920,
         frame_height=1080,
         color_diff_format_index=color_diff_format_index,
-        source_sampling=toy_vc2.SourceSampling.interlaced.value,
+        source_sampling=toy_vc2.SourceSamplingModes.interlaced.value,
         top_field_first=True,
         frame_rate_numer=1,
         frame_rate_denom=1,
@@ -782,7 +782,7 @@ def test_video_depth(dummy_stream):
         frame_width=1920,
         frame_height=1080,
         color_diff_format_index=toy_vc2.ColorDifferenceSamplingFormats.color_4_4_4.value,
-        source_sampling=toy_vc2.SourceSampling.interlaced.value,
+        source_sampling=toy_vc2.SourceSamplingModes.interlaced.value,
         top_field_first=True,
         frame_rate_numer=1,
         frame_rate_denom=1,

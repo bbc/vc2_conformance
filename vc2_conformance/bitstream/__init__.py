@@ -49,3 +49,6 @@ from vc2_conformance.bitstream.primitive import *
 
 # General purpose compound types (e.g. Concatenation, Maybe, ...)
 from vc2_conformance.bitstream.compound import *
+
+# Complete VC-2 bitstream structures
+from vc2_conformance.bitstream.vc2 import *

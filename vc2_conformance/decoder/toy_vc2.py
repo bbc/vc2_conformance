@@ -629,7 +629,7 @@ class VideoParameters(object):
     
     source_sampling = attrib()
     """
-    (11.4.5) An index in the enum SourceSampling (e.g. progressive/interlaced).
+    (11.4.5) An index in the enum SourceSamplingModes (e.g. progressive/interlaced).
     """
     
     top_field_first = attrib()
@@ -672,7 +672,7 @@ def set_source_defaults(base_video_format):
     (11.4.2) Create a VideoParameters object with the parameters specified in a
     base video format.
     """
-    base = BASE_VIDEO_FORMATS[base_video_format]
+    base = BASE_VIDEO_FORMAT_PARAMETERS[BaseVideoFormats(base_video_format)]
     return VideoParameters(
         frame_width=base.frame_width,
         frame_height=base.frame_height,
@@ -810,7 +810,7 @@ def picture_dimensions(state, video_parameters, picture_coding_mode):
         state.color_diff_width //= 2
         state.color_diff_height //= 2
     
-    if picture_coding_mode == PictureCodingMode.pictures_are_fields.value:
+    if picture_coding_mode == PictureCodingModes.pictures_are_fields.value:
         state.luma_height //= 2
         state.color_diff_height //= 2
 
@@ -1054,136 +1054,7 @@ def preset_color_spec(video_parameters, index):
     preset_transfer_function(video_parameters, preset.transfer_function_index)
 
 
-################################################################################
-# (B) Predefined video format specifications
-################################################################################
 
-
-@attrs
-class BaseVideoFormat(object):
-    """(B) An entry in (Table B.1a, B.1b or B.1c)"""
-    
-    name = attrib()
-    """Informative. Human-readable name."""
-    
-    frame_width = attrib()
-    frame_height = attrib()
-    
-    color_diff_format_index = attrib()
-    """
-    An entry from the enum ColorDifferenceSamplingFormats. Listed as 'color
-    difference sampling' in (Table B.1).
-    """
-    
-    source_sampling = attrib()
-    """
-    An entry from the enum SourceSampling. Specifies progressive or interlaced.
-    """
-    
-    top_field_first = attrib()
-    """If True, the top-line of the frame is in the first field."""
-    
-    frame_rate_index = attrib()
-    """The frame rate, one of the indices of PRESET_FRAME_RATES."""
-    
-    pixel_aspect_ratio_index = attrib()
-    """The pixel aspect ratio, one of the indices of PRESET_PIXEL_ASPECT_RATIOS."""
-    
-    clean_width = attrib()
-    clean_height = attrib()
-    left_offset = attrib()
-    top_offset = attrib()
-    """See (11.4.8) and (E.4.2)."""
-    
-    signal_range_index = attrib()
-    """The signal ranges, one of the indices of PRESET_SIGNAL_RANGES."""
-    
-    color_spec_index = attrib()
-    """The color specification, one of the indices of PRESET_COLOR_SPECS."""
-
-BASE_VIDEO_FORMATS = {
-    #                   name
-    #                   |                frame_width
-    #                   |                |     frame_height
-    #                   |                |     |     color_diff_format_index
-    #                   |                |     |     |  source_sampling
-    #                   |                |     |     |  |  top_field_first
-    #                   |                |     |     |  |  |       frame_rate_index
-    #                   |                |     |     |  |  |       |   pixel_aspect_ratio_index
-    #                   |                |     |     |  |  |       |   |  clean_width
-    #                   |                |     |     |  |  |       |   |  |     clean_height
-    #                   |                |     |     |  |  |       |   |  |     |     left_offset
-    #                   |                |     |     |  |  |       |   |  |     |     |  top_offset
-    #                   |                |     |     |  |  |       |   |  |     |     |  |  signal_range_index
-    #                   |                |     |     |  |  |       |   |  |     |     |  |  |  color_spec_index
-    #                   |                |     |     |  |  |       |   |  |     |     |  |  |  |
-    0:  BaseVideoFormat("Custom Format", 640,  480,  2, 0, False,  1,  1, 640,  480,  0, 0, 1, 0),
-    1:  BaseVideoFormat("QSIF525",       176,  120,  2, 0, False,  9,  2, 176,  120,  0, 0, 1, 1),
-    2:  BaseVideoFormat("QCIF",          176,  144,  2, 0, True,   10, 3, 176,  144,  0, 0, 1, 2),
-    3:  BaseVideoFormat("SIF525",        352,  240,  2, 0, False,  9,  2, 352,  240,  0, 0, 1, 1),
-    4:  BaseVideoFormat("CIF",           352,  288,  2, 0, True,   10, 3, 352,  288,  0, 0, 1, 2),
-    5:  BaseVideoFormat("4SIF525",       704,  480,  2, 0, False,  9,  2, 704,  480,  0, 0, 1, 1),
-    6:  BaseVideoFormat("4CIF",          704,  576,  2, 0, True,   10, 3, 704,  576,  0, 0, 1, 2),
-    7:  BaseVideoFormat("SD480I-60",     720,  480,  1, 1, False,  4,  2, 704,  480,  8, 0, 3, 1),
-    8:  BaseVideoFormat("SD576I-50",     720,  576,  1, 1, True,   3,  3, 704,  576,  8, 0, 3, 2),
-    9:  BaseVideoFormat("HD720P-60",     1280, 720,  1, 0, True,   7,  1, 1280, 720,  0, 0, 3, 3),
-    10: BaseVideoFormat("HD720P-50",     1280, 720,  1, 0, True,   6,  1, 1280, 720,  0, 0, 3, 3),
-    11: BaseVideoFormat("HD1080I-60",    1920, 1080, 1, 1, True,   4,  1, 1920, 1080, 0, 0, 3, 3),
-    12: BaseVideoFormat("HD1080I-50",    1920, 1080, 1, 1, True,   3,  1, 1920, 1080, 0, 0, 3, 3),
-    13: BaseVideoFormat("HD1080P-60",    1920, 1080, 1, 0, True,   7,  1, 1920, 1080, 0, 0, 3, 3),
-    14: BaseVideoFormat("HD1080P-50",    1920, 1080, 1, 0, True,   6,  1, 1920, 1080, 0, 0, 3, 3),
-    15: BaseVideoFormat("DC2K",          2048, 1080, 0, 0, True,   2,  1, 2048, 1080, 0, 0, 4, 4),
-    16: BaseVideoFormat("DC4K",          4096, 2160, 0, 0, True,   2,  1, 4096, 2160, 0, 0, 4, 4),
-    17: BaseVideoFormat("UHDTV 4K-60",   3840, 2160, 1, 0, True,   7,  1, 3840, 2160, 0, 0, 3, 5),
-    18: BaseVideoFormat("UHDTV 4K-50",   3840, 2160, 1, 0, True,   6,  1, 3840, 2160, 0, 0, 3, 5),
-    19: BaseVideoFormat("UHDTV 8K-60",   7680, 4320, 1, 0, True,   7,  1, 7680, 4320, 0, 0, 3, 5),
-    20: BaseVideoFormat("UHDTV 8K-50",   7680, 4320, 1, 0, True,   6,  1, 7680, 4320, 0, 0, 3, 5),
-    21: BaseVideoFormat("HD1080P-24",    1920, 1080, 1, 0, True,   1,  1, 1920, 1080, 0, 0, 3, 3),
-    22: BaseVideoFormat("SD Pro486",     720,  486,  1, 1, False,  4,  2, 720,  486,  0, 0, 3, 3),
-}
-"""
-(B) Base video format specifications from (Table B.1a, B.1b, B.1c).
-"""
-
-
-################################################################################
-# (C.2) Profiles
-################################################################################
-
-@attrs
-class Profile(object):
-    """(C.2) A profile specification."""
-    
-    name = attrib()
-    """Profile name."""
-    
-    allowed_data_units = attrib()
-    """
-    A list of supported data units. A list of values from the ParseCodes enum.
-    """
-
-
-PROFILES = {
-    # (C.2.2)
-    0: Profile("Low Delay", [
-        ParseCodes.sequence_header,
-        ParseCodes.end_of_sequence,
-        ParseCodes.auxiliary_data,
-        ParseCodes.padding_data,
-        ParseCodes.low_delay_picture,
-    ]),
-    # (C.2.3)
-    3: Profile("High Quality", [
-        ParseCodes.sequence_header,
-        ParseCodes.end_of_sequence,
-        ParseCodes.auxiliary_data,
-        ParseCodes.padding_data,
-        ParseCodes.high_quality_picture,
-    ]),
-}
-"""
-The list of supported profiles from (C.2).
-"""
 
 
 ################################################################################
