@@ -407,20 +407,45 @@ class BoundedBlock(WrapperValue):
     """
     
     def __init__(self, value, length, pad_value=0):
+        """
+        Parameters
+        ==========
+        value : :py:class:`BoundedBlock`
+            The value to enclose in the bounded block.
+        length : int or function() -> int
+            If an int, the length of the block in bits.
+            
+            If a function, this function will be called with no arguments and
+            should return an int giving the length of the block in bits.
+            
+            In general, this argument will be a lambda function which
+            calculates the length using a previously read or written
+            :py:class:`BitstreamValue`.
+            
+        """
         # NB: Set first so that repr will work later if the validator fails on
         # the main constructor.
         self._pad_value = pad_value
-        self._length = length
+        self.length = length
         
         super(BoundedBlock, self).__init__(value)
     
     @property
     def length(self):
-        return self._length
+        """
+        The length of the bounded block.
+        
+        If set, may be set to an integer or a function (see ``length`` argument
+        of constructor), but will always read as an int.
+        """
+        return self._length()
     
     @length.setter
     def length(self, length):
-        self._length = length
+        if callable(length):
+            self._length = length
+        else:
+            self._length = lambda: length
     
     @property
     def pad_value(self):

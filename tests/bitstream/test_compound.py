@@ -334,6 +334,26 @@ class TestMaybe(object):
 
 class TestBoundedBlock(object):
     
+    @pytest.mark.parametrize("length,expected", [
+        # As literals
+        (0, 0),
+        (32, 32),
+        # As functions
+        (lambda: 0, 0),
+        (lambda: 32, 32),
+    ])
+    def test_length(self, length, expected):
+        u = bitstream.UInt()
+        
+        # Test constructor
+        b = bitstream.BoundedBlock(u, length)
+        assert b.length == expected
+        
+        # Test property
+        b = bitstream.BoundedBlock(u, 0)
+        b.length = length
+        assert b.length == expected
+    
     def test_read(self):
         r = bitstream.BitstreamReader(BytesIO(b"\x12\x34\x56"))
         
