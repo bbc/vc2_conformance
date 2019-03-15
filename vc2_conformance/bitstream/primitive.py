@@ -303,7 +303,7 @@ class UInt(PrimitiveValue):
     
     @property
     def length(self):
-        return (((self.value + 1).bit_length() - 1) * 2) + 1
+        return (((self._value + 1).bit_length() - 1) * 2) + 1
     
     def read(self, reader):
         self._offset = reader.tell()
@@ -329,7 +329,7 @@ class UInt(PrimitiveValue):
     def write(self, writer):
         self._offset = writer.tell()
         
-        value = self.value + 1
+        value = self._value + 1
         
         self._bits_past_eof = 0
         for i in range(value.bit_length()-2, -1, -1):
@@ -351,13 +351,13 @@ class SInt(UInt):
     
     @property
     def length(self):
-        orig_value = self.value
-        self._value = abs(self.value)
+        orig_value = self._value
+        self._value = abs(self._value)
 
         length = super(SInt, self).length
         
         # Account for sign bit
-        if self.value != 0:
+        if self._value != 0:
             length += 1
         
         self._value = orig_value
@@ -368,20 +368,20 @@ class SInt(UInt):
         super(SInt, self).read(reader)
         
         # Read sign bit
-        if self.value != 0:
+        if self._value != 0:
             bit = reader.read_bit()
             self._bits_past_eof += int(bit is None)
             if bit is None or bit == 1:
-                self._value = -self.value
+                self._value = -self._value
     
     def write(self, writer):
-        orig_value = self.value
-        self._value = abs(self.value)
+        orig_value = self._value
+        self._value = abs(self._value)
         
         super(SInt, self).write(writer)
         
         # Write sign bit
-        if self.value != 0:
+        if self._value != 0:
             self._bits_past_eof += 1 - writer.write_bit(orig_value < 0)
         
         self._value = orig_value
