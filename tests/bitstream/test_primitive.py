@@ -224,8 +224,8 @@ class TestBool(object):
         bb = bitstream.BoundedBlock(bitstream.Bool(True), length=0)
         bb.write(w)
         
-        assert bb.value.offset == (0, 7)
-        assert bb.value.bits_past_eof == 1
+        assert bb.inner_value.offset == (0, 7)
+        assert bb.inner_value.bits_past_eof == 1
 
 
 class TestNBits(object):
@@ -316,13 +316,13 @@ class TestNBits(object):
         
         bb = bitstream.BoundedBlock(bitstream.NBits(0xFF, length=8), length=0)
         bb.write(w)
-        assert bb.value.offset == (0, 7)
-        assert bb.value.bits_past_eof == 8
+        assert bb.inner_value.offset == (0, 7)
+        assert bb.inner_value.bits_past_eof == 8
         
         bb = bitstream.BoundedBlock(bitstream.NBits(0xFF, length=8), length=4)
         bb.write(w)
-        assert bb.value.offset == (0, 7)
-        assert bb.value.bits_past_eof == 4
+        assert bb.inner_value.offset == (0, 7)
+        assert bb.inner_value.bits_past_eof == 4
 
 
 class TestByteAlign(object):
@@ -394,8 +394,8 @@ class TestByteAlign(object):
         
         bb = bitstream.BoundedBlock(bitstream.ByteAlign(0xFF), length=4)
         bb.write(w)
-        assert bb.value.offset == (0, 6)
-        assert bb.value.bits_past_eof == 3
+        assert bb.inner_value.offset == (0, 6)
+        assert bb.inner_value.bits_past_eof == 3
     
     def test_str(self):
         r = bitstream.BitstreamReader(BytesIO(b"\x0F"))
@@ -515,17 +515,17 @@ class TestUInt(object):
         # The even-bit falls off the end
         bb = bitstream.BoundedBlock(bitstream.UInt(15), length=8)
         bb.write(w)
-        assert bb.value.bits_past_eof == 1
+        assert bb.inner_value.bits_past_eof == 1
         
         # The whole string falls off the end
         bb = bitstream.BoundedBlock(bitstream.UInt(0), length=0)
         bb.write(w)
-        assert bb.value.bits_past_eof == 1
+        assert bb.inner_value.bits_past_eof == 1
         
         # The odd-bit falls falls off the end
         bb = bitstream.BoundedBlock(bitstream.UInt(16), length=7)
         bb.write(w)
-        assert bb.value.bits_past_eof == 2
+        assert bb.inner_value.bits_past_eof == 2
     
     
     @pytest.mark.parametrize("value", [
@@ -687,22 +687,22 @@ class TestSInt(object):
         # The whole string falls off the end
         bb = bitstream.BoundedBlock(bitstream.SInt(0), length=0)
         bb.write(w)
-        assert bb.value.bits_past_eof == 1
+        assert bb.inner_value.bits_past_eof == 1
         
         # The even-bit and sign fall off the end
         bb = bitstream.BoundedBlock(bitstream.SInt(-15), length=8)
         bb.write(w)
-        assert bb.value.bits_past_eof == 2
+        assert bb.inner_value.bits_past_eof == 2
         
         # The odd-bit and sign fall off the end
         bb = bitstream.BoundedBlock(bitstream.SInt(-16), length=7)
         bb.write(w)
-        assert bb.value.bits_past_eof == 3
+        assert bb.inner_value.bits_past_eof == 3
         
         # The sign falls off the end
         bb = bitstream.BoundedBlock(bitstream.SInt(-7), length=7)
         bb.write(w)
-        assert bb.value.bits_past_eof == 1
+        assert bb.inner_value.bits_past_eof == 1
     
     @pytest.mark.parametrize("value", [
         # Zero

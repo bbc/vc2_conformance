@@ -55,6 +55,7 @@ class ParseInfo(LabelledConcatenation):
             ("previous_parse_offset", NBits(previous_parse_offset, 32)),
         )
 
+
 class SequenceHeader(LabelledConcatenation):
     """
     (11.1) Sequence header defined by ``sequence_header()``.
@@ -86,6 +87,7 @@ class SequenceHeader(LabelledConcatenation):
             ),
         )
 
+
 class ParseParameters(LabelledConcatenation):
     """
     (11.2.1) Sequence header defined by ``parse_parameters()``.
@@ -109,4 +111,34 @@ class ParseParameters(LabelledConcatenation):
             ("minor_version", UInt(minor_version)),
             ("profile", UInt(profile, enum=Profiles)),
             ("level", UInt(level)),
+        )
+
+
+class SourceParameters(LabelledConcatenation):
+    """
+    (11.4.1) Video format overrides defined by ``source_parameters()``.
+    
+    A :py:class:`LabelledConcatenation` with the following fields:
+    
+    * ``"frame_size"`` (:py:class:`FrameSize`)
+    * ``"color_diff_sampling_format"``
+      (:py:class:`ColorDifferenceSamplingFormat`)
+    * ``"scan_format"`` (:py:class:`ScanFormat`)
+    * ``"frame_rate"`` (:py:class:`FrameRate`)
+    * ``"pixel_aspect_ratio"`` (:py:class:`PixelAspectRatio`)
+    * ``"clean_area"`` (:py:class:`CleanArea`)
+    * ``"signal_range"`` (:py:class:`SignalRange`)
+    * ``"color_spec"`` (:py:class:`ColorSpec`)
+    """
+    
+    def __init__(self):
+        super(ParseInfo, self).__init__(
+            ("frame_size", FrameSize()),
+            ("color_diff_sampling_format", ColorDifferenceSamplingFormat()),
+            ("scan_format", ScanFormat()),
+            ("frame_rate", FrameRate()),
+            ("pixel_aspect_ratio", PixelAspectRatio()),
+            ("clean_area", CleanArea()),
+            ("signal_range", SignalRange()),
+            ("color_spec", ColorSpec()),
         )

@@ -47,8 +47,11 @@ from vc2_conformance.bitstream.base import *
 # Primitive bitstream types (e.g. Bool, UInt...)
 from vc2_conformance.bitstream.primitive import *
 
-# General purpose compound types (e.g. Concatenation, Maybe, ...)
+# General purpose compound types (e.g. Concatenation)
 from vc2_conformance.bitstream.compound import *
+
+# General purpose wrapper types (e.g. BoundedBlock)
+from vc2_conformance.bitstream.wrapper import *
 
 # Complete VC-2 bitstream structures
 from vc2_conformance.bitstream.vc2 import *
