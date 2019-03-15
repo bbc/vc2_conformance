@@ -217,13 +217,13 @@ class TestLabelledConcatenation(object):
     
     def test_str_hidden_entries(self):
         u = bitstream.UInt(10)
-        m = bitstream.Maybe(u, lambda: True)
+        m = bitstream.Maybe(u, True)
         l = bitstream.LabelledConcatenation("Title", ("maybe", m), m)
         
         assert str(l) == "Title\n  maybe: 10\n  10"
         
         # Omit entries entirely whose values print as empty strings
-        m.flag_fn = lambda: False
+        m.flag = False
         assert str(l) == "Title"
 
 
@@ -231,49 +231,40 @@ class TestLabelledConcatenation(object):
 
 class TestMaybe(object):
     
-    def test_validation(self):
-        u1 = bitstream.UInt()
-        u2 = bitstream.UInt()
-        
-        # OK
-        m = bitstream.Maybe(u1, lambda: False)
-        assert m.value is u1
-        assert m.flag_fn() is False
-        
-        # OK
-        m.value = u2
-        m.flag_fn = lambda: True
-        
-        assert m.value is u2
-        assert m.flag_fn() is True
-        
-        # Not OK
-        with pytest.raises(ValueError):
-            bitstream.Maybe(lambda: False, u1)
-        with pytest.raises(ValueError):
-            m.value = lambda: False
-        
-        assert m.value is u2
-    
-    def test_value_present(self):
+    @pytest.mark.parametrize("flag_value,expected", [
+        # Should take values or functions
+        (True, True),
+        (False, False),
+        (lambda: True, True),
+        (lambda: False, False),
+        # Should cast non-bool values
+        (1234, True),
+        (None, False),
+        (lambda: 1234, True),
+        (lambda: None, False),
+    ])
+    def test_flag(self, flag_value, expected):
         value = bitstream.UInt()
         
-        # Should cast to bool
-        m = bitstream.Maybe(value, lambda: 123)
-        assert m.flag is True
-        m.flag_fn = lambda: None
-        assert m.flag is False
+        # Try via constructor
+        m = bitstream.Maybe(value, flag_value)
+        assert m.flag is expected
+        
+        # Try via property
+        m = bitstream.Maybe(value, not expected)
+        m.flag = flag_value
+        assert m.flag is expected
     
     def test_length(self):
         value = bitstream.UInt()
         
-        m = bitstream.Maybe(value, lambda: True)
+        m = bitstream.Maybe(value, True)
         
         value.value = 3
         
         assert m.length == 5
         
-        m.flag_fn = lambda: False
+        m.flag = False
         assert m.length == 0
     
     def test_bits_past_eof(self):
@@ -281,14 +272,14 @@ class TestMaybe(object):
         
         value = bitstream.UInt()
         
-        m = bitstream.Maybe(value, lambda: False)
+        m = bitstream.Maybe(value, False)
         
         value.read(r)
         
-        m.flag_fn = lambda: True
+        m.flag = True
         assert m.bits_past_eof == 1
         
-        m.flag_fn = lambda: False
+        m.flag = False
         assert m.bits_past_eof == 0
     
     def test_read(self):
@@ -296,15 +287,15 @@ class TestMaybe(object):
         
         value = bitstream.UInt()
         
-        m = bitstream.Maybe(value, lambda: False)
+        m = bitstream.Maybe(value, False)
         
-        m.flag_fn = lambda: False
+        m.flag = False
         m.read(r)
         assert r.tell() == (0, 7)
         assert m.offset == (0, 7)
         assert value.offset is None  # Value not read
         
-        m.flag_fn = lambda: True
+        m.flag = True
         m.read(r)
         assert value.value == 15
         assert r.tell() == (1, 7)
@@ -317,9 +308,9 @@ class TestMaybe(object):
         
         value = bitstream.UInt(15)
         
-        m = bitstream.Maybe(value, lambda: False)
+        m = bitstream.Maybe(value, False)
         
-        m.flag_fn = lambda: False
+        m.flag = False
         m.write(w)
         w.flush()
         assert f.getvalue() == b""
@@ -327,7 +318,7 @@ class TestMaybe(object):
         assert m.offset == (0, 7)
         assert value.offset is None  # Value not written
         
-        m.flag_fn = lambda: True
+        m.flag = True
         m.write(w)
         w.flush()
         assert f.getvalue() == b"\x00\x80"
@@ -337,8 +328,8 @@ class TestMaybe(object):
     
     def test_str(self):
         u = bitstream.UInt(10)
-        assert str(bitstream.Maybe(u, lambda: False)) == ""
-        assert str(bitstream.Maybe(u, lambda: True)) == "10"
+        assert str(bitstream.Maybe(u, False)) == ""
+        assert str(bitstream.Maybe(u, True)) == "10"
 
 
 class TestBoundedBlock(object):

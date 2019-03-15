@@ -292,31 +292,44 @@ class Maybe(WrapperValue):
         )
     """
     
-    def __init__(self, value, flag_fn):
+    def __init__(self, value, flag):
         """
         Parameters
         ==========
         value_value : :py:class:`BitstreamValue`
             The value which may (or may not) be included in the bitstream.
             Stored as :py:attr:`Maybe.value`.
-        flag_fn : callable
-            This function will be called with no arguments and should return
-            True if :py:attr:`Maybe.value` is to be included in the bitstream
-            and False otherwise.
+        flag : bool or function() -> bool
+            If a bool, specifies whether the wrapped value is present in the
+            bitstream or not.
             
-            This function will generally be a simple lambda function which
-            returns a previously read or written :py:class:`BitstreamValue`.
+            If a function, the function will be called with no arguments and
+            return a bool with the meaning above.
+            
+            In general, this argument will be a simple lambda function which
+            fetches a previously read or written :py:class:`BitstreamValue` to
+            determine the flag value.
         """
-        self.flag_fn = flag_fn
+        self.flag = flag
         super(Maybe, self).__init__(value)
     
     @property
     def flag(self):
         """
-        True if :py:attr:`Maybe.value` should be included in the bitstream,
-        False otherwise.
+        The current visibility state of this value. If True, :py:attr:`value`
+        will be included in the bitstream, if False it will be omitted.
+        
+        This value may be set with either a bool or a function (see the
+        constructor ``flag`` argument) but always reads as a bool.
         """
-        return bool(self.flag_fn())
+        return bool(self._flag())
+    
+    @flag.setter
+    def flag(self, flag):
+        if callable(flag):
+            self._flag = flag
+        else:
+            self._flag = (lambda: flag)
     
     @property
     def length(self):
