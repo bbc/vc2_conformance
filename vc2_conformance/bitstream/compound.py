@@ -6,50 +6,75 @@ from vc2_conformance.bitstream import BitstreamValue
 
 from vc2_conformance.bitstream._util import indent, concat_strings
 
-from collections import Iterable
 from enum import Enum
 
 
 __all__ = [
     "Concatenation",
+    "LabelledConcatenation",
+    "WrapperValue",
     "Maybe",
     "BoundedBlock",
-    "LabelledConcatenation",
-    "EnumValue",
 ]
 
 
 class Concatenation(BitstreamValue):
     r"""
-    Composite value. A concatenation of a fixed set of
-    :py:class:`BitstreamValue`\ s.
+    Compound value. A concatenation of a tuple of :py:class:`BitstreamValue`\
+    s.
     
-    The :py:attr:`value` should be an (ordered, preferably immutable) iterable
-    of :py:class:`BitstreamValue` classes. These values will be
-    serialised/deserialised one after the other.
+    The contained :py:class:`BitstreamValue` objects can be accessed either
+    using :py:attr:`value` (as usual) or by indexing into this object. That is,
+    the following are equivalent::
     
-    This may be used as the basis for defining composite structures of
-    bitstream values. For example ``parse_parameters`` (11.2.1)``::
+        c = Concatenation(b1, b2, b3)
+        asssert c.value[0] is b1
+        asssert c.value[1] is b2
+        asssert c.value[2] is b3
         
-        major_version = UInt()
-        minor_version = UInt()
-        profile = UInt()
-        level = UInt()
-        
-        parse_parameters = Concatenation(
-            major_version, minor_version, profile, level)
+        c = Concatenation(b1, b2, b3)
+        asssert c[0] is b1
+        asssert c[1] is b2
+        asssert c[2] is b3
+    
+    In practice, :py:class:`LabelledConcatenation` may be preferable to this
+    basic class.
     """
     
     def __init__(self, *values):
-        super(Concatenation, self).__init__(values, length=None)
+        """
+        Parameters
+        ==========
+        values : :py:class:`BitstreamValue`
+            The bitstream values to be concatenated (in order).
+        """
+        self._value = values
+        super(Concatenation, self).__init__()
+        
+        # NB: Validation is done last, so that internal members are populated
+        # allowing __repr__ work (which may be printed in tracebacks).
+        self._validate(self._value)
     
-    def _validate(self, value, length):
-        if not isinstance(value, Iterable):
+    def _validate(self, value):
+        if not isinstance(value, tuple):
             raise ValueError(
-                "Concatenation expects an iterable of BitstreamValues.")
+                "Concatenation expects a tuple of BitstreamValues.")
         if not all(isinstance(v, BitstreamValue) for v in value):
             raise ValueError(
                 "All concatenation components must be BitstreamValues.")
+    
+    @property
+    def value(self):
+        r"""
+        A tuple of :py:class:`BitstreamValue`\ s contained by this
+        :py:class:`Concatenation`.
+        """
+        return self._value
+    
+    @value.setter
+    def value(self, value):
+        self._validate(value)
+        self._value = value
     
     @property
     def length(self):
@@ -75,10 +100,6 @@ class Concatenation(BitstreamValue):
         for v in self._value:
             v.write(writer)
     
-    @property
-    def formatter(self):
-        raise NotImplementedError("Concatenation does not have a formatter.")
-    
     def __getitem__(self, key):
         """Shorthand for ``concatenation.value[key]``"""
         return self._value[key]
@@ -93,9 +114,166 @@ class Concatenation(BitstreamValue):
         return concat_strings([str(v) for v in self.value])
 
 
-class Maybe(BitstreamValue):
+class LabelledConcatenation(Concatenation):
+    """
+    Like :py:class:`Concatenation` except with labelled entries.
+    
+    In terms of its bitstream formatting/behaviour, this is identical to
+    Concatenation. The principle difference are:
+    
+    * The ability to look-up values by name (not just index), e.g.
+      ``concat["foo"]``
+    * A richer str() representation with headings and labels.
+    """
+    
+    def __init__(self, *names_values):
+        """
+        Parameters
+        ==========
+        names_values : (str, :py:class:`BitstreamValue`) or :py:class:`BitstreamValue` or str or None
+            A series of entries to include in this concatenation.
+
+            * If a (str, :py:class:`BitstreamValue`) tuple, this gives a value
+              and its corresponding label string (which must be unique).
+            
+            * If just a :py:class:`BitstreamValue`, this gives a value to include
+              without a label.
+            
+            * If a string, this specifies a heading to include in the ``str()``
+              representation. Also increases the indent level for all following
+              values in the string.
+            
+            * If None, reduces the indentation level for all following levels in
+              the ``str`` representation..
+        """
+        self._names_values = names_values
+        
+        super(LabelledConcatenation, self).__init__(
+            *self._names_values_to_values(names_values))
+    
+    def _names_values_to_values(self, names_values):
+        """
+        Internal method. Extract just the list of :py:class:`BitstreamValue`
+        from a names and values list.
+        """
+        return tuple(
+            nv if isinstance(nv, BitstreamValue) else nv[1]
+            for nv in names_values
+            if nv is not None and not isinstance(nv, str)
+        )
+    
+    @property
+    def value(self):
+        """The values in the concatenation (see constructor arguments)."""
+        return self._names_values
+    
+    @value.setter
+    def value(self, names_values):
+        value = self._names_values_to_values(names_values)
+        self._validate(value, self.length)
+        
+        self._value = value
+        self._names_values = _names_values
+    
+    def __getitem__(self, key):
+        r"""
+        Get a :py:class:`BitstreamValue` by either index or name.
+        
+        If an (numerical) index is given, this will be looked up according to
+        the order the :py:class:`BitstreamValue`\ s appear in the bitstream. If
+        a (string) name is given, the value with the specified name will be
+        returned.
+        """
+        if isinstance(key, str):
+            # Get by name
+            for nv in self._names_values:
+                if nv is None:
+                    continue  # An empty line
+                elif isinstance(nv, str):
+                    continue  # A heading
+                elif isinstance(nv, BitstreamValue):
+                    continue  # An unlabelled value
+                else:
+                    name, value = nv
+                    if name == key:
+                        return value
+            raise KeyError(key)
+        else:
+            # Get by index
+            return self._value[key]
+    
+    def __repr__(self):
+        return "<{} {}>".format(
+            self.__class__.__name__,
+            " ".join(
+                (
+                    repr(nv)
+                    if isinstance(nv, BitstreamValue) else
+                    "{}={!r}".format(nv[0], nv[1])
+                )
+                for nv in self._names_values
+                if nv is not None and not isinstance(nv, str)
+            )
+        )
+    
+    def __str__(self):
+        body = []
+        
+        space = "  "
+        
+        indent_level = 0
+        for nv in self._names_values:
+            if nv is None:
+                indent_level = max(0, indent_level - 1)
+            elif isinstance(nv, str):
+                body.append(indent(nv, space*indent_level))
+                indent_level += 1
+            elif isinstance(nv, BitstreamValue):
+                string = str(nv)
+                if string:
+                    body.append(indent(string, space*indent_level))
+            else:
+                name, value = nv
+                string = str(value)
+                if string:
+                    string = "{}: {}".format(name, string)
+                    body.append(indent(string, space*indent_level))
+        
+        return "\n".join(body)
+
+
+class WrapperValue(BitstreamValue):
     r"""
-    Composite value. An 'maybe' type for bitstream values which may sometimes
+    A WrapperValue is a base class for implementing :py:class:`BitstreamValue`\
+    s which wrap another, single :py:class:`BitstreamValue`.
+    """
+    
+    def __init__(self, value):
+        self._value = value
+        super(WrapperValue, self).__init__()
+        self._validate(self._value)
+    
+    def _validate(self, value):
+        if not isinstance(value, BitstreamValue):
+            raise ValueError(
+                "{}.value must be a BitstreamValue.".format(
+                    self.__class__.__name__))
+    
+    @property
+    def value(self):
+        return self._value
+    
+    @value.setter
+    def value(self, value):
+        self._validate(value)
+        self._value = value
+
+
+
+
+class Maybe(WrapperValue):
+    r"""
+    Compound value. An 'maybe' type for bitstream values which may sometimes
     be omitted.
     
     This type may be used to describe the bitstream sequences such as
@@ -126,20 +304,11 @@ class Maybe(BitstreamValue):
             True if :py:attr:`Maybe.value` is to be included in the bitstream
             and False otherwise.
             
-            This function will generally be a simple computation based on a
-            previously read or written :py:class:`BitstreamValue`. For example,
-            it may be a lambda function which returns the
-            :py:class:`BitstreamValue.value` of a :py:class:`Bool`.
+            This function will generally be a simple lambda function which
+            returns a previously read or written :py:class:`BitstreamValue`.
         """
         self.flag_fn = flag_fn
-        
-        super(Maybe, self).__init__(value, length=None)
-    
-    def _validate(self, value, length):
-        if not isinstance(value, BitstreamValue):
-            raise ValueError(
-                "Maybe.value must be BitstreamValues.")
-    
+        super(Maybe, self).__init__(value)
     
     @property
     def flag(self):
@@ -162,10 +331,6 @@ class Maybe(BitstreamValue):
             return self.value.bits_past_eof
         else:
             return 0
-    
-    @property
-    def formatter(self):
-        raise NotImplementedError("Maybe does not have a formatter.")
     
     def read(self, reader):
         """
@@ -204,9 +369,9 @@ class Maybe(BitstreamValue):
             return ""
 
 
-class BoundedBlock(BitstreamValue):
+class BoundedBlock(WrapperValue):
     """
-    Composite value. A fixed-size bounded data-block as described in (A.4.2) which
+    Compound value. A fixed-size bounded data-block as described in (A.4.2) which
     contains a :py:class:`BitstreamValue`.
     
     When reading the contained value, any bits beyond the bounding size will be
@@ -232,13 +397,17 @@ class BoundedBlock(BitstreamValue):
         # NB: Set first so that repr will work later if the validator fails on
         # the main constructor.
         self._pad_value = pad_value
+        self._length = length
         
-        super(BoundedBlock, self).__init__(value, length)
+        super(BoundedBlock, self).__init__(value)
     
-    def _validate(self, value, length):
-        if not isinstance(value, BitstreamValue):
-            raise ValueError(
-                "BoundedBlock.value must be a BitstreamValue.")
+    @property
+    def length(self):
+        return self._length
+    
+    @length.setter
+    def length(self, length):
+        self._length = length
     
     @property
     def pad_value(self):
@@ -252,17 +421,13 @@ class BoundedBlock(BitstreamValue):
     @property
     def unused_bits(self):
         """
-        When this block was last serialised/deserialised, the number of unused
-        bits left in the block. None otherwise.
+        The number of unused bits left in the block. None if the length of the
+        wrapped value is unknown.
         """
         if self.value.length is None:
             return None
         else:
             return max(0, self.length - self.value.length)
-    
-    @property
-    def formatter(self):
-        raise NotImplementedError("BoundedReader does not have a formatter.")
     
     class BoundedReader(object):
         """A wrapper around a :py:class:`BitstreamReader`."""
@@ -369,267 +534,4 @@ class BoundedBlock(BitstreamValue):
         
         return concat_strings([str(self.value), padding])
 
-
-class LabelledConcatenation(Concatenation):
-    """
-    Like :py:class:`Concatenation` except with labelled entries.
-    
-    In terms of its bitstream formatting/behaviour, this is identical to
-    Concatenation. The principle difference are:
-    
-    * The ability to look-up values by name (not just index), e.g.
-      ``concat["foo"]``
-    * A richer str() representation with headings and labels.
-    """
-    
-    def __init__(self, *names_values):
-        """
-        Parameters
-        ==========
-        names_values : (str, :py:class:`BitstreamValue`) or :py:class:`BitstreamValue` or str or None
-            A series of entries to include in this concatenation.
-
-            * If a (str, :py:class:`BitstreamValue`) tuple, this gives a value
-              and its corresponding label string (which must be unique).
-            
-            * If just a :py:class:`BitstreamValue`, this gives a value to include
-              without a label.
-            
-            * If a string, this specifies a heading to include in the ``str()``
-              representation. Also increases the indent level for all following
-              values in the string.
-            
-            * If None, reduces the indentation level for all following levels in
-              the ``str`` representation..
-        """
-        self._names_values = names_values
-        
-        super(LabelledConcatenation, self).__init__(
-            *self._names_values_to_values(names_values))
-    
-    def _names_values_to_values(self, names_values):
-        """
-        Internal method. Extract just the list of :py:class:`BitstreamValue`
-        from a names and values list.
-        """
-        return tuple(
-            nv if isinstance(nv, BitstreamValue) else nv[1]
-            for nv in names_values
-            if nv is not None and not isinstance(nv, str)
-        )
-    
-    @property
-    def value(self):
-        """The values in the concatenation (see constructor arguments)."""
-        return self._names_values
-    
-    @value.setter
-    def value(self, names_values):
-        value = self._names_values_to_values(values)
-        self._validate(value, self.length)
-        
-        self._value = value
-        self._names_values = _names_values
-    
-    def __getitem__(self, key):
-        r"""
-        Get a :py:class:`BitstreamValue` by either index or name.
-        
-        If an (numerical) index is given, this will be looked up according to
-        the order the :py:class:`BitstreamValue`\ s appear in the bitstream. If
-        a (string) name is given, the value with the specified name will be
-        returned.
-        """
-        if isinstance(key, str):
-            # Get by name
-            for nv in self._names_values:
-                if nv is None:
-                    continue  # An empty line
-                elif isinstance(nv, str):
-                    continue  # A heading
-                elif isinstance(nv, BitstreamValue):
-                    continue  # An unlabelled value
-                else:
-                    name, value = nv
-                    if name == key:
-                        return value
-            raise KeyError(key)
-        else:
-            # Get by index
-            return self._value[key]
-    
-    def __repr__(self):
-        return "<{} {}>".format(
-            self.__class__.__name__,
-            " ".join(
-                (
-                    repr(nv)
-                    if isinstance(nv, BitstreamValue) else
-                    "{}={!r}".format(nv[0], nv[1])
-                )
-                for nv in self._names_values
-                if nv is not None and not isinstance(nv, str)
-            )
-        )
-    
-    def __str__(self):
-        body = []
-        
-        space = "  "
-        
-        indent_level = 0
-        for nv in self._names_values:
-            if nv is None:
-                indent_level = max(0, indent_level - 1)
-            elif isinstance(nv, str):
-                body.append(indent(nv, space*indent_level))
-                indent_level += 1
-            elif isinstance(nv, BitstreamValue):
-                string = str(nv)
-                if string:
-                    body.append(indent(string, space*indent_level))
-            else:
-                name, value = nv
-                string = str(value)
-                if string:
-                    string = "{}: {}".format(name, string)
-                    body.append(indent(string, space*indent_level))
-        
-        return "\n".join(body)
-
-
-class EnumValue(BitstreamValue):
-    """
-    A wrapper for a :py:class:`BitstreamValue` which will attempt to coerce any
-    contained value into a valid :py:class:`Enum` value when possible.
-    
-    This wrapper has no impact on the bitstream representation of the
-    underlying value, but is intended to make using and printing the value more
-    explicit.
-    
-    For example::
-    
-        >>> class SourceSampling(Enum):
-        ...     progressive = 0
-        ...     interlaced = 1
-        >>> mode = EnumValue(UInt(), SourceSampling)
-        
-        >>> # Values are coerced into enum values
-        >>> mode.value
-        <SourceSampling.progressive: 0>
-        >>> mode.value = 1
-        >>> mode.value
-        <SourceSampling.interlaced: 1>
-        
-        >>> # Enum values can be passed in without having to be converted
-        >>> mode.value = SourceSampling.progressive
-        
-        >>> # The pretty-printer shows friendly names alongside the raw value
-        >>> str(mode)
-        'progressive (0)'
-        >>> mode.value = 1
-        >>> str(mode)
-        'interlaced (1)'
-        
-        >>> # Values not found in the enumeration are just left as-is
-        >>> mode.value = 123
-        >>> mode.value
-        123
-        >>> str(mode)
-        '123'
-    """
-    
-    def __init__(self, container, enum_type, value=None):
-        """
-        Parameters
-        ==========
-        container : :py:class:`BitstreamValue`
-            The value to be wrapped.
-        enum_type : :py:class:`Enum`
-            An enumeration which defines names for the values ``value`` may
-            hold.
-        value : object
-            Optionally the value to assign during construction.
-        """
-        self._container = container
-        self._enum_type = enum_type
-        super(EnumValue, self).__init__(None, None)
-        self._validate_container(container)
-        
-        if value is not None:
-            self.value = value
-    
-    def _validate(self, value, length):
-        # Constraints are enforced when the container's value is set
-        pass
-    
-    def _validate_container(self, container):
-        if not isinstance(container, BitstreamValue):
-            raise ValueError(
-                "EnumValue container must be a BitstreamValue")
-    
-    @property
-    def container(self):
-        """The :py:class:`BitstreamValue` which actually holds this value."""
-        return self._container
-    
-    @container.setter
-    def container(self, container):
-        self._validate_container(container)
-        self._container = container
-    
-    @property
-    def enum_type(self):
-        """The :py:class:`Enum` type used."""
-        return self._enum_type
-    
-    @enum_type.setter
-    def enum_type(self, enum_type):
-        self._enum_type = enum_type
-    
-    @property
-    def value(self):
-        """The value, if possible as a :py:attr:`enum_type` value."""
-        try:
-            return self._enum_type(self._container.value)
-        except ValueError:
-            return self._container.value
-    
-    @value.setter
-    def value(self, value):
-        try:
-            self._container.value = self._enum_type(value).value
-        except ValueError:
-            self._container.value = value
-    
-    @property
-    def length(self):
-        return self._container.length
-    
-    @property
-    def offset(self):
-        return self._container.offset
-    
-    @property
-    def bits_past_eof(self):
-        return self._container.bits_past_eof
-    
-    @property
-    def formatter(self):
-        raise NotImplementedError("EnumValue does not have a formatter.")
-    
-    def read(self, reader):
-        self._container.read(reader)
-    
-    def write(self, writer):
-        self._container.write(writer)
-    
-    def __str__(self):
-        if isinstance(self.value, Enum):
-            return "{} ({})".format(
-                self.value.name,
-                str(self._container)
-            )
-        else:
-            return str(self._container)
 

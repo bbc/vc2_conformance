@@ -1,9 +1,170 @@
 import pytest
 
 from io import BytesIO
+from enum import Enum
 
 from vc2_conformance import bitstream
 from vc2_conformance.bitstream.formatters import Hex
+
+
+class TestPrimitiveValueBaseclass(object):
+    
+    def test_value(self):
+        p = bitstream.PrimitiveValue(123, 32)
+        
+        # Argument value should pass through
+        assert p.value == 123
+        
+        # Should be able to override
+        p.value = 100
+        assert p.value == 100
+        p.value = -100
+        assert p.value == -100
+        
+        # Casting should work (sample functions store all positive numbers as
+        # 10x their input value....)
+        def cast_to_primitive(v):
+            if v >= 0:
+                return v * 10
+            else:
+                raise ValueError()
+        
+        def cast_from_primitive(v):
+            if v >= 0:
+                return v // 10
+            else:
+                raise ValueError()
+        
+        p = bitstream.PrimitiveValue(
+            123, 32,
+            cast_to_primitive=cast_to_primitive,
+            cast_from_primitive=cast_from_primitive)
+        
+        # The initial value should have been converted
+        assert p._value == 1230
+        
+        # The exposed value should be un-converted, however
+        assert p.value == 123
+        
+        # Writing a +ve number directly should also be rescaled
+        p.value = 321
+        assert p._value == 3210
+        assert p.value == 321
+        
+        # Writing a -ve number (which is not modified) should work as expected
+        # with the value not beeing modified internally
+        p.value = -321
+        assert p._value == -321
+        assert p.value == -321
+    
+    def test_length(self):
+        p = bitstream.PrimitiveValue(0, 32)
+        
+        # Value is set from constructor
+        assert p.length == 32
+        
+        # Can be changed
+        p.length = 0
+        assert p.length == 0
+        
+        # Validation should prevent invalid lengths
+        with pytest.raises(ValueError):
+            p.length = -1
+        assert p.length == 0
+        
+        # And in the constructor too
+        with pytest.raises(ValueError):
+            bitstream.PrimitiveValue(0, -1)
+    
+    def test_str(self):
+        p = bitstream.PrimitiveValue(0, 32)
+        
+        assert str(p) == "0"
+        
+        # Default formatting...
+        p.value = 123
+        assert str(p) == "123"
+        
+        # Past EOF should be marked
+        p._bits_past_eof = 1
+        assert str(p) == "123*"
+        
+        # Override primitive formatting
+        p = bitstream.PrimitiveValue(0x1234, 32, formatter=Hex(8))
+        assert str(p) == "0x00001234"
+        
+        # Past EOF should be marked
+        p._bits_past_eof = 1
+        assert str(p) == "0x00001234*"
+        
+        # Add name
+        def get_value_name(v):
+            if v == 0:
+                return "zero"
+            else:
+                raise ValueError()
+        
+        p = bitstream.PrimitiveValue(0, 32,
+                                     formatter=Hex(8),
+                                     get_value_name=get_value_name)
+        p.value = 0
+        assert str(p) == "zero (0x00000000)"
+        
+        # Past EOF should be marked
+        p._bits_past_eof = 1
+        assert str(p) == "zero (0x00000000*)"
+        p._bits_past_eof = None
+        
+        # Unnamed values should also work
+        p.value = 0x1234
+        assert str(p) == "0x00001234"
+        
+        p._bits_past_eof = 1
+        assert str(p) == "0x00001234*"
+    
+    def test_enum(self):
+        class ABC(Enum):
+            a = 1
+            b = 2
+            c = 3
+        
+        # Check can pass enum values as arguments
+        p = bitstream.PrimitiveValue(ABC.a, 32, enum=ABC)
+        assert p.value is ABC.a
+        assert p._value == 1
+        
+        # ...and non-enum arguments with enum equivalents
+        p = bitstream.PrimitiveValue(1, 32, enum=ABC)
+        assert p.value is ABC.a
+        assert p._value == 1
+        
+        # ...and values not in the enum
+        p = bitstream.PrimitiveValue(0, 32, enum=ABC)
+        assert p.value == 0
+        assert p._value == 0
+        
+        # Pass in enum type
+        p.value = ABC.b
+        assert p.value is ABC.b
+        assert p._value == 2
+        
+        # Pass in integer with enum equivalent
+        p.value = 3
+        assert p.value is ABC.c
+        assert p._value == 3
+        
+        # Pass in out-of-range value
+        p.value = 4
+        assert p.value == 4
+        assert p._value == 4
+        
+        # String of enum value
+        p.value = 1
+        assert str(p) == "a (1)"
+        
+        # String of non-enum value
+        p.value = 0
+        assert str(p) == "0"
 
 
 class TestBool(object):
@@ -65,22 +226,6 @@ class TestBool(object):
         
         assert bb.value.offset == (0, 7)
         assert bb.value.bits_past_eof == 1
-    
-    def test_str(self):
-        assert str(bitstream.Bool(True)) == "True"
-        assert str(bitstream.Bool(False)) == "False"
-        
-        assert str(bitstream.Bool(True, formatter=Hex())) == "0x1"
-        assert str(bitstream.Bool(False, formatter=Hex())) == "0x0"
-        
-        # Value read past EOF should be marked
-        b = bitstream.Bool()
-        b.read(bitstream.BitstreamReader(BytesIO()))
-        assert str(b) == "True*"
-        
-        b = bitstream.Bool(formatter=Hex())
-        b.read(bitstream.BitstreamReader(BytesIO()))
-        assert str(b) == "0x1*"
 
 
 class TestNBits(object):
@@ -178,19 +323,6 @@ class TestNBits(object):
         bb.write(w)
         assert bb.value.offset == (0, 7)
         assert bb.value.bits_past_eof == 4
-    
-    def test_str(self):
-        assert str(bitstream.NBits(123, 32)) == "123"
-        assert str(bitstream.NBits(0x1234, 32, formatter=Hex())) == "0x1234"
-        
-        # Value read past EOF should be marked
-        n = bitstream.NBits(length=8)
-        n.read(bitstream.BitstreamReader(BytesIO()))
-        assert str(n) == "255*"
-        
-        n = bitstream.NBits(length=8, formatter=Hex())
-        n.read(bitstream.BitstreamReader(BytesIO()))
-        assert str(n) == "0xFF*"
 
 
 class TestByteAlign(object):
@@ -432,19 +564,6 @@ class TestUInt(object):
         
         # Ammount read should be exactly the ammount written
         assert r.tell() == w.tell()
-    
-    def test_str(self):
-        assert str(bitstream.UInt(123)) == "123"
-        assert str(bitstream.UInt(0x1234, formatter=Hex())) == "0x1234"
-        
-        # Value read past EOF should be marked
-        u = bitstream.UInt()
-        u.read(bitstream.BitstreamReader(BytesIO(b"\x00")))
-        assert str(u) == "15*"
-        
-        u = bitstream.UInt(formatter=Hex())
-        u.read(bitstream.BitstreamReader(BytesIO(b"\x00")))
-        assert str(u) == "0xF*"
 
 
 class TestSInt(object):
@@ -628,19 +747,3 @@ class TestSInt(object):
         
         # Ammount read should be exactly the ammount written
         assert r.tell() == w.tell()
-    
-    def test_str(self):
-        assert str(bitstream.SInt(123)) == "123"
-        assert str(bitstream.SInt(-123)) == "-123"
-        
-        assert str(bitstream.SInt(0x1234, formatter=Hex())) == "0x1234"
-        assert str(bitstream.SInt(-0x1234, formatter=Hex())) == "-0x1234"
-        
-        # Value read past EOF should be marked
-        s = bitstream.SInt()
-        s.read(bitstream.BitstreamReader(BytesIO(b"\x00")))
-        assert str(s) == "-15*"
-        
-        s = bitstream.SInt(formatter=Hex())
-        s.read(bitstream.BitstreamReader(BytesIO(b"\x00")))
-        assert str(s) == "-0xF*"

@@ -5,7 +5,6 @@ r"""
 from vc2_conformance.bitstream import (
     LabelledConcatenation,
     NBits,
-    EnumValue,
     UInt,
 )
 
@@ -32,7 +31,7 @@ class ParseInfo(LabelledConcatenation):
     A :py:class:`LabelledConcatenation` with the following fields:
     
     * ``"parse_info_prefix"`` (:py:class:`NBits`)
-    * ``"parse_code"`` (:py:class:`EnumValue` on :py:class:`ParseCodes`)
+    * ``"parse_code"`` (:py:class:`NBits` containing :py:class:`ParseCodes`)
     * ``"next_parse_offset"`` (:py:class:`NBits`)
     * ``"previous_parse_offset"`` (:py:class:`NBits`)
     """
@@ -50,11 +49,7 @@ class ParseInfo(LabelledConcatenation):
             ),
             (
                 "parse_code",
-                EnumValue(
-                    NBits(length=8, formatter=Hex(2)),
-                    ParseCodes,
-                    value=parse_code
-                ),
+                NBits(parse_code, 8, formatter=Hex(2), enum=ParseCodes),
             ),
             ("next_parse_offset", NBits(next_parse_offset, 32)),
             ("previous_parse_offset", NBits(previous_parse_offset, 32)),
@@ -67,10 +62,10 @@ class SequenceHeader(LabelledConcatenation):
     A :py:class:`LabelledConcatenation` with the following fields:
     
     * ``"parse_parameters"`` (:py:class:`ParseParameters`)
-    * ``"base_video_format"`` (:py:class:`EnumValue` of
+    * ``"base_video_format"`` (:py:class:`UInt` containing
       :py:class:`BaseVideoFormats`)
     * ``"video_parameters"`` (:py:class:`SourceParameters`)
-    * ``"picture_coding_mode"`` (:py:class:`EnumValue` on
+    * ``"picture_coding_mode"`` (:py:class:`UInt` containing
       :py:class:`PictureCodingModes`)
     """
     
@@ -82,20 +77,12 @@ class SequenceHeader(LabelledConcatenation):
             ("parse_parameters", ParseParameters()),
             (
                 "base_video_format",
-                EnumValue(
-                    UInt(),
-                    BaseVideoFormats,
-                    value=base_video_format,
-                ),
+                UInt(base_video_format, enum=BaseVideoFormats),
             ),
             ("video_parameters", SourceParameters()),
             (
                 "picture_coding_mode",
-                EnumValue(
-                    UInt(),
-                    PictureCodingModes,
-                    value=picture_coding_mode,
-                ),
+                UInt(picture_coding_mode, enum=PictureCodingModes),
             ),
         )
 
@@ -107,7 +94,7 @@ class ParseParameters(LabelledConcatenation):
     
     * ``"major_version"`` (:py:class:`UInt`)
     * ``"minor_version"`` (:py:class:`UInt`)
-    * ``"profile"`` (:py:class:`EnumValue` on :py:class:`Profiles`)
+    * ``"profile"`` (:py:class:`UInt` containing :py:class:`Profiles`)
     * ``"level"`` (:py:class:`UInt`)
     """
     
@@ -120,6 +107,6 @@ class ParseParameters(LabelledConcatenation):
             "parse_parameters:",
             ("major_version", UInt(major_version)),
             ("minor_version", UInt(minor_version)),
-            ("profile", EnumValue(UInt(), Profiles, value=profile)),
+            ("profile", UInt(profile, enum=Profiles)),
             ("level", UInt(level)),
         )
