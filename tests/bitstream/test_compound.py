@@ -1,5 +1,7 @@
 import pytest
 
+from mock import Mock
+
 from io import BytesIO
 from enum import Enum
 
@@ -254,3 +256,129 @@ class TestLabelledConcatenation(object):
             "    First: 10\n"
             "    Second: 20"
         )
+
+
+class TestArray(object):
+    
+    def test_validate(self):
+        # Empty is OK
+        a = bitstream.Array(bitstream.UInt, 0)
+        assert a.num_values == 0
+        assert a.value == tuple()
+        
+        # Non-empty is OK
+        a = bitstream.Array(bitstream.UInt, 4)
+        assert a.num_values == 4
+        assert len(a.value) == 4
+        assert all(isinstance(v, bitstream.UInt) for v in a.value)
+        
+        # OK
+        a.num_values = lambda: 4
+        assert a.num_values == 4
+        assert len(a.value) == 4
+        
+        # OK
+        a.num_values = lambda: 4
+        assert len(a.value) == 4
+        
+        # OK
+        a.value = (bitstream.UInt(0), bitstream.UInt(1), bitstream.UInt(2), bitstream.UInt(3))
+        assert [v.value for v in a.value] == list(range(4))
+        
+        # Not the right length
+        with pytest.raises(ValueError):
+            a.value = (bitstream.UInt(0), bitstream.UInt(1), bitstream.UInt(2))
+        
+        # Not BitstreamValues
+        with pytest.raises(ValueError):
+            a.value = (1, 2, 3, 4)
+        
+        # Constructor gives out non-BitstreamValues
+        with pytest.raises(ValueError):
+            bitstream.Concatenation(lambda: 123)
+    
+    def test_adjust_length(self):
+        num_values = Mock(return_value=4)
+        
+        a = bitstream.Array(lambda: bitstream.NBits(length=8), num_values)
+        
+        assert all(isinstance(v, bitstream.NBits) for v in a.value)
+        
+        for i, v in enumerate(a.value):
+            v.value = i
+        
+        # Changing the length should adjust the values stored
+        num_values.return_value = 4
+        a._adjust_length()
+        assert [v.value for v in a._value] == [0, 1, 2, 3]
+        
+        num_values.return_value = 3
+        a._adjust_length()
+        assert [v.value for v in a._value] == [0, 1, 2]
+        
+        num_values.return_value = 5
+        a._adjust_length()
+        assert [v.value for v in a._value] == [0, 1, 2, 0, 0]
+    
+    def test_length(self):
+        num_values = Mock(return_value=4)
+        
+        a = bitstream.Array(lambda: bitstream.NBits(length=8), num_values)
+        
+        assert a.length == 4 * 8
+        
+        num_values.return_value = 0
+        assert a.length == 0
+        
+        num_values.return_value = 10
+        assert a.length == 10 * 8
+    
+    def test_read_and_bits_past_eof(self):
+        r = bitstream.BitstreamReader(BytesIO(b"\x00\x01\x02"))
+        
+        num_values = Mock(return_value=0)
+        a = bitstream.Array(lambda: bitstream.NBits(length=8), num_values)
+        
+        num_values.return_value = 4
+        a.read(r)
+        
+        assert a[0].value == 0
+        assert a[1].value == 1
+        assert a[2].value == 2
+        assert a[3].value == 0xFF
+        
+        assert a.bits_past_eof == 8
+        
+        num_values.return_value = 3
+        assert a.bits_past_eof == 0
+    
+    def test_write(self):
+        f = BytesIO()
+        w = bitstream.BitstreamWriter(f)
+        
+        num_values = Mock(return_value=4)
+        a = bitstream.Array(lambda: bitstream.NBits(length=8), num_values)
+        
+        a[0].value = 1
+        a[1].value = 2
+        a[2].value = 3
+        a[3].value = 4
+        
+        num_values.return_value = 3
+        a.write(w)
+        
+        assert f.getvalue() == b"\x01\x02\x03"
+    
+    def test_str(self):
+        num_values = Mock(return_value=4)
+        a = bitstream.Array(lambda: bitstream.NBits(length=8), num_values)
+        
+        a[0].value = 1
+        a[1].value = 2
+        a[2].value = 3
+        a[3].value = 4
+        
+        assert str(a) == "1 2 3 4"
+        
+        num_values.return_value = 5
+        assert str(a) == "1 2 3 4 0"

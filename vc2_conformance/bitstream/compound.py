@@ -11,6 +11,7 @@ from vc2_conformance.bitstream._util import indent, concat_strings
 __all__ = [
     "Concatenation",
     "LabelledConcatenation",
+    "Array",
 ]
 
 
@@ -247,3 +248,143 @@ class LabelledConcatenation(Concatenation):
                         body.append(indent(string, space*indent_level))
         
         return "\n".join(body)
+
+
+class Array(Concatenation):
+    r"""
+    Compound value. An array of :py:class:`BitstreamValue`\ s.
+    
+    The contained :py:class:`BitstreamValue` objects can be accessed either
+    using :py:attr:`value[index]` or by indexing into this object. The
+    :py:attr:`value` of this object will be a :py:class:`tuple` of
+    :py:class:`BitstreamValue`\ s.
+    
+    Example usage:
+        
+        >>> a = Array(UInt, 4)
+        
+        >>> # Array values are set like so
+        >>> a[0].value = 10
+        >>> a[1].value = 20
+        >>> a[2].value = 30
+        >>> a[3].value = 40
+        >>> str(a)
+        10 20 30 40
+        
+        >>> # The number of values in the array is changed using the num_values
+        >>> # property
+        >>> a.num_values = 10
+        >>> str(a)
+        10 20 30 40 0 0 0 0 0 0
+        >>> a.num_values = 2
+        >>> str(a)
+        10 20
+    """
+    
+    def __init__(self, value_constructor, num_values=0):
+        r"""
+        Parameters
+        ==========
+        value_constructor : function() -> :py:class:`BitstreamValue`
+            A function which returns new :py:class:`BitstreamValue`\ s. Used to
+            populate new entries in the array when ``num_values`` is enlarged
+            or during initial construction.
+        num_values : int or function() -> int
+            The number of :py:class:`BitstreamValue`\ s in the array.
+        """
+        self.value_constructor = value_constructor
+        self._num_values = num_values if callable(num_values) else (lambda: num_values)
+        
+        super(Array, self).__init__(*(
+            self.value_constructor()
+            for _ in range(self.num_values)
+        ))
+    
+    @property
+    def num_values(self):
+        """
+        The number of entries in this array. May be set to either an integer or
+        a function which takes no arguments are returns an integer. Will always
+        read as an integer.
+        
+        If this value is changed (either by being set or by the function
+        returning a different value), the underlying array will be either
+        truncated or extended using values produced by
+        :py:attr:`value_constructor`.
+        """
+        return self._num_values()
+    
+    @num_values.setter
+    def num_values(self, num_values):
+        if callable(num_values):
+            self._num_values = num_values
+        else:
+            self._num_values = lambda: num_values
+        
+        self._adjust_length()
+    
+    def _validate(self, value):
+        super(Array, self)._validate(value)
+        if len(value) != self.num_values:
+            raise ValueError(
+                "This Array is defined to have {} values, not {}.".format(
+                    self.num_values, len(value)))
+    
+    def _adjust_length(self):
+        """
+        Internal method. Adjust the length of the internal `_value` tuple to
+        match the current :py:attr:`num_values`.
+        """
+        if len(self._value) < self.num_values:
+            # Extend
+            self._value = self._value + tuple(
+                self.value_constructor()
+                for _ in range(self.num_values - len(self._value))
+            )
+        elif len(self._value) > self.num_values:
+            # Truncate
+            self._value = self._value[:self.num_values]
+    
+    @property
+    def value(self):
+        r"""
+        A tuple of :py:class:`BitstreamValue`\ s contained by this
+        :py:class:`Concatenation`.
+        """
+        self._adjust_length()
+        return self._value
+    
+    @value.setter
+    def value(self, value):
+        self._validate(value)
+        self._value = value
+    
+    @property
+    def length(self):
+        self._adjust_length()
+        return super(Array, self).length
+    
+    @property
+    def bits_past_eof(self):
+        self._adjust_length()
+        return super(Array, self).bits_past_eof
+    
+    def read(self, reader):
+        self._adjust_length()
+        super(Array, self).read(reader)
+    
+    def write(self, writer):
+        self._adjust_length()
+        super(Array, self).write(writer)
+    
+    def __getitem__(self, key):
+        self._adjust_length()
+        return super(Array, self).__getitem__(key)
+    
+    def __repr__(self):
+        self._adjust_length()
+        return super(Array, self).__str__()
+    
+    def __str__(self):
+        self._adjust_length()
+        return super(Array, self).__str__()
