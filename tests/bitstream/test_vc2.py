@@ -101,3 +101,33 @@ def test_signal_range():
     s["custom_signal_range_flag"].value = True
     assert s.length == 1 + 1 + 1 + 3 + 1 + 3
 
+def test_color_spec():
+    c = bitstream.ColorSpec()
+    assert c.length == 1
+    
+    c["custom_color_spec_flag"].value = True
+    c["index"].value = 1
+    assert c.length == 1 + 3
+    
+    c["index"].value = tables.PresetColorSpecs.custom
+    assert c.length == 1 + 1 + 1 + 1 + 1
+    
+    c["color_primaries"]["custom_color_primaries_flag"].value = True
+    c["color_matrix"]["custom_color_matrix_flag"].value = True
+    c["transfer_function"]["custom_transfer_function_flag"].value = True
+    assert c.length == 1 + 1 + 2 + 2 + 2
+    
+    assert str(c) == (
+        "color_spec:\n"
+        "  custom_color_spec_flag: True\n"
+        "  index: custom (0)\n"
+        "  color_primaries:\n"
+        "    custom_color_primaries_flag: True\n"
+        "    index: hdtv (0)\n"
+        "  color_matrix:\n"
+        "    custom_color_matrix_flag: True\n"
+        "    index: hdtv (0)\n"
+        "  transfer_function:\n"
+        "    custom_transfer_function_flag: True\n"
+        "    index: tv_gamma (0)"
+    )

@@ -25,6 +25,10 @@ from vc2_conformance.tables import (
     PresetPixelAspectRatios,
     PRESET_PIXEL_ASPECT_RATIOS,
     PresetSignalRanges,
+    PresetColorSpecs,
+    PresetColorPrimaries,
+    PresetColorMatrices,
+    PresetTransferFunctions,
 )
 
 
@@ -40,6 +44,10 @@ __all__ = [
     "AspectRatio",
     "CleanArea",
     "SignalRange",
+    "ColorSpec",
+    "ColorPrimaries",
+    "ColorMatrix",
+    "TransferFunction",
 ]
 
 
@@ -415,22 +423,133 @@ class ColorSpec(LabelledConcatenation):
     """
     
     def __init__(self,
-                 custom_signal_range_flag=False,
-                 index=0,
-                 luma_offset=0,
-                 luma_excursion=1,
-                 color_diff_offset=0,
-                 color_diff_excursion=1):
-        flag = Bool(custom_signal_range_flag)
-        index = Maybe(UInt(index, enum=PresetSignalRanges), lambda: flag.value)
-        is_full_custom = lambda: flag.value and index.value == 0
-        super(SignalRange, self).__init__(
-            "signal_range:",
-            ("custom_signal_range_flag", flag),
+                 custom_color_spec_flag=False,
+                 index=PresetColorSpecs.custom,
+                 custom_color_primaries_flag=False,
+                 color_primaries_index=PresetColorPrimaries.hdtv,
+                 custom_color_matrix_flag=False,
+                 color_matrix_index=PresetColorMatrices.hdtv,
+                 custom_transfer_function_flag=False,
+                 transfer_function_index=PresetTransferFunctions.tv_gamma):
+        flag = Bool(custom_color_spec_flag)
+        index = Maybe(UInt(index, enum=PresetColorSpecs), lambda: flag.value)
+        is_full_custom = lambda: flag.value and index.value == PresetColorSpecs.custom
+        super(ColorSpec, self).__init__(
+            "color_spec:",
+            ("custom_color_spec_flag", flag),
             ("index", index),
-            ("luma_offset", Maybe(UInt(luma_offset), is_full_custom)),
-            ("luma_excursion", Maybe(UInt(luma_excursion), is_full_custom)),
-            ("color_diff_offset", Maybe(UInt(color_diff_offset), is_full_custom)),
-            ("color_diff_excursion", Maybe(UInt(color_diff_excursion), is_full_custom)),
+            (
+                "color_primaries",
+                Maybe(
+                    ColorPrimaries(
+                        custom_color_primaries_flag,
+                        color_primaries_index,
+                    ),
+                    is_full_custom,
+                )
+            ),
+            (
+                "color_matrix",
+                Maybe(
+                    ColorMatrix(
+                        custom_color_matrix_flag,
+                        color_matrix_index,
+                    ),
+                    is_full_custom,
+                )
+            ),
+            (
+                "transfer_function",
+                Maybe(
+                    TransferFunction(
+                        custom_transfer_function_flag,
+                        transfer_function_index,
+                    ),
+                    is_full_custom,
+                )
+            ),
         )
 
+
+class ColorPrimaries(LabelledConcatenation):
+    """
+    (11.4.10.2) Colour primaries override defined by ``color_primaries()``.
+    
+    A :py:class:`LabelledConcatenation` with the following fields:
+    
+    * ``"custom_color_primaries_flag"`` (:py:class:`Bool`)
+    * ``"index"`` (:py:class:`UInt` containing
+      :py:class:`PresetColorPrimaries`, in a :py:class:`Maybe`)
+    """
+    
+    def __init__(self,
+                 custom_color_primaries_flag=False,
+                 index=PresetColorPrimaries.hdtv):
+        flag = Bool(custom_color_primaries_flag)
+        super(ColorPrimaries, self).__init__(
+            "color_primaries:",
+            ("custom_color_primaries_flag", flag),
+            (
+                "index",
+                Maybe(
+                    UInt(index, enum=PresetColorPrimaries),
+                    lambda: flag.value,
+                ),
+            ),
+        )
+
+
+class ColorMatrix(LabelledConcatenation):
+    """
+    (11.4.10.3) Colour matrix override defined by ``color_matrix()``.
+    
+    A :py:class:`LabelledConcatenation` with the following fields:
+    
+    * ``"custom_color_matrix_flag"`` (:py:class:`Bool`)
+    * ``"index"`` (:py:class:`UInt` containing
+      :py:class:`PresetColorMatrices`, in a :py:class:`Maybe`)
+    """
+    
+    def __init__(self,
+                 custom_color_matrix_flag=False,
+                 index=PresetColorMatrices.hdtv):
+        flag = Bool(custom_color_matrix_flag)
+        super(ColorMatrix, self).__init__(
+            "color_matrix:",
+            ("custom_color_matrix_flag", flag),
+            (
+                "index",
+                Maybe(
+                    UInt(index, enum=PresetColorMatrices),
+                    lambda: flag.value,
+                ),
+            ),
+        )
+
+
+class TransferFunction(LabelledConcatenation):
+    """
+    (11.4.10.4) Transfer function override defined by ``transfer_function()``.
+    
+    A :py:class:`LabelledConcatenation` with the following fields:
+    
+    * ``"custom_transfer_function_flag"`` (:py:class:`Bool`)
+    * ``"index"`` (:py:class:`UInt` containing
+      :py:class:`PresetTransferFunctions`, in a :py:class:`Maybe`)
+    """
+    
+    def __init__(self,
+                 custom_transfer_function_flag=False,
+                 index=PresetTransferFunctions.tv_gamma):
+        flag = Bool(custom_transfer_function_flag)
+        super(TransferFunction, self).__init__(
+            "transfer_function:",
+            ("custom_transfer_function_flag", flag),
+            (
+                "index",
+                Maybe(
+                    UInt(index, enum=PresetTransferFunctions),
+                    lambda: flag.value,
+                ),
+            ),
+        )

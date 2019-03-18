@@ -232,7 +232,18 @@ class LabelledConcatenation(Concatenation):
                 name, value = nv
                 string = str(value)
                 if string:
-                    string = "{}: {}".format(name, string)
-                    body.append(indent(string, space*indent_level))
+                    if string.startswith("{}:".format(name)):
+                        # Special case: if the contained string is
+                        # self-identifying, don't add another copy of the
+                        # label!
+                        body.append(indent(string, space*indent_level))
+                    elif "\n" in string:
+                        # Case: multi-line string (show indented below label)
+                        string = "{}:\n{}".format(name, indent(string, space))
+                        body.append(indent(string, space*indent_level))
+                    else:
+                        # Case: single-line string
+                        string = "{}: {}".format(name, string)
+                        body.append(indent(string, space*indent_level))
         
         return "\n".join(body)

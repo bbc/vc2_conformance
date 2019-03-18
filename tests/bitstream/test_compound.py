@@ -173,7 +173,7 @@ class TestLabelledConcatenation(object):
         w.flush()
         assert f.getvalue() == b"\x2C\x20"
     
-    def test_str(self):
+    def test_str_labels_and_indents(self):
         u1 = bitstream.UInt(10)
         u2 = bitstream.UInt(20)
         u3 = bitstream.UInt(30)
@@ -226,4 +226,31 @@ class TestLabelledConcatenation(object):
         m.flag = False
         assert str(l) == "Title"
 
+    def test_str_multi_line_entries(self):
+        u1 = bitstream.UInt(10)
+        u2 = bitstream.UInt(20)
+        u3 = bitstream.UInt(30)
+        inner = bitstream.LabelledConcatenation("Inner", ("First", u2), ("Second", u3))
+        l = bitstream.LabelledConcatenation("Title", ("First", u1), ("Second", inner))
+        
+        assert str(l) == (
+            "Title\n"
+            "  First: 10\n"
+            "  Second:\n"
+            "    Inner\n"
+            "      First: 20\n"
+            "      Second: 30"
+        )
 
+    def test_str_self_labelling(self):
+        u1 = bitstream.UInt(10)
+        u2 = bitstream.UInt(20)
+        inner = bitstream.LabelledConcatenation("Inner:", ("First", u1), ("Second", u2))
+        l = bitstream.LabelledConcatenation("Title", ("Inner", inner))
+        
+        assert str(l) == (
+            "Title\n"
+            "  Inner:\n"
+            "    First: 10\n"
+            "    Second: 20"
+        )
