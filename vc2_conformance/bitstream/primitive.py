@@ -96,15 +96,19 @@ class PrimitiveValue(BitstreamValue):
             A convenience argument which, if set to a :py:class:`Enum`
             subclass, sets ``cast_to_primitive``, ``cast_from_primitive`` and
             ``get_value_name`` as described in the examples above.
+            
+            If both this argument and any of the cast_to_primitive,
+            cast_from_primitive and get_value_name arguments are given
+            simultaneously, 'enum' will be overridden.
         """
         super(PrimitiveValue, self).__init__()
         
         self._formatter = formatter
         
         if enum is not None:
-            cast_to_primitive = lambda v: enum(v).value
-            cast_from_primitive = enum
-            get_value_name = lambda p: enum(p).name
+            cast_to_primitive = cast_to_primitive or (lambda v: enum(v).value)
+            cast_from_primitive = cast_from_primitive or enum
+            get_value_name = get_value_name or (lambda p: enum(p).name)
         
         self._cast_to_primitive = cast_to_primitive
         self._cast_from_primitive = cast_from_primitive

@@ -26,5 +26,5 @@ setup(
         "Programming Language :: Python :: 3",
     ],
     keywords="smpte-RP-2042-3 vc2 dirac dirac-pro conformance",
-    install_requires=["attrs", "imageio", "enum34"],
+    install_requires=["attrs", "imageio", "enum34", "sentinels"],
 )

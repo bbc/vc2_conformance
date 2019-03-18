@@ -819,236 +819,45 @@ def video_depth(state, video_parameters):
     state.luma_depth = intlog2(video_parameters.luma_excursion + 1)
     state.color_diff_depth = intlog2(video_parameters.color_diff_excursion + 1)
 
-
-PRESET_FRAME_RATES = {
-    1: Fraction(24000, 1001),  # 24/1.001
-    2: Fraction(24, 1),  # 24
-    3: Fraction(25, 1),  # 25
-    4: Fraction(30000, 1001),  # 30/1.001
-    5: Fraction(30, 1),  # 30
-    6: Fraction(50, 1),  # 50
-    7: Fraction(60000, 1001),  # 60/1.001
-    8: Fraction(60, 1),  # 60
-    9: Fraction(15000, 1001),  # 15/1.001
-    10: Fraction(25, 2),  # 25/2
-    11: Fraction(48, 1),  # 48
-    12: Fraction(48000, 1001),  # 48/1.001
-    13: Fraction(96, 1),  # 96
-    14: Fraction(100, 1),  # 100
-    15: Fraction(120000, 1001),  # 120/1.001
-    16: Fraction(120, 1),  # 120
-}
-"""(11.4.6) Frame-rate presets. From (Table 11.3)."""
-
 def preset_frame_rate(video_parameters, index):
     """(11.4.6) Set frame rate from preset."""
-    preset = PRESET_FRAME_RATES[index]
+    preset = PRESET_FRAME_RATES[PresetFrameRates(index)]
     video_parameters.frame_rate_numer = preset.numerator
     video_parameters.frame_rate_denom = preset.denominator
 
 
-PRESET_PIXEL_ASPECT_RATIOS = {
-    1: Fraction(1, 1),
-    2: Fraction(10, 11),  # (4:3 525 line systems)
-    3: Fraction(12, 11),  # (4:3 625 line systems)
-    4: Fraction(40, 33),  # (16:9 525 line systems)
-    5: Fraction(16, 11),  # (16:9 625 line systems)
-    6: Fraction(4, 3),  # (reduced horizontal resolution systems)
-}
-"""(11.4.7) Pixel aspect ratio presets. From (Table 11.4)."""
-
 def preset_pixel_aspect_ratio(video_parameters, index):  # Erata: called 'preset_aspect_ratio' in spec
     """(11.4.7) Set pixel aspect ratio from preset."""
-    preset = PRESET_PIXEL_ASPECT_RATIOS[index]
+    preset = PRESET_PIXEL_ASPECT_RATIOS[PresetPixelAspectRatios(index)]
     video_parameters.pixel_aspect_ratio_numer = preset.numerator
     video_parameters.pixel_aspect_ratio_denom = preset.denominator
 
-
-@attrs(frozen=True)
-class SignalRange(object):
-    """
-    An entry in (Table 11.5).
-    """
-    
-    description = attrib()
-    """Informative."""
-    
-    luma_offset = attrib()
-    """The luma value corresponding with 0."""
-    
-    luma_excursion = attrib()
-    """The maximum value of an offset luma value."""
-    
-    color_diff_offset = attrib()
-    """The color difference value corresponding with 0."""
-    
-    color_diff_excursion = attrib()
-    """The maximum value of an offset color difference value."""
-
-
-PRESET_SIGNAL_RANGES = {
-    1: SignalRange("8-bit Full-Range", 0, 255, 128, 255),
-    2: SignalRange("8-bit Video", 16, 219, 128, 224),
-    3: SignalRange("10-bit Video", 64, 876, 512, 896),
-    4: SignalRange("12-bit Video", 256, 3504, 2048, 3584),
-    5: SignalRange("10-bit Full-Range", 0, 1023, 512, 1023),
-    6: SignalRange("12-bit Full-Range", 0, 4095, 2048, 4095),
-    7: SignalRange("16-bit Video", 4096, 56064, 32768, 57344),
-    8: SignalRange("16-bit Full-Range", 0, 65535, 32768, 65535),
-}
-"""(11.4.9) Signal offsets/ranges presets. From (Table 11.5)."""
-
 def preset_signal_range(video_parameters, index):
     """(11.4.7) Set signal range from preset."""
-    preset = PRESET_SIGNAL_RANGES[index]
+    preset = PRESET_SIGNAL_RANGES[PresetSignalRanges(index)]
     video_parameters.luma_offset = preset.luma_offset
     video_parameters.luma_excursion = preset.luma_excursion
     video_parameters.color_diff_offset = preset.color_diff_offset
     video_parameters.color_diff_excursion = preset.color_diff_excursion
 
 
-@attrs
-class ColorPrimaries(object):
-    """An entry in (Table 11.7)"""
-    
-    description = attrib()
-    """Informative."""
-    
-    specification = attrib()
-    """Normative specification name."""
-
-PRESET_COLOR_PRIMARIES = {
-    0: ColorPrimaries("HDTV", "ITU-R BT.709"),  # Also Computer, Web, sRGB
-    1: ColorPrimaries("SDTV 525", "ITU-R BT.601"),  # 525 Primaries
-    2: ColorPrimaries("SDTV 625", "ITU-R BT.601"),  # 625 Primaries
-    3: ColorPrimaries("D-Cinema", "SMPTE ST 428-1"),  # CIE XYZ
-    4: ColorPrimaries("UHDTV", "ITU-R BT.2020"),  # Used in UHDTV and HDR
-}
-"""
-(11.4.10.2) Color primaries. From (Table 11.7).
-"""
-
 def preset_color_primaries(video_parameters, index):
     """(11.4.10.2) Set the color primaries parameter from a preset."""
-    video_parameters.color_primaries = PRESET_COLOR_PRIMARIES[index]
-
-
-@attrs
-class ColorMatrix(object):
-    """An entry in (Table 11.8)"""
-    
-    description = attrib()
-    """Informative."""
-    
-    specification = attrib()
-    """Normative specification name."""
-    
-    color_matrix = attrib()
-    """Normative color matrix description."""
-
-PRESET_COLOR_MATRICES = {
-    0: ColorMatrix("HDTV", "ITU-R BT.709", "K_R=0:2126,K_B=0:0722"),  # Also Computer and Web
-    1: ColorMatrix("SDTV", "ITU-R BT.601", "K_R=0:299,K_B=0:114"),
-    2: ColorMatrix("Reversible", "ITU-T H.264", "YC_GC_O"),
-    3: ColorMatrix("RGB", None, "Y=G, C_1=B, C_2=R"),
-    4: ColorMatrix("UHDTV", "ITU-R BT.2020", "K_R=0:2627,K_B =0:0593"),
-}
-"""
-(11.4.10.3) Color primaries. From (Table 11.8).
-"""
+    video_parameters.color_primaries = PRESET_COLOR_PRIMARIES[PresetColorPrimaries(index)]
 
 def preset_color_matrix(video_parameters, index):
     """(11.4.10.3) Set the color matrix parameter from a preset."""
-    video_parameters.color_matrix = PRESET_COLOR_MATRICES[index]
+    video_parameters.color_matrix = PRESET_COLOR_MATRICES[PresetColorMatrices(index)]
 
-
-@attrs
-class TransferFunction(object):
-    """An entry in (Table 11.9)"""
-    
-    description = attrib()
-    """Informative."""
-    
-    specification = attrib()
-    """Normative specification name."""
-
-PRESET_TRANSFER_FUNCTIONS = {
-    0: TransferFunction("TV Gamma", "ITU-R BT.2020"),
-    1: TransferFunction("Extended Gamut (deprecated)", "ITU-R BT.1361 (suppressed)"),
-    2: TransferFunction("Linear", "Linear"),
-    3: TransferFunction("D-Cinema Transfer Function", "SMPTE ST 428-1"),
-    4: TransferFunction("Perceptual Quality", "ITU-R BT.2100"),
-    5: TransferFunction("Hybrid Log Gamma", "ITU-R BT.2100"),
-}
-"""
-(11.4.10.4) Transfer functions. From (Table 11.9).
-"""
 
 def preset_transfer_function(video_parameters, index):
     """(11.4.10.4) Set the transfer function parameter from a preset."""
-    video_parameters.transfer_function = PRESET_TRANSFER_FUNCTIONS[index]
+    video_parameters.transfer_function = PRESET_TRANSFER_FUNCTIONS[PresetTransferFunctions(index)]
 
-
-@attrs
-class ColorSpecificiation(object):
-    """An entry in (Table 11.6)"""
-    
-    description = attrib()
-    """Informative."""
-    
-    color_primaries_index = attrib()
-    """Index into PRESET_COLOR_PRIMARIES (Table 11.7)."""
-    
-    color_matrix_index = attrib()
-    """Index into PRESET_COLOR_MATRICES (Table 11.8)."""
-    
-    transfer_function_index = attrib()
-    """Index into PRESET_TRANSFER_FUNCTIONS (Table 11.9)."""
-    
-    @classmethod
-    def from_names(cls, description,
-                   color_primaries, color_matrix, transfer_function):
-        """Utility function to create instances given names not indices."""
-        color_primaries_index = None
-        for index, primaries in PRESET_COLOR_PRIMARIES.items():
-            if primaries.description == color_primaries:
-                color_primaries_index = index
-        assert color_primaries_index is not None
-        
-        color_matrix_index = None
-        for index, matrix in PRESET_COLOR_MATRICES.items():
-            if matrix.description == color_matrix:
-                color_matrix_index = index
-        assert color_matrix_index is not None
-        
-        transfer_function_index = None
-        for index, tf in PRESET_TRANSFER_FUNCTIONS.items():
-            if tf.description == transfer_function:
-                transfer_function_index = index
-        assert transfer_function_index is not None
-        
-        return cls(description,
-                   color_primaries_index,
-                   color_matrix_index,
-                   transfer_function_index)
-
-PRESET_COLOR_SPECS = {
-    0: ColorSpecificiation.from_names("Custom", "HDTV", "HDTV", "TV Gamma"),
-    1: ColorSpecificiation.from_names("SDTV 525", "SDTV 525", "SDTV", "TV Gamma"),
-    2: ColorSpecificiation.from_names("SDTV 625", "SDTV 625", "SDTV", "TV Gamma"),
-    3: ColorSpecificiation.from_names("HDTV", "HDTV", "HDTV", "TV Gamma"),
-    4: ColorSpecificiation.from_names("D-Cinema", "D-Cinema", "Reversible", "D-Cinema Transfer Function"),
-    5: ColorSpecificiation.from_names("UHDTV", "UHDTV", "UHDTV", "TV Gamma"),
-    6: ColorSpecificiation.from_names("HDR-TV PQ", "UHDTV", "UHDTV", "Perceptual Quality"),
-    7: ColorSpecificiation.from_names("HDR-TV HLG", "UHDTV", "UHDTV", "Hybrid Log Gamma"),
-}
-"""
-(11.4.10.1) Preset color specification collections. From (Table 11.6).
-"""
 
 def preset_color_spec(video_parameters, index):
     """(11.4.10.1) Load a preset colour specification."""
-    preset = PRESET_COLOR_SPECS[index]
+    preset = PRESET_COLOR_SPECS[PresetColorSpecs(index)]
     preset_color_primaries(video_parameters, preset.color_primaries_index)
     preset_color_matrix(video_parameters, preset.color_matrix_index)
     preset_transfer_function(video_parameters, preset.transfer_function_index)

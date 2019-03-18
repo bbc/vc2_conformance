@@ -416,10 +416,10 @@ class TestSourceParameters(object):
         assert video_parameters.frame_height == 1080
         
         assert video_parameters.color_diff_format_index == (
-            toy_vc2.ColorDifferenceSamplingFormats.color_4_2_2.value)
+            toy_vc2.ColorDifferenceSamplingFormats.color_4_2_2)
         
         assert video_parameters.source_sampling == (
-            toy_vc2.SourceSamplingModes.interlaced.value)
+            toy_vc2.SourceSamplingModes.interlaced)
         
         assert video_parameters.top_field_first is True
         
@@ -440,13 +440,13 @@ class TestSourceParameters(object):
         assert video_parameters.color_diff_excursion == 896
         
         assert video_parameters.color_primaries is (
-            toy_vc2.PRESET_COLOR_PRIMARIES[0])
+            toy_vc2.PRESET_COLOR_PRIMARIES[toy_vc2.PresetColorPrimaries.hdtv])
         
         assert video_parameters.color_matrix is (
-            toy_vc2.PRESET_COLOR_MATRICES[0])
+            toy_vc2.PRESET_COLOR_MATRICES[toy_vc2.PresetColorMatrices.hdtv])
         
         assert video_parameters.transfer_function is (
-            toy_vc2.PRESET_TRANSFER_FUNCTIONS[0])
+            toy_vc2.PRESET_TRANSFER_FUNCTIONS[toy_vc2.PresetTransferFunctions.tv_gamma])
     
     def test_override_frame_size(self):
         # 0x9_____6____0___3____
@@ -658,13 +658,13 @@ class TestSourceParameters(object):
         video_parameters = toy_vc2.source_parameters(state, 12)
         
         assert video_parameters.color_primaries is (
-            toy_vc2.PRESET_COLOR_PRIMARIES[3])  # D-Cinema
+            toy_vc2.PRESET_COLOR_PRIMARIES[toy_vc2.PresetColorPrimaries.d_cinema])
         
         assert video_parameters.color_matrix is (
-            toy_vc2.PRESET_COLOR_MATRICES[2])  # Reversible
+            toy_vc2.PRESET_COLOR_MATRICES[toy_vc2.PresetColorMatrices.reversible])
         
         assert video_parameters.transfer_function is (
-            toy_vc2.PRESET_TRANSFER_FUNCTIONS[3])  # D-Cinema
+            toy_vc2.PRESET_TRANSFER_FUNCTIONS[toy_vc2.PresetTransferFunctions.d_cinema_transfer_function])
     
     def test_color_spec_custom_defaults(self):
         # 0x0___1_____8_______F___
@@ -684,13 +684,13 @@ class TestSourceParameters(object):
         video_parameters = toy_vc2.source_parameters(state, 12)
         
         assert video_parameters.color_primaries is (
-            toy_vc2.PRESET_COLOR_PRIMARIES[0])
+            toy_vc2.PRESET_COLOR_PRIMARIES[toy_vc2.PresetColorPrimaries.hdtv])
         
         assert video_parameters.color_matrix is (
-            toy_vc2.PRESET_COLOR_MATRICES[0])
+            toy_vc2.PRESET_COLOR_MATRICES[toy_vc2.PresetColorMatrices.hdtv])
         
         assert video_parameters.transfer_function is (
-            toy_vc2.PRESET_TRANSFER_FUNCTIONS[0])
+            toy_vc2.PRESET_TRANSFER_FUNCTIONS[toy_vc2.PresetTransferFunctions.tv_gamma])
     
     def test_color_spec_custom(self):
         # 0x0___1_____C_____D_____C_____3____
@@ -713,13 +713,13 @@ class TestSourceParameters(object):
         video_parameters = toy_vc2.source_parameters(state, 12)
         
         assert video_parameters.color_primaries is (
-            toy_vc2.PRESET_COLOR_PRIMARIES[1])
+            toy_vc2.PRESET_COLOR_PRIMARIES[toy_vc2.PresetColorPrimaries.sdtv_525])
         
         assert video_parameters.color_matrix is (
-            toy_vc2.PRESET_COLOR_MATRICES[2])
+            toy_vc2.PRESET_COLOR_MATRICES[toy_vc2.PresetColorMatrices.reversible])
         
         assert video_parameters.transfer_function is (
-            toy_vc2.PRESET_TRANSFER_FUNCTIONS[3])
+            toy_vc2.PRESET_TRANSFER_FUNCTIONS[toy_vc2.PresetTransferFunctions.d_cinema_transfer_function])
 
 
 @pytest.mark.parametrize(
@@ -762,9 +762,9 @@ def test_picture_dimensions(dummy_stream,
         luma_excursion=1023,
         color_diff_offset=512,
         color_diff_excursion=1023,
-        color_primaries=toy_vc2.PRESET_COLOR_PRIMARIES[0],
-        color_matrix=toy_vc2.PRESET_COLOR_MATRICES[0],
-        transfer_function=toy_vc2.PRESET_TRANSFER_FUNCTIONS[0],
+        color_primaries=toy_vc2.PRESET_COLOR_PRIMARIES[toy_vc2.PresetColorPrimaries.hdtv],
+        color_matrix=toy_vc2.PRESET_COLOR_MATRICES[toy_vc2.PresetColorMatrices.hdtv],
+        transfer_function=toy_vc2.PRESET_TRANSFER_FUNCTIONS[toy_vc2.PresetTransferFunctions.tv_gamma],
     )
     
     toy_vc2.picture_dimensions(state, vp, picture_coding_mode)
@@ -796,9 +796,9 @@ def test_video_depth(dummy_stream):
         luma_excursion=1023,
         color_diff_offset=128,
         color_diff_excursion=255,
-        color_primaries=toy_vc2.PRESET_COLOR_PRIMARIES[0],
-        color_matrix=toy_vc2.PRESET_COLOR_MATRICES[0],
-        transfer_function=toy_vc2.PRESET_TRANSFER_FUNCTIONS[0],
+        color_primaries=toy_vc2.PRESET_COLOR_PRIMARIES[toy_vc2.PresetColorPrimaries.hdtv],
+        color_matrix=toy_vc2.PRESET_COLOR_MATRICES[toy_vc2.PresetColorMatrices.hdtv],
+        transfer_function=toy_vc2.PRESET_TRANSFER_FUNCTIONS[toy_vc2.PresetTransferFunctions.tv_gamma],
     )
     
     toy_vc2.video_depth(state, vp)
