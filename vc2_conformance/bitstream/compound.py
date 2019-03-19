@@ -478,34 +478,10 @@ class SubbandArray(Array):
         # Normalise key to index
         if isinstance(key, tuple):
             level, subband = key
-            if level == 0:
-                if self.dwt_depth_ho == 0 and self.dwt_depth == 0:
-                    if subband != "DC":
-                        raise KeyError(key)
-                elif self.dwt_depth_ho > 0:
-                    if subband != "L":
-                        raise KeyError(key)
-                elif self.dwt_depth > 0:
-                    if subband != "LL":
-                        raise KeyError(key)
-                key = 0
-            elif level < 1 + self.dwt_depth_ho:
-                if subband != "H":
-                    raise KeyError(key)
-                key = level
-            elif level < 1 + self.dwt_depth_ho + self.dwt_depth:
-                if subband not in ("HL", "LH", "HH"):
-                    raise KeyError(key)
-                key = (
-                    1 +
-                    self.dwt_depth_ho +
-                    ((level - self.dwt_depth_ho - 1) * 3)
-                ) + {
-                    "HL": 0,
-                    "LH": 1,
-                    "HH": 2,
-                }[subband]
-            else:
+            try:
+                key = SubbandArray.subband_to_index(
+                    level, subband, self.dwt_depth, self.dwt_depth_ho)
+            except ValueError:
                 raise KeyError(key)
         
         return super(SubbandArray, self).__getitem__(key)
@@ -513,32 +489,89 @@ class SubbandArray(Array):
     def __str__(self):
         self._adjust_length()
         
-        # DC Band
-        if self.dwt_depth_ho == 0 and self.dwt_depth == 0:
-            dc_label = "DC"
-        elif self.dwt_depth_ho != 0:
-            dc_label = "L"
-        elif self.dwt_depth != 0:
-            dc_label = "LL"
+        level_strings = [("Level 0", [])]
         
-        level_subbands = (
-            [[dc_label]] +
-            [["H"]]*self.dwt_depth_ho +
-            [["HL", "LH", "HH"]]*self.dwt_depth
-        )
-        
-        level_strings = []
-        
-        index = 0
-        for level, subbands in enumerate(level_subbands):
-            level_strings.append(concat_labelled_strings([
-                (subband, str(self._value[index + offset]))
-                for offset, subband in enumerate(subbands)
-            ]))
-            index += len(subbands)
+        for index, value in enumerate(self._value):
+            level, subband = SubbandArray.index_to_subband(
+                index, self.dwt_depth, self.dwt_depth_ho)
+            
+            level_label = "Level {}".format(level)
+            if level_strings[-1][0] != level_label:
+                level_strings.append((level_label, []))
+            
+            level_strings[-1][1].append((subband, str(value)))
         
         return "\n".join(
-            concat_labelled_strings([("Level {}".format(level), string)])
-            for level, string in enumerate(level_strings)
-            if string
+            filter(None, (
+                concat_labelled_strings([(label, concat_labelled_strings(strings))])
+                for label, strings in level_strings
+            ))
         )
+
+    @staticmethod
+    def index_to_subband(index, dwt_depth=0, dwt_depth_ho=0):
+        """
+        Static method. Convert from an index into a :py:class:`SubbandArray`
+        to the corresponding (level, subband) tuple where level is an int and
+        subband is one of "DC", "L", "LL", "H", "HL", "LH" and "HH".
+        """
+        if index == 0:
+            level = 0
+            if dwt_depth == 0 and dwt_depth_ho == 0:
+                subband = "DC"
+            elif dwt_depth_ho != 0:
+                subband = "L"
+            else:
+                subband = "LL"
+        elif index < dwt_depth_ho + 1:
+            level = index
+            subband = "H"
+        else:
+            offset_index = (index - dwt_depth_ho - 1)
+            level = 1 + dwt_depth_ho + (offset_index // 3)
+            subband = {
+                0: "HL",
+                1: "LH",
+                2: "HH",
+            }[offset_index % 3]
+        
+        if level > dwt_depth + dwt_depth_ho:
+            raise ValueError(level)
+        
+        return (level, subband)
+
+    @staticmethod
+    def subband_to_index(level, subband, dwt_depth=0, dwt_depth_ho=0):
+        """
+        Static method. Convert from a (level, subband) tuple into an index in a
+        :py:class:`SubbandArray`.
+        """
+        if level == 0:
+            if dwt_depth_ho == 0 and dwt_depth == 0:
+                if subband != "DC":
+                    raise ValueError((level, subband))
+            elif dwt_depth_ho > 0:
+                if subband != "L":
+                    raise ValueError((level, subband))
+            elif dwt_depth > 0:
+                if subband != "LL":
+                    raise ValueError((level, subband))
+            return 0
+        elif level < 1 + dwt_depth_ho:
+            if subband != "H":
+                raise ValueError((level, subband))
+            return level
+        elif level < 1 + dwt_depth_ho + dwt_depth:
+            if subband not in ("HL", "LH", "HH"):
+                raise ValueError((level, subband))
+            return (
+                1 +
+                dwt_depth_ho +
+                ((level - dwt_depth_ho - 1) * 3)
+            ) + {
+                "HL": 0,
+                "LH": 1,
+                "HH": 2,
+            }[subband]
+        else:
+            raise ValueError((level, subband))
