@@ -320,6 +320,23 @@ class TestArray(object):
         a._adjust_length()
         assert [v.value for v in a._value] == [0, 1, 2, 0, 0]
     
+    def test_pass_index(self):
+        num_values = Mock(return_value=4)
+        
+        a = bitstream.Array(bitstream.UInt, num_values, pass_index=False)
+        assert [v.value for v in a.value] == [0, 0, 0, 0]
+        
+        a = bitstream.Array(bitstream.UInt, num_values, pass_index=True)
+        assert [v.value for v in a.value] == [0, 1, 2, 3]
+        
+        a.pass_index = False
+        num_values.return_value = 8
+        assert [v.value for v in a.value] == [0, 1, 2, 3, 0, 0, 0, 0]
+        
+        a.pass_index = True
+        num_values.return_value = 10
+        assert [v.value for v in a.value] == [0, 1, 2, 3, 0, 0, 0, 0, 8, 9]
+    
     def test_length(self):
         num_values = Mock(return_value=4)
         
@@ -382,3 +399,196 @@ class TestArray(object):
         
         num_values.return_value = 5
         assert str(a) == "1 2 3 4 0"
+
+
+class TestSubbandArray(object):
+    
+    def test_num_values_et_al(self):
+        s = bitstream.SubbandArray(bitstream.UInt)
+        
+        assert s.num_values == 1
+        
+        s.dwt_depth_ho = 2
+        assert s.num_values == 3
+        
+        s.dwt_depth = 2
+        assert s.num_values == 9
+    
+    def test_length(self):
+        s = bitstream.SubbandArray(lambda: bitstream.NBits(length=8))
+        
+        assert s.length == 8
+        s.dwt_depth_ho = 2
+        s.dwt_depth = 3
+        assert s.length == 8 * (1 + 2 + (3*3))
+    
+    def test_read(self):
+        r = bitstream.BitstreamReader(BytesIO(b"\x01\x02\x03\x04"))
+        
+        s = bitstream.SubbandArray(lambda: bitstream.NBits(length=8), 1, 1)
+        s.read(r)
+        
+        assert [v.value for v in s.value] == [1, 2, 3, 4, 0xFF]
+        assert s.bits_past_eof == 8
+    
+    def test_write(self):
+        f = BytesIO()
+        w = bitstream.BitstreamWriter(f)
+        
+        s = bitstream.SubbandArray(lambda n: bitstream.NBits(n, 8), 1, 1, True)
+        s.write(w)
+        
+        assert f.getvalue() == b"\x00\x01\x02\x03\x04"
+        assert s.bits_past_eof == 0
+    
+    def test_indexing_dc_only(self):
+        s = bitstream.SubbandArray(bitstream.UInt)
+        
+        assert s[0] is s[0, "DC"]
+        
+        with pytest.raises(KeyError):
+            s[0, "L"]
+        
+        with pytest.raises(KeyError):
+            s[0, "LL"]
+        
+        with pytest.raises(KeyError):
+            s[1, "DC"]
+    
+    def test_indexing_ho(self):
+        s = bitstream.SubbandArray(bitstream.UInt, dwt_depth=3,dwt_depth_ho=2)
+        
+        assert s[0] is s[0, "L"]
+        with pytest.raises(KeyError):
+            s[0, "DC"]
+        with pytest.raises(KeyError):
+            s[0, "LL"]
+        
+        assert s[1] is s[1, "H"]
+        with pytest.raises(KeyError):
+            s[1, "HL"]
+        with pytest.raises(KeyError):
+            s[1, "LH"]
+        with pytest.raises(KeyError):
+            s[1, "HH"]
+        
+        assert s[2] is s[2, "H"]
+        with pytest.raises(KeyError):
+            s[2, "HL"]
+        with pytest.raises(KeyError):
+            s[2, "LH"]
+        with pytest.raises(KeyError):
+            s[2, "HH"]
+        
+        assert s[3] is s[3, "HL"]
+        assert s[4] is s[3, "LH"]
+        assert s[5] is s[3, "HH"]
+        with pytest.raises(KeyError):
+            s[3, "H"]
+        with pytest.raises(KeyError):
+            s[4, "H"]
+        with pytest.raises(KeyError):
+            s[5, "H"]
+        
+        assert s[6] is s[4, "HL"]
+        assert s[7] is s[4, "LH"]
+        assert s[8] is s[4, "HH"]
+        
+        assert s[9] is s[5, "HL"]
+        assert s[10] is s[5, "LH"]
+        assert s[11] is s[5, "HH"]
+        
+        with pytest.raises(KeyError):
+            s[6, "HL"]
+        with pytest.raises(KeyError):
+            s[6, "LH"]
+        with pytest.raises(KeyError):
+            s[6, "HH"]
+    
+    def test_indexing_2d(self):
+        s = bitstream.SubbandArray(bitstream.UInt, dwt_depth=3,dwt_depth_ho=0)
+        
+        assert s[0] is s[0, "LL"]
+        with pytest.raises(KeyError):
+            s[0, "DC"]
+        with pytest.raises(KeyError):
+            s[0, "L"]
+        
+        assert s[1] is s[1, "HL"]
+        assert s[2] is s[1, "LH"]
+        assert s[3] is s[1, "HH"]
+        with pytest.raises(KeyError):
+            s[1, "H"]
+        with pytest.raises(KeyError):
+            s[2, "H"]
+        with pytest.raises(KeyError):
+            s[3, "H"]
+        
+        assert s[4] is s[2, "HL"]
+        assert s[5] is s[2, "LH"]
+        assert s[6] is s[2, "HH"]
+        
+        assert s[7] is s[3, "HL"]
+        assert s[8] is s[3, "LH"]
+        assert s[9] is s[3, "HH"]
+        
+        with pytest.raises(KeyError):
+            s[4, "HL"]
+        with pytest.raises(KeyError):
+            s[4, "LH"]
+        with pytest.raises(KeyError):
+            s[4, "HH"]
+    
+    def test_str(self):
+        s = bitstream.SubbandArray(bitstream.UInt, dwt_depth=3,dwt_depth_ho=2)
+        for i in range(s.num_values):
+            s[i].value = i + 1
+        
+        assert str(s) == (
+            "Level 0: L: 1\n"
+            "Level 1: H: 2\n"
+            "Level 2: H: 3\n"
+            "Level 3: HL: 4, LH: 5, HH: 6\n"
+            "Level 4: HL: 7, LH: 8, HH: 9\n"
+            "Level 5: HL: 10, LH: 11, HH: 12"
+        )
+        
+        s.dwt_depth_ho = 0
+        assert str(s) == (
+            "Level 0: LL: 1\n"
+            "Level 1: HL: 2, LH: 3, HH: 4\n"
+            "Level 2: HL: 5, LH: 6, HH: 7\n"
+            "Level 3: HL: 8, LH: 9, HH: 10"
+        )
+        
+        s.dwt_depth = 0
+        assert str(s) == "Level 0: DC: 1"
+    
+    def test_str_multiline(self):
+        s = bitstream.SubbandArray(
+            lambda: bitstream.LabelledConcatenation("foo", None, "bar"),
+            dwt_depth=1,
+            dwt_depth_ho=1,
+        )
+        
+        assert str(s) == (
+            "Level 0:\n"
+            "  L:\n"
+            "    foo\n"
+            "    bar\n"
+            "Level 1:\n"
+            "  H:\n"
+            "    foo\n"
+            "    bar\n"
+            "Level 2:\n"
+            "  HL:\n"
+            "    foo\n"
+            "    bar\n"
+            "  LH:\n"
+            "    foo\n"
+            "    bar\n"
+            "  HH:\n"
+            "    foo\n"
+            "    bar"
+        )
+

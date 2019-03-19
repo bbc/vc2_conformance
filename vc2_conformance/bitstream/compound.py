@@ -5,13 +5,20 @@ composite types.
 
 from vc2_conformance.bitstream import BitstreamValue
 
-from vc2_conformance.bitstream._util import indent, concat_strings
+from vc2_conformance.bitstream._util import (
+    indent,
+    concat_strings,
+    concat_labelled_strings,
+    ensure_function,
+    function_property,
+)
 
 
 __all__ = [
     "Concatenation",
     "LabelledConcatenation",
     "Array",
+    "SubbandArray",
 ]
 
 
@@ -108,7 +115,7 @@ class Concatenation(BitstreamValue):
         )
     
     def __str__(self):
-        return concat_strings([str(v) for v in self.value])
+        return concat_strings([str(v) for v in self._value])
 
 
 class LabelledConcatenation(Concatenation):
@@ -281,23 +288,28 @@ class Array(Concatenation):
         10 20
     """
     
-    def __init__(self, value_constructor, num_values=0):
+    def __init__(self, value_constructor, num_values=0, pass_index=False):
         r"""
         Parameters
         ==========
         value_constructor : function() -> :py:class:`BitstreamValue`
             A function which returns new :py:class:`BitstreamValue`\ s. Used to
             populate new entries in the array when ``num_values`` is enlarged
-            or during initial construction.
+            or during initial construction. (See also: ``pass_index``.)
         num_values : int or function() -> int
             The number of :py:class:`BitstreamValue`\ s in the array.
+        pass_index : bool
+            If True, the value_constructor function will be passed the index of
+            the array element being constructed. If False (the default) no
+            argument will be passed.
         """
         self.value_constructor = value_constructor
-        self._num_values = num_values if callable(num_values) else (lambda: num_values)
+        self._num_values = ensure_function(num_values)
+        self.pass_index = pass_index
         
         super(Array, self).__init__(*(
-            self.value_constructor()
-            for _ in range(self.num_values)
+            (self.value_constructor(i) if self.pass_index else self.value_constructor())
+            for i in range(self.num_values)
         ))
     
     @property
@@ -316,11 +328,7 @@ class Array(Concatenation):
     
     @num_values.setter
     def num_values(self, num_values):
-        if callable(num_values):
-            self._num_values = num_values
-        else:
-            self._num_values = lambda: num_values
-        
+        self._num_values = ensure_function(num_values)
         self._adjust_length()
     
     def _validate(self, value):
@@ -338,8 +346,8 @@ class Array(Concatenation):
         if len(self._value) < self.num_values:
             # Extend
             self._value = self._value + tuple(
-                self.value_constructor()
-                for _ in range(self.num_values - len(self._value))
+                (self.value_constructor(i) if self.pass_index else self.value_constructor())
+                for i in range(len(self._value), self.num_values)
             )
         elif len(self._value) > self.num_values:
             # Truncate
@@ -388,3 +396,149 @@ class Array(Concatenation):
     def __str__(self):
         self._adjust_length()
         return super(Array, self).__str__()
+
+
+class SubbandArray(Array):
+    r"""
+    An :py:class:`Array`-like for holding values associated one-per-subband of
+    a wavelet transform.
+    
+    By contrast with a regular :py:class:`Array`, a :py:class:`SubbandArray`:
+    
+    * Defines its :py:attr:`num_values` in terms of :py:attr:`dwt_depth` and
+      :py:attr:`dwt_depth_ho`.
+    * Can be indexed using the 2D notation ``a[level, subband]`` (see example
+      below).
+    * Has string representation which explicitly labels the levels and subbands
+      of each entry.
+    
+    The array order is defined as being DC/L/LL followed by the 2D H bands
+    followed by the 2D HL, LH and HH bands (in that order). This ordering is
+    the same ordering used for subband components used in:
+    
+    * (12.4.5.3) ``quant_matrix()``
+    * (13.5.3.1) ``ld_slice()``
+    * (13.5.4) ``hq_slice()``
+    * (13.5.5) ``slice_quantizers()``
+    
+    In addition to the usual array indexing scheme, :py:class:`SubbandArray`\ s
+    can be indexed either directly (in bitstream order) or using level-subband
+    keys like so::
+    
+        >>> q = SubbandArray(UInt, 2, 1)
+        
+        >>> # Level 0: DC Component (i.e. horizontal-only LF-component)
+        >>> assert q[0] is q[0, "L"]
+        
+        >>> # Level 1: Horizontal-only HF-component
+        >>> assert q[1] is q[1, "H"]
+        
+        >>> # Level 2: 2D HF-components
+        >>> assert q[2] is q[2, "HL"]
+        >>> assert q[3] is q[2, "LH"]
+        >>> assert q[4] is q[2, "HH"]
+        
+        >>> # Level 3: 2D HF-components
+        >>> assert q[5] is q[3, "HL"]
+        >>> assert q[6] is q[3, "LH"]
+        >>> assert q[7] is q[3, "HH"]
+    
+    Note that the name of the DC component is "DC" when no transforms are used,
+    "LL" when only a 2D transform is used and "L" when a horizontal-only
+    transform is used.
+    """
+    
+    def __init__(self, value_constructor, dwt_depth=0, dwt_depth_ho=0,
+                 *args, **kwargs):
+        """
+        The dimensions of this matrix are determined by the depth of the 2D and
+        horizontal-only wavelet transforms used.
+        """
+        self.dwt_depth = dwt_depth
+        self.dwt_depth_ho = dwt_depth_ho
+        
+        super(SubbandArray, self).__init__(
+            value_constructor, self.num_values, *args, **kwargs)
+    
+    dwt_depth = function_property()
+    dwt_depth_ho = function_property()
+    
+    @property
+    def num_values(self):
+        return (
+            # DC Band
+            1 +
+            # Horizontal-only components
+            self.dwt_depth_ho +
+            # 2D components
+            (3 * self.dwt_depth)
+        )
+    
+    def __getitem__(self, key):
+        # Normalise key to index
+        if isinstance(key, tuple):
+            level, subband = key
+            if level == 0:
+                if self.dwt_depth_ho == 0 and self.dwt_depth == 0:
+                    if subband != "DC":
+                        raise KeyError(key)
+                elif self.dwt_depth_ho > 0:
+                    if subband != "L":
+                        raise KeyError(key)
+                elif self.dwt_depth > 0:
+                    if subband != "LL":
+                        raise KeyError(key)
+                key = 0
+            elif level < 1 + self.dwt_depth_ho:
+                if subband != "H":
+                    raise KeyError(key)
+                key = level
+            elif level < 1 + self.dwt_depth_ho + self.dwt_depth:
+                if subband not in ("HL", "LH", "HH"):
+                    raise KeyError(key)
+                key = (
+                    1 +
+                    self.dwt_depth_ho +
+                    ((level - self.dwt_depth_ho - 1) * 3)
+                ) + {
+                    "HL": 0,
+                    "LH": 1,
+                    "HH": 2,
+                }[subband]
+            else:
+                raise KeyError(key)
+        
+        return super(SubbandArray, self).__getitem__(key)
+    
+    def __str__(self):
+        self._adjust_length()
+        
+        # DC Band
+        if self.dwt_depth_ho == 0 and self.dwt_depth == 0:
+            dc_label = "DC"
+        elif self.dwt_depth_ho != 0:
+            dc_label = "L"
+        elif self.dwt_depth != 0:
+            dc_label = "LL"
+        
+        level_subbands = (
+            [[dc_label]] +
+            [["H"]]*self.dwt_depth_ho +
+            [["HL", "LH", "HH"]]*self.dwt_depth
+        )
+        
+        level_strings = []
+        
+        index = 0
+        for level, subbands in enumerate(level_subbands):
+            level_strings.append(concat_labelled_strings([
+                (subband, str(self._value[index + offset]))
+                for offset, subband in enumerate(subbands)
+            ]))
+            index += len(subbands)
+        
+        return "\n".join(
+            concat_labelled_strings([("Level {}".format(level), string)])
+            for level, string in enumerate(level_strings)
+            if string
+        )
