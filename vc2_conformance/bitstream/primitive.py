@@ -11,6 +11,8 @@ values to be used or hexidecimal representations to be shown.
 
 from vc2_conformance.bitstream import BitstreamValue
 
+from vc2_conformance.bitstream._util import function_property
+
 
 __all__ = [
     "PrimitiveValue",
@@ -27,7 +29,7 @@ class PrimitiveValue(BitstreamValue):
     Base class for primitive datatypes.
     """
     
-    def __init__(self, value, length,
+    def __init__(self, value,
                  formatter=str,
                  cast_to_primitive=None,
                  cast_from_primitive=None,
@@ -38,8 +40,6 @@ class PrimitiveValue(BitstreamValue):
         ==========
         value
             The initial value for the bitstream entry.
-        length
-            The initial length for the bitstream entry.
         formatter : function(value) -> string
             When the underlying primitive value is being converted to a string,
             this function will be used to perform the conversion.
@@ -114,17 +114,8 @@ class PrimitiveValue(BitstreamValue):
         self._cast_from_primitive = cast_from_primitive
         self._get_value_name = get_value_name
         
-        self._value = None
-        self._length = length
-        
         # Set the value via its property to ensure value conversion takes
-        # place. Also, as a side-effect, the _validate function will be run
-        # against the initial value.
-        #
-        # This step is performed after setting all of the private member
-        # variables above since if validation fails an exception will be thrown
-        # possibly resulting in __repr__ being called and, consequently, those
-        # values being accessed.
+        # place.
         self.value = value
     
     @property
@@ -145,34 +136,9 @@ class PrimitiveValue(BitstreamValue):
             except ValueError:
                 pass
         
-        self._validate(value, self._length)
-        
         self._value = value
         self._offset = None
         self._bits_past_eof = None
-    
-    @property
-    def length(self):
-        return self._length
-    
-    @length.setter
-    def length(self, length):
-        self._validate(self._value, length)
-        self._length = length
-    
-    def _validate(self, value, length):
-        """
-        Internal method, to be overridden as required. Validate a candidate
-        :py:attr:`value` and :py:attr:`length` field value combination. Raise a
-        :py:exc:`ValueError` if invalid values have been provided.
-        
-        NB: The ``value`` passed to this method should be the cast-to-primtive
-        version of the current value.
-        """
-        if length < 0:
-            raise ValueError(
-                "Bitstream value lengths must always be non-negative")
-    
     
     def __str__(self):
         if self.bits_past_eof:
@@ -197,7 +163,11 @@ class Bool(PrimitiveValue):
     """A boolean value, as per read_bool (A.3.2)"""
     
     def __init__(self, value=False, *args, **kwargs):
-        super(Bool, self).__init__(value, 1, *args, **kwargs)
+        super(Bool, self).__init__(value, *args, **kwargs)
+    
+    @property
+    def length(self):
+        return 1
     
     def read(self, reader):
         self._offset = reader.tell()
@@ -210,42 +180,72 @@ class Bool(PrimitiveValue):
         self._bits_past_eof = 1 - writer.write_bit(self.value)
 
 
+def read_bits(reader, bits):
+    """
+    Read 'bits' bits from a :py:class:`BitstreamReader`, like read_nbits
+    (A.3.3) and return a tuple (value, bits_past_eof).
+    """
+    value = 0
+    bits_past_eof = 0
+    for i in range(bits):
+        bit = reader.read_bit()
+        value <<= 1
+        value |= bit if bit is not None else 1
+        bits_past_eof += int(bit is None)
+    
+    return (value, bits_past_eof)
+
+
+def write_bits(writer, bits, value):
+    """
+    Write the 'bits' lowest-rder bits of 'value' into a
+    :py:class:`BitstreamWriter`. The inverse of read_nbits
+    (A.3.3). Return 'bits_past_eof'.
+    """
+    bits_past_eof = 0
+    for i in range(bits-1, -1, -1):
+        bits_past_eof += 1 - writer.write_bit((value >> i) & 1)
+    
+    return bits_past_eof
+
+
 class NBits(PrimitiveValue):
     """A fixed-width unsigned integer, as per read_nbits (A.3.3)"""
     
     def __init__(self, value=0, length=0, *args, **kwargs):
-        super(NBits, self).__init__(value, length, *args, **kwargs)
+        """
+        length : int or function() -> int
+            The initial length of this value (in bits). May be an int or a
+            function. If a function, should be a function taking no arguments
+            and returning the current length. This form is intended to support
+            variable-length values whose length is encoded in an earlier
+            :py:class:`BitstreamValue`.
+        """
+        super(NBits, self).__init__(value, *args, **kwargs)
+        self.length = length
     
-    def _validate(self, value, length):
-        super(NBits, self)._validate(value, length)
-        if value < 0 or value.bit_length() > length:
-            raise ValueError(
-                "NBits value must fit in {} bit(s) (got {})".format(
-                    self.length, value))
+    length = function_property()
     
     def read(self, reader):
         self._offset = reader.tell()
         
-        self._value = 0
-        self._bits_past_eof = 0
-        for i in range(self.length):
-            bit = reader.read_bit()
-            self._value <<= 1
-            self._value |= bit if bit is not None else 1
-            self._bits_past_eof += int(bit is None)
+        self._value, self._bits_past_eof = read_bits(reader, self.length)
     
     def write(self, writer):
         self._offset = writer.tell()
 
-        self._bits_past_eof = 0
-        for i in range(self.length-1, -1, -1):
-            self._bits_past_eof += 1 - writer.write_bit((self.value >> i) & 1)
+        if self._value < 0 or self._value.bit_length() > self.length:
+            raise ValueError("{}-bit NBits cannot represent {}".format(
+                self.length, self._value
+            ))
 
-class ByteAlign(NBits):
+        self._bits_past_eof = write_bits(writer, self.length, self._value)
+
+class ByteAlign(PrimitiveValue):
     """
     Align to the next whole-byte boundary, as per byte_align (A.2.4).
     
-    The :py:attr:`value` field holds the bits to when padding. The
+    The :py:attr:`value` field holds the bits to use when padding. The
     least-significant bits will be used.
     
     The :py:attr:`length` field is read-only for this type and is None unless
@@ -253,34 +253,34 @@ class ByteAlign(NBits):
     """
     
     def __init__(self, value=0):
-        super(ByteAlign, self).__init__(value, None)
+        self._length = None
+        super(ByteAlign, self).__init__(value)
     
-    def _validate(self, value, length):
-        # Nothing to validate
-        pass
+    @property
+    def length(self):
+        return self._length
     
     def read(self, reader):
         self._offset = reader.tell()
         
         # Advance to next byte, if required
-        if self._offset[1] != 7:
+        if self.offset[1] != 7:
             self._length = self.offset[1] + 1
-            super(ByteAlign, self).read(reader)
         else:
-            self._value = 0
             self._length = 0
-            self._bits_past_eof = 0
+        
+        self._value, self._bits_past_eof = read_bits(reader, self.length)
     
     def write(self, writer):
         self._offset = writer.tell()
         
         # Advance to next byte, if required
         if self.offset[1] != 7:
-            self.length = self.offset[1] + 1
-            super(ByteAlign, self).write(writer)
+            self._length = self.offset[1] + 1
         else:
-            self.length = 0
-            self._bits_past_eof = 0
+            self._length = 0
+        
+        self._bits_past_eof = write_bits(writer, self._length, self._value)
     
     def __str__(self):
         if self.length:
@@ -298,12 +298,7 @@ class UInt(PrimitiveValue):
     """
     
     def __init__(self, value=0, *args, **kwargs):
-        super(UInt, self).__init__(value, None, *args, **kwargs)
-    
-    def _validate(self, value, length):
-        if value < 0:
-            raise ValueError(
-                "UInt value must be non-negative (got {})".format(value))
+        super(UInt, self).__init__(value, *args, **kwargs)
     
     @property
     def length(self):
@@ -333,6 +328,10 @@ class UInt(PrimitiveValue):
     def write(self, writer):
         self._offset = writer.tell()
         
+        if self._value < 0:
+            raise ValueError(
+                "UInt cannot represent negative value {}".format(self._value))
+        
         value = self._value + 1
         
         self._bits_past_eof = 0
@@ -348,10 +347,6 @@ class SInt(UInt):
     A variable length (modified exp-Golomb) signed integer, as per read_sint
     (A.4.4)
     """
-    
-    def _validate(self, value, length):
-        # Positive and negative values are allowed
-        pass
     
     @property
     def length(self):

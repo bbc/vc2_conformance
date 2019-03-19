@@ -1,4 +1,5 @@
 import pytest
+from mock import Mock
 
 from io import BytesIO
 from enum import Enum
@@ -10,7 +11,7 @@ from vc2_conformance.bitstream.formatters import Hex
 class TestPrimitiveValueBaseclass(object):
     
     def test_value(self):
-        p = bitstream.PrimitiveValue(123, 32)
+        p = bitstream.PrimitiveValue(123)
         
         # Argument value should pass through
         assert p.value == 123
@@ -36,7 +37,7 @@ class TestPrimitiveValueBaseclass(object):
                 raise ValueError()
         
         p = bitstream.PrimitiveValue(
-            123, 32,
+            123,
             cast_to_primitive=cast_to_primitive,
             cast_from_primitive=cast_from_primitive)
         
@@ -57,27 +58,8 @@ class TestPrimitiveValueBaseclass(object):
         assert p._value == -321
         assert p.value == -321
     
-    def test_length(self):
-        p = bitstream.PrimitiveValue(0, 32)
-        
-        # Value is set from constructor
-        assert p.length == 32
-        
-        # Can be changed
-        p.length = 0
-        assert p.length == 0
-        
-        # Validation should prevent invalid lengths
-        with pytest.raises(ValueError):
-            p.length = -1
-        assert p.length == 0
-        
-        # And in the constructor too
-        with pytest.raises(ValueError):
-            bitstream.PrimitiveValue(0, -1)
-    
     def test_str(self):
-        p = bitstream.PrimitiveValue(0, 32)
+        p = bitstream.PrimitiveValue(0)
         
         assert str(p) == "0"
         
@@ -90,7 +72,7 @@ class TestPrimitiveValueBaseclass(object):
         assert str(p) == "123*"
         
         # Override primitive formatting
-        p = bitstream.PrimitiveValue(0x1234, 32, formatter=Hex(8))
+        p = bitstream.PrimitiveValue(0x1234, formatter=Hex(8))
         assert str(p) == "0x00001234"
         
         # Past EOF should be marked
@@ -104,7 +86,7 @@ class TestPrimitiveValueBaseclass(object):
             else:
                 raise ValueError()
         
-        p = bitstream.PrimitiveValue(0, 32,
+        p = bitstream.PrimitiveValue(0,
                                      formatter=Hex(8),
                                      get_value_name=get_value_name)
         p.value = 0
@@ -129,17 +111,17 @@ class TestPrimitiveValueBaseclass(object):
             c = 3
         
         # Check can pass enum values as arguments
-        p = bitstream.PrimitiveValue(ABC.a, 32, enum=ABC)
+        p = bitstream.PrimitiveValue(ABC.a, enum=ABC)
         assert p.value is ABC.a
         assert p._value == 1
         
         # ...and non-enum arguments with enum equivalents
-        p = bitstream.PrimitiveValue(1, 32, enum=ABC)
+        p = bitstream.PrimitiveValue(1, enum=ABC)
         assert p.value is ABC.a
         assert p._value == 1
         
         # ...and values not in the enum
-        p = bitstream.PrimitiveValue(0, 32, enum=ABC)
+        p = bitstream.PrimitiveValue(0, enum=ABC)
         assert p.value == 0
         assert p._value == 0
         
@@ -239,33 +221,6 @@ class TestNBits(object):
         assert n.value == 123
         assert n.length == 8
     
-    @pytest.mark.parametrize("value,length", [
-        # Negative values should always fail
-        (-1, 0),
-        (-1, 100),
-        # Too-large values
-        (1, 0),
-        (128, 7),
-    ])
-    def test_validation(self, value, length):
-        with pytest.raises(ValueError):
-            b = bitstream.NBits(value, length)
-        
-        b = bitstream.NBits(length=1000)
-        b.length = length
-        with pytest.raises(ValueError):
-            b.value = value
-        assert b.length == length
-        assert b.value == 0
-        
-        if value >= 0:
-            b = bitstream.NBits(length=1000)
-            b.value = value
-            with pytest.raises(ValueError):
-                b.length = length
-            assert b.value == value
-            assert b.length == 1000
-    
     def test_read(self):
         r = bitstream.BitstreamReader(BytesIO(b"\xAA"))
         n = bitstream.NBits(length=3)
@@ -323,7 +278,25 @@ class TestNBits(object):
         bb.write(w)
         assert bb.inner_value.offset == (0, 7)
         assert bb.inner_value.bits_past_eof == 4
-
+    
+    def test_out_of_range(self):
+        w = bitstream.BitstreamWriter(BytesIO())
+        
+        n = bitstream.NBits(-1, length=8)
+        with pytest.raises(ValueError):
+            n.write(w)
+        n.value = 256
+        with pytest.raises(ValueError):
+            n.write(w)
+    
+    def test_length_as_function(self):
+        length = Mock(return_value=8)
+        
+        n = bitstream.NBits(10, length)
+        assert n.length == 8
+        
+        length.return_value = 4
+        assert n.length == 4
 
 class TestByteAlign(object):
     
@@ -436,13 +409,11 @@ class TestUInt(object):
         assert u.length == 5
     
     def test_non_negative(self):
-        with pytest.raises(ValueError):
-            bitstream.UInt(-1)
+        w = bitstream.BitstreamWriter(BytesIO())
         
-        u = bitstream.UInt()
+        u = bitstream.UInt(-1)
         with pytest.raises(ValueError):
-            u.value = -1
-        assert u.value == 0
+            u.write(w)
     
     def test_read(self):
         r = bitstream.BitstreamReader(BytesIO(b"\x1F"))
