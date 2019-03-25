@@ -81,6 +81,7 @@ __all__ = [
     "HQSlice",
     "SliceBand",
     "ColorDiffSliceBand",
+    "WaveletTransform",
 ]
 
 
@@ -2273,7 +2274,7 @@ class HQSlice(LabelledConcatenation):
             "hq_slice:",
             ("slice_prefix_bytes", Padding(lambda: self.slice_prefix_bytes)),
             ("qindex", qindex),
-            *component_slices,
+            *component_slices
         )
     
     sx = function_property()
@@ -2477,7 +2478,7 @@ class ColorDiffSliceBand(BaseSliceBand):
         super(ColorDiffSliceBand, self).__init__(
             lambda: Concatenation(SInt(), SInt()),
             *args,
-            **kwargs,
+            **kwargs
         )
     
     @property
