@@ -3,7 +3,13 @@ Internal minor utility functions; mainly relating to string formatting.
 """
 
 from weakref import WeakKeyDictionary
-from itertools import zip_longest
+
+try:
+    # Python 3.x
+    from itertools import zip_longest
+except ImportError:
+    # Python 2.x
+    from itertools import izip_longest as zip_longest
 
 
 def indent(text, prefix="  "):
@@ -172,10 +178,11 @@ class function_property(object):
         self._values = WeakKeyDictionary()
     
     def __get__(self, obj, owner_type=None):
-        if obj in self._values:
-            return self._values[obj]()
-        else:
+        try:
+            fn = self._values[obj]
+        except KeyError:
             raise AttributeError()
+        return fn()
     
     def __set__(self, obj, value):
         self._values[obj] = ensure_function(value)
