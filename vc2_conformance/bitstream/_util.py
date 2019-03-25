@@ -2,8 +2,6 @@
 Internal minor utility functions; mainly relating to string formatting.
 """
 
-from weakref import WeakKeyDictionary
-
 try:
     # Python 3.x
     from itertools import zip_longest
@@ -165,30 +163,17 @@ class function_property(object):
     of calling the function (or just returning the constant if not a function).
     """
     
-    def __init__(self):
-        # The values held by a function_property will be stored in a
-        # WeakKeyDictionary in this class. Strictly speaking this is bad for
-        # data-locality/performance since instance-associated data will be kept
-        # separately from the instance in memory. The trade-off made here is
-        # that we get a simpler API since no 'internal' attribute name needs to
-        # be provided by the user. Since performance is not a primary concern,
-        # this trade-off was deemed sensible in this case.
-        #
-        # {obj -> value, ...}
-        self._values = WeakKeyDictionary()
+    def __init__(self, internal_name=None):
+        self._internal_name = internal_name or "_function_property_{}".format(id(self))
     
     def __get__(self, obj, owner_type=None):
-        try:
-            fn = self._values[obj]
-        except KeyError:
-            raise AttributeError()
-        return fn()
+        return getattr(obj, self._internal_name)()
     
     def __set__(self, obj, value):
-        self._values[obj] = ensure_function(value)
+        setattr(obj, self._internal_name, ensure_function(value))
     
     def __delete__(self, obj):
-        del self._values[obj]
+        delattr(obj, self._internal_name)
 
 
 def ordinal_indicator(value):
