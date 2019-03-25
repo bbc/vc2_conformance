@@ -9,6 +9,7 @@ from vc2_conformance.bitstream._util import (
     indent,
     concat_strings,
     concat_labelled_strings,
+    concat_tabular_strings,
     ensure_function,
     function_property,
 )
@@ -18,6 +19,7 @@ __all__ = [
     "Concatenation",
     "LabelledConcatenation",
     "Array",
+    "RectangularArray",
     "SubbandArray",
 ]
 
@@ -109,13 +111,14 @@ class Concatenation(BitstreamValue):
         return self._value[key]
     
     def __repr__(self):
-        return "<{} {}>".format(
-            self.__class__.__name__,
-            " ".join(repr(v) for v in self._value)
-        )
+        return "<{}>".format(self.__class__.__name__)
     
     def __str__(self):
-        return concat_strings([str(v) for v in self._value])
+        s = concat_strings([str(v) for v in self._value], ", ")
+        if "\n" in s:
+            return s
+        else:
+            return "({})".format(s)
 
 
 class LabelledConcatenation(Concatenation):
@@ -207,18 +210,7 @@ class LabelledConcatenation(Concatenation):
             return self._value[key]
     
     def __repr__(self):
-        return "<{} {}>".format(
-            self.__class__.__name__,
-            " ".join(
-                (
-                    repr(nv)
-                    if isinstance(nv, BitstreamValue) else
-                    "{}={!r}".format(nv[0], nv[1])
-                )
-                for nv in self._names_values
-                if nv is not None and not isinstance(nv, str)
-            )
-        )
+        return "<{}>".format(self.__class__.__name__)
     
     def __str__(self):
         body = []
@@ -296,40 +288,29 @@ class Array(Concatenation):
             A function which returns new :py:class:`BitstreamValue`\ s. Used to
             populate new entries in the array when ``num_values`` is enlarged
             or during initial construction. (See also: ``pass_index``.)
-        num_values : int or function() -> int
+        num_values : int or function() -> int or None
             The number of :py:class:`BitstreamValue`\ s in the array.
+            
+            If overriding this class and redefining the num_values property,
+            set this argument to None to prevent this constructor assigning a
+            value to it.
         pass_index : bool
             If True, the value_constructor function will be passed the index of
             the array element being constructed. If False (the default) no
             argument will be passed.
         """
         self.value_constructor = value_constructor
-        self._num_values = ensure_function(num_values)
         self.pass_index = pass_index
+        
+        if num_values is not None:
+            self.num_values = num_values
         
         super(Array, self).__init__(*(
             (self.value_constructor(i) if self.pass_index else self.value_constructor())
             for i in range(self.num_values)
         ))
     
-    @property
-    def num_values(self):
-        """
-        The number of entries in this array. May be set to either an integer or
-        a function which takes no arguments are returns an integer. Will always
-        read as an integer.
-        
-        If this value is changed (either by being set or by the function
-        returning a different value), the underlying array will be either
-        truncated or extended using values produced by
-        :py:attr:`value_constructor`.
-        """
-        return self._num_values()
-    
-    @num_values.setter
-    def num_values(self, num_values):
-        self._num_values = ensure_function(num_values)
-        self._adjust_length()
+    num_values = function_property()
     
     def _validate(self, value):
         super(Array, self)._validate(value)
@@ -395,7 +376,87 @@ class Array(Concatenation):
     
     def __str__(self):
         self._adjust_length()
-        return super(Array, self).__str__()
+        return concat_strings([str(v) for v in self._value])
+
+
+class RectangularArray(Array):
+    r"""
+    An :py:class:`Array`-like for holding a 2D array of of values.
+    
+    By contrast with a regular :py:class:`Array`, a :py:class:`RectangularArray`:
+    
+    * Defines its :py:attr:`num_values` in terms of :py:attr:`width` and
+      :py:attr:`height`.
+    * Values are stored in row-major order.
+    * Can be indexed using 2D indices, e.g. ``a[y, x]`` (note 'y' is given
+      first)
+    * Has a tabular string representation.
+    
+    The array order and 2D indexing scheme match the convention used by the
+    VC-2 spec. Specifically:
+    
+    * (13.4) ``dc_prediction()``
+    * (13.5.6.3) ``slice_band()``
+    * (13.5.6.4) ``color_diff_slice_band()``
+    * (15.5) ``clip_component()`` and ``offset_component()``
+    
+    An example of the indexing scheme is shown below:
+    
+        >>> q = RectangularArray(UInt, height=2, width=3)
+        
+        >>> assert q[0] is q[0, 0]
+        >>> assert q[1] is q[0, 1]
+        >>> assert q[2] is q[0, 2]
+        >>> assert q[3] is q[1, 0]
+        >>> assert q[4] is q[1, 1]
+        >>> assert q[5] is q[1, 2]
+    """
+    
+    def __init__(self, value_constructor, height=0, width=0,
+                 *args, **kwargs):
+        """
+        width, height : int, function() -> int, None
+            The dimensions of the array, or a function returning as such.
+            
+            If overriding this class and redefining the width and height
+            properties, set these arguments to None to prevent this constructor
+            assigning values to them.
+        """
+        if height is not None:
+            self.height = height
+        if width is not None:
+            self.width = width
+        
+        super(RectangularArray, self).__init__(
+            value_constructor, None, *args, **kwargs)
+    
+    height = function_property()
+    width = function_property()
+    
+    @property
+    def num_values(self):
+        return self.height * self.width
+    
+    def __getitem__(self, key):
+        # Normalise key to index
+        if isinstance(key, tuple):
+            y, x = key
+            
+            if not (0 <= y < self.height):
+                raise IndexError(key)
+            elif not (0 <= x < self.width):
+                raise IndexError(key)
+            
+            key = (y*self.width) + x
+        
+        return super(RectangularArray, self).__getitem__(key)
+    
+    def __str__(self):
+        self._adjust_length()
+        return concat_tabular_strings([
+            [str(self[y, x]) for x in range(self.width)]
+            for y in range(self.height)
+        ])
 
 
 class SubbandArray(Array):
@@ -458,7 +519,7 @@ class SubbandArray(Array):
         self.dwt_depth_ho = dwt_depth_ho
         
         super(SubbandArray, self).__init__(
-            value_constructor, self.num_values, *args, **kwargs)
+            value_constructor, None, *args, **kwargs)
     
     dwt_depth = function_property()
     dwt_depth_ho = function_property()

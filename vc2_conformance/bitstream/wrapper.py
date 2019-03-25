@@ -6,7 +6,7 @@ block.
 
 from vc2_conformance.bitstream import BitstreamValue
 
-from vc2_conformance.bitstream._util import concat_strings
+from vc2_conformance.bitstream._util import concat_strings, function_property
 
 
 __all__ = [
@@ -120,22 +120,13 @@ class BoundedBlock(WrappedValue):
         
         super(BoundedBlock, self).__init__(inner_value)
     
-    @property
-    def length(self):
-        """
-        The length of the bounded block.
-        
-        If set, may be set to an integer or a function (see ``length`` argument
-        of constructor), but will always read as an int.
-        """
-        return self._length()
+    length = function_property()
+    """
+    The length of the bounded block.
     
-    @length.setter
-    def length(self, length):
-        if callable(length):
-            self._length = length
-        else:
-            self._length = lambda: length
+    If set, may be set to an integer or a function (see ``length`` argument
+    of constructor), but will always read as an int.
+    """
     
     @property
     def pad_value(self):
@@ -305,24 +296,15 @@ class Maybe(WrappedValue):
         self.flag = flag
         super(Maybe, self).__init__(inner_value)
     
-    @property
-    def flag(self):
-        """
-        The current visibility state of this value. If True,
-        :py:attr:`inner_value` will be included in the bitstream, if False it
-        will be omitted.
-        
-        This property may be set with either a bool or a function (see the
-        constructor ``flag`` argument) but always reads as a bool.
-        """
-        return bool(self._flag())
+    flag = function_property()
+    """
+    The current visibility state of this value. If True,
+    :py:attr:`inner_value` will be included in the bitstream, if False it
+    will be omitted.
     
-    @flag.setter
-    def flag(self, flag):
-        if callable(flag):
-            self._flag = flag
-        else:
-            self._flag = (lambda: flag)
+    This property may be set with either a bool or a function (see the
+    constructor ``flag`` argument) but always reads as a bool.
+    """
     
     @property
     def length(self):

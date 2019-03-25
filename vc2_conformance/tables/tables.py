@@ -19,6 +19,8 @@ from vc2_conformance.tables.constants import (
     ColorDifferenceSamplingFormats,
     SourceSamplingModes,
     BaseVideoFormats,
+    LiftingFilterTypes,
+    WaveletFilters,
 )
 
 __all__ = [
@@ -34,6 +36,9 @@ __all__ = [
     "PRESET_COLOR_SPECS",
     "BaseVideoFormatParameters",
     "BASE_VIDEO_FORMAT_PARAMETERS",
+    "LiftingStage",
+    "LiftingFilterParameters",
+    "LIFTING_FILTERS",
 ]
 
 
@@ -614,3 +619,99 @@ BASE_VIDEO_FORMAT_PARAMETERS = {
 :py:class:`BaseVideoFormats`.
 """
 
+
+@attrs
+class LiftingStage(object):
+    """
+    (15.4.4.1) Definition of a lifting stage/operation in a lifting filter.
+    """
+    
+    lift_type = attrib()
+    """
+    Specifies which lifting filtering operation is taking place. One
+    of the indices from the LiftingFilterTypes enumeration.
+    """
+    
+    S = attrib()
+    """Scale factor (right-shift applied to weighted sum)"""
+    
+    L = attrib()
+    """Length of filter."""
+    
+    D = attrib()
+    """Offset of filter."""
+    
+    taps = attrib()
+    """An array of integers defining the filter coefficients."""
+
+@attrs
+class LiftingFilterParameters(object):
+    """
+    (15.4.4.3) The generic container for the details described by (Table 15.1
+    to 15.6).
+    """
+    filter_bit_shift = attrib()
+    """Right-shift to apply after synthesis (or before analysis)."""
+    
+    stages = attrib()
+    """
+    A list of LiftingStage objects to be used in sequence to perform synthesis
+    with this filter.
+    """
+
+LIFTING_FILTERS = {
+    WaveletFilters.deslauriers_dubuc_9_7: LiftingFilterParameters(
+        stages=[
+            LiftingStage(lift_type=LiftingFilterTypes(2), S=2, L=2, D=0, taps=[1, 1]),
+            LiftingStage(lift_type=LiftingFilterTypes(3), S=4, L=4, D=-1, taps=[-1, 9, 9, -1]),
+        ],
+        filter_bit_shift=1,
+    ),
+    WaveletFilters.le_gall_5_3: LiftingFilterParameters(
+        stages=[
+            LiftingStage(lift_type=LiftingFilterTypes(2), S=2, L=2, D=0, taps=[1, 1]),
+            LiftingStage(lift_type=LiftingFilterTypes(3), S=1, L=2, D=0, taps=[1, 1]),
+        ],
+        filter_bit_shift=1,
+    ),
+    WaveletFilters.deslauriers_dubuc_13_7: LiftingFilterParameters(
+        stages=[
+            LiftingStage(lift_type=LiftingFilterTypes(2), S=5, L=4, D=-1, taps=[-1, 9, 9, -1]),
+            LiftingStage(lift_type=LiftingFilterTypes(3), S=4, L=4, D=-1, taps=[-1, 9, 9, -1]),
+        ],
+        filter_bit_shift=1,
+    ),
+    WaveletFilters.haar_no_shift: LiftingFilterParameters(
+        stages=[
+            LiftingStage(lift_type=LiftingFilterTypes(2), S=1, L=1, D=1, taps=[1]),
+            LiftingStage(lift_type=LiftingFilterTypes(3), S=0, L=1, D=0, taps=[1]),
+        ],
+        filter_bit_shift=0,
+    ),
+    WaveletFilters.haar_with_shift: LiftingFilterParameters(
+        stages=[
+            LiftingStage(lift_type=LiftingFilterTypes(2), S=1, L=1, D=1, taps=[1]),
+            LiftingStage(lift_type=LiftingFilterTypes(3), S=0, L=1, D=0, taps=[1]),
+        ],
+        filter_bit_shift=1,
+    ),
+    WaveletFilters.fidelity: LiftingFilterParameters(
+        stages=[
+            LiftingStage(lift_type=LiftingFilterTypes(3), S=8, L=8, D=-3, taps=[-2, -10, -25, 81, 81, -25, 10, -2]),
+            LiftingStage(lift_type=LiftingFilterTypes(2), S=8, L=8, D=-3, taps=[-8, 21, -46, 161, 161, -46, 21, -8]),
+        ],
+        filter_bit_shift=0,
+    ),
+    WaveletFilters.daubechies_9_7: LiftingFilterParameters(
+        stages=[
+            LiftingStage(lift_type=LiftingFilterTypes(2), S=12, L=2, D=0, taps=[1817, 1817]),
+            LiftingStage(lift_type=LiftingFilterTypes(4), S=12, L=2, D=0, taps=[3616, 3616]),
+            LiftingStage(lift_type=LiftingFilterTypes(1), S=12, L=2, D=0, taps=[217, 217]),
+            LiftingStage(lift_type=LiftingFilterTypes(3), S=12, L=2, D=0, taps=[6497, 6497]),
+        ],
+        filter_bit_shift=1,
+    ),
+}
+"""
+(15.4.4.3) Filter definitions taken from (Table 15.1 to 15.6) indexed by :py:class:`WaveletFilters`.
+"""

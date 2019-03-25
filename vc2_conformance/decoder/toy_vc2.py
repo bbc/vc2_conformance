@@ -481,22 +481,22 @@ def is_padding_data(state):
 
 def is_picture(state):
     """(10.5.2) (Table 10.2) NB: Includes fragments."""
-    return (state.parse_code & 0x88) == 0x88
+    return ParseCodes(state.parse_code).is_picture
 
 
 def is_ld_picture(state):
     """(10.5.2) (Table 10.2) NB: Includes low-delay fragments."""
-    return (state.parse_code & 0xF8) == ParseCodes.low_delay_picture.value
+    return ParseCodes(state.parse_code).is_ld_picture
 
 
 def is_hq_picture(state):
     """(10.5.2) (Table 10.2) NB: Includes high-quality fragments."""
-    return (state.parse_code & 0xF8) == ParseCodes.high_quality_picture.value
+    return ParseCodes(state.parse_code).is_hq_picture
 
 
 def is_fragment(state):
     """(10.5.2) (Table 10.2)"""
-    return (state.parse_code & 0x0C) == 0x0C
+    return ParseCodes(state.parse_code).is_fragment
 
 
 def is_ld_fragment(state):
@@ -511,7 +511,7 @@ def is_hq_fragment(state):
 
 def using_dc_prediction(state):
     """(10.5.2) (Table 10.2) a.k.a. is low-delay"""
-    return (state.parse_code & 0x28) == 0x08
+    return ParseCodes(state.parse_code).using_dc_prediction
 
 
 def decode_sequence(stream):
@@ -1499,7 +1499,7 @@ def vh_synthesis(state, LL_data, HL_data, LH_data, HH_data):
 
 def filter_bit_shift(state):
     """(15.4.2) Return the bit shift for the current horizontal-only filter."""
-    filter_params = LIFTING_FILTER_PARAMETERS[state.wavelet_index_ho]
+    filter_params = LIFTING_FILTERS[WaveletFilters(state.wavelet_index_ho)]
     return filter_params.filter_bit_shift
 
 
@@ -1507,7 +1507,7 @@ def oned_synthesis(A, filter_index):
     """(15.4.4.1) and (15.4.4.3). Acts in-place on 'A'"""
     assert len(A) % 2 == 0
     
-    filter_params = LIFTING_FILTER_PARAMETERS[filter_index]
+    filter_params = LIFTING_FILTERS[WaveletFilters(filter_index)]
     
     for stage in filter_params.stages:
         lift_fn = LIFTING_FUNCTION_TYPES[stage.lift_type]
@@ -1572,119 +1572,14 @@ def lift4(A, L, D, taps, S):
 
 
 LIFTING_FUNCTION_TYPES = {
-    1: lift1,
-    2: lift2,
-    3: lift3,
-    4: lift4,
-}
-"""A mapping from integers to their corresponding functions."""
-
-
-@attrs
-class LiftingStage(object):
-    """
-    (15.4.4.1) Definition of a lifting stage/operation in a lifting filter.
-    """
-    
-    lift_type = attrib()
-    """
-    Specifies which lifting filtering operation is taking place. One
-    of the indices from the LIFTING_FUNCTION_TYPES enumeration.
-    """
-    
-    S = attrib()
-    """Scale factor (right-shift applied to weighted sum)"""
-    
-    L = attrib()
-    """Length of filter."""
-    
-    D = attrib()
-    """Offset of filter."""
-    
-    taps = attrib()
-    """An array of integers defining the filter coefficients."""
-
-@attrs
-class LiftingFilterParameters(object):
-    """
-    (15.4.4.3) The generic container for the details described by (Table 15.1
-    to 15.6).
-    """
-    name = attrib()
-    """Informative. The name of this filter."""
-    
-    filter_bit_shift = attrib()
-    """Right-shift to apply after synthesis (or before analysis)."""
-    
-    stages = attrib()
-    """
-    A list of LiftingStage objects to be used in sequence to perform synthesis
-    with this filter.
-    """
-
-LIFTING_FILTER_PARAMETERS = {
-    0: LiftingFilterParameters(
-        name="Deslauriers-Dubuc (9,7)",
-        stages=[
-            LiftingStage(lift_type=2, S=2, L=2, D=0, taps=[1, 1]),
-            LiftingStage(lift_type=3, S=4, L=4, D=-1, taps=[-1, 9, 9, -1]),
-        ],
-        filter_bit_shift=1,
-    ),
-    1: LiftingFilterParameters(
-        name="LeGall (5,3)",
-        stages=[
-            LiftingStage(lift_type=2, S=2, L=2, D=0, taps=[1, 1]),
-            LiftingStage(lift_type=3, S=1, L=2, D=0, taps=[1, 1]),
-        ],
-        filter_bit_shift=1,
-    ),
-    2: LiftingFilterParameters(
-        name="Deslauriers-Dubuc (13,7)",
-        stages=[
-            LiftingStage(lift_type=2, S=5, L=4, D=-1, taps=[-1, 9, 9, -1]),
-            LiftingStage(lift_type=3, S=4, L=4, D=-1, taps=[-1, 9, 9, -1]),
-        ],
-        filter_bit_shift=1,
-    ),
-    3: LiftingFilterParameters(
-        name="Haar filter with no shift",
-        stages=[
-            LiftingStage(lift_type=2, S=1, L=1, D=1, taps=[1]),
-            LiftingStage(lift_type=3, S=0, L=1, D=0, taps=[1]),
-        ],
-        filter_bit_shift=0,
-    ),
-    4: LiftingFilterParameters(
-        name="Haar filter with single shift",
-        stages=[
-            LiftingStage(lift_type=2, S=1, L=1, D=1, taps=[1]),
-            LiftingStage(lift_type=3, S=0, L=1, D=0, taps=[1]),
-        ],
-        filter_bit_shift=1,
-    ),
-    5: LiftingFilterParameters(
-        name="Fidelity filter",
-        stages=[
-            LiftingStage(lift_type=3, S=8, L=8, D=-3, taps=[-2, -10, -25, 81, 81, -25, 10, -2]),
-            LiftingStage(lift_type=2, S=8, L=8, D=-3, taps=[-8, 21, -46, 161, 161, -46, 21, -8]),
-        ],
-        filter_bit_shift=0,
-    ),
-    6: LiftingFilterParameters(
-        name="Integer lifting approximation to Daubechies (9,7)",
-        stages=[
-            LiftingStage(lift_type=2, S=12, L=2, D=0, taps=[1817, 1817]),
-            LiftingStage(lift_type=4, S=12, L=2, D=0, taps=[3616, 3616]),
-            LiftingStage(lift_type=1, S=12, L=2, D=0, taps=[217, 217]),
-            LiftingStage(lift_type=3, S=12, L=2, D=0, taps=[6497, 6497]),
-        ],
-        filter_bit_shift=1,
-    ),
+    LiftingFilterTypes(1): lift1,
+    LiftingFilterTypes(2): lift2,
+    LiftingFilterTypes(3): lift3,
+    LiftingFilterTypes(4): lift4,
 }
 """
-(15.4.4.3) Filter definitions taken from (Table 15.1 to 15.6) using the indices
-normitively specified in (12.4.2) in (Table 12.1).
+A mapping from :py:class:`LiftingFilterTypes` to their corresponding
+implemntations.
 """
 
 

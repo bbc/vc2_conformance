@@ -220,12 +220,12 @@ class TestMaybe(object):
         
         # Try via constructor
         m = bitstream.Maybe(value, flag_value)
-        assert m.flag is expected
+        assert bool(m.flag) is expected
         
         # Try via property
         m = bitstream.Maybe(value, not expected)
         m.flag = flag_value
-        assert m.flag is expected
+        assert bool(m.flag) is expected
     
     def test_length(self):
         value = bitstream.UInt()

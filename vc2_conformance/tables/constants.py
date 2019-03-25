@@ -20,6 +20,8 @@ __all__ = [
     "PresetColorMatrices",
     "PresetTransferFunctions",
     "PresetColorSpecs",
+    "LiftingFilterTypes",
+    "WaveletFilters",
 ]
 
 PARSE_INFO_PREFIX = 0x42424344
@@ -46,6 +48,57 @@ class ParseCodes(Enum):
     # Picture fragments
     low_delay_picture_fragment = 0xCC
     high_quality_picture_fragment = 0xEC
+    
+    @property
+    def is_picture(self):
+        """
+        (10.5.2) (Table 10.2) Is picture or fragment type.
+        
+        Errata: In the spec, this function actually tests if this is a picture
+        *or* a fragment. See :py:attr:`is_picture_or_fragment` for this
+        behaviour.
+        """
+        return (self.value & 0x8C) == 0x88
+    
+    @property
+    def is_picture_or_fragment(self):
+        """
+        (10.5.2) (Table 10.2) Is picture or fragment type.
+        
+        Errata: In the spec, this function is called 'is_picture' but actually
+        tests for pictures *and* fragments.
+        """
+        return (self.value & 0x88) == 0x88
+    
+    @property
+    def is_ld(self):
+        """
+        (10.5.2) (Table 10.2) Is low-delay picture or fragment type.
+        
+        Errata: In the spec, this function is called 'is_ld_picture' but
+        actually tests for pictures *and* fragments.
+        """
+        return (self.value & 0xF8) == ParseCodes.low_delay_picture.value
+    
+    @property
+    def is_hq(self):
+        """
+        (10.5.2) (Table 10.2) Is high-quality picture or fragment type.
+        
+        Errata: In the spec, this function is called 'is_hq_picture' but
+        actually tests for pictures *and* fragments.
+        """
+        return (self.value & 0xF8) == ParseCodes.high_quality_picture.value
+    
+    @property
+    def is_fragment(self):
+        """(10.5.2) (Table 10.2)"""
+        return (self.value & 0x0C) == 0x0C
+    
+    @property
+    def using_dc_prediction(self):
+        """(10.5.2) (Table 10.2) a.k.a. is low-delay"""
+        return (self.value & 0x28) == 0x08
 
 
 class PictureCodingModes(Enum):
@@ -222,3 +275,32 @@ class PresetColorSpecs(Enum):
     uhdtv = 5
     hdr_tv_pq = 6
     hdr_tv_hlg = 7
+
+
+class LiftingFilterTypes(Enum):
+    """
+    (15.4.4.1) Indices of lifting filter step types. Names are informative and
+    based on an interpretation of the pseudo-code in the specification.
+    """
+    even_add_odd = 1
+    even_subtract_odd = 2
+    odd_add_even = 3
+    odd_subtract_even = 4
+
+
+class WaveletFilters(Enum):
+    """
+    (12.4.2) Wavelet filter types supported by VC-2 using the indices
+    normitively specified in  in (Table 12.1). Names are based on the
+    informative names in the table.
+    
+    See also: :py:data:`LIFTING_FILTERS`.
+    """
+    
+    deslauriers_dubuc_9_7 = 0
+    le_gall_5_3 = 1
+    deslauriers_dubuc_13_7 = 2
+    haar_no_shift = 3
+    haar_with_shift = 4
+    fidelity = 5
+    daubechies_9_7 = 6
