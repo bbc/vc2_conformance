@@ -4,16 +4,34 @@ format of the contained value, for example by constraining it to a fixed-length
 block.
 """
 
-from vc2_conformance.bitstream import BitstreamValue
+from vc2_conformance.bitstream import BitstreamValue, ensure_bitstream_value
 
-from vc2_conformance.bitstream._util import concat_strings, function_property
+from vc2_conformance.bitstream.primitive import read_bits, write_bits
+
+from vc2_conformance.bitstream._util import concat_strings
+
+from vc2_conformance.bitstream._safe_get import (
+    safe_get_non_negative_integer_value,
+    safe_get_bool,
+)
 
 
 __all__ = [
+    "EmptyValueError",
     "WrappedValue",
     "Maybe",
     "BoundedBlock",
 ]
+
+
+class EmptyValueError(Exception):
+    """
+    Error thrown when attempting to access the value within a
+    :py:class:`WrappedValue` which is empty.
+    
+    Typically, thrown when accessing a :py:class:`Maybe` whose
+    :py:attr:`Maybe.flag` is False.
+    """
 
 
 class WrappedValue(BitstreamValue):
@@ -26,10 +44,9 @@ class WrappedValue(BitstreamValue):
     :py:attr:`value` property and indexing operator.
     """
     
-    def __init__(self, inner_value):
+    def __init__(self, inner_value=None):
         self._inner_value = inner_value
         super(WrappedValue, self).__init__()
-        self._validate(self._inner_value)
     
     def _validate(self, inner_value):
         if not isinstance(inner_value, BitstreamValue):
@@ -42,28 +59,32 @@ class WrappedValue(BitstreamValue):
         """The :py:class:`BitstreamValue` being wrapped."""
         return self._inner_value
     
-    @inner_value.setter
-    def inner_value(self, inner_value):
-        self._validate(inner_value)
-        self._inner_value = inner_value
-    
     @property
     def value(self):
         """
         The value of the wrapped :py:class:`BitstreamValue`. Equivallent to
         ``wrapper.inner_value.value``.
         """
-        return self._inner_value.value
+        if self._inner_value is not None:
+            return self._inner_value.value
+        else:
+            raise EmptyValueError()
     
     @value.setter
     def value(self, value):
-        self._inner_value.value = value
+        if self._inner_value is not None:
+            self._inner_value.value = value
+        else:
+            raise EmptyValueError()
     
     def __getitem__(self, key):
         """
         Shorthand for ``wrapper.inner_value[key]``.
         """
-        return self._inner_value[key]
+        if self._inner_value is not None:
+            return self._inner_value[key]
+        else:
+            raise EmptyValueError()
     
     def __repr__(self):
         return "<{} value={!r}>".format(
@@ -102,31 +123,40 @@ class BoundedBlock(WrappedValue):
         ==========
         inner_value : :py:class:`BoundedBlock`
             The value to enclose in the bounded block.
-        length : int or function() -> int
+        length : int or :py:class:`BitstreamValue`
             If an int, the length of the block in bits.
             
-            If a function, this function will be called with no arguments and
-            should return an int giving the length of the block in bits.
-            
-            In general, this argument will be a lambda function which
-            calculates the length using a previously read or written
-            :py:class:`BitstreamValue`.
-            
+            If a :py:class:`BitstreamValue`, this value should specify the
+            length of the block in bits.
         """
-        # NB: Set first so that repr will work later if the validator fails on
-        # the main constructor.
+        self._length_bitstream_value = ensure_bitstream_value(length)
         self._pad_value = pad_value
-        self.length = length
         
         super(BoundedBlock, self).__init__(inner_value)
+        
+        self._validate(self._inner_value)
+        
+        self._inner_value._notify_on_change(self)
+        self._length_bitstream_value._notify_on_change(self)
     
-    length = function_property()
-    """
-    The length of the bounded block.
+    def _dependency_changed(self, _):
+        self._changed()
     
-    If set, may be set to an integer or a function (see ``length`` argument
-    of constructor), but will always read as an int.
-    """
+    @property
+    def length(self):
+        """
+        The length of the bounded block (in bits). See also
+        :py:attr:`length_bitstream_value`.
+        """
+        return safe_get_non_negative_integer_value(self._length_bitstream_value)
+    
+    @property
+    def length_bitstream_value(self):
+        """
+        The :py:class:`BitstreamValue` which defines the :py:attr:`length` of
+        this block.
+        """
+        return self._length_bitstream_value
     
     @property
     def pad_value(self):
@@ -136,6 +166,7 @@ class BoundedBlock(WrappedValue):
     @pad_value.setter
     def pad_value(self, pad_value):
         self._pad_value = pad_value
+        self._changed()
     
     @property
     def unused_bits(self):
@@ -206,20 +237,19 @@ class BoundedBlock(WrappedValue):
     
     def read(self, reader):
         """A context manager providing a bounded reader."""
-        self._offset = reader.tell()
-        
-        bounded_reader = BoundedBlock.BoundedReader(reader, self.length)
-        
-        self.inner_value.read(bounded_reader)
-        
-        # Read any remaining bits in the block
-        self._pad_value = 0
-        self._bits_past_eof = bounded_reader.bits_past_eof
-        for i in range(bounded_reader.bits_remaining):
-            bit = reader.read_bit()
-            self._pad_value <<= 1
-            self._pad_value |= bit if bit is not None else 1
-            self._bits_past_eof += int(bit is None)
+        with self._coalesce_change_notifications():
+            self._offset = reader.tell()
+            
+            bounded_reader = BoundedBlock.BoundedReader(reader, self.length)
+            self.inner_value.read(bounded_reader)
+            
+            # Read any remaining bits in the block
+            self._pad_value, self._bits_past_eof = read_bits(reader, bounded_reader.bits_remaining)
+            self._bits_past_eof += bounded_reader.bits_past_eof
+            
+            # Force a notification since the padding value will have changed
+            # (as well as the inner value)
+            self._changed()
     
     def write(self, writer):
         """A context manager providing a bounded writer."""
@@ -229,11 +259,8 @@ class BoundedBlock(WrappedValue):
         
         self.inner_value.write(bounded_writer)
         
-        self._bits_past_eof = bounded_writer.bits_past_eof
-        
-        # Write padding bits, as required
-        for i in range(bounded_writer.bits_remaining-1, -1, -1):
-            self._bits_past_eof += 1 - writer.write_bit((self._pad_value >> i) & 1)
+        self._bits_past_eof = write_bits(writer, bounded_writer.bits_remaining, self._pad_value)
+        self._bits_past_eof += bounded_writer.bits_past_eof
     
     def __repr__(self):
         return "<{} value={!r} length={!r} pad_value={!r} unused_bits={!r}>".format(
@@ -263,48 +290,87 @@ class Maybe(WrappedValue):
     ``scan_format`` (11.4.5) where a flag or index is used to control whether
     or not a value is omitted or included.
     
+    ::
+    
         custom_scan_format_flag = Bool()
-        source_sampling = UInt()
         
         scan_format = Concatenation(
             custom_scan_format_flag,
-            Maybe(
-                source_sampling,
-                lambda: custom_scan_format_flag.value,
-            ),
+            Maybe(UInt, custom_scan_format_flag),
         )
     """
     
-    def __init__(self, inner_value, flag):
+    def __init__(self, value_constructor, flag):
         """
         Parameters
         ==========
-        value_value : :py:class:`BitstreamValue`
-            The value which may (or may not) be included in the bitstream.
-            Stored as :py:attr:`Maybe.value`.
-        flag : bool or function() -> bool
+        value_constructor : function() -> :py:class:`BitstreamValue`
+            A function taking no arguments and returning a new
+            :py:class:`BitstreamValue` to be held in this :py:class:`Maybe`.
+            Called to construct a new value whenever the flag becomes 'True'.
+        flag : bool or :py:class:`BitstreamValue`
             If a bool, specifies whether the wrapped value is present in the
-            bitstream or not.
+            bitstream or not. (Not particularly useful).
             
-            If a function, the function will be called with no arguments and
-            return a bool with the meaning above.
+            If a :py:class:`BitstreamValue`, the this value will be used to
+            determine if this :py:class:`Maybe` should hold a value or not.
             
-            In general, this argument will be a simple lambda function which
-            fetches a previously read or written :py:class:`BitstreamValue` to
-            determine the flag value.
+            When this value is False, the :py:attr:`inner_value` will be
+            discarded (and set to None) and accessing :py:attr:`value` will
+            produce a :py:exc`ValueError`.
+            
+            When this value is True, if no :py:attr:`inner_value` exists yet,
+            one will be created using ``value_constructor``. Otherwise, the
+            existing value will be retained.
+            
+            The :py:class:`BitstreamValue` provided for the flag is not
+            read/written when this :py:class:`Maybe` is
+            serialised/deserialised. You should ensure it appears at an earlier
+            point in the bitstream.
         """
-        self.flag = flag
-        super(Maybe, self).__init__(inner_value)
+        self._value_constructor = value_constructor
+        
+        self._flag_bitstream_value = ensure_bitstream_value(flag)
+        self.flag_bitstream_value._notify_on_change(self)
+        
+        super(Maybe, self).__init__()
+        
+        # Trigger a change to create the initial value, if the flag is True.
+        self._dependency_changed(self.flag_bitstream_value)
     
-    flag = function_property()
-    """
-    The current visibility state of this value. If True,
-    :py:attr:`inner_value` will be included in the bitstream, if False it
-    will be omitted.
+    def _dependency_changed(self, bitstream_value):
+        if bitstream_value is self.flag_bitstream_value:
+            # Create/remove an inner value if the flag has changed
+            if self.flag:
+                if self.inner_value is None:
+                    inner_value = self._value_constructor()
+                    self._validate(inner_value)
+                    self._inner_value = inner_value
+                    self._inner_value._notify_on_change(self)
+                    self._changed()
+            else:
+                if self.inner_value is not None:
+                    self._inner_value._cancel_notify_on_change(self)
+                    self._inner_value = None
+                    self._changed()
+        else:
+            self._changed()
     
-    This property may be set with either a bool or a function (see the
-    constructor ``flag`` argument) but always reads as a bool.
-    """
+    @property
+    def flag(self):
+        """
+        The current visibility state of this value. See also
+        :py:attr:`flag_bitstream_value`.
+        """
+        return safe_get_bool(self._flag_bitstream_value)
+    
+    @property
+    def flag_bitstream_value(self):
+        """
+        The :py:class:`BitstreamValue` which determines if this
+        :py:class:`Maybe` appears in the bitstream or not.
+        """
+        return self._flag_bitstream_value
     
     @property
     def length(self):
@@ -344,10 +410,10 @@ class Maybe(WrappedValue):
             self.inner_value.write(writer)
     
     def __repr__(self):
-        return "<{} {!r} flag={}>".format(
+        return "<{} {!r} flag={!r}>".format(
             self.__class__.__name__,
             self.inner_value,
-            self.flag,
+            self.flag_bitstream_value,
         )
     
     def __str__(self):

@@ -3,15 +3,21 @@ General-purpose compound :py:class:`BitstreamValue` types for building
 composite types.
 """
 
-from vc2_conformance.bitstream import BitstreamValue
+from vc2_conformance.bitstream import (
+    BitstreamValue,
+    ensure_bitstream_value,
+    FunctionValue,
+)
 
 from vc2_conformance.bitstream._util import (
     indent,
     concat_strings,
     concat_labelled_strings,
     concat_tabular_strings,
-    ensure_function,
-    function_property,
+)
+
+from vc2_conformance.bitstream._safe_get import (
+    safe_get_non_negative_integer_value,
 )
 
 
@@ -60,11 +66,16 @@ class Concatenation(BitstreamValue):
         # NB: Validation is done last, so that internal members are populated
         # allowing __repr__ work (which may be printed in tracebacks).
         self._validate(self._value)
+        
+        # If the contained values change, this container will notify a change
+        # too
+        for value in self._value:
+            value._notify_on_change(self)
+    
+    def _dependency_changed(self, _):
+        self._changed()
     
     def _validate(self, value):
-        if not isinstance(value, tuple):
-            raise ValueError(
-                "Concatenation expects a tuple of BitstreamValues.")
         if not all(isinstance(v, BitstreamValue) for v in value):
             raise ValueError(
                 "All concatenation components must be BitstreamValues.")
@@ -76,11 +87,6 @@ class Concatenation(BitstreamValue):
         :py:class:`Concatenation`.
         """
         return self._value
-    
-    @value.setter
-    def value(self, value):
-        self._validate(value)
-        self._value = value
     
     @property
     def length(self):
@@ -97,14 +103,16 @@ class Concatenation(BitstreamValue):
             return sum(v.bits_past_eof for v in self._value)
     
     def read(self, reader):
-        self._offset = reader.tell()
-        for v in self._value:
-            v.read(reader)
+        with self._coalesce_change_notifications():
+            self._offset = reader.tell()
+            for v in self._value:
+                v.read(reader)
     
     def write(self, writer):
-        self._offset = writer.tell()
-        for v in self._value:
-            v.write(writer)
+        with self._coalesce_change_notifications():
+            self._offset = writer.tell()
+            for v in self._value:
+                v.write(writer)
     
     def __getitem__(self, key):
         """Shorthand for ``concatenation.value[key]``"""
@@ -155,32 +163,17 @@ class LabelledConcatenation(Concatenation):
         """
         self._names_values = names_values
         
-        super(LabelledConcatenation, self).__init__(
-            *self._names_values_to_values(names_values))
-    
-    def _names_values_to_values(self, names_values):
-        """
-        Internal method. Extract just the list of :py:class:`BitstreamValue`
-        from a names and values list.
-        """
-        return tuple(
+        # NB: Pass-on just the non-label parts as the concatenation values
+        super(LabelledConcatenation, self).__init__(*(
             nv if isinstance(nv, BitstreamValue) else nv[1]
             for nv in names_values
             if nv is not None and not isinstance(nv, str)
-        )
+        ))
     
     @property
     def value(self):
         """The values in the concatenation (see constructor arguments)."""
         return self._names_values
-    
-    @value.setter
-    def value(self, names_values):
-        value = self._names_values_to_values(names_values)
-        self._validate(value, self.length)
-        
-        self._value = value
-        self._names_values = _names_values
     
     def __getitem__(self, key):
         r"""
@@ -288,12 +281,13 @@ class Array(Concatenation):
             A function which returns new :py:class:`BitstreamValue`\ s. Used to
             populate new entries in the array when ``num_values`` is enlarged
             or during initial construction. (See also: ``pass_index``.)
-        num_values : int or function() -> int or None
+        num_values : int or :py:class:`BitstreamValue`
             The number of :py:class:`BitstreamValue`\ s in the array.
             
-            If overriding this class and redefining the num_values property,
-            set this argument to None to prevent this constructor assigning a
-            value to it.
+            If a :py:class:`BitstreamValue` is passed, whenever this value
+            changes, the length of the array will be changed. Excess values
+            will be dropped and new values will be constructed as required,
+            retaining as many of the existing array elments as possible.
         pass_index : bool
             If True, the value_constructor function will be passed the index of
             the array element being constructed. If False (the default) no
@@ -302,80 +296,56 @@ class Array(Concatenation):
         self.value_constructor = value_constructor
         self.pass_index = pass_index
         
-        if num_values is not None:
-            self.num_values = num_values
+        self._num_values_bitstream_value = ensure_bitstream_value(num_values)
+        self._num_values_bitstream_value._notify_on_change(self)
         
-        super(Array, self).__init__(*(
-            (self.value_constructor(i) if self.pass_index else self.value_constructor())
-            for i in range(self.num_values)
-        ))
-    
-    num_values = function_property()
-    
-    def _validate(self, value):
-        super(Array, self)._validate(value)
-        if len(value) != self.num_values:
-            raise ValueError(
-                "This Array is defined to have {} values, not {}.".format(
-                    self.num_values, len(value)))
-    
-    def _adjust_length(self):
-        """
-        Internal method. Adjust the length of the internal `_value` tuple to
-        match the current :py:attr:`num_values`.
-        """
-        if len(self._value) < self.num_values:
-            # Extend
-            self._value = self._value + tuple(
-                (self.value_constructor(i) if self.pass_index else self.value_constructor())
-                for i in range(len(self._value), self.num_values)
-            )
-        elif len(self._value) > self.num_values:
-            # Truncate
-            self._value = self._value[:self.num_values]
+        super(Array, self).__init__()
+        
+        # Trigger the initial population of this array
+        self._dependency_changed(self.num_values_bitstream_value)
     
     @property
-    def value(self):
-        r"""
-        A tuple of :py:class:`BitstreamValue`\ s contained by this
-        :py:class:`Concatenation`.
+    def num_values(self):
         """
-        self._adjust_length()
-        return self._value
-    
-    @value.setter
-    def value(self, value):
-        self._validate(value)
-        self._value = value
+        The length of this :py:class:`Array`. See also
+        :py:attr:`num_values_bitstream_value`.
+        """
+        return safe_get_non_negative_integer_value(self._num_values_bitstream_value)
     
     @property
-    def length(self):
-        self._adjust_length()
-        return super(Array, self).length
+    def num_values_bitstream_value(self):
+        """
+        A :py:class:`BitstreamValue` defining the length of this
+        :py:class:`Array`.
+        
+        If reading the value raises an exception or the returned value cannot
+        be interpreted as a non-negative integer then the :py:attr:`num_values`
+        will be treated as 0.
+        """
+        return self._num_values_bitstream_value
     
-    @property
-    def bits_past_eof(self):
-        self._adjust_length()
-        return super(Array, self).bits_past_eof
-    
-    def read(self, reader):
-        self._adjust_length()
-        super(Array, self).read(reader)
-    
-    def write(self, writer):
-        self._adjust_length()
-        super(Array, self).write(writer)
-    
-    def __getitem__(self, key):
-        self._adjust_length()
-        return super(Array, self).__getitem__(key)
-    
-    def __repr__(self):
-        self._adjust_length()
-        return super(Array, self).__str__()
+    def _dependency_changed(self, value_changed):
+        if value_changed is self.num_values_bitstream_value:
+            # Adjust the length of the internal `_value` tuple to match the
+            # current num_values.
+            if len(self._value) < self.num_values:
+                # Extend
+                new_values = tuple(
+                    (self.value_constructor(i) if self.pass_index else self.value_constructor())
+                    for i in range(len(self._value), self.num_values)
+                )
+                for value in new_values:
+                    value._notify_on_change(self)
+                self._value = self._value + new_values
+            elif len(self._value) > self.num_values:
+                # Truncate
+                for value in self._value[self.num_values:]:
+                    value._cancel_notify_on_change(self)
+                self._value = self._value[:self.num_values]
+        
+        self._changed()
     
     def __str__(self):
-        self._adjust_length()
         return concat_strings([str(v) for v in self._value])
 
 
@@ -414,28 +384,40 @@ class RectangularArray(Array):
     
     def __init__(self, value_constructor, height=0, width=0,
                  *args, **kwargs):
-        """
-        width, height : int, function() -> int, None
-            The dimensions of the array, or a function returning as such.
-            
-            If overriding this class and redefining the width and height
-            properties, set these arguments to None to prevent this constructor
-            assigning values to them.
-        """
-        if height is not None:
-            self.height = height
-        if width is not None:
-            self.width = width
+        # NB: No need to notify on these changing since these in turn will
+        # change num_values which finally notifies this array of a change in
+        # size.
+        self._height_bitstream_value = ensure_bitstream_value(height)
+        self._width_bitstream_value = ensure_bitstream_value(width)
+        
+        num_values = FunctionValue(
+            lambda hv, wv: (
+                safe_get_non_negative_integer_value(hv)
+                *
+                safe_get_non_negative_integer_value(wv)
+            ),
+            self._height_bitstream_value,
+            self._width_bitstream_value,
+        )
         
         super(RectangularArray, self).__init__(
-            value_constructor, None, *args, **kwargs)
-    
-    height = function_property()
-    width = function_property()
+            value_constructor, num_values, *args, **kwargs)
     
     @property
-    def num_values(self):
-        return self.height * self.width
+    def height(self):
+        return safe_get_non_negative_integer_value(self._height_bitstream_value)
+    
+    @property
+    def width(self):
+        return safe_get_non_negative_integer_value(self._width_bitstream_value)
+    
+    @property
+    def height_bitstream_value(self):
+        return self._height_bitstream_value
+    
+    @property
+    def width_bitstream_value(self):
+        return self._width_bitstream_value
     
     def __getitem__(self, key):
         # Normalise key to index
@@ -452,7 +434,6 @@ class RectangularArray(Array):
         return super(RectangularArray, self).__getitem__(key)
     
     def __str__(self):
-        self._adjust_length()
         return concat_tabular_strings([
             [str(self[y, x]) for x in range(self.width)]
             for y in range(self.height)
@@ -515,25 +496,43 @@ class SubbandArray(Array):
         The dimensions of this matrix are determined by the depth of the 2D and
         horizontal-only wavelet transforms used.
         """
-        self.dwt_depth = dwt_depth
-        self.dwt_depth_ho = dwt_depth_ho
+        # NB: No need to notify on these changing since these in turn will
+        # change num_values which finally notifies this array of a change in
+        # size.
+        self._dwt_depth_bitstream_value = ensure_bitstream_value(dwt_depth)
+        self._dwt_depth_ho_bitstream_value = ensure_bitstream_value(dwt_depth_ho)
+        
+        num_values = FunctionValue(
+            lambda dwt_depth, dwt_depth_ho: (
+                # DC Band
+                1 +
+                # Horizontal-only components
+                safe_get_non_negative_integer_value(dwt_depth_ho) +
+                # 2D components
+                (3 * safe_get_non_negative_integer_value(dwt_depth))
+            ),
+            self.dwt_depth_bitstream_value,
+            self.dwt_depth_ho_bitstream_value,
+        )
         
         super(SubbandArray, self).__init__(
-            value_constructor, None, *args, **kwargs)
-    
-    dwt_depth = function_property()
-    dwt_depth_ho = function_property()
+            value_constructor, num_values, *args, **kwargs)
     
     @property
-    def num_values(self):
-        return (
-            # DC Band
-            1 +
-            # Horizontal-only components
-            self.dwt_depth_ho +
-            # 2D components
-            (3 * self.dwt_depth)
-        )
+    def dwt_depth(self):
+        return safe_get_non_negative_integer_value(self._dwt_depth_bitstream_value)
+    
+    @property
+    def dwt_depth_ho(self):
+        return safe_get_non_negative_integer_value(self._dwt_depth_ho_bitstream_value)
+    
+    @property
+    def dwt_depth_bitstream_value(self):
+        return self._dwt_depth_bitstream_value
+    
+    @property
+    def dwt_depth_ho_bitstream_value(self):
+        return self._dwt_depth_ho_bitstream_value
     
     def __getitem__(self, key):
         # Normalise key to index
@@ -548,8 +547,6 @@ class SubbandArray(Array):
         return super(SubbandArray, self).__getitem__(key)
     
     def __str__(self):
-        self._adjust_length()
-        
         level_strings = [("Level 0", [])]
         
         for index, value in enumerate(self._value):

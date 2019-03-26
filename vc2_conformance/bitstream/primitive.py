@@ -139,6 +139,8 @@ class PrimitiveValue(BitstreamValue):
         self._value = value
         self._offset = None
         self._bits_past_eof = None
+        
+        self._changed()
     
     def __str__(self):
         if self.bits_past_eof:
@@ -174,6 +176,7 @@ class Bool(PrimitiveValue):
         bit = reader.read_bit()
         self._value = bool(bit) if bit is not None else True
         self._bits_past_eof = int(bit is None)
+        self._changed()
     
     def write(self, writer):
         self._offset = writer.tell()
@@ -230,6 +233,7 @@ class NBits(PrimitiveValue):
         self._offset = reader.tell()
         
         self._value, self._bits_past_eof = read_bits(reader, self.length)
+        self._changed()
     
     def write(self, writer):
         self._offset = writer.tell()
@@ -270,6 +274,7 @@ class ByteAlign(PrimitiveValue):
             self._length = 0
         
         self._value, self._bits_past_eof = read_bits(reader, self.length)
+        self._changed()
     
     def write(self, writer):
         self._offset = writer.tell()
@@ -281,6 +286,9 @@ class ByteAlign(PrimitiveValue):
             self._length = 0
         
         self._bits_past_eof = write_bits(writer, self._length, self._value)
+        
+        # NB: Writing may change this value
+        self._changed()
     
     def __str__(self):
         if self.length:
@@ -290,6 +298,54 @@ class ByteAlign(PrimitiveValue):
         else:
             return ""
 
+def exp_golomb_length(value):
+    """
+    Return the length (in bits) of the unsigned exp-golomb representation of
+    value.
+    """
+    return (((value + 1).bit_length() - 1) * 2) + 1
+
+def read_exp_golomb(reader):
+    """
+    Read an unsigned exp-golomb code from :py:class:`BitstreamReader`, like
+    read_uint (A.4.3) and return a tuple (value, bits_past_eof).
+    """
+    value = 1
+    bits_past_eof = 0
+    while True:
+        bit = reader.read_bit()
+        bit_value = bit if bit is not None else 1
+        bits_past_eof += int(bit is None)
+        
+        if bit_value == 1:
+            break
+        else:
+            value <<= 1
+            
+            bit = reader.read_bit()
+            bits_past_eof += int(bit is None)
+            value += bit if bit is not None else 1
+    
+    value -= 1
+    
+    return (value, bits_past_eof)
+
+
+def write_exp_golomb(writer, value):
+    """
+    Write an unsigned exp-golomb code to a :py:class:`BitstreamWriter`, like
+    read_uint (A.4.3) in reverse. Return  bits_past_eof.
+    """
+    value += 1
+    
+    bits_past_eof = 0
+    for i in range(value.bit_length()-2, -1, -1):
+        bits_past_eof += 1 - writer.write_bit(0)
+        bits_past_eof += 1 - writer.write_bit((value >> i) & 1)
+
+    bits_past_eof += 1 - writer.write_bit(1)
+    
+    return bits_past_eof
 
 class UInt(PrimitiveValue):
     """
@@ -302,28 +358,12 @@ class UInt(PrimitiveValue):
     
     @property
     def length(self):
-        return (((self._value + 1).bit_length() - 1) * 2) + 1
+        return exp_golomb_length(self._value)
     
     def read(self, reader):
         self._offset = reader.tell()
-        
-        self._value = 1
-        self._bits_past_eof = 0
-        while True:
-            bit = reader.read_bit()
-            bit_value = bit if bit is not None else 1
-            self._bits_past_eof += int(bit is None)
-            
-            if bit_value == 1:
-                break
-            else:
-                self._value <<= 1
-                
-                bit = reader.read_bit()
-                self._bits_past_eof += int(bit is None)
-                self._value += bit if bit is not None else 1
-        
-        self._value -= 1
+        self._value, self._bits_past_eof = read_exp_golomb(reader)
+        self._changed()
     
     def write(self, writer):
         self._offset = writer.tell()
@@ -332,39 +372,27 @@ class UInt(PrimitiveValue):
             raise ValueError(
                 "UInt cannot represent negative value {}".format(self._value))
         
-        value = self._value + 1
-        
-        self._bits_past_eof = 0
-        for i in range(value.bit_length()-2, -1, -1):
-            self._bits_past_eof += 1 - writer.write_bit(0)
-            self._bits_past_eof += 1 - writer.write_bit((value >> i) & 1)
+        self._bits_past_eof = write_exp_golomb(writer, self._value)
 
-        self._bits_past_eof += 1 - writer.write_bit(1)
-
-
-class SInt(UInt):
+class SInt(PrimitiveValue):
     """
     A variable length (modified exp-Golomb) signed integer, as per read_sint
     (A.4.4)
     """
     
+    def __init__(self, value=0, *args, **kwargs):
+        super(SInt, self).__init__(value, *args, **kwargs)
+    
     @property
     def length(self):
-        orig_value = self._value
-        self._value = abs(self._value)
-
-        length = super(SInt, self).length
-        
-        # Account for sign bit
+        length = exp_golomb_length(abs(self._value))
         if self._value != 0:
             length += 1
-        
-        self._value = orig_value
-        
         return length
     
     def read(self, reader):
-        super(SInt, self).read(reader)
+        self._offset = reader.tell()
+        self._value, self._bits_past_eof = read_exp_golomb(reader)
         
         # Read sign bit
         if self._value != 0:
@@ -372,15 +400,14 @@ class SInt(UInt):
             self._bits_past_eof += int(bit is None)
             if bit is None or bit == 1:
                 self._value = -self._value
+        
+        self._changed()
     
     def write(self, writer):
-        orig_value = self._value
-        self._value = abs(self._value)
+        self._offset = writer.tell()
         
-        super(SInt, self).write(writer)
+        self._bits_past_eof = write_exp_golomb(writer, abs(self._value))
         
         # Write sign bit
         if self._value != 0:
-            self._bits_past_eof += 1 - writer.write_bit(orig_value < 0)
-        
-        self._value = orig_value
+            self._bits_past_eof += 1 - writer.write_bit(self._value < 0)

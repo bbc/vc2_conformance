@@ -44,6 +44,9 @@ from vc2_conformance.bitstream.io import *
 # The BitstreamValue base class
 from vc2_conformance.bitstream.base import *
 
+# Pseudo-values (e.g. ConstantValue, FunctionValue)
+from vc2_conformance.bitstream.pseudo import *
+
 # Primitive bitstream types (e.g. Bool, UInt...)
 from vc2_conformance.bitstream.primitive import *
 

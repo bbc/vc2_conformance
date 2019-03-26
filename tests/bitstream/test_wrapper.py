@@ -1,5 +1,7 @@
 import pytest
 
+from mock import Mock
+
 from io import BytesIO
 
 from vc2_conformance import bitstream
@@ -8,17 +10,9 @@ from vc2_conformance import bitstream
 class TestWrappedValue(object):
     
     def test_validation(self):
-        # Should prevent construction with wrong type
+        bitstream.WrappedValue()._validate(bitstream.UInt())
         with pytest.raises(ValueError):
-            bitstream.WrappedValue(123)
-        
-        # Should prevent changing to wrong type
-        u = bitstream.UInt()
-        w = bitstream.WrappedValue(u)
-        with pytest.raises(ValueError):
-            w.inner_value = 123
-        assert w.inner_value is u
-        
+            bitstream.WrappedValue()._validate(123)
     
     def test_value_passthrough(self):
         u1 = bitstream.UInt()
@@ -35,29 +29,28 @@ class TestWrappedValue(object):
         w = bitstream.WrappedValue(c)
         assert w[0] is u1
         assert w[1] is u2
+        
+        # Errors should be thrown if the inner value is empty
+        w = bitstream.WrappedValue()
+        with pytest.raises(bitstream.EmptyValueError):
+            w.value
+        with pytest.raises(bitstream.EmptyValueError):
+            w[0]
 
 
 class TestBoundedBlock(object):
     
-    @pytest.mark.parametrize("length,expected", [
-        # As literals
-        (0, 0),
-        (32, 32),
-        # As functions
-        (lambda: 0, 0),
-        (lambda: 32, 32),
-    ])
-    def test_length(self, length, expected):
-        u = bitstream.UInt()
+    def test_invalid_lengths(self):
+        b = bitstream.BoundedBlock(bitstream.UInt(), 8)
         
-        # Test constructor
-        b = bitstream.BoundedBlock(u, length)
-        assert b.length == expected
+        assert b.length == 8
         
-        # Test property
-        b = bitstream.BoundedBlock(u, 0)
-        b.length = length
-        assert b.length == expected
+        b.length_bitstream_value.value = -2
+        assert b.length == 0
+        
+        b.length_bitstream_value.exception = Exception()
+        assert b.length == 0
+
     
     def test_read(self):
         r = bitstream.BitstreamReader(BytesIO(b"\x12\x34\x56"))
@@ -181,124 +174,181 @@ class TestBoundedBlock(object):
     def test_str(self):
         u = bitstream.UInt(0)
         s = bitstream.SInt(1)
-        b = bitstream.BoundedBlock(u, length=8, pad_value=0x0F)
         
-        b.inner_value = u
+        b = bitstream.BoundedBlock(u, length=8, pad_value=0x0F)
         assert str(b) == "0 <padding 0b0001111>"
-        b.inner_value = s
+        
+        b = bitstream.BoundedBlock(s, length=8, pad_value=0x0F)
         assert str(b) == "1 <padding 0b1111>"
         
         # Value the right length should have no padding
         s.value = 7
-        b.inner_value = s
         assert str(b) == "7"
         
         # Value longer than supported should have no padding either
         w = bitstream.BitstreamWriter(BytesIO())
+        b = bitstream.BoundedBlock(u, length=8, pad_value=0x0F)
         u.value = 15
-        b.inner_value = u
         b.write(w)
         assert str(b) == "15*"
+    
+    def test_notifications(self):
+        u = bitstream.UInt(0)
+        l = bitstream.UInt(0)
+        b = bitstream.BoundedBlock(u, length=l, pad_value=0x0F)
+
+        notify = Mock()
+        b._notify_on_change(notify)
+        
+        b.pad_value = 0
+        assert notify._dependency_changed.call_count == 1
+        
+        l.value = 3
+        assert notify._dependency_changed.call_count == 2
+        
+        u.value = 1
+        assert notify._dependency_changed.call_count == 3
+        
+        r = bitstream.BitstreamReader(BytesIO())
+        b.read(r)
+        assert notify._dependency_changed.call_count == 4
 
 
 class TestMaybe(object):
     
-    @pytest.mark.parametrize("flag_value,expected", [
-        # Should take values or functions
-        (True, True),
-        (False, False),
-        (lambda: True, True),
-        (lambda: False, False),
-        # Should cast non-bool values
-        (1234, True),
-        (None, False),
-        (lambda: 1234, True),
-        (lambda: None, False),
-    ])
-    def test_flag(self, flag_value, expected):
-        value = bitstream.UInt()
-        
-        # Try via constructor
-        m = bitstream.Maybe(value, flag_value)
-        assert bool(m.flag) is expected
-        
-        # Try via property
-        m = bitstream.Maybe(value, not expected)
-        m.flag = flag_value
-        assert bool(m.flag) is expected
-    
     def test_length(self):
-        value = bitstream.UInt()
+        m = bitstream.Maybe(bitstream.UInt, True)
+        assert m.length == 1
         
-        m = bitstream.Maybe(value, True)
-        
-        value.value = 3
-        
+        m.value = 3
         assert m.length == 5
         
-        m.flag = False
+        m.flag_bitstream_value.value = False
         assert m.length == 0
     
-    def test_bits_past_eof(self):
+    def test_flag(self):
         r = bitstream.BitstreamReader(BytesIO())
         
-        value = bitstream.UInt()
+        m = bitstream.Maybe(lambda: bitstream.Array(bitstream.UInt, 2), True)
         
-        m = bitstream.Maybe(value, False)
+        # Reading past the EOF should propagate the bits-past-EOF count
+        m.read(r)
+        assert m.bits_past_eof == 2
         
-        value.read(r)
+        # Length should be calculated based on the internal value and value
+        # accessors should work
+        assert m.length == 2
+        m.value[0].value = 3
+        assert m.length == 6
+        m[1].value = 3
+        assert m.length == 10
         
-        m.flag = True
-        assert m.bits_past_eof == 1
-        
-        m.flag = False
+        # Clearing the flag should remove the value
+        m.flag_bitstream_value.value = False
         assert m.bits_past_eof == 0
+        assert m.length == 0
+        with pytest.raises(bitstream.EmptyValueError):
+            m.value
+        with pytest.raises(bitstream.EmptyValueError):
+            m[0]
+        
+        # Setting the flag again produces a new values
+        m.flag_bitstream_value.value = True
+        assert m.length == 2
+        assert m.bits_past_eof is None
+        
+        # Setting the flag to an exception-raising should be treated as 'False'
+        m.flag_bitstream_value.exception = Exception()
+        assert m.flag is False
+        assert m.length == 0
     
     def test_read(self):
         r = bitstream.BitstreamReader(BytesIO(b"\x00"))
+        m = bitstream.Maybe(bitstream.UInt, False)
         
-        value = bitstream.UInt()
-        
-        m = bitstream.Maybe(value, False)
-        
-        m.flag = False
+        m.flag_bitstream_value.value = False
         m.read(r)
         assert r.tell() == (0, 7)
         assert m.offset == (0, 7)
-        assert value.offset is None  # Value not read
+        assert m.inner_value is None  # Value not read
         
-        m.flag = True
+        m.flag_bitstream_value.value = True
         m.read(r)
-        assert value.value == 15
+        assert m.inner_value.value == 15
+        assert m.value == 15
         assert r.tell() == (1, 7)
         assert m.offset == (0, 7)
-        assert value.offset == (0, 7)  # Value was read
+        assert m.inner_value.offset == (0, 7)  # Value was read
     
     def test_write(self):
         f = BytesIO()
         w = bitstream.BitstreamWriter(f)
         
-        value = bitstream.UInt(15)
+        m = bitstream.Maybe(lambda: bitstream.UInt(15), False)
         
-        m = bitstream.Maybe(value, False)
-        
-        m.flag = False
         m.write(w)
         w.flush()
         assert f.getvalue() == b""
         assert w.tell() == (0, 7)
         assert m.offset == (0, 7)
-        assert value.offset is None  # Value not written
+        assert m.inner_value is None
         
-        m.flag = True
+        m.flag_bitstream_value.value = True
         m.write(w)
         w.flush()
         assert f.getvalue() == b"\x00\x80"
         assert w.tell() == (1, 6)
         assert m.offset == (0, 7)
-        assert value.offset == (0, 7)  # Value was written
+        assert m.inner_value.offset == (0, 7)  # Value was written
     
     def test_str(self):
-        u = bitstream.UInt(10)
-        assert str(bitstream.Maybe(u, False)) == ""
-        assert str(bitstream.Maybe(u, True)) == "10"
+        assert str(bitstream.Maybe(lambda: bitstream.UInt(10), False)) == ""
+        assert str(bitstream.Maybe(lambda: bitstream.UInt(10), True)) == "10"
+    
+    def test_notifications(self):
+        flag = bitstream.ConstantValue(False)
+        m = bitstream.Maybe(bitstream.UInt, flag)
+
+        notify = Mock()
+        m._notify_on_change(notify)
+        
+        # Changing flag notifies
+        flag.value = True
+        assert notify._dependency_changed.call_count == 1
+        
+        # Changing the value notifies
+        m.value = 123
+        assert notify._dependency_changed.call_count == 2
+        
+        # Setting the flag to the same value results in no change
+        flag.value = True
+        assert m.value == 123
+        assert notify._dependency_changed.call_count == 2
+        
+        # Changing the flag again notifies a change
+        flag.value = False
+        assert notify._dependency_changed.call_count == 3
+        
+        # Setting the flag to the same value doesn't notify a change
+        flag.value = False
+        assert notify._dependency_changed.call_count == 3
+    
+    def test_discarded_value_notifications(self):
+        # Check that when an inner value is discarded its 'changed' event
+        # no longer produces notifications on the Maybe
+        
+        flag = bitstream.ConstantValue(True)
+        m = bitstream.Maybe(bitstream.UInt, flag)
+        
+        notify = Mock()
+        m._notify_on_change(notify)
+        
+        value = m.inner_value
+        value._changed()
+        assert notify._dependency_changed.call_count == 1
+        
+        flag.value = False
+        assert notify._dependency_changed.call_count == 2
+        
+        value._changed()
+        assert notify._dependency_changed.call_count == 2
