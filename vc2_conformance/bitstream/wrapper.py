@@ -4,7 +4,12 @@ format of the contained value, for example by constraining it to a fixed-length
 block.
 """
 
-from vc2_conformance.bitstream import BitstreamValue, ensure_bitstream_value
+from vc2_conformance.bitstream import (
+    BitstreamValue,
+    BoundedReader,
+    BoundedWriter,
+    ensure_bitstream_value,
+)
 
 from vc2_conformance.bitstream.primitive import read_bits, write_bits
 
@@ -179,68 +184,12 @@ class BoundedBlock(WrappedValue):
         else:
             return max(0, self.length - self.inner_value.length)
     
-    class BoundedReader(object):
-        """A wrapper around a :py:class:`BitstreamReader`."""
-        
-        def __init__(self, reader, length):
-            self._reader = reader
-            self.bits_remaining = length
-            self.bits_past_eof = 0
-        
-        def read_bit(self):
-            if self.bits_remaining > 0:
-                bit = self._reader.read_bit()
-                
-                self.bits_remaining -= 1
-                if bit is None:
-                    self.bits_past_eof += 1
-                
-                return bit
-            else:
-                return None
-        
-        def tell(self):
-            return self._reader.tell()
-        
-        def seek(self, *args, **kwargs):
-            raise NotImplementedError("Seek not supported in BoundedBlock")
-    
-    class BoundedWriter(object):
-        """A wrapper around a :py:class:`BitstreamWriter`."""
-        
-        def __init__(self, writer, length):
-            self._writer = writer
-            self.bits_remaining = length
-            self.bits_past_eof = 0
-        
-        def write_bit(self, value):
-            if self.bits_remaining > 0:
-                self.bits_remaining -= 1
-                length = self._writer.write_bit(value)
-                self.bits_past_eof += 1 - length
-                return length
-            else:
-                if not value:
-                    raise ValueError(
-                        "Cannot write 0s past the end of a BoundedBlock.")
-                return 0
-        
-        def tell(self):
-            return self._writer.tell()
-        
-        def seek(self, *args, **kwargs):
-            raise NotImplementedError("Seek not supported in BoundedBlock")
-        
-        def flush(self):
-            return self._writer.flush()
-    
-    
     def read(self, reader):
         """A context manager providing a bounded reader."""
         with self._coalesce_change_notifications():
             self._offset = reader.tell()
             
-            bounded_reader = BoundedBlock.BoundedReader(reader, self.length)
+            bounded_reader = BoundedReader(reader, self.length)
             self.inner_value.read(bounded_reader)
             
             # Read any remaining bits in the block
@@ -255,7 +204,7 @@ class BoundedBlock(WrappedValue):
         """A context manager providing a bounded writer."""
         self._offset = writer.tell()
         
-        bounded_writer = BoundedBlock.BoundedWriter(writer, self.length)
+        bounded_writer = BoundedWriter(writer, self.length)
         
         self.inner_value.write(bounded_writer)
         

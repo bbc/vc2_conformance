@@ -65,3 +65,37 @@ def test_notifications():
     assert a.deps_changed == [b, c, c, c, b]
     b._changed()
     assert a.deps_changed == [b, c, c, c, b, b]
+
+
+def test_wait_for_all_changes_before_cascading():
+    # A tree of dependencies
+    a = bitstream.ConstantValue(0)
+    a1 = bitstream.FunctionValue(lambda v: v.value, a)
+    a2 = bitstream.FunctionValue(lambda v: v.value, a)
+    a11 = bitstream.FunctionValue(lambda v: v.value, a1)
+    a12 = bitstream.FunctionValue(lambda v: v.value, a1)
+    a21 = bitstream.FunctionValue(lambda v: v.value, a2)
+    a22 = bitstream.FunctionValue(lambda v: v.value, a2)
+    
+    log = []
+    logger = bitstream.FunctionValue(
+        lambda *values: log.append(tuple(v.value for v in values)),
+        a,
+        a1,
+        a2,
+        a11,
+        a12,
+        a21,
+        a22,
+    )
+    
+    # Make a change
+    a.value = 1
+    
+    # In every logged set of values, things at the same branch of the hierarchy
+    # should be consistent
+    assert len(log) == 8
+    for a_v, a1_v, a2_v, a11_v, a12_v, a21_v, a22_v in log:
+        assert a1_v == a2_v
+        assert a11_v == a12_v
+        assert a21_v == a22_v

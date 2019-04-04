@@ -19,7 +19,6 @@ def read_bits(reader, bits):
     
     return (value, bits_past_eof)
 
-
 def write_bits(writer, bits, value):
     """
     Write the 'bits' lowest-rder bits of 'value' into a
@@ -31,6 +30,41 @@ def write_bits(writer, bits, value):
         bits_past_eof += 1 - writer.write_bit((value >> i) & 1)
     
     return bits_past_eof
+
+def read_bytes(reader, num_bytes):
+    """
+    Read a number of bytes from a :py:class:`BitstreamReader`, returning a
+    (:py:class:`bytes`, bits_past_eof) tuple.
+    """
+    values = []
+    bits_past_eof = 0
+    for _ in range(num_bytes):
+        value, this_bits_past_eof = read_bits(reader, 8)
+        values.append(value)
+        bits_past_eof += this_bits_past_eof
+    
+    return (bytes(values), bits_past_eof)
+
+def write_bytes(writer, num_bytes, value):
+    """
+    Write the provided :py:class:`bytes` or :py:class:`bytearray` in a python
+    bytestring using a :py:class:`BitstreamWriter`, returning the number of
+    bits written past the end-of-file.
+    
+    If the provided byte string is the wrong length it will be left-padded with
+    null bytes or truncated, discarding left-most values. This behaviour is
+    intended to be consistent with the behaviour of read_bits.
+    """
+    if num_bytes != 0:
+        value = value[-num_bytes:].rjust(num_bytes, b"\x00")
+    else:
+        # Special case required because value[-0:] doesn't do the right
+        # thing...
+        value = b""
+    return sum(
+        write_bits(writer, 8, byte)
+        for byte in bytearray(value)
+    )
 
 def exp_golomb_length(value):
     """

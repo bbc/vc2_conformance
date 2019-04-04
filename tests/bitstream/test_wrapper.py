@@ -2,6 +2,8 @@ import pytest
 
 from mock import Mock
 
+from mock_notification_target import MockNotificationTarget
+
 from io import BytesIO
 
 from vc2_conformance import bitstream
@@ -197,21 +199,21 @@ class TestBoundedBlock(object):
         l = bitstream.UInt(0)
         b = bitstream.BoundedBlock(u, length=l, pad_value=0x0F)
 
-        notify = Mock()
+        notify = MockNotificationTarget()
         b._notify_on_change(notify)
         
         b.pad_value = 0
-        assert notify._dependency_changed.call_count == 1
+        assert notify.notification_count == 1
         
         l.value = 3
-        assert notify._dependency_changed.call_count == 2
+        assert notify.notification_count == 2
         
         u.value = 1
-        assert notify._dependency_changed.call_count == 3
+        assert notify.notification_count == 3
         
         r = bitstream.BitstreamReader(BytesIO())
         b.read(r)
-        assert notify._dependency_changed.call_count == 4
+        assert notify.notification_count == 4
 
 
 class TestMaybe(object):
@@ -309,29 +311,29 @@ class TestMaybe(object):
         flag = bitstream.ConstantValue(False)
         m = bitstream.Maybe(bitstream.UInt, flag)
 
-        notify = Mock()
+        notify = MockNotificationTarget()
         m._notify_on_change(notify)
         
         # Changing flag notifies
         flag.value = True
-        assert notify._dependency_changed.call_count == 1
+        assert notify.notification_count == 1
         
         # Changing the value notifies
         m.value = 123
-        assert notify._dependency_changed.call_count == 2
+        assert notify.notification_count == 2
         
         # Setting the flag to the same value results in no change
         flag.value = True
         assert m.value == 123
-        assert notify._dependency_changed.call_count == 2
+        assert notify.notification_count == 2
         
         # Changing the flag again notifies a change
         flag.value = False
-        assert notify._dependency_changed.call_count == 3
+        assert notify.notification_count == 3
         
         # Setting the flag to the same value doesn't notify a change
         flag.value = False
-        assert notify._dependency_changed.call_count == 3
+        assert notify.notification_count == 3
     
     def test_discarded_value_notifications(self):
         # Check that when an inner value is discarded its 'changed' event
@@ -340,15 +342,15 @@ class TestMaybe(object):
         flag = bitstream.ConstantValue(True)
         m = bitstream.Maybe(bitstream.UInt, flag)
         
-        notify = Mock()
+        notify = MockNotificationTarget()
         m._notify_on_change(notify)
         
         value = m.inner_value
         value._changed()
-        assert notify._dependency_changed.call_count == 1
+        assert notify.notification_count == 1
         
         flag.value = False
-        assert notify._dependency_changed.call_count == 2
+        assert notify.notification_count == 2
         
         value._changed()
-        assert notify._dependency_changed.call_count == 2
+        assert notify.notification_count == 2

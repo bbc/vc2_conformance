@@ -71,7 +71,7 @@ class ParseCodes(Enum):
         return (self.value & 0x88) == 0x88
     
     @property
-    def is_ld(self):
+    def is_low_delay(self):
         """
         (10.5.2) (Table 10.2) Is low-delay picture or fragment type.
         
@@ -81,7 +81,7 @@ class ParseCodes(Enum):
         return (self.value & 0xF8) == ParseCodes.low_delay_picture.value
     
     @property
-    def is_hq(self):
+    def is_high_quality(self):
         """
         (10.5.2) (Table 10.2) Is high-quality picture or fragment type.
         

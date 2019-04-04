@@ -4,6 +4,8 @@ from mock import Mock
 from io import BytesIO
 from enum import Enum
 
+from mock_notification_target import MockNotificationTarget
+
 from vc2_conformance import bitstream
 from vc2_conformance.bitstream.formatters import Hex
 
@@ -13,9 +15,9 @@ class TestPrimitiveValueBaseclass(object):
     def test_value(self):
         p = bitstream.PrimitiveValue(123)
         
-        notify = Mock()
+        notify = MockNotificationTarget()
         p._notify_on_change(notify)
-        assert notify._dependency_changed.call_count == 0
+        assert notify.notification_count == 0
         
         # Argument value should pass through
         assert p.value == 123
@@ -23,10 +25,10 @@ class TestPrimitiveValueBaseclass(object):
         # Should be able to override
         p.value = 100
         assert p.value == 100
-        assert notify._dependency_changed.call_count == 1
+        assert notify.notification_count == 1
         p.value = -100
         assert p.value == -100
-        assert notify._dependency_changed.call_count == 2
+        assert notify.notification_count == 2
         
         # Casting should work (sample functions store all positive numbers as
         # 10x their input value....)
@@ -174,20 +176,20 @@ class TestBool(object):
         r = bitstream.BitstreamReader(BytesIO(b"\xAA"))
         b = bitstream.Bool()
         
-        notify = Mock()
+        notify = MockNotificationTarget()
         b._notify_on_change(notify)
         
         b.read(r)
         assert b.value is True
         assert b.offset == (0, 7)
         assert b.bits_past_eof == 0
-        assert notify._dependency_changed.call_count == 1
+        assert notify.notification_count == 1
         
         b.read(r)
         assert b.value is False
         assert b.offset == (0, 6)
         assert b.bits_past_eof == 0
-        assert notify._dependency_changed.call_count == 2
+        assert notify.notification_count == 2
     
     def test_read_past_eof(self):
         r = bitstream.BitstreamReader(BytesIO(b""))
@@ -236,20 +238,20 @@ class TestNBits(object):
         r = bitstream.BitstreamReader(BytesIO(b"\xAA"))
         n = bitstream.NBits(length=3)
         
-        notify = Mock()
+        notify = MockNotificationTarget()
         n._notify_on_change(notify)
         
         n.read(r)
         assert n.value == 5
         assert n.offset == (0, 7)
         assert n.bits_past_eof == 0
-        assert notify._dependency_changed.call_count == 1
+        assert notify.notification_count == 1
         
         n.read(r)
         assert n.value == 2
         assert n.offset == (0, 4)
         assert n.bits_past_eof == 0
-        assert notify._dependency_changed.call_count == 2
+        assert notify.notification_count == 2
     
     def test_read_past_eof(self):
         r = bitstream.BitstreamReader(BytesIO(b"\x00"))
@@ -305,14 +307,17 @@ class TestNBits(object):
         with pytest.raises(ValueError):
             n.write(w)
     
-    def test_length_as_function(self):
-        length = Mock(return_value=8)
-        
+    def test_length_as_bitstream_value(self):
+        length = bitstream.ConstantValue(8)
         n = bitstream.NBits(10, length)
         assert n.length == 8
         
-        length.return_value = 4
+        notify = MockNotificationTarget()
+        n._notify_on_change(notify)
+        
+        length.value = 4
         assert n.length == 4
+        assert notify.notification_count == 1
 
 class TestByteAlign(object):
     
@@ -327,7 +332,7 @@ class TestByteAlign(object):
         r = bitstream.BitstreamReader(BytesIO(b"\xAA"))
         b = bitstream.ByteAlign(7)
         
-        notify = Mock()
+        notify = MockNotificationTarget()
         b._notify_on_change(notify)
         
         # No need to advance
@@ -336,7 +341,7 @@ class TestByteAlign(object):
         assert b.value == 0
         assert b.length == 0
         assert r.tell() == (0, 7)
-        assert notify._dependency_changed.call_count == 1
+        assert notify.notification_count == 1
         
         assert r.read_bit() == 1
         
@@ -346,7 +351,7 @@ class TestByteAlign(object):
         assert b.value == 0x2A
         assert b.length == 7
         assert r.tell() == (1, 7)
-        assert notify._dependency_changed.call_count == 2
+        assert notify.notification_count == 2
     
     def test_read_past_eof(self):
         r = bitstream.BitstreamReader(BytesIO(b""))
@@ -362,18 +367,18 @@ class TestByteAlign(object):
         w = bitstream.BitstreamWriter(f)
         b = bitstream.ByteAlign()
         
-        notify = Mock()
+        notify = MockNotificationTarget()
         b._notify_on_change(notify)
         
         b.value = 0xFA
-        assert notify._dependency_changed.call_count == 1
+        assert notify.notification_count == 1
         
         b.write(w)
         assert b.offset == (0, 7)
         assert b.length == 0
         assert b.value == 0xFA
         assert b.bits_past_eof == 0
-        assert notify._dependency_changed.call_count == 2
+        assert notify.notification_count == 2
 
         w.flush()
         assert f.getvalue() == b""
@@ -385,7 +390,7 @@ class TestByteAlign(object):
         assert b.length == 7
         assert b.value == 0xFA
         assert b.bits_past_eof == 0
-        assert notify._dependency_changed.call_count == 3
+        assert notify.notification_count == 3
         
         assert f.getvalue() == b"\x7A"
     
@@ -447,7 +452,7 @@ class TestUInt(object):
         r = bitstream.BitstreamReader(BytesIO(b"\x1F"))
         u = bitstream.UInt()
         
-        notify = Mock()
+        notify = MockNotificationTarget()
         u._notify_on_change(notify)
         
         u.read(r)
@@ -455,14 +460,14 @@ class TestUInt(object):
         assert u.length == 5
         assert u.offset == (0, 7)
         assert u.bits_past_eof == 0
-        assert notify._dependency_changed.call_count == 1
+        assert notify.notification_count == 1
         
         u.read(r)
         assert u.value == 0
         assert u.length == 1
         assert u.offset == (0, 2)
         assert u.bits_past_eof == 0
-        assert notify._dependency_changed.call_count == 2
+        assert notify.notification_count == 2
     
     def test_read_past_eof(self):
         r = bitstream.BitstreamReader(BytesIO(b"\x00"))
@@ -597,7 +602,7 @@ class TestSInt(object):
         r = bitstream.BitstreamReader(BytesIO(b"\x06\x07\xFF"))
         s = bitstream.SInt()
         
-        notify = Mock()
+        notify = MockNotificationTarget()
         s._notify_on_change(notify)
         
         s.read(r)
@@ -605,21 +610,21 @@ class TestSInt(object):
         assert s.length == 8
         assert s.offset == (0, 7)
         assert s.bits_past_eof == 0
-        assert notify._dependency_changed.call_count == 1
+        assert notify.notification_count == 1
         
         s.read(r)
         assert s.value == -8
         assert s.length == 8
         assert s.offset == (1, 7)
         assert s.bits_past_eof == 0
-        assert notify._dependency_changed.call_count == 2
+        assert notify.notification_count == 2
         
         s.read(r)
         assert s.value == 0
         assert s.length == 1
         assert s.offset == (2, 7)
         assert s.bits_past_eof == 0
-        assert notify._dependency_changed.call_count == 3
+        assert notify.notification_count == 3
     
     def test_read_past_eof(self):
         r = bitstream.BitstreamReader(BytesIO(b""))

@@ -11,6 +11,8 @@ from vc2_conformance.bitstream import (
 from vc2_conformance.bitstream._integer_io import (
     read_bits,
     write_bits,
+    read_bytes,
+    write_bytes,
     exp_golomb_length,
     read_exp_golomb,
     write_signed_exp_golomb,
@@ -67,6 +69,75 @@ class TestWriteBits(object):
     def test_write_past_eof(self, f, w):
         bw = BoundedWriter(w, 8)
         assert write_bits(bw, 12, 0xABF) == 4
+        assert w.tell() == (1, 7)
+        w.flush()
+        assert f.getvalue() == b"\xAB"
+
+class TestReadBytes(object):
+    
+    def test_read_nothing(self):
+        r = BitstreamReader(BytesIO())
+        assert read_bytes(r, 0) == (b"", 0)
+        assert r.tell() == (0, 7)
+    
+    def test_read_bytes_msb_first(self):
+        r = BitstreamReader(BytesIO(b"\xDE\xAD\xBE\xEF"))
+        assert read_bytes(r, 2) == (b"\xDE\xAD", 0)
+        assert r.tell() == (2, 7)
+    
+    def test_unaligned(self):
+        r = BitstreamReader(BytesIO(b"\xDE\xAD\xBE\xEF"))
+        r.seek(0, 3)
+        assert read_bytes(r, 2) == (b"\xEA\xDB", 0)
+        assert r.tell() == (2, 3)
+    
+    def test_read_past_eof(self):
+        r = BitstreamReader(BytesIO(b"\xDE"))
+        assert read_bytes(r, 2) == (b"\xDE\xFF", 8)
+        assert r.tell() == (1, 7)
+
+
+class TestWriteBytes(object):
+    
+    @pytest.fixture
+    def f(self):
+        return BytesIO()
+    
+    @pytest.fixture
+    def w(self, f):
+        return BitstreamWriter(f)
+    
+    def test_write_nothing(self, w):
+        assert write_bytes(w, 0, b"foo") == 0
+        assert w.tell() == (0, 7)
+    
+    def test_write_truncate(self, f, w):
+        # Takes the right-most bytes
+        assert write_bytes(w, 1, b"\xAB\xCD") == 0
+        assert w.tell() == (1, 7)
+        assert f.getvalue() == b"\xCD"
+    
+    def test_write_extend(self, f, w):
+        # Left-pads with null bytes
+        assert write_bytes(w, 2, b"\xAB") == 0
+        assert w.tell() == (2, 7)
+        assert f.getvalue() == b"\x00\xAB"
+    
+    def test_write_aligned(self, f, w):
+        assert write_bytes(w, 2, b"\xAB\xCD") == 0
+        assert w.tell() == (2, 7)
+        assert f.getvalue() == b"\xAB\xCD"
+    
+    def test_write_unaligned(self, f, w):
+        w.seek(0, 3)
+        assert write_bytes(w, 2, b"\xAB\xCD") == 0
+        assert w.tell() == (2, 3)
+        w.flush()
+        assert f.getvalue() == b"\x0A\xBC\xD0"
+    
+    def test_write_past_eof(self, f, w):
+        bw = BoundedWriter(w, 8)
+        assert write_bytes(bw, 2, b"\xAB\xFF") == 8
         assert w.tell() == (1, 7)
         w.flush()
         assert f.getvalue() == b"\xAB"

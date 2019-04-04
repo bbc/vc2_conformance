@@ -39,7 +39,7 @@ class PseudoValue(BitstreamValue):
         self._bits_past_eof = 0
     
     def __repr__(self):
-        return "<{} value={}>".format(
+        return "<{} value={!r}>".format(
             self.__class__.__name__,
             self.value,
         )
@@ -109,10 +109,11 @@ class FunctionValue(PseudoValue):
     
     def __init__(self, fn, *arg_values):
         self._fn = fn
-        self._arg_values = [ensure_bitstream_value(v) for v in arg_values]
+        self._arg_values = arg_values
         
         for value in self._arg_values:
-            value._notify_on_change(self)
+            if isinstance(value, BitstreamValue):
+                value._notify_on_change(self)
         
         super(FunctionValue, self).__init__()
         

@@ -7,6 +7,8 @@ from enum import Enum
 
 from vc2_conformance import bitstream
 
+from mock_notification_target import MockNotificationTarget
+
 
 class TestConcatenation(object):
     
@@ -108,21 +110,21 @@ class TestConcatenation(object):
         
         c = bitstream.Concatenation(n1, n2)
         
-        notify = Mock()
+        notify = MockNotificationTarget()
         c._notify_on_change(notify)
         
-        assert notify._dependency_changed.call_count == 0
+        assert notify.notification_count == 0
         
         n1.value = 1
-        assert notify._dependency_changed.call_count == 1
+        assert notify.notification_count == 1
         
         n2.value = 1
-        assert notify._dependency_changed.call_count == 2
+        assert notify.notification_count == 2
         
         # Reading the whole thing should result in just one notification
         r = bitstream.BitstreamReader(BytesIO())
         c.read(r)
-        assert notify._dependency_changed.call_count == 3
+        assert notify.notification_count == 3
     
     def test_str(self):
         u1 = bitstream.UInt(10)
@@ -272,16 +274,16 @@ class TestLabelledConcatenation(object):
         
         l = bitstream.LabelledConcatenation(("n1", n1), n2)
         
-        notify = Mock()
+        notify = MockNotificationTarget()
         l._notify_on_change(notify)
         
-        assert notify._dependency_changed.call_count == 0
+        assert notify.notification_count == 0
         
         n1.value = 1
-        assert notify._dependency_changed.call_count == 1
+        assert notify.notification_count == 1
         
         n2.value = 1
-        assert notify._dependency_changed.call_count == 2
+        assert notify.notification_count == 2
 
 
 class TestArray(object):
@@ -387,22 +389,22 @@ class TestArray(object):
         length = bitstream.ConstantValue(4)
         a = bitstream.Array(bitstream.UInt, length)
         
-        notify = Mock()
+        notify = MockNotificationTarget()
         a._notify_on_change(notify)
         
         values = a.value
         for v in values:
             v._changed()
-        assert notify._dependency_changed.call_count == 4
+        assert notify.notification_count == 4
         
         # Discarded value notifications shouldn't come through (only those of
         # the retained values)
         length.value = 2
-        assert notify._dependency_changed.call_count == 5
+        assert notify.notification_count == 5
         
         for v in values:
             v._changed()
-        assert notify._dependency_changed.call_count == 7
+        assert notify.notification_count == 7
 
 
 class TestRectangularArray(object):

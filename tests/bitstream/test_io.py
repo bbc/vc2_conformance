@@ -147,3 +147,70 @@ class TestBistreamWriter(object):
         assert f.getvalue() == b"\x40\x01"
 
 
+def test_bounded_reader():
+    r = bitstream.BitstreamReader(BytesIO(b"\xA0"))
+    br = bitstream.BoundedReader(r, 12)
+    
+    for exp_tell, exp_value, exp_br_bits_remaining, exp_br_bits_past_eof in [
+                # Within file
+                ((0, 7), 1, 11, 0),
+                ((0, 6), 0, 10, 0),
+                ((0, 5), 1, 9, 0),
+                ((0, 4), 0, 8, 0),
+                ((0, 3), 0, 7, 0),
+                ((0, 2), 0, 6, 0),
+                ((0, 1), 0, 5, 0),
+                ((0, 0), 0, 4, 0),
+                # Past end of file
+                ((1, 7), None, 3, 1),
+                ((1, 7), None, 2, 2),
+                ((1, 7), None, 1, 3),
+                ((1, 7), None, 0, 4),
+                # Past end of bounded block
+                ((1, 7), None, 0, 4),
+                ((1, 7), None, 0, 4),
+                ((1, 7), None, 0, 4),
+                ((1, 7), None, 0, 4),
+            ]:
+        assert br.tell() == exp_tell
+        value = br.read_bit()
+        assert value == exp_value
+        assert br.bits_remaining == exp_br_bits_remaining
+        assert br.bits_past_eof == exp_br_bits_past_eof
+
+
+def test_bounded_writer():
+    f = BytesIO()
+    w = bitstream.BitstreamWriter(f)
+    bw_outer = bitstream.BoundedWriter(w, 8)
+    bw = bitstream.BoundedWriter(bw_outer, 12)
+    
+    for exp_tell, bit, exp_error, exp_bits_past_eof, exp_bw_bits_remaining, exp_bw_bits_past_eof in [
+                # Within file
+                ((0, 7), 1, False, 0, 11, 0),
+                ((0, 6), 0, False, 0, 10, 0),
+                ((0, 5), 1, False, 0, 9, 0),
+                ((0, 4), 0, False, 0, 8, 0),
+                ((0, 3), 0, False, 0, 7, 0),
+                ((0, 2), 0, False, 0, 6, 0),
+                ((0, 1), 0, False, 0, 5, 0),
+                ((0, 0), 0, False, 0, 4, 0),
+                # Outer bounded reader limit
+                ((1, 7), 1, False, 1, 3, 1),
+                ((1, 7), 1, False, 1, 2, 2),
+                ((1, 7), 1, False, 1, 1, 3),
+                ((1, 7), 1, False, 1, 0, 4),
+                # Past bounded block end
+                ((1, 7), 1, False, 1, 0, 4),
+                ((1, 7), 0, True, 1, 0, 4),
+            ]:
+        assert bw.tell() == exp_tell
+        if exp_error:
+            with pytest.raises(ValueError):
+                bw.write_bit(bit)
+            bits_past_eof = 1 - bw.write_bit(1)
+        else:
+            bits_past_eof = 1 - bw.write_bit(bit)
+        assert bits_past_eof == exp_bits_past_eof
+        assert bw.bits_remaining == exp_bw_bits_remaining
+        assert bw.bits_past_eof == exp_bw_bits_past_eof

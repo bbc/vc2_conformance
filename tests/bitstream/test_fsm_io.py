@@ -23,6 +23,8 @@ class TestReadFSM(object):
         # N-bit unsigned integers
         (TokenTypes.nbits, 8, 0xAB, b"\xAB", (1, 7)),
         (TokenTypes.nbits, 4, 0xA, b"\xA0", (0, 3)),
+        # Bytes strings
+        (TokenTypes.nbytes, 2, b"\xAB\xCD", b"\xAB\xCD", (2, 7)),
         # Unsigned exp-golomb
         (TokenTypes.uint, None, 0, b"\x80", (0, 6)),
         (TokenTypes.uint, None, 1, b"\x20", (0, 4)),
@@ -42,6 +44,15 @@ class TestReadFSM(object):
         assert read_fsm(reader, token_generator(), values) == 0
         assert values["target"][0] == expected_value
         assert reader.tell() == expected_tell
+    
+    def test_generic_tuple_tokens(self):
+        def token_generator():
+            assert (yield (TokenTypes.nbits, 8, "target")) == 0xAB
+        
+        reader = BitstreamReader(BytesIO(b"\xAB"))
+        values = {"target": [None]}
+        assert read_fsm(reader, token_generator(), values) == 0
+        assert values["target"][0] == 0xAB
     
     @pytest.mark.parametrize("token_type,argument,expected_value,expected_bits_past_eof", [
         # N-bit unsigned integers
@@ -148,6 +159,8 @@ class TestWriteFSM(object):
         # N-bit unsigned integers
         (TokenTypes.nbits, 8, 0xAB, b"\xAB", (1, 7)),
         (TokenTypes.nbits, 4, 0xA, b"\xA0", (0, 3)),
+        # Bytes strings
+        (TokenTypes.nbytes, 2, b"\xAB\xCD", b"\xAB\xCD", (2, 7)),
         # Unsigned exp-golomb
         (TokenTypes.uint, None, 0, b"\x80", (0, 6)),
         (TokenTypes.uint, None, 1, b"\x20", (0, 4)),
@@ -171,6 +184,16 @@ class TestWriteFSM(object):
         
         writer.flush()
         assert f.getvalue() == expected_bits
+    
+    def test_generic_tuple_tokens(self):
+        def token_generator():
+            assert (yield (TokenTypes.nbits, 8, "target")) == 0xAB
+        
+        f = BytesIO()
+        writer = BitstreamWriter(f)
+        values = {"target": [0xAB]}
+        assert write_fsm(writer, token_generator(), values) == 0
+        assert f.getvalue() == b"\xAB"
     
     @pytest.mark.parametrize("token_type,argument,value,expected_bits_past_eof", [
         # N-bit unsigned integers
@@ -269,24 +292,26 @@ class TestFSMTargetAtOffset(object):
     def test_primitive_types(self):
         def token_generator():
             assert (yield Token(TokenTypes.nbits, 4, "nbits1")) == 1
-            assert (yield Token(TokenTypes.uint, None, "uint1")) == 2
-            assert (yield Token(TokenTypes.sint, None, "sint1")) == 3
-            assert (yield Token(TokenTypes.nbits, 8, "nbits2")) == 4
-            assert (yield Token(TokenTypes.uint, None, "uint2")) == 5
-            assert (yield Token(TokenTypes.sint, None, "sint2")) == 6
+            assert (yield Token(TokenTypes.nbytes, 2, "nbytes1")) == 2
+            assert (yield Token(TokenTypes.uint, None, "uint1")) == 3
+            assert (yield Token(TokenTypes.sint, None, "sint1")) == 4
+            assert (yield Token(TokenTypes.nbits, 8, "nbits2")) == 5
+            assert (yield Token(TokenTypes.nbytes, 2, "nbytes2")) == 6
+            assert (yield Token(TokenTypes.uint, None, "uint2")) == 7
+            assert (yield Token(TokenTypes.sint, None, "sint2")) == 8
         
         values = {
-            "nbits1": [1], "uint1": [2], "sint1": [3],
-            "nbits2": [4], "uint2": [5], "sint2": [6],
+            "nbits1": [1], "nbytes1": [2], "uint1": [3], "sint1": [4],
+            "nbits2": [5], "nbytes2": [6], "uint2": [7], "sint2": [8],
         }
         
         expected_targets = [
-            "nbits1", "uint1", "sint1",
-            "nbits2", "uint2", "sint2",
+            "nbits1", "nbytes1", "uint1", "sint1",
+            "nbits2", "nbytes2", "uint2", "sint2",
         ]
         expected_widths = [
-            4, 3, 6,
-            8, 5, 6,
+            4, 16, 5, 6,
+            8, 16, 7, 8,
         ]
         
         target_offset = 0
@@ -298,6 +323,13 @@ class TestFSMTargetAtOffset(object):
         
         with pytest.raises(IndexError):
             fsm_target_at_offset(token_generator(), values, target_offset)
+    
+    def test_generic_tuple_tokens(self):
+        def token_generator():
+            assert (yield (TokenTypes.nbits, 8, "target")) == 0xAB
+        
+        values = {"target": [0xAB]}
+        assert fsm_target_at_offset(token_generator(), values, 0) == ("target", 0)
     
     def test_return_targets_and_indices(self):
         def token_generator():

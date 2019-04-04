@@ -9,9 +9,18 @@ formatting. This can be overridden, for example to allow :py:class:`Enum`
 values to be used or hexidecimal representations to be shown.
 """
 
-from vc2_conformance.bitstream import BitstreamValue
+from vc2_conformance.bitstream import BitstreamValue, ensure_bitstream_value
 
-from vc2_conformance.bitstream._util import function_property
+from vc2_conformance.bitstream._integer_io import (
+    read_bits,
+    write_bits,
+    exp_golomb_length,
+    read_exp_golomb,
+    write_signed_exp_golomb,
+    signed_exp_golomb_length,
+    read_signed_exp_golomb,
+    write_exp_golomb,
+)
 
 
 __all__ = [
@@ -183,51 +192,30 @@ class Bool(PrimitiveValue):
         self._bits_past_eof = 1 - writer.write_bit(self.value)
 
 
-def read_bits(reader, bits):
-    """
-    Read 'bits' bits from a :py:class:`BitstreamReader`, like read_nbits
-    (A.3.3) and return a tuple (value, bits_past_eof).
-    """
-    value = 0
-    bits_past_eof = 0
-    for i in range(bits):
-        bit = reader.read_bit()
-        value <<= 1
-        value |= bit if bit is not None else 1
-        bits_past_eof += int(bit is None)
-    
-    return (value, bits_past_eof)
-
-
-def write_bits(writer, bits, value):
-    """
-    Write the 'bits' lowest-rder bits of 'value' into a
-    :py:class:`BitstreamWriter`. The inverse of read_nbits
-    (A.3.3). Return 'bits_past_eof'.
-    """
-    bits_past_eof = 0
-    for i in range(bits-1, -1, -1):
-        bits_past_eof += 1 - writer.write_bit((value >> i) & 1)
-    
-    return bits_past_eof
-
-
 class NBits(PrimitiveValue):
     """A fixed-width unsigned integer, as per read_nbits (A.3.3)"""
     
     def __init__(self, value=0, length=0, *args, **kwargs):
         """
-        length : int or function() -> int
-            The initial length of this value (in bits). May be an int or a
-            function. If a function, should be a function taking no arguments
-            and returning the current length. This form is intended to support
-            variable-length values whose length is encoded in an earlier
+        length : int or :py:class:`BitstreamValue`
+            The length of this value (in bits). May be an constant or a
             :py:class:`BitstreamValue`.
         """
+        self._length_bitstream_value = ensure_bitstream_value(length)
+        self._length_bitstream_value._notify_on_change(self)
+        
         super(NBits, self).__init__(value, *args, **kwargs)
-        self.length = length
     
-    length = function_property()
+    def _dependency_changed(self, _):
+        self._changed()
+    
+    @property
+    def length(self):
+        return self._length_bitstream_value.value
+    
+    @property
+    def length_bitstream_value(self):
+        return self._length_bitstream_value
     
     def read(self, reader):
         self._offset = reader.tell()
@@ -298,54 +286,6 @@ class ByteAlign(PrimitiveValue):
         else:
             return ""
 
-def exp_golomb_length(value):
-    """
-    Return the length (in bits) of the unsigned exp-golomb representation of
-    value.
-    """
-    return (((value + 1).bit_length() - 1) * 2) + 1
-
-def read_exp_golomb(reader):
-    """
-    Read an unsigned exp-golomb code from :py:class:`BitstreamReader`, like
-    read_uint (A.4.3) and return a tuple (value, bits_past_eof).
-    """
-    value = 1
-    bits_past_eof = 0
-    while True:
-        bit = reader.read_bit()
-        bit_value = bit if bit is not None else 1
-        bits_past_eof += int(bit is None)
-        
-        if bit_value == 1:
-            break
-        else:
-            value <<= 1
-            
-            bit = reader.read_bit()
-            bits_past_eof += int(bit is None)
-            value += bit if bit is not None else 1
-    
-    value -= 1
-    
-    return (value, bits_past_eof)
-
-
-def write_exp_golomb(writer, value):
-    """
-    Write an unsigned exp-golomb code to a :py:class:`BitstreamWriter`, like
-    read_uint (A.4.3) in reverse. Return  bits_past_eof.
-    """
-    value += 1
-    
-    bits_past_eof = 0
-    for i in range(value.bit_length()-2, -1, -1):
-        bits_past_eof += 1 - writer.write_bit(0)
-        bits_past_eof += 1 - writer.write_bit((value >> i) & 1)
-
-    bits_past_eof += 1 - writer.write_bit(1)
-    
-    return bits_past_eof
 
 class UInt(PrimitiveValue):
     """
@@ -385,29 +325,13 @@ class SInt(PrimitiveValue):
     
     @property
     def length(self):
-        length = exp_golomb_length(abs(self._value))
-        if self._value != 0:
-            length += 1
-        return length
+        return signed_exp_golomb_length(self._value)
     
     def read(self, reader):
         self._offset = reader.tell()
-        self._value, self._bits_past_eof = read_exp_golomb(reader)
-        
-        # Read sign bit
-        if self._value != 0:
-            bit = reader.read_bit()
-            self._bits_past_eof += int(bit is None)
-            if bit is None or bit == 1:
-                self._value = -self._value
-        
+        self._value, self._bits_past_eof = read_signed_exp_golomb(reader)
         self._changed()
     
     def write(self, writer):
         self._offset = writer.tell()
-        
-        self._bits_past_eof = write_exp_golomb(writer, abs(self._value))
-        
-        # Write sign bit
-        if self._value != 0:
-            self._bits_past_eof += 1 - writer.write_bit(self._value < 0)
+        self._bits_past_eof = write_signed_exp_golomb(writer, self._value)

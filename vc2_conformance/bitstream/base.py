@@ -3,8 +3,6 @@ Base class definition for :py:class:`BitstreamValue`, the generic interface
 implemented by all bitstream interfaces.
 """
 
-from weakref import WeakSet
-
 from contextlib import contextmanager
 
 __all__ = [
@@ -30,10 +28,10 @@ class BitstreamValue(object):
         # Implementors should change this as required.
         self._bits_past_eof = None
         
-        # A WeakSet of BitstreamValue references, registered using
+        # A list of BitstreamValue references, registered using
         # '_notify_on_change()', which will be notified whenever this value
         # changed.
-        self._dependent_values = WeakSet()
+        self._dependent_values = []
         
         # A simple counting semaphore which, when non-zero, causes changed() to
         # be a no-op.
@@ -107,8 +105,28 @@ class BitstreamValue(object):
         if not self._suppress_change_notifications_semaphore:
             # NB: Iterate over a copy of the set in case any entries are garbage
             # collected as a result of '_dependency_changed' being called.
-            for dependent in list(self._dependent_values):
-                dependent._dependency_changed(self)
+            dependents = tuple(self._dependent_values)
+            
+            # NB: _coalesce_change_notifications is used on all dependents to
+            # ensure that all dependents receive the updated value before
+            # propagating their own change notifications. This ensures that if
+            # several values depend on this value, these values will all be
+            # consistent with eachother when notifications are produced.
+            dep_ctxmgrs = [d._coalesce_change_notifications() for d in dependents]
+            for ctxmgr in reversed(dep_ctxmgrs):
+                ctxmgr.__enter__()
+            try:
+                for dependent in dependents:
+                    dependent._dependency_changed(self)
+            finally:
+                exception = None
+                for ctxmgr in dep_ctxmgrs:
+                    try:
+                        ctxmgr.__exit__(None, None, None)
+                    except Exception as e:
+                        exception = e
+                if exception is not None:
+                    raise exception
         else:
             self._suppressed_change_notifications += 1
     
@@ -155,7 +173,7 @@ class BitstreamValue(object):
         # than arbitrary functions is that Python's weak references can behave
         # surprisingly with references to functions and bound-methods in
         # particular.
-        self._dependent_values.add(dependent)
+        self._dependent_values.append(dependent)
     
     def _cancel_notify_on_change(self, dependent):
         """
@@ -166,7 +184,7 @@ class BitstreamValue(object):
         """
         try:
             self._dependent_values.remove(dependent)
-        except KeyError:
+        except ValueError:
             pass
     
     def _dependency_changed(self, dependency):

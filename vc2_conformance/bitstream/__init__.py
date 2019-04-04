@@ -56,5 +56,8 @@ from vc2_conformance.bitstream.compound import *
 # General purpose wrapper types (e.g. BoundedBlock)
 from vc2_conformance.bitstream.wrapper import *
 
+# A performance-optimised implementation of the 'slice' structure from VC-2
+from vc2_conformance.bitstream.vc2_slices import *
+
 # Complete VC-2 bitstream structures
 from vc2_conformance.bitstream.vc2 import *
