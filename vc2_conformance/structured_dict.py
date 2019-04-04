@@ -286,7 +286,7 @@ def structured_dict(cls):
         struct/dict type object. You should avoid adding complicated methods or
         inheritance.
     
-    Decoraded instances are given a constructor which takes initial values for
+    Decorated instances are given a constructor which takes initial values for
     all entries by keyword, and uses the default values specified if not
     provided::
         
@@ -301,6 +301,22 @@ def structured_dict(cls):
         123
         >>> d.attr2
         321
+    
+    Instances can also be constructed by passing in an existing dictionary::
+    
+        >>> d = MyStructuredDict({"attr1": 100, "attr2": 200})
+        >>> str(d)
+        MyStructuredDict:
+          attr1: 100
+          attr2: 200
+    
+    Unlike when keyword arguments are used, if an existing dictionary is
+    provided as an argument, default values for any missing values are **not**
+    provided::
+        
+        >>> d = MyStructuredDict({})
+        >>> str(d)
+        MyStructuredDict
     
     Any values which are neither given a default value nor a keyword value
     during construction will not be present in the instance. For example::
@@ -379,6 +395,9 @@ def structured_dict(cls):
         >>> d = MyStructuredDict(attr1=100, attr2=200)
         >>> d.asdict()
         {"attr1": 100, "attr2": 200}
+    
+    As a final detail, any :py:class:`Value` attribute whose name is prefixed
+    with an underscore (``_``) will be omitted from the string representation.
     """
     # Collect the list of Value instances defined for this class
     # {name: Value, ...}
@@ -391,24 +410,22 @@ def structured_dict(cls):
         key=lambda nv: nv[1]._index,
     ))
     
-    # Just those values whose names aren't prefixed with '_' and thus hidden
-    # from string representations, iterators and 'len'.
-    visible_value_objs = OrderedDict(
-        (name, value)
-        for name, value in value_objs.items()
-        if not name.startswith("_")
-    )
-    
     # Create all of the methods which will be added to the class
     methods = {}
     
     def __init__(self, iterable=None, **kwargs):
-        # Convert iterable which may be a dict or may be an iterable of (name,
-        # value) pairs into an iterator of (name, value) pairs.
-        if iterable is None:
-            iterable = []
-        elif hasattr(iterable, "items"):
-            iterable = iterable.items()
+        if iterable is not None:
+            # Convert iterable which may be a dict or may be an iterable of (name,
+            # value) pairs into an iterator of (name, value) pairs.
+            if hasattr(iterable, "items"):
+                iterable = iterable.items()
+        else:
+            # Only populate default values if no iterable is provided
+            iterable = (
+                (name, value_obj.get_default())
+                for name, value_obj in value_objs.items()
+                if value_obj.has_default
+            )
         
         for name, value in chain(iterable, kwargs.items()):
             if name in value_objs:
@@ -416,11 +433,6 @@ def structured_dict(cls):
             else:
                 raise TypeError("unexpected keyword argument '{}'".format(
                     name))
-        
-        # Set defaults for any missing values
-        for name, value_obj in value_objs.items():
-            if not hasattr(self, name) and value_obj.has_default:
-                setattr(self, name, value_obj.get_default())
     
     methods["__init__"] = __init__
     
@@ -466,7 +478,7 @@ def structured_dict(cls):
     methods["__contains__"] = __contains__
     
     def __iter__(self):
-        for name in visible_value_objs:
+        for name in value_objs:
             if name in self:
                 yield name
     
@@ -475,7 +487,7 @@ def structured_dict(cls):
     
     def __len__(self):
         count = 0
-        for name in visible_value_objs:
+        for name in value_objs:
             if name in self:
                 count += 1
         return count
@@ -483,7 +495,7 @@ def structured_dict(cls):
     methods["__len__"] = __len__
     
     def __nonzero__(self):
-        for name in visible_value_objs:
+        for name in value_objs:
             if name in self:
                 return True
         return False
@@ -500,8 +512,8 @@ def structured_dict(cls):
                     indent("{}: {}".format(
                         name, value_obj.to_string(self[name])
                     ))
-                    for name, value_obj in visible_value_objs.items()
-                    if name in self
+                    for name, value_obj in value_objs.items()
+                    if name in self and not name.startswith("_")
                 )
             )
     
@@ -515,30 +527,19 @@ def structured_dict(cls):
     methods["clear"] = clear
     
     def copy(self):
-        copy = self.__class__(**{
-            name: self[name]
-            for name in value_objs
-            if name in self
-        })
-        
-        # Delete any values which may have been given default values...
-        for name in value_objs:
-            if name not in self and name in copy:
-                del copy[name]
-        
-        return copy
+        return self.__class__(self)
     
     methods["copy"] = copy
     
     def items(self):
-        for name in visible_value_objs:
+        for name in value_objs:
             if name in self:
                 yield (name, self[name])
     
     methods["items"] = items
     
     def values(self):
-        for name in visible_value_objs:
+        for name in value_objs:
             if name in self:
                 yield self[name]
     

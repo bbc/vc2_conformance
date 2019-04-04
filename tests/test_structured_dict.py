@@ -141,6 +141,11 @@ class TestStructuredDict(object):
         assert d.name == "Foo"
         assert d.age == 321
         
+        # Defaults don't apply when providing an iterable
+        d = MyStructuredDict([])
+        assert "name" not in d
+        assert "age" not in d
+        
         # Factory constructors work
         d1 = MyStructuredDict()
         d2 = MyStructuredDict()
@@ -220,20 +225,20 @@ class TestStructuredDict(object):
     def test_iteration_and_len(self):
         d = MyStructuredDict()
         
-        assert len(d) == 1
-        assert bool(d) is True
-        assert list(d) == ["name"]
-        assert list(d.keys()) == ["name"]
-        assert list(d.values()) == ["Anon"]
-        assert list(d.items()) == [("name", "Anon")]
-        
-        d.age = 10
         assert len(d) == 2
         assert bool(d) is True
-        assert list(d) == ["name", "age"]
-        assert list(d.keys()) == ["name", "age"]
-        assert list(d.values()) == ["Anon", 10]
-        assert list(d.items()) == [("name", "Anon"), ("age", 10)]
+        assert list(d) == ["name", "_hidden"]
+        assert list(d.keys()) == ["name", "_hidden"]
+        assert list(d.values()) == ["Anon", []]
+        assert list(d.items()) == [("name", "Anon"), ("_hidden", [])]
+        
+        d.age = 10
+        assert len(d) == 3
+        assert bool(d) is True
+        assert list(d) == ["name", "age", "_hidden"]
+        assert list(d.keys()) == ["name", "age", "_hidden"]
+        assert list(d.values()) == ["Anon", 10, []]
+        assert list(d.items()) == [("name", "Anon"), ("age", 10), ("_hidden", [])]
         
         d.clear()
         assert len(d) == 0
