@@ -30,6 +30,9 @@ class BitstreamReader(object):
         # The byte currently being read (or None if at the EOF)
         self._current_byte = None
         
+        # The number of bits read past the end-of-file. Reset on 'seek'.
+        self._bits_past_eof = 0
+        
         # Load-in the first byte
         self._read_byte()
     
@@ -53,6 +56,7 @@ class BitstreamReader(object):
         returned instead.
         """
         if self._current_byte is None:
+            self._bits_past_eof += 1
             return None
         
         bit = (self._current_byte >> self._next_bit) & 1
@@ -95,6 +99,14 @@ class BitstreamReader(object):
         self._file.seek(bytes)
         self._read_byte()
         self._next_bit = bits
+        self._bits_past_eof = 0
+    
+    @property
+    def bits_past_eof(self):
+        """
+        The number of bits read beyond the end of the file.
+        """
+        return self._bits_past_eof
 
 
 class BitstreamWriter(object):
@@ -196,36 +208,30 @@ class BitstreamWriter(object):
             self._file.seek(-1, 1)  # Seek backward 1 byte
         
         self._file.flush()
+    
+    @property
+    def bits_past_eof(self):
+        """The number of bits written beyond the end of the file. Always 0."""
+        return 0
 
 
 class BoundedReader(object):
     """
     A wrapper around a :py:class:`BitstreamReader` which implements bounded
     reading whereby bits past the end of the defined block are read as '1'.
-    
-    Attributes
-    ----------
-    bits_remaining : int
-        The number of bits left to be read in this block.
-    bits_past_eof : int
-        The number of bits read past the EOF.
     """
     
     def __init__(self, reader, length):
         self._reader = reader
-        self.bits_remaining = length
-        self.bits_past_eof = 0
+        self._bits_remaining = length
+        self._bits_past_eof = 0
     
     def read_bit(self):
-        if self.bits_remaining > 0:
-            bit = self._reader.read_bit()
-            
-            self.bits_remaining -= 1
-            if bit is None:
-                self.bits_past_eof += 1
-            
-            return bit
+        if self._bits_remaining > 0:
+            self._bits_remaining -= 1
+            return self._reader.read_bit()
         else:
+            self._bits_past_eof += 1
             return None
     
     def tell(self):
@@ -233,6 +239,16 @@ class BoundedReader(object):
     
     def seek(self, *args, **kwargs):
         raise NotImplementedError("Seek not supported in BoundedReader")
+    
+    @property
+    def bits_remaining(self):
+        """The number of bits left to be read in this block."""
+        return self._bits_remaining
+    
+    @property
+    def bits_past_eof(self):
+        """The number of bits read beyond the end of the bounded block."""
+        return self._bits_past_eof
 
 
 class BoundedWriter(object):
@@ -240,30 +256,22 @@ class BoundedWriter(object):
     A wrapper around a :py:class:`BitstreamWriter` which implements bounded
     writing whereby bits past the end of the defined block are checked to
     ensure that they are '1'.
-    
-    Attributes
-    ----------
-    bits_remaining : int
-        The number of bits left to be written in this block.
-    bits_past_eof : int
-        The number of bits written past the EOF.
     """
     
     def __init__(self, writer, length):
         self._writer = writer
-        self.bits_remaining = length
-        self.bits_past_eof = 0
+        self._bits_remaining = length
+        self._bits_past_eof = 0
     
     def write_bit(self, value):
-        if self.bits_remaining > 0:
-            self.bits_remaining -= 1
-            length = self._writer.write_bit(value)
-            self.bits_past_eof += 1 - length
-            return length
+        if self._bits_remaining > 0:
+            self._bits_remaining -= 1
+            return self._writer.write_bit(value)
         else:
             if not value:
                 raise ValueError(
                     "Cannot write 0s past the end of a BoundedWriter.")
+            self._bits_past_eof += 1
             return 0
     
     def tell(self):
@@ -274,3 +282,13 @@ class BoundedWriter(object):
     
     def flush(self):
         return self._writer.flush()
+    
+    @property
+    def bits_remaining(self):
+        """The number of bits left to be read in this block."""
+        return self._bits_remaining
+    
+    @property
+    def bits_past_eof(self):
+        """The number of bits written beyond the end of the bounded block."""
+        return self._bits_past_eof

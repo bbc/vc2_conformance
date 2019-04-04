@@ -41,23 +41,23 @@ a file-like object by passing a :py:class:`BitstreamWriter` into
 # Low-level bitwise file reading/writing
 from vc2_conformance.bitstream.io import *
 
-# The BitstreamValue base class
-from vc2_conformance.bitstream.base import *
-
-# Pseudo-values (e.g. ConstantValue, FunctionValue)
-from vc2_conformance.bitstream.pseudo import *
-
-# Primitive bitstream types (e.g. Bool, UInt...)
-from vc2_conformance.bitstream.primitive import *
-
-# General purpose compound types (e.g. Concatenation)
-from vc2_conformance.bitstream.compound import *
-
-# General purpose wrapper types (e.g. BoundedBlock)
-from vc2_conformance.bitstream.wrapper import *
-
-# A performance-optimised implementation of the 'slice' structure from VC-2
-from vc2_conformance.bitstream.vc2_slices import *
-
-# Complete VC-2 bitstream structures
-from vc2_conformance.bitstream.vc2 import *
+## The BitstreamValue base class
+#from vc2_conformance.bitstream.base import *
+#
+## Pseudo-values (e.g. ConstantValue, FunctionValue)
+#from vc2_conformance.bitstream.pseudo import *
+#
+## Primitive bitstream types (e.g. Bool, UInt...)
+#from vc2_conformance.bitstream.primitive import *
+#
+## General purpose compound types (e.g. Concatenation)
+#from vc2_conformance.bitstream.compound import *
+#
+## General purpose wrapper types (e.g. BoundedBlock)
+#from vc2_conformance.bitstream.wrapper import *
+#
+## A performance-optimised implementation of the 'slice' structure from VC-2
+#from vc2_conformance.bitstream.vc2_slices import *
+#
+## Complete VC-2 bitstream structures
+#from vc2_conformance.bitstream.vc2 import *

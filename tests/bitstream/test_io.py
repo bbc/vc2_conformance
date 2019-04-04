@@ -42,6 +42,33 @@ class TestBistreamReader(object):
         assert r.read_bit() is None
         assert r.tell() == (2, 7)
     
+    def test_bits_past_eof(self):
+        r = bitstream.BitstreamReader(BytesIO(b"\xA5\x0F"))
+        
+        assert r.bits_past_eof == 0
+        for _ in range(16):
+            r.read_bit()
+        assert r.bits_past_eof == 0
+        
+        # Read past end
+        r.read_bit()
+        assert r.bits_past_eof == 1
+        r.read_bit()
+        assert r.bits_past_eof == 2
+        
+        # Reset by seek
+        r.seek(1, 7)
+        assert r.bits_past_eof == 0
+        for _ in range(8):
+            r.read_bit()
+        assert r.bits_past_eof == 0
+        
+        # Past end again
+        r.read_bit()
+        assert r.bits_past_eof == 1
+        r.read_bit()
+        assert r.bits_past_eof == 2
+    
     def test_seek(self):
         r = bitstream.BitstreamReader(BytesIO(b"\xA5\x0F"))
         
@@ -145,6 +172,14 @@ class TestBistreamWriter(object):
         w.flush()
         
         assert f.getvalue() == b"\x40\x01"
+    
+    def test_bits_past_eof(self):
+        w = bitstream.BitstreamWriter(BytesIO())
+        
+        # Always 0
+        assert w.bits_past_eof == 0
+        w.write_bit(True)
+        assert w.bits_past_eof == 0
 
 
 def test_bounded_reader():
@@ -162,14 +197,14 @@ def test_bounded_reader():
                 ((0, 1), 0, 5, 0),
                 ((0, 0), 0, 4, 0),
                 # Past end of file
-                ((1, 7), None, 3, 1),
-                ((1, 7), None, 2, 2),
-                ((1, 7), None, 1, 3),
-                ((1, 7), None, 0, 4),
+                ((1, 7), None, 3, 0),
+                ((1, 7), None, 2, 0),
+                ((1, 7), None, 1, 0),
+                ((1, 7), None, 0, 0),
                 # Past end of bounded block
-                ((1, 7), None, 0, 4),
-                ((1, 7), None, 0, 4),
-                ((1, 7), None, 0, 4),
+                ((1, 7), None, 0, 1),
+                ((1, 7), None, 0, 2),
+                ((1, 7), None, 0, 3),
                 ((1, 7), None, 0, 4),
             ]:
         assert br.tell() == exp_tell
@@ -196,13 +231,13 @@ def test_bounded_writer():
                 ((0, 1), 0, False, 0, 5, 0),
                 ((0, 0), 0, False, 0, 4, 0),
                 # Outer bounded reader limit
-                ((1, 7), 1, False, 1, 3, 1),
-                ((1, 7), 1, False, 1, 2, 2),
-                ((1, 7), 1, False, 1, 1, 3),
-                ((1, 7), 1, False, 1, 0, 4),
+                ((1, 7), 1, False, 1, 3, 0),
+                ((1, 7), 1, False, 1, 2, 0),
+                ((1, 7), 1, False, 1, 1, 0),
+                ((1, 7), 1, False, 1, 0, 0),
                 # Past bounded block end
-                ((1, 7), 1, False, 1, 0, 4),
-                ((1, 7), 0, True, 1, 0, 4),
+                ((1, 7), 1, False, 1, 0, 1),
+                ((1, 7), 0, True, 1, 0, 2),
             ]:
         assert bw.tell() == exp_tell
         if exp_error:
