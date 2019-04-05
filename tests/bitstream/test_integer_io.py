@@ -2,6 +2,8 @@ import pytest
 
 from io import BytesIO
 
+from bitarray import bitarray
+
 from vc2_conformance.bitstream import (
     BitstreamReader,
     BitstreamWriter,
@@ -9,8 +11,11 @@ from vc2_conformance.bitstream import (
 )
 
 from vc2_conformance.bitstream._integer_io import (
+    OutOfRangeError,
     read_bits,
     write_bits,
+    read_bitarray,
+    write_bitarray,
     read_bytes,
     write_bytes,
     exp_golomb_length,
@@ -51,14 +56,12 @@ class TestWriteBits(object):
         return BitstreamWriter(f)
     
     def test_write_nothing(self, w):
-        write_bits(w, 0, 0x123)
+        write_bits(w, 0, 0)
         assert w.tell() == (0, 7)
     
-    def test_write_only_lowest_order_bits(self, f, w):
-        write_bits(w, 12, 0xABCD)
-        assert w.tell() == (1, 3)
-        w.flush()
-        assert f.getvalue() == b"\xBC\xD0"
+    def test_fail_on_too_many_bits(self, f, w):
+        with pytest.raises(OutOfRangeError):
+            write_bits(w, 12, 0xABCD)
     
     def test_write_zeros_above_msb(self, f, w):
         write_bits(w, 16, 0xABC)
@@ -72,6 +75,61 @@ class TestWriteBits(object):
         assert w.tell() == (1, 7)
         w.flush()
         assert f.getvalue() == b"\xAB"
+
+
+class TestReadBitArray(object):
+    
+    def test_read_nothing(self):
+        r = BitstreamReader(BytesIO())
+        assert read_bitarray(r, 0) == bitarray()
+        assert r.tell() == (0, 7)
+    
+    def test_read_bytes_msb_first(self):
+        r = BitstreamReader(BytesIO(b"\xA0"))
+        assert read_bitarray(r, 8) == bitarray([1, 0, 1, 0, 0, 0, 0, 0])
+        assert r.tell() == (1, 7)
+    
+    def test_read_past_eof(self):
+        r = BitstreamReader(BytesIO(b"\xA0"))
+        assert read_bitarray(r, 16) == bitarray([1, 0, 1, 0, 0, 0, 0, 0] + [1]*8)
+        assert r.tell() == (1, 7)
+
+
+class TestWriteBitArray(object):
+    
+    @pytest.fixture
+    def f(self):
+        return BytesIO()
+    
+    @pytest.fixture
+    def w(self, f):
+        return BitstreamWriter(f)
+    
+    def test_write_nothing(self, w):
+        write_bitarray(w, 0, bitarray())
+        assert w.tell() == (0, 7)
+    
+    def test_fails_on_wrong_length(self, f, w):
+        # Too long
+        with pytest.raises(OutOfRangeError):
+            write_bitarray(w, 1, bitarray([1, 0]))
+        
+        # Too short
+        with pytest.raises(OutOfRangeError):
+            write_bitarray(w, 3, bitarray([1, 0]))
+    
+    def test_write(self, f, w):
+        write_bitarray(w, 8, bitarray([1, 0, 1, 0, 0, 0, 0, 0]))
+        assert w.tell() == (1, 7)
+        assert f.getvalue() == b"\xA0"
+    
+    def test_write_past_eof(self, f, w):
+        bw = BoundedWriter(w, 4)
+        write_bitarray(bw, 8, bitarray([1, 0, 1, 0, 1, 1, 1, 1]))
+        assert w.tell() == (0, 3)
+        w.flush()
+        assert f.getvalue() == b"\xA0"
+
 
 class TestReadBytes(object):
     
@@ -108,20 +166,17 @@ class TestWriteBytes(object):
         return BitstreamWriter(f)
     
     def test_write_nothing(self, w):
-        write_bytes(w, 0, b"foo")
+        write_bytes(w, 0, b"")
         assert w.tell() == (0, 7)
     
-    def test_write_truncate(self, f, w):
-        # Takes the right-most bytes
-        write_bytes(w, 1, b"\xAB\xCD")
-        assert w.tell() == (1, 7)
-        assert f.getvalue() == b"\xCD"
-    
-    def test_write_extend(self, f, w):
-        # Left-pads with null bytes
-        write_bytes(w, 2, b"\xAB")
-        assert w.tell() == (2, 7)
-        assert f.getvalue() == b"\x00\xAB"
+    def test_fails_on_wrong_length(self, f, w):
+        # Too long
+        with pytest.raises(OutOfRangeError):
+            write_bytes(w, 1, b"\xAB\xCD")
+        
+        # Too short
+        with pytest.raises(OutOfRangeError):
+            write_bytes(w, 3, b"\xAB\xCD")
     
     def test_write_aligned(self, f, w):
         write_bytes(w, 2, b"\xAB\xCD")
@@ -162,6 +217,11 @@ def test_exp_golomb_length(value, length):
     assert exp_golomb_length(value) == length
 
 
+def test_exp_golomb_length_range_check():
+    with pytest.raises(OutOfRangeError):
+        exp_golomb_length(-1)
+
+
 class TestReadExpGolomb(object):
     
     @pytest.mark.parametrize("encoded,exp_value,exp_tell", [
@@ -181,7 +241,6 @@ class TestReadExpGolomb(object):
         r = BitstreamReader(BytesIO(encoded))
         assert read_exp_golomb(r) == exp_value
         assert r.tell() == exp_tell
-    
     
     def test_read_past_eof(self):
         # Odd bit falls off end
@@ -223,10 +282,13 @@ class TestWriteExpGolomb(object):
         w.flush()
         assert f.getvalue() == encoded
     
+    def test_write_out_of_range(self):
+        w = BitstreamWriter(BytesIO())
+        with pytest.raises(OutOfRangeError):
+            write_exp_golomb(w, -1)
     
     def test_write_past_eof(self):
-        f = BytesIO()
-        w = BitstreamWriter(f)
+        w = BitstreamWriter(BytesIO())
         
         # Odd bit falls off end
         bw = BoundedWriter(w, 8)
