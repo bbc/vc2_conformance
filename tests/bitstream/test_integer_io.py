@@ -26,17 +26,17 @@ class TestReadBits(object):
     
     def test_read_nothing(self):
         r = BitstreamReader(BytesIO())
-        assert read_bits(r, 0) == (0, 0)
+        assert read_bits(r, 0) == 0
         assert r.tell() == (0, 7)
     
     def test_read_bytes_msb_first(self):
         r = BitstreamReader(BytesIO(b"\xA0\x50"))
-        assert read_bits(r, 12) == (0xA05, 0)
+        assert read_bits(r, 12) == 0xA05
         assert r.tell() == (1, 3)
     
     def test_read_past_eof(self):
         r = BitstreamReader(BytesIO(b"\xA0"))
-        assert read_bits(r, 12) == (0xA0F, 4)
+        assert read_bits(r, 12) == 0xA0F
         assert r.tell() == (1, 7)
 
 
@@ -51,24 +51,24 @@ class TestWriteBits(object):
         return BitstreamWriter(f)
     
     def test_write_nothing(self, w):
-        assert write_bits(w, 0, 0x123) == 0
+        write_bits(w, 0, 0x123)
         assert w.tell() == (0, 7)
     
     def test_write_only_lowest_order_bits(self, f, w):
-        assert write_bits(w, 12, 0xABCD) == 0
+        write_bits(w, 12, 0xABCD)
         assert w.tell() == (1, 3)
         w.flush()
         assert f.getvalue() == b"\xBC\xD0"
     
     def test_write_zeros_above_msb(self, f, w):
-        assert write_bits(w, 16, 0xABC) == 0
+        write_bits(w, 16, 0xABC)
         assert w.tell() == (2, 7)
         w.flush()
         assert f.getvalue() == b"\x0A\xBC"
     
     def test_write_past_eof(self, f, w):
         bw = BoundedWriter(w, 8)
-        assert write_bits(bw, 12, 0xABF) == 4
+        write_bits(bw, 12, 0xABF)
         assert w.tell() == (1, 7)
         w.flush()
         assert f.getvalue() == b"\xAB"
@@ -77,23 +77,23 @@ class TestReadBytes(object):
     
     def test_read_nothing(self):
         r = BitstreamReader(BytesIO())
-        assert read_bytes(r, 0) == (b"", 0)
+        assert read_bytes(r, 0) == b""
         assert r.tell() == (0, 7)
     
     def test_read_bytes_msb_first(self):
         r = BitstreamReader(BytesIO(b"\xDE\xAD\xBE\xEF"))
-        assert read_bytes(r, 2) == (b"\xDE\xAD", 0)
+        assert read_bytes(r, 2) == b"\xDE\xAD"
         assert r.tell() == (2, 7)
     
     def test_unaligned(self):
         r = BitstreamReader(BytesIO(b"\xDE\xAD\xBE\xEF"))
         r.seek(0, 3)
-        assert read_bytes(r, 2) == (b"\xEA\xDB", 0)
+        assert read_bytes(r, 2) == b"\xEA\xDB"
         assert r.tell() == (2, 3)
     
     def test_read_past_eof(self):
         r = BitstreamReader(BytesIO(b"\xDE"))
-        assert read_bytes(r, 2) == (b"\xDE\xFF", 8)
+        assert read_bytes(r, 2) == b"\xDE\xFF"
         assert r.tell() == (1, 7)
 
 
@@ -108,36 +108,36 @@ class TestWriteBytes(object):
         return BitstreamWriter(f)
     
     def test_write_nothing(self, w):
-        assert write_bytes(w, 0, b"foo") == 0
+        write_bytes(w, 0, b"foo")
         assert w.tell() == (0, 7)
     
     def test_write_truncate(self, f, w):
         # Takes the right-most bytes
-        assert write_bytes(w, 1, b"\xAB\xCD") == 0
+        write_bytes(w, 1, b"\xAB\xCD")
         assert w.tell() == (1, 7)
         assert f.getvalue() == b"\xCD"
     
     def test_write_extend(self, f, w):
         # Left-pads with null bytes
-        assert write_bytes(w, 2, b"\xAB") == 0
+        write_bytes(w, 2, b"\xAB")
         assert w.tell() == (2, 7)
         assert f.getvalue() == b"\x00\xAB"
     
     def test_write_aligned(self, f, w):
-        assert write_bytes(w, 2, b"\xAB\xCD") == 0
+        write_bytes(w, 2, b"\xAB\xCD")
         assert w.tell() == (2, 7)
         assert f.getvalue() == b"\xAB\xCD"
     
     def test_write_unaligned(self, f, w):
         w.seek(0, 3)
-        assert write_bytes(w, 2, b"\xAB\xCD") == 0
+        write_bytes(w, 2, b"\xAB\xCD")
         assert w.tell() == (2, 3)
         w.flush()
         assert f.getvalue() == b"\x0A\xBC\xD0"
     
     def test_write_past_eof(self, f, w):
         bw = BoundedWriter(w, 8)
-        assert write_bytes(bw, 2, b"\xAB\xFF") == 8
+        write_bytes(bw, 2, b"\xAB\xFF")
         assert w.tell() == (1, 7)
         w.flush()
         assert f.getvalue() == b"\xAB"
@@ -179,7 +179,7 @@ class TestReadExpGolomb(object):
     ])
     def test_basic_reading(self, encoded, exp_value, exp_tell):
         r = BitstreamReader(BytesIO(encoded))
-        assert read_exp_golomb(r) == (exp_value, 0)
+        assert read_exp_golomb(r) == exp_value
         assert r.tell() == exp_tell
     
     
@@ -187,17 +187,17 @@ class TestReadExpGolomb(object):
         # Odd bit falls off end
         r = BitstreamReader(BytesIO(b"\x00"))
         r.seek(0, 7)
-        assert read_exp_golomb(r) == (15, 1)
+        assert read_exp_golomb(r) == 15
         
         # Even bit falls off end
         r = BitstreamReader(BytesIO(b"\x00"))
         r.seek(0, 6)
-        assert read_exp_golomb(r) == (16, 2)
+        assert read_exp_golomb(r) == 16
         
         # Whole string falls off end
         r = BitstreamReader(BytesIO(b"\x00"))
         r.seek(1, 7)
-        assert read_exp_golomb(r) == (0, 1)
+        assert read_exp_golomb(r) == 0
 
 
 class TestWriteExpGolomb(object):
@@ -218,7 +218,7 @@ class TestWriteExpGolomb(object):
     def test_basic_writing(self, value, encoded, exp_tell):
         f = BytesIO()
         w = BitstreamWriter(f)
-        assert write_exp_golomb(w, value) == 0
+        write_exp_golomb(w, value)
         assert w.tell() == exp_tell
         w.flush()
         assert f.getvalue() == encoded
@@ -230,15 +230,15 @@ class TestWriteExpGolomb(object):
         
         # Odd bit falls off end
         bw = BoundedWriter(w, 8)
-        assert write_exp_golomb(bw, 15) == 1
+        write_exp_golomb(bw, 15)
         
         # Even bit falls off end
         bw = BoundedWriter(w, 7)
-        assert write_exp_golomb(bw, 16) == 2
+        write_exp_golomb(bw, 16)
         
         # Whole string falls off end
         bw = BoundedWriter(w, 0)
-        assert write_exp_golomb(bw, 0) == 1
+        write_exp_golomb(bw, 0)
 
 
 @pytest.mark.parametrize("value,length", [
@@ -299,7 +299,7 @@ class TestReadSignedExpGolomb(object):
     ])
     def test_basic_reading(self, encoded, exp_value, exp_tell):
         r = BitstreamReader(BytesIO(encoded))
-        assert read_signed_exp_golomb(r) == (exp_value, 0)
+        assert read_signed_exp_golomb(r) == exp_value
         assert r.tell() == exp_tell
     
     
@@ -307,22 +307,22 @@ class TestReadSignedExpGolomb(object):
         # Sign bit falls off end
         r = BitstreamReader(BytesIO(b"\x01"))
         r.seek(0, 6)
-        assert read_signed_exp_golomb(r) == (-7, 1)
+        assert read_signed_exp_golomb(r) == -7
         
         # Odd bit falls off end
         r = BitstreamReader(BytesIO(b"\x00"))
         r.seek(0, 7)
-        assert read_signed_exp_golomb(r) == (-15, 2)
+        assert read_signed_exp_golomb(r) == -15
         
         # Even bit falls off end
         r = BitstreamReader(BytesIO(b"\x00"))
         r.seek(0, 6)
-        assert read_signed_exp_golomb(r) == (-16, 3)
+        assert read_signed_exp_golomb(r) == -16
         
         # Whole string falls off end
         r = BitstreamReader(BytesIO(b"\x00"))
         r.seek(1, 7)
-        assert read_signed_exp_golomb(r) == (0, 1)
+        assert read_signed_exp_golomb(r) == 0
 
 
 class TestWriteSignedExpGolomb(object):
@@ -353,7 +353,7 @@ class TestWriteSignedExpGolomb(object):
     def test_basic_writing(self, value, encoded, exp_tell):
         f = BytesIO()
         w = BitstreamWriter(f)
-        assert write_signed_exp_golomb(w, value) == 0
+        write_signed_exp_golomb(w, value)
         assert w.tell() == exp_tell
         w.flush()
         assert f.getvalue() == encoded
@@ -364,16 +364,16 @@ class TestWriteSignedExpGolomb(object):
         
         # Sign bit falls off end
         bw = BoundedWriter(w, 9)
-        assert write_signed_exp_golomb(bw, -15) == 1
+        write_signed_exp_golomb(bw, -15)
         
         # Odd bit falls off end
         bw = BoundedWriter(w, 8)
-        assert write_signed_exp_golomb(bw, -15) == 2
+        write_signed_exp_golomb(bw, -15)
         
         # Even bit falls off end
         bw = BoundedWriter(w, 7)
-        assert write_signed_exp_golomb(bw, -16) == 3
+        write_signed_exp_golomb(bw, -16)
         
         # Whole string falls off end
         bw = BoundedWriter(w, 0)
-        assert write_signed_exp_golomb(bw, 0) == 1
+        write_signed_exp_golomb(bw, 0)
