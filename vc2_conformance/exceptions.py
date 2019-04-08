@@ -1,5 +1,5 @@
 """
-Exception types used in this library.
+All custom exception types used in this library.
 """
 
 class OutOfRangeError(ValueError):
@@ -24,6 +24,12 @@ class ReusedTargetError(ValueError):
     """
     Thrown by functions in :py:module:`vc2_conformance.bitstream` when a
     target in a context dictionary is used more than once.
+    """
+
+class ListTargetExhaustedError(IndexError):
+    """
+    Thrown by functions in :py:module:`vc2_conformance.bitstream` when a value
+    beyond the end of a list target in a context dictionary is requested.
     """
 
 class ListTargetContainsNonListError(ValueError):

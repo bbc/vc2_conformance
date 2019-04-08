@@ -1,5 +1,5 @@
 r"""
-
+A module which implements serialisation, deserialisation and inspection of
 bitstreams described by 'token-emitting generators'.
 
 A token-emitting generator is a Python generator function which generates a
@@ -660,22 +660,33 @@ except ImportError:
 from functools import wraps
 
 from vc2_conformance.bitstream import (
+    BitstreamReader,
+    BitstreamWriter,
     BoundedReader,
     BoundedWriter,
 )
 
-from vc2_conformance.bitstream._integer_io import (
-    read_bits,
-    write_bits,
-    read_bytes,
-    write_bytes,
-    exp_golomb_length,
-    read_exp_golomb,
-    write_exp_golomb,
-    signed_exp_golomb_length,
-    read_signed_exp_golomb,
-    write_signed_exp_golomb,
+from vc2_conformance.exceptions import (
+    ReusedTargetError,
+    ListTargetContainsNonListError,
+    ListTargetExhaustedError,
+    UnusedTargetError,
+    UnclosedNestedContextError,
+    UnclosedBoundedBlockError,
+    UnknownTokenTypeError,
 )
+
+
+__all__ = [
+    "Return",
+    "Token",
+    "TokenTypes",
+    "read",
+    "read_interruptable",
+    "write",
+    "write_interruptable",
+    "context_type",
+]
 
 
 Token = namedtuple("Token", "type,argument,target")
@@ -1035,6 +1046,14 @@ class Return(StopIteration):
         Generated: 3
         Generated: 4
         Returned: 'The End'
+    
+    .. warning::
+        
+        PEP 479 has announced the deprecation of the :py:exc:`StopIteration`
+        exception (and therefore this exception with it). In the future Python
+        3 may only support ending generator execution using the ``return``
+        statement. New code without need for Python 2.x compatibility should
+        use a return statement in preference to this exception.
     """
     
     def __init__(self, value=None):
@@ -1042,313 +1061,6 @@ class Return(StopIteration):
     
     def __str__(self):
         return str(self.value)
-
-def read(generator, reader, return_generator_return_value=False):
-    """
-    Read a bitstream described by the specified token-emitting generator,
-    returning the populated context dictionary.
-    
-    Parameters
-    ==========
-    generator : generator -> :py:class:`Token`
-        A generator function which emits :py:class:`Token` tuples (or native
-        3-tuples) which describe how the bitstream should be formatted.
-    reader : :py:class:`BitstreamReader`
-    return_generator_value : bool
-        If False, the default, this function will return only the final context
-        dictionary. If set to True, this generator will return both the final
-        context and the generator's final return value in a 2-tuple.
-    """
-    try:
-        next(read_interruptable(
-            generator,
-            reader,
-            return_generator_return_value=return_generator_return_value,
-        ))
-        assert False, "read_interruptable should not have paused"
-    except StopIteration as r:
-        return getattr(r, "value", None)
-
-
-def read_interruptable(generator, reader, interrupt=None,
-                       return_generator_return_value=False):
-    """
-    A generator which reads a bitstream described by the specified
-    token-emitting generator, pausing when required.
-    
-    Parameters
-    ==========
-    generator : generator -> :py:class:`Token`
-    reader : :py:class:`BitstreamReader`
-    interrupt : None or function(:py;class:`TokenParserStateMachine`, :py:class:`Token`) -> bool
-        If provided, this function will be called after every read operation
-        and, if the function returns True, the :py:func:`read_interruptable`
-        generator will yield. If false, the generator wlil move onto the next
-        value without yielding.
-        
-        The :py:class:`TokenParserStateMachine` and token passed to the
-        interrupt function reveal the current internal state and token which
-        has just been processed. These values should be treated as strictly
-        read-only.
-        
-        As an example, the following lambda function could be used to interrupt
-        parsing once a certain bitstream offset is reached::
-        
-            # Interrupt after 100 bytes
-            lambda fsm, token: fsm.io.tell() >= (100, 7)
-        
-    return_generator_value : bool
-    
-    Generates
-    =========
-    (:py:class:`TokenParserStateMachine`, :py:class:`Token`)
-        When this generator yields, it produces a
-        2-tuple describing with the same values as the interrupt argument.
-        These values may be used (in a strictly read-only fashion) to inspect
-        the current partially read data, for example::
-        
-            >>> g = yield read_interruptable(...)
-            >>> fsm, token = next(g)
-            
-            >>> # Print the token we just generated
-            >>> str(token)
-            
-            >>> # Print the partially populated context dictionary
-            >>> str(fsm.root_context)
-            ...
-    
-    Raises
-    ======
-    :py:exc:`Return`
-        When the token generator is exhausted. :py:exc:`Return` is raised with
-        ``value`` set to the (top-level) context dictionary populated during
-        reading or, if return_generator_value argument is True, a 2-tuple
-        (context, generator_return_value).
-    """
-    fsm = TokenParserStateMachine(generator, reader)
-    
-    try:
-        # The value to be sent to the generator upon the next iteration.
-        # Usually the last value to have been read from the stream.
-        latest_value = None
-        
-        while True:
-            try:
-                # Get the next token
-                original_token, token_type, token_argument, token_target = fsm.generator_send(latest_value)
-                
-                # Read values according to the value type
-                if token_type is TokenTypes.nop:
-                    assert token_argument is None
-                    assert token_target is None
-                    latest_value = None
-                elif token_type is TokenTypes.bool:
-                    assert token_argument is None
-                    assert token_target is not None
-                    latest_value = bool(fsm.io.read_bit())
-                elif token_type is TokenTypes.nbits:
-                    assert token_target is not None
-                    latest_value = fsm.io.read_nbits(token_argument)
-                elif token_type is TokenTypes.bitarray:
-                    assert token_target is not None
-                    latest_value = fsm.io.read_bitarray(token_argument)
-                elif token_type is TokenTypes.bytes:
-                    assert token_target is not None
-                    latest_value = fsm.io.read_bytes(token_argument)
-                elif token_type is TokenTypes.uint:
-                    assert token_argument is None
-                    assert token_target is not None
-                    latest_value = fsm.io.read_uint()
-                elif token_type is TokenTypes.sint:
-                    assert token_argument is None
-                    assert token_target is not None
-                    latest_value = fsm.io.read_sint()
-                else:
-                    raise UnknownTokenTypeError(token_type)
-                
-                # Store the new value in the context
-                if token_target is not None:
-                    fsm.set_context_value(token_target, latest_value)
-                
-                # Pause if requested
-                if interrupt is not None and interrupt(fsm, original_token):
-                    yield (fsm, original_token)
-            
-            except StopIteration as r:
-                # Capture the return value of the final generator -- it may be
-                # returned here.
-                return_value = getattr(r, "value", None)
-                break
-            except Exception as e:
-                # The processes above may produce exceptions if a validation
-                # step fails. Send these up into the generator to produce more
-                # helpful stack traces for users.
-                fsm.generator_throw(e)
-    finally:
-        fsm.generator_close()
-    
-    fsm.verify_complete()
-    
-    if return_generator_return_value:
-        raise Return((token_generator.context, return_value))
-    else:
-        raise Return(context)
-
-
-def write(generator, writer, context, return_generator_return_value=False):
-    """
-    Generate a bitstream described by the specified token-emitting generator
-    and context dictionary and write to the the specified
-    :py:class:`BitstreamWriter`.
-    
-    Returns the context dictionary. This may actually be a modified copy of the
-    original context dictionary if the generator required this dictionary to
-    change type (via a :py:data:`TokenTypes.declare_context_type` token.).
-    
-    Parameters
-    ==========
-    generator : generator -> :py:class:`Token`
-        A generator function which emits :py:class:`Token` tuples (or native
-        3-tuples) which describe how the bitstream should be formatted.
-    writer : :py:class:`BitstreamWriter`
-    return_generator_value : bool
-        If False, the default, this function will return only the final context
-        dictionary. If set to True, this generator will return both the final
-        context and the generator's final return value in a 2-tuple.
-    """
-    try:
-        next(write_interruptable(
-            generator,
-            writer,
-            return_generator_return_value=return_generator_return_value,
-        ))
-        assert False, "write_interruptable should not have paused"
-    except StopIteration as r:
-        return getattr(r, "value", None)
-
-
-def write_interruptable(generator, writer, context, interrupt=None,
-                        return_generator_return_value=False):
-    """
-    A generator which writes a bitstream described by the specified
-    token-emitting generator and context dictionary, pausing when required.
-    
-    Parameters
-    ==========
-    generator : generator -> :py:class:`Token`
-    writer : :py:class:`BitstreamWriter`
-    interrupt : None or function(:py;class:`TokenParserStateMachine`, :py:class:`Token`) -> bool
-        If provided, this function will be called after every write operation
-        and, if the function returns True, the :py:func:`write_interruptable`
-        generator will yield. If false, the generator wlil move onto the next
-        value without yielding.
-        
-        The :py:class:`TokenParserStateMachine` and token passed to the
-        interrupt function reveal the current internal state and token which
-        has just been processed. These values should be treated as strictly
-        read-only.
-        
-        As an example, the following lambda function could be used to interrupt
-        parsing once a certain bitstream offset is reached::
-        
-            # Interrupt after 100 bytes
-            lambda fsm, token: fsm.io.tell() >= (100, 7)
-        
-    return_generator_value : bool
-    
-    Generates
-    =========
-    (:py:class:`TokenParserStateMachine`, :py:class:`Token`)
-        When this generator yields, it produces a
-        2-tuple describing with the same values as the interrupt argument.
-        These values may be used (in a strictly read-only fashion) to inspect
-        write progress::
-        
-            >>> g = yield write_interruptable(...)
-            >>> fsm, token = next(g)
-            
-            >>> # Print out the field we've got up to
-            >>> fsm.describe_path(token.target)
-            SequenceHeader['source_parameters']['frame_size']['frame_width']
-    
-    Raises
-    ======
-    :py:exc:`Return`
-        When the token generator is exhausted. :py:exc:`Return` is raised with
-        ``value`` set to the (top-level) context dictionary used during
-        generation (which  may have been replaced with one of a different
-        type). If return_generator_value argument is True, a 2-tuple (context,
-        generator_return_value).
-    """
-    fsm = TokenParserStateMachine(generator, writer)
-    
-    try:
-        # The value to be written and sent to the generator upon the
-        # next iteration.
-        latest_value = None
-        
-        while True:
-            try:
-                # Get the next token
-                original_token, token_type, token_argument, token_target = fsm.generator_send(latest_value)
-                
-                # Get the value to be written
-                if token_target is not None:
-                    latest_value = fsm.get_context_value(token_target)
-                else:
-                    latest_value = None
-                
-                # Write values according to the value type
-                if token_type is TokenTypes.nop:
-                    assert token_argument is None
-                    assert token_target is None
-                elif token_type is TokenTypes.bool:
-                    assert token_argument is None
-                    assert token_target is not None
-                    fsm.io.write_bit(latest_value)
-                elif token_type is TokenTypes.nbits:
-                    assert token_target is not None
-                    fsm.io.write_nbits(token_argument, latest_value)
-                elif token_type is TokenTypes.bitarray:
-                    assert token_target is not None
-                    fsm.io.write_bitarray(token_argument, latest_value)
-                elif token_type is TokenTypes.bytes:
-                    assert token_target is not None
-                    fsm.io.write_bytes(token_argument, latest_value)
-                elif token_type is TokenTypes.uint:
-                    assert token_argument is None
-                    assert token_target is not None
-                    fsm.io.write_uint(latest_value)
-                elif token_type is TokenTypes.sint:
-                    assert token_argument is None
-                    assert token_target is not None
-                    fsm.io.write_sint(latest_value)
-                else:
-                    raise UnknownTokenTypeError(token_type)
-                
-                # Pause if requested
-                if interrupt is not None and interrupt(fsm, original_token):
-                    yield (fsm, original_token)
-            
-            except StopIteration as r:
-                # Capture the return value of the final generator -- it may be
-                # returned here.
-                return_value = getattr(r, "value", None)
-                break
-            except Exception as e:
-                # The processes above may produce exceptions if a validation
-                # step fails. Send these up into the generator to produce more
-                # helpful stack traces for users.
-                fsm.generator_throw(e)
-    finally:
-        fsm.generator_close()
-    
-    fsm.verify_complete()
-    
-    if return_generator_return_value:
-        raise Return((token_generator.context, return_value))
-    else:
-        raise Return(context)
 
 
 class TokenParserStateMachine(object):
@@ -1424,63 +1136,108 @@ class TokenParserStateMachine(object):
         self.context_indices_stack = []
         self.target_stack = []
     
-    @property
-    def root_context(self):
+    def _declare_context_value_is_list(self, target):
         """
-        Get the top-level context dictionary.
+        Declares a value in the current target to be a list. Throws an error if
+        this target has already been used or declared as a list. If the value
+        does not exist yet in the context, it will be initialised with an empty
+        list. If the value does exist, it will be checked to ensure that it is
+        a list.
+        """
+        # Has the target already been used or delcared?
+        if target in self.context_indices:
+            raise ReusedTargetError(self.describe_path(target))
         
-        See also: :py:attr:`context` which contains the currently active
-        context dictionary.
-        """
-        if self.context_stack:
-            return self.context_stack[0]
+        if target not in self.context:
+            # Target not yet defined in context; create a new empty list
+            self.context[target] = []
         else:
-            return self.context
-    
-    def describe_path(self, target=None):
+            # The target already exists in the context; make sure it is a list
+            if not isinstance(self.context[target], list):
+                raise ListTargetContainsNonListError(
+                    "{} contains {!r} (which is not a list)".format(
+                        self.describe_path(target), self.context[target]))
+        
+        self.context_indices[target] = 0
+
+    def _set_context_value(self, target, value):
         """
-        Produce a human-readable description of the part of the bitstream the
-        parser is currently processing.
+        Add a value to a context dictionary, checking that the value has not
+        already been set and extending list targets if necessary.
         
-        If 'target' is None, prints only the path of the current nested context
-        dictionary. If 'target' is a target name in the current target
-        dictionary, this will be included in the string.
+        .. warning::
         
-        As a sample, a path might look like the following::
-        
-            SequenceHeader['source_parameters']['frame_size']['frame_width']
-        
+            Do not use this method and :py:attr:`_get_context_value` on the same
+            target!
         """
-        full_context_stack = self.context_stack
-        full_context_indices_stack = self.context_indices_stack
-        full_target_stack = self.target_stack
-        if target is not None:
-            full_context_stack += [self.context]
-            full_context_indices_stack += [self.context_indices]
-            full_target_stack += [target]
+        if target not in self.context_indices:
+            # Case: This target has not been declared as a list and this is the
+            # first time it has been accessed.
+            self.context[target] = value
+            self.context_indices[target] = True
+        elif self.context_indices[target] is True:
+            # Case: This target has not been declared as a list and has already
+            # been accessed.
+            raise ReusedTargetError(self.describe_path(target))
+        else:
+            # Case: This target has been declared as a list.
+            i = self.context_indices[target]
+            self.context_indices[target] += 1
+            
+            target_list = self.context[target]
+            if len(target_list) == i:
+                # List is being filled for the first time
+                target_list.append(value)
+            else:
+                # List already exists and we're updating it.
+                target_list[i] = value
+
+    def _get_context_value(self, target):
+        """
+        Get a value from the context dictionary, checking that the value has not
+        already been accessed and moving on to the next list item for list
+        targets.
         
-        root_type = self.root_context.__class__.__name__
+        .. warning::
         
-        return "{}{}".format(
-            root_type,
-            "".join(
-                (
-                    "[{!r}]".format(target)
-                    if context_indices[target] is True else
-                    "[{!r}][{}]".format(
-                        target,
-                        # NB: context_indices includes the index of the first
-                        # unused index, hence being decremented by one here.
-                        context_indices[target]-1,
-                    )
-                )
-                for context, context_indices, target in zip(
-                    full_context_stack,
-                    full_context_indices_stack,
-                    full_target_stack,
-                )
-            )
-        )
+            Do not use this method and :py:attr:`_set_context_value` on the same
+            target!
+        """
+        if target not in self.context_indices:
+            # Case: This target is not a list and has not been used before
+            self.context_indices[target] = True
+            return self.context[target]
+        elif self.context_indices[target] is True:
+            # Case: This target is not a list but has already been used
+            raise ReusedTargetError(self.describe_path(target))
+        else:
+            # Case: This target has been declared as a list.
+            i = self.context_indices[target]
+            if i < len(self.context[target]):
+                self.context_indices[target] += 1
+                return self.context[target][i]
+            else:
+                raise ListTargetExhaustedError(self.describe_path(target))
+
+    def _setdefault_context_value(self, target, default):
+        """
+        Attempt to get a value (or next value, for lists) for a particular
+        target. If the value does not exist, sets it to the supplied default.
+        """
+        if target not in self.context_indices:
+            # Case: This target is not a list and has not been used before
+            self.context_indices[target] = True
+            return self.context.setdefault(target, default)
+        elif self.context_indices[target] is True:
+            # Case: This target is not a list but has already been used. Fail.
+            raise ReusedTargetError(self.describe_path(target))
+        else:
+            # Case: This target has been declared as a list.
+            i = self.context_indices[target]
+            self.context_indices[target] += 1
+            if i == len(self.context[target]):
+                self.context[target].append(default)
+            return self.context[target][i]
     
     def _replace_context_in_parent(self):
         """
@@ -1507,128 +1264,7 @@ class TokenParserStateMachine(object):
             # Context stack is empty so there must be no parent to update!
             pass
 
-    def _verify_context_is_complete(self):
-        """
-        Verify that the current context is 'complete'. That is, every entry in
-        the context dict has been used and that every element in any lists has
-        been used too.
-        """
-        for target, value in self.context.items():
-            if target not in self.context_indices:
-                # Target not used
-                raise UnusedTargetError(target)
-            else:
-                index = self.context_indices[target]
-                if index is True:
-                    # Target was used and it was not a list
-                    pass
-                elif index != len(value):
-                    # Target was used and was a list, but not all entries were
-                    # used!
-                    raise UnusedTargetError("{}[{}:{}]".format(
-                        target, len(value), index))
-
-    def verify_complete(self):
-        """
-        Verify that all values in the current context have been used and that
-        no bounded blocks or nested contexts have been left over.
-        """
-        self._verify_context_is_complete()
-        
-        if self.context_stack:
-            raise UnclosedNestedContextError(", ".join(
-                (
-                    target
-                    if self.context_indices[target] is True else
-                    "{}[{}]".format(target, self.context_indices[target])
-                )
-                for target in self.target_stack
-            ))
-        
-        if self.io_stack:
-            raise UnclosedBoundedBlockError("{} block{} left unclosed".format(
-                len(self.io_stack),
-                "s" if len(self.io_stack) != 1 else "",
-            ))
-
-    def _declare_context_value_is_list(self, target):
-        """
-        Declares a value in the current target to be a list. Throws an error if
-        this target has already been used or declared as a list. If the value
-        does not exist yet in the context, it will be initialised with an empty
-        list. If the value does exist, it will be checked to ensure that it is
-        a list.
-        """
-        # Has the target already been used or delcared?
-        if target in self.context_indices:
-            raise ReusedTargetError(target)
-        
-        if target not in self.context:
-            # Target not yet defined in context; create a new empty list
-            self.context[target] = []
-        else:
-            # The target already exists in the context; make sure it is a list
-            if not isinstance(self.context[target], list):
-                raise ListTargetContainsNonListError(
-                    "{} contains {!r} (which is not a list)".format(
-                        target, self.context[target]))
-        
-        context_indices[target] = 0
-
-    def set_context_value(self, target, value):
-        """
-        Add a value to a context dictionary, checking that the value has not
-        already been set and extending list targets if necessary.
-        
-        Do not use this method and :py:attr:`get_context_value` on the same
-        target!
-        """
-        if target not in self.context_indices:
-            # Case: This target has not been declared as a list and this is the
-            # first time it has been accessed.
-            self.context[target] = value
-            self.context_indices[target] = True
-        elif self.context_indices[target] is True:
-            # Case: This target has not been declared as a list and has already
-            # been accessed.
-            raise ReusedTargetError(target)
-        else:
-            # Case: This target has been declared as a list.
-            i = self.context_indices[target]
-            self.context_indices[target] += 1
-            
-            target_list = self.context[target]
-            if len(target_list) == i:
-                # List is being filled for the first time
-                target_list.append(value)
-            else:
-                # List already exists and we're updating it.
-                target_list[i] = value
-
-    def get_context_value(self, target):
-        """
-        Get a value from the context dictionary, checking that the value has not
-        already been accessed and moving on to the next list item for list
-        targets.
-        
-        Do not use this method and :py:attr:`set_context_value` on the same
-        target!
-        """
-        if target not in self.context_indices:
-            # Case: This target is not a list and has not been used before
-            self.context_indices[target] = True
-            return self.context[target]
-        elif self.context_indices[target] is True:
-            # Case: This target is not a list but has already been used
-            raise ReusedTargetError(target)
-        else:
-            # Case: This target has been declared as a list.
-            i = self.context_indices[target]
-            self.context_indices[target] += 1
-            
-            return self.context[target][i]
-
-    def generator_send(self, value):
+    def _generator_send(self, value):
         """
         Send a value to the current generator and return the next value-only
         token. Other token types will be handled internally and converted into
@@ -1647,11 +1283,11 @@ class TokenParserStateMachine(object):
         while True:
             try:
                 # Try to get the next token
-                original_token = self.generator.send(latest_value)
+                original_token = self.generator.send(value)
                 break
             except StopIteration as r:
                 # The generator has ended, capture the returned value
-                latest_value = getattr(r, "value", None)
+                value = getattr(r, "value", None)
                 
                 # Move on to the next generator in the stack
                 if self.generator_stack:
@@ -1731,11 +1367,9 @@ class TokenParserStateMachine(object):
             assert token_argument is None
             assert token_target is not None
             
-            new_context = {}
-            
             # Insert the new context into the current context at the
             # specified token
-            self.set_context_value(token_target, new_context)
+            new_context = self._setdefault_context_value(token_target, {})
             
             # Push the old context onto the stack
             self.context_stack.append(self.context)
@@ -1765,7 +1399,7 @@ class TokenParserStateMachine(object):
             assert token_argument is not None
             assert token_target is None
             
-            self.generator_stack.push(self.generator)
+            self.generator_stack.append(self.generator)
             self.generator = token_argument
             
             token_type = TokenTypes.nop
@@ -1775,7 +1409,7 @@ class TokenParserStateMachine(object):
             assert token_argument is not None
             assert token_target is not None
             
-            self.generator_stack.push(self.generator)
+            self.generator_stack.append(self.generator)
             self.generator = nest_generator(token_argument, token_target)
             
             token_type = TokenTypes.nop
@@ -1794,7 +1428,7 @@ class TokenParserStateMachine(object):
         
         return (original_token, token_type, token_argument, token_target)
     
-    def generator_throw(self, exception):
+    def _generator_throw(self, exception):
         """
         Throw an exception up into the current generator. If this generator
         tries to catch the exception, the exception will be re-thrown
@@ -1809,7 +1443,7 @@ class TokenParserStateMachine(object):
         # cleanly), re-throw it here
         raise exception
     
-    def generator_close(self):
+    def _generator_close(self):
         """
         Close-down the current generator (and any stacked generators. Use this
         when execution should be halted early.
@@ -1817,15 +1451,114 @@ class TokenParserStateMachine(object):
         self.generator.close()
         for generator in self.generator_stack:
             generator.close()
+    
+    def _verify_context_is_complete(self):
+        """
+        Verify that the current context is 'complete'. That is, every entry in
+        the context dict has been used and that every element in any lists has
+        been used too.
+        """
+        for target, value in self.context.items():
+            if target not in self.context_indices:
+                # Target not used
+                raise UnusedTargetError(self.describe_path(target))
+            else:
+                index = self.context_indices[target]
+                if index is True:
+                    # Target was used (and it is not a list)
+                    pass
+                elif index != len(value):
+                    # Target was used and was a list, but not all entries were
+                    # used!
+                    raise UnusedTargetError("{}[{!r}][{}:{}]".format(
+                        self.describe_path(), target, index, len(value)))
+
+    def _verify_complete(self):
+        """
+        Verify that all values in the current context have been used and that
+        no bounded blocks or nested contexts have been left over.
+        """
+        self._verify_context_is_complete()
+        
+        if self.context_stack:
+            raise UnclosedNestedContextError(self.describe_path())
+        
+        if self.io_stack:
+            raise UnclosedBoundedBlockError("{} block{} left unclosed".format(
+                len(self.io_stack),
+                "s" if len(self.io_stack) != 1 else "",
+            ))
+
+    
+    @property
+    def root_context(self):
+        """
+        Get the top-level context dictionary.
+        
+        See also: :py:attr:`context` which contains the currently active
+        context dictionary.
+        """
+        if self.context_stack:
+            return self.context_stack[0]
+        else:
+            return self.context
+    
+    def describe_path(self, target=None):
+        """
+        Produce a human-readable description of the part of the bitstream the
+        parser is currently processing.
+        
+        If 'target' is None, prints only the path of the current nested context
+        dictionary. If 'target' is a target name in the current target
+        dictionary, this will be included in the string.
+        
+        As a sample, a path might look like the following::
+        
+            SequenceHeader['source_parameters']['frame_size']['frame_width']
+        
+        """
+        full_context_stack = list(self.context_stack)
+        full_context_indices_stack = list(self.context_indices_stack)
+        full_target_stack = list(self.target_stack)
+        if target is not None:
+            full_context_stack += [self.context]
+            full_context_indices_stack += [self.context_indices]
+            full_target_stack += [target]
+        
+        root_type = self.root_context.__class__.__name__
+        
+        return "{}{}".format(
+            root_type,
+            "".join(
+                (
+                    "[{!r}]".format(target)
+                    if (
+                        context_indices.get(target, True) is True or
+                        context_indices.get(target, True) == 0
+                    ) else
+                    "[{!r}][{}]".format(
+                        target,
+                        # NB: context_indices includes the index of the first
+                        # unused index, hence being decremented by one here.
+                        context_indices[target]-1,
+                    )
+                )
+                for context, context_indices, target in zip(
+                    full_context_stack,
+                    full_context_indices_stack,
+                    full_target_stack,
+                )
+            )
+        )
 
 
 def nest_generator(generator, target):
     """
-    Intended for internal use but could be used externally in principle.
-    
     A token-emitting generator which, given another token-emitting generator
     implements the behaviour of :py:data:`TokenTypes.nest` using other token
     types.
+    
+    Intended for internal use but could be used externally in principle.
     """
     yield Token(TokenTypes.nested_context_enter, None, target)
     return_value = yield Token(TokenTypes.use, generator, None)
@@ -1859,3 +1592,312 @@ def context_type(dict_type):
             yield Token(TokenTypes.use, f(*args, **kwargs), None)
         return wrapper
     return wrap
+
+
+def read(generator, reader, return_generator_return_value=False):
+    """
+    Read a bitstream described by the specified token-emitting generator,
+    returning the populated context dictionary.
+    
+    Parameters
+    ==========
+    generator : generator -> :py:class:`Token`
+        A generator function which emits :py:class:`Token` tuples (or native
+        3-tuples) which describe how the bitstream should be formatted.
+    reader : :py:class:`BitstreamReader`
+    return_generator_return_value : bool
+        If False, the default, this function will return only the final context
+        dictionary. If set to True, this generator will return both the final
+        context and the generator's final return value in a 2-tuple.
+    """
+    try:
+        next(read_interruptable(
+            generator,
+            reader,
+            return_generator_return_value=return_generator_return_value,
+        ))
+        assert False, "read_interruptable should not have paused"
+    except StopIteration as r:
+        return getattr(r, "value", None)
+
+
+def read_interruptable(generator, reader, interrupt=None,
+                       return_generator_return_value=False):
+    """
+    A generator which reads a bitstream described by the specified
+    token-emitting generator, pausing when required.
+    
+    Parameters
+    ==========
+    generator : generator -> :py:class:`Token`
+    reader : :py:class:`BitstreamReader`
+    interrupt : None or function(:py;class:`TokenParserStateMachine`, :py:class:`Token`) -> bool
+        If provided, this function will be called after every read operation
+        and, if the function returns True, the :py:func:`read_interruptable`
+        generator will yield. If false, the generator wlil move onto the next
+        value without yielding.
+        
+        The :py:class:`TokenParserStateMachine` and token passed to the
+        interrupt function reveal the current internal state and token which
+        has just been processed. These values should be treated as strictly
+        read-only.
+        
+        As an example, the following lambda function could be used to interrupt
+        parsing once a certain bitstream offset is reached::
+        
+            # Interrupt after 100 bytes
+            lambda fsm, token: fsm.io.tell() >= (100, 7)
+        
+    return_generator_return_value : bool
+    
+    Generates
+    =========
+    (:py:class:`TokenParserStateMachine`, :py:class:`Token`)
+        When this generator yields, it produces a
+        2-tuple describing with the same values as the interrupt argument.
+        These values may be used (in a strictly read-only fashion) to inspect
+        the current partially read data, for example::
+        
+            >>> g = yield read_interruptable(...)
+            >>> fsm, token = next(g)
+            
+            >>> # Print the token we just generated
+            >>> str(token)
+            
+            >>> # Print the partially populated context dictionary
+            >>> str(fsm.root_context)
+            ...
+    
+    Raises
+    ======
+    :py:exc:`Return`
+        When the token generator is exhausted. :py:exc:`Return` is raised with
+        ``value`` set to the (top-level) context dictionary populated during
+        reading or, if return_generator_return_value argument is True, a 2-tuple
+        (context, generator_return_value).
+    """
+    fsm = TokenParserStateMachine(generator, reader)
+    
+    try:
+        # The value to be sent to the generator upon the next iteration.
+        # Usually the last value to have been read from the stream.
+        latest_value = None
+        
+        while True:
+            try:
+                # Get the next token
+                original_token, token_type, token_argument, token_target = fsm._generator_send(latest_value)
+                
+                # Read values according to the value type
+                if token_type is TokenTypes.nop:
+                    assert token_argument is None
+                    assert token_target is None
+                    latest_value = None
+                elif token_type is TokenTypes.bool:
+                    assert token_argument is None
+                    assert token_target is not None
+                    latest_value = bool(fsm.io.read_bit())
+                elif token_type is TokenTypes.nbits:
+                    assert token_target is not None
+                    latest_value = fsm.io.read_nbits(token_argument)
+                elif token_type is TokenTypes.bitarray:
+                    assert token_target is not None
+                    latest_value = fsm.io.read_bitarray(token_argument)
+                elif token_type is TokenTypes.bytes:
+                    assert token_target is not None
+                    latest_value = fsm.io.read_bytes(token_argument)
+                elif token_type is TokenTypes.uint:
+                    assert token_argument is None
+                    assert token_target is not None
+                    latest_value = fsm.io.read_uint()
+                elif token_type is TokenTypes.sint:
+                    assert token_argument is None
+                    assert token_target is not None
+                    latest_value = fsm.io.read_sint()
+                else:
+                    raise UnknownTokenTypeError(token_type)
+                
+                # Store the new value in the context
+                if token_target is not None:
+                    fsm._set_context_value(token_target, latest_value)
+                
+                # Pause if requested
+                if interrupt is not None and interrupt(fsm, original_token):
+                    yield (fsm, original_token)
+            
+            except StopIteration as r:
+                # Capture the return value of the final generator -- it may be
+                # returned here.
+                return_value = getattr(r, "value", None)
+                break
+            except Exception as e:
+                # The processes above may produce exceptions if a validation
+                # step fails. Send these up into the generator to produce more
+                # helpful stack traces for users.
+                fsm._generator_throw(e)
+    finally:
+        fsm._generator_close()
+    
+    fsm._verify_complete()
+    
+    if return_generator_return_value:
+        raise Return((fsm.context, return_value))
+    else:
+        raise Return(fsm.context)
+
+
+def write(generator, writer, context, return_generator_return_value=False):
+    """
+    Generate a bitstream described by the specified token-emitting generator
+    and context dictionary and write to the the specified
+    :py:class:`BitstreamWriter`.
+    
+    Returns the context dictionary. This may actually be a modified copy of the
+    original context dictionary if the generator required this dictionary to
+    change type (via a :py:data:`TokenTypes.declare_context_type` token.).
+    
+    Parameters
+    ==========
+    generator : generator -> :py:class:`Token`
+        A generator function which emits :py:class:`Token` tuples (or native
+        3-tuples) which describe how the bitstream should be formatted.
+    writer : :py:class:`BitstreamWriter`
+    return_generator_return_value : bool
+        If False, the default, this function will return only the final context
+        dictionary. If set to True, this generator will return both the final
+        context and the generator's final return value in a 2-tuple.
+    """
+    try:
+        next(write_interruptable(
+            generator,
+            writer,
+            context,
+            return_generator_return_value=return_generator_return_value,
+        ))
+        assert False, "write_interruptable should not have paused"
+    except StopIteration as r:
+        return getattr(r, "value", None)
+
+
+def write_interruptable(generator, writer, context, interrupt=None,
+                        return_generator_return_value=False):
+    """
+    A generator which writes a bitstream described by the specified
+    token-emitting generator and context dictionary, pausing when required.
+    
+    Parameters
+    ==========
+    generator : generator -> :py:class:`Token`
+    writer : :py:class:`BitstreamWriter`
+    interrupt : None or function(:py;class:`TokenParserStateMachine`, :py:class:`Token`) -> bool
+        If provided, this function will be called after every write operation
+        and, if the function returns True, the :py:func:`write_interruptable`
+        generator will yield. If false, the generator wlil move onto the next
+        value without yielding.
+        
+        The :py:class:`TokenParserStateMachine` and token passed to the
+        interrupt function reveal the current internal state and token which
+        has just been processed. These values should be treated as strictly
+        read-only.
+        
+        As an example, the following lambda function could be used to interrupt
+        parsing once a certain bitstream offset is reached::
+        
+            # Interrupt after 100 bytes
+            lambda fsm, token: fsm.io.tell() >= (100, 7)
+        
+    return_generator_return_value : bool
+    
+    Generates
+    =========
+    (:py:class:`TokenParserStateMachine`, :py:class:`Token`)
+        When this generator yields, it produces a
+        2-tuple describing with the same values as the interrupt argument.
+        These values may be used (in a strictly read-only fashion) to inspect
+        write progress::
+        
+            >>> g = yield write_interruptable(...)
+            >>> fsm, token = next(g)
+            
+            >>> # Print out the field we've got up to
+            >>> fsm.describe_path(token.target)
+            SequenceHeader['source_parameters']['frame_size']['frame_width']
+    
+    Raises
+    ======
+    :py:exc:`Return`
+        When the token generator is exhausted. :py:exc:`Return` is raised with
+        ``value`` set to the (top-level) context dictionary used during
+        generation (which  may have been replaced with one of a different
+        type). If return_generator_return_value argument is True, a 2-tuple (context,
+        generator_return_value).
+    """
+    fsm = TokenParserStateMachine(generator, writer, context)
+    
+    try:
+        # The value to be written and sent to the generator upon the
+        # next iteration.
+        latest_value = None
+        
+        while True:
+            try:
+                # Get the next token
+                original_token, token_type, token_argument, token_target = fsm._generator_send(latest_value)
+                
+                # Get the value to be written
+                if token_target is not None:
+                    latest_value = fsm._get_context_value(token_target)
+                else:
+                    latest_value = None
+                
+                # Write values according to the value type
+                if token_type is TokenTypes.nop:
+                    assert token_argument is None
+                    assert token_target is None
+                elif token_type is TokenTypes.bool:
+                    assert token_argument is None
+                    assert token_target is not None
+                    fsm.io.write_bit(latest_value)
+                elif token_type is TokenTypes.nbits:
+                    assert token_target is not None
+                    fsm.io.write_nbits(token_argument, latest_value)
+                elif token_type is TokenTypes.bitarray:
+                    assert token_target is not None
+                    fsm.io.write_bitarray(token_argument, latest_value)
+                elif token_type is TokenTypes.bytes:
+                    assert token_target is not None
+                    fsm.io.write_bytes(token_argument, latest_value)
+                elif token_type is TokenTypes.uint:
+                    assert token_argument is None
+                    assert token_target is not None
+                    fsm.io.write_uint(latest_value)
+                elif token_type is TokenTypes.sint:
+                    assert token_argument is None
+                    assert token_target is not None
+                    fsm.io.write_sint(latest_value)
+                else:
+                    raise UnknownTokenTypeError(token_type)
+                
+                # Pause if requested
+                if interrupt is not None and interrupt(fsm, original_token):
+                    yield (fsm, original_token)
+            
+            except StopIteration as r:
+                # Capture the return value of the final generator -- it may be
+                # returned here.
+                return_value = getattr(r, "value", None)
+                break
+            except Exception as e:
+                # The processes above may produce exceptions if a validation
+                # step fails. Send these up into the generator to produce more
+                # helpful stack traces for users.
+                fsm._generator_throw(e)
+    finally:
+        fsm._generator_close()
+    
+    fsm._verify_complete()
+    
+    if return_generator_return_value:
+        raise Return((fsm.context, return_value))
+    else:
+        raise Return(fsm.context)
