@@ -198,12 +198,18 @@ class Value(object):
         formatter : function(value) -> string
             A function which takes a value and returns a string representation
             to use when printing this value as a string. Defaults to 'str'.
+        formatter_pass_dict : bool
+            If specified, a bool which, if True, causes the dictionary to be
+            passed as first argument to the formatter function.
         friendly_formatter: function(value) -> string
             If provided, when converting this value to a string, this function
             will be used to generate a 'friendly' name for this value. This
             will be followed by the actual value in brackets. If this function
             returns None, only the actual value will be shown (without
             brackets).
+        friendly_formatter_pass_dict : bool
+            If specified, a bool which, if True, causes the dictionary to be
+            passed as first argument to the friendly_formatter function.
         enum : :py:class:`Enum`
             A convenience interface which is equivalent to the following
             ``friendly_formatter`` argument::
@@ -233,7 +239,9 @@ class Value(object):
             kwargs["friendly_formatter"] = friendly_enum_formatter
         
         self.formatter = kwargs.pop("formatter", str)
+        self.formatter_pass_dict = kwargs.pop("formatter_pass_dict", False)
         self.friendly_formatter = kwargs.pop("friendly_formatter", None)
+        self.friendly_formatter_pass_dict = kwargs.pop("friendly_formatter_pass_dict", False)
         
         if kwargs:
             raise TypeError("unexpected keyword arguments: {}".format(
@@ -246,15 +254,21 @@ class Value(object):
         else:
             return self.default
     
-    def to_string(self, value):
+    def to_string(self, dictionary, value):
         """
         Convert a value to a string according to the specification in this
         :py:class:`Value`.
         """
-        value_string = self.formatter(value)
+        if self.formatter_pass_dict:
+            value_string = self.formatter(dictionary, value)
+        else:
+            value_string = self.formatter(value)
         
         if self.friendly_formatter is not None:
-            friendly_string = self.friendly_formatter(value)
+            if self.friendly_formatter_pass_dict:
+                friendly_string = self.friendly_formatter(dictionary, value)
+            else:
+                friendly_string = self.friendly_formatter(value)
             if friendly_string is not None:
                 value_string = "{} ({})".format(friendly_string, value_string)
         
@@ -510,7 +524,7 @@ def structured_dict(cls):
                 self.__class__.__name__,
                 "\n".join(
                     indent("{}: {}".format(
-                        name, value_obj.to_string(self[name])
+                        name, value_obj.to_string(self, self[name])
                     ))
                     for name, value_obj in value_objs.items()
                     if name in self and not name.startswith("_")

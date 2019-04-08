@@ -71,17 +71,24 @@ class TestValue(object):
     
     def test_to_string(self):
         v = Value()
-        assert v.to_string(123) == "123"
-        assert v.to_string("abc") == "abc"
+        assert v.to_string({}, 123) == "123"
+        assert v.to_string({}, "abc") == "abc"
         
         v = Value(formatter=bin)
-        assert v.to_string(0b1010) == "0b1010"
+        assert v.to_string({}, 0b1010) == "0b1010"
         
         v = Value(friendly_formatter=str.upper)
-        assert v.to_string("foo") == "FOO (foo)"
+        assert v.to_string({}, "foo") == "FOO (foo)"
         
         v = Value(formatter=str.lower, friendly_formatter=str.upper)
-        assert v.to_string("Foo") == "FOO (foo)"
+        assert v.to_string({}, "Foo") == "FOO (foo)"
+        
+        v = Value(formatter=lambda d,v: "{} in {}".format(v, d), formatter_pass_dict=True)
+        assert v.to_string({"a": "Foo"}, "Foo") == "Foo in {'a': 'Foo'}"
+        
+        v = Value(friendly_formatter=lambda d,v: "{} in {}".format(v, d),
+                  friendly_formatter_pass_dict=True)
+        assert v.to_string({"a": "Foo"}, "Foo") == "Foo in {'a': 'Foo'} (Foo)"
 
 
 @structured_dict
@@ -92,8 +99,10 @@ class MyStructuredDict(object):
     # With default
     name = Value(default="Anon")
     
-    # Without default, also has a formatter which helpfully prints in hex...
-    age = Value(friendly_formatter=str, formatter=hex)
+    # Without default, also has a formatter
+    age = Value(friendly_formatter=lambda d, v: "{} (one of {} entries)".format(v, len(d)),
+                friendly_formatter_pass_dict=True,
+                formatter=hex)
     
     # Hidden value (and with factory)
     _hidden = Value(default_factory=list)
@@ -266,7 +275,7 @@ class TestStructuredDict(object):
         assert str(d) == (
             "MyStructuredDict:\n"
             "  name: Anon\n"
-            "  age: 32 (0x20)"
+            "  age: 32 (one of 3 entries) (0x20)"
         )
         
         # Should handle multi-line values
@@ -276,7 +285,7 @@ class TestStructuredDict(object):
             "  name: foo\n"
             "  bar\n"
             "  baz\n"
-            "  age: 32 (0x20)"
+            "  age: 32 (one of 3 entries) (0x20)"
         )
 
         # Should work if we delete all values
