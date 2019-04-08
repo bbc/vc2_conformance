@@ -195,6 +195,10 @@ class Value(object):
             Useful if a default value is a list, for example, and a new list
             should be made for every structured dict instance. Must not be used
             at the same time as 'default' argument.
+        type : class or None
+            If not None, throws a :py:exc:`TypeError` if an assigned value does
+            not match the specified type. Intended as much as a helpful
+            annotation in the source as a useful validation step.
         formatter : function(value) -> string
             A function which takes a value and returns a string representation
             to use when printing this value as a string. Defaults to 'str'.
@@ -227,6 +231,8 @@ class Value(object):
         self.default = kwargs.pop("default", None)
         self.default_factory = kwargs.pop("default_factory", None)
         
+        self.type = kwargs.pop("type", None)
+        
         if "enum" in kwargs:
             enum_type = kwargs.pop("enum")
             
@@ -253,6 +259,13 @@ class Value(object):
             return self.default_factory()
         else:
             return self.default
+    
+    def check_type(self, value):
+        """
+        Throw a :py:exc:`TypeError` if a value is not of the correct type.
+        """
+        if self.type is not None and not isinstance(value, self.type):
+            raise TypeError("{} (expected {})".format(repr(value), self.type))
     
     def to_string(self, dictionary, value):
         """
@@ -438,7 +451,7 @@ def structured_dict(cls):
             iterable = (
                 (name, value_obj.get_default())
                 for name, value_obj in value_objs.items()
-                if value_obj.has_default
+                if value_obj.has_default and name not in kwargs
             )
         
         for name, value in chain(iterable, kwargs.items()):
@@ -451,11 +464,14 @@ def structured_dict(cls):
     methods["__init__"] = __init__
     
     def __setattr__(self, name, value):
-        if name not in value_objs and not hasattr(self, name):
+        value_obj = value_objs.get(name)
+        if value_obj is None and not hasattr(self, name):
             raise AttributeError("'{}' object has no attribute '{}'".format(
                 self.__class__.__name__,
                 name))
         else:
+            if value_obj is not None:
+                value_obj.check_type(value)
             super(cls, self).__setattr__(name, value)
     
     methods["__setattr__"] = __setattr__
