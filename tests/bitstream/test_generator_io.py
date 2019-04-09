@@ -32,13 +32,6 @@ from vc2_conformance.bitstream.generator_io import (
 )
 
 
-# NB: Under Python 3, raising StopIteration-derrived exceptions has been
-# deprecated in favour of the generator return statement. For the moment,
-# Python 2.x compatibility demands the continued use of this deprecated
-# feature.
-pytestmark = pytest.mark.filterwarnings(r"ignore:.*raised StopIteration.*")
-
-
 @pytest.fixture
 def f():
     return BytesIO()
