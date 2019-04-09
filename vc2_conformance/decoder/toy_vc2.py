@@ -419,20 +419,16 @@ def parse_sequence(stream):
             fragment(state)
         elif is_auxiliary_data(state):
             auxiliary_data(state)
-        elif is_padding_data(state):  # Erata: listed as 'is_padding' in standard
+        elif is_padding_data(state):  # Errata: listed as 'is_padding' in standard
             padding(state)
         parse_info(state)
-
-
-PARSE_INFO_HEADER_BYTES = 13
-"""(15.5.1) The number of bytes in the parse_info header."""
 
 
 def auxiliary_data(state):
     """(10.4.4) Read an auxiliary data block."""
     byte_align(state)
     for i in range(state.next_parse_offset - PARSE_INFO_HEADER_BYTES):
-        # Erata: is eroneously 'read_byte' in the spec
+        # Errata: is eroneously 'read_byte' in the spec
         read_uint_lit(state, 1)
 
 
@@ -440,7 +436,7 @@ def padding(state):
     """(10.4.5) Read a padding data block."""
     byte_align(state)
     for i in range(state.next_parse_offset - PARSE_INFO_HEADER_BYTES):
-        # Erata: is eroneously 'read_byte' in the spec
+        # Errata: is eroneously 'read_byte' in the spec
         read_uint_lit(state, 1)
 
 
@@ -726,7 +722,7 @@ def frame_rate(state, video_parameters):
         else:
             preset_frame_rate(video_parameters, index)
 
-def pixel_aspect_ratio(state, video_parameters):  # Erata: called 'aspect_ratio' in spec
+def pixel_aspect_ratio(state, video_parameters):  # Errata: called 'aspect_ratio' in spec
     """(11.4.7) Override pixel aspect ratio parameter."""
     custom_pixel_aspect_ratio_flag = read_bool(state)
     if custom_pixel_aspect_ratio_flag:
@@ -826,7 +822,7 @@ def preset_frame_rate(video_parameters, index):
     video_parameters.frame_rate_denom = preset.denominator
 
 
-def preset_pixel_aspect_ratio(video_parameters, index):  # Erata: called 'preset_aspect_ratio' in spec
+def preset_pixel_aspect_ratio(video_parameters, index):  # Errata: called 'preset_aspect_ratio' in spec
     """(11.4.7) Set pixel aspect ratio from preset."""
     preset = PRESET_PIXEL_ASPECT_RATIOS[PresetPixelAspectRatios(index)]
     video_parameters.pixel_aspect_ratio_numer = preset.numerator
@@ -1163,13 +1159,13 @@ def ld_slice(state, sx, sy):
     
     state.bits_left = slice_y_length
     if state.dwt_depth_ho == 0:
-        # Erata: standard says 'luma_slice_band(state, 0, LL, sx, sy)'
+        # Errata: standard says 'luma_slice_band(state, 0, LL, sx, sy)'
         slice_band(state, state.y_transform, 0, LL, sx, sy)
         for level in range(1, state.dwt_depth + 1):
             for orient in [HL, LH, HH]:
                 slice_band(state, state.y_transform, level, orient, sx, sy)
     else:
-        # Erata: standard says 'luma_slice_band(state, 0, L, sx, sy)'
+        # Errata: standard says 'luma_slice_band(state, 0, L, sx, sy)'
         slice_band(state, state.y_transform, 0, L, sx, sy)
         for level in range(1, state.dwt_depth_ho + 1):
             slice_band(state, state.y_transform, level, H, sx, sy)

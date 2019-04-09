@@ -12,52 +12,36 @@ purposes:
 * Hand-crafting VC-2 bitstreams from scratch.
 * Creating in- and out-of-spec bitstreams.
 
-Conversely this module is emphatically *not* intended to be used as the
-bitstream parser for a conformance-checking decoder implementation. The
-structure of this module is orthogonal to the structure of the specification
-making its equivalence more difficult to verify. This implementation should be
-considered 'informative' only.
+Specifically, this module is emphatically *not* intended to be used as the
+bitstream parser for a conformance-checking decoder implementation and should
+be considered 'informative' only.
 
-This module has not been designed with performance in mind. Whenever there is a
-trade-off between performance and usability/clarity, the clearer or more usable
-approach has been taken.
+Implementation
+--------------
 
+This module is split into three parts.
 
-Overview
-========
+1. The :py:module:`io` provide a simple API for performing low-level bitwise
+   I/O on file-like objects.
+2. The :py:module:`generator_io` module implements a *generic* framework for
+   serialising, deserialising and analysing bitstreams described in the
+   procedural-style used in the VC-2 specification pseudo code.
+3. The :py:module:`vc2` module contains all of the VC-2 specific code which
+   defines the underlying bitstream format.
 
-This module defines a number of subclasses of :py:class:`BitstreamValue`. Each
-of these classes represents a deserialised piece of a VC-2 bitstream. In
-general, the deserialised value is represented by a Python type (for example an
-integer or enumeration).
-
-:py:class:`BitstreamValue`\ s can be populated from a file-like object by
-providing a :py:class:`BitstreamReader` instance to the
-:py:meth:`BitstreamValue.read` method. Likewise, values can be seriallised into
-a file-like object by passing a :py:class:`BitstreamWriter` into
-:py:meth:`BitstreamValue.write`.
+The :py:module:`generator_io` library forms the heart of this implementation
+and effectively allows pseudo code to be copied from the specification and,
+with minimal transformation, be used to drive a bitstream
+serialiser/deserialiser. This module relies on lesser-used Python features (for
+example :py:meth:`generator.send`) and it is strongly recommended that future
+implementers begin by reading the introduction to that module.
 """
 
 # Low-level bitwise file reading/writing
 from vc2_conformance.bitstream.io import *
 
-## The BitstreamValue base class
-#from vc2_conformance.bitstream.base import *
-#
-## Pseudo-values (e.g. ConstantValue, FunctionValue)
-#from vc2_conformance.bitstream.pseudo import *
-#
-## Primitive bitstream types (e.g. Bool, UInt...)
-#from vc2_conformance.bitstream.primitive import *
-#
-## General purpose compound types (e.g. Concatenation)
-#from vc2_conformance.bitstream.compound import *
-#
-## General purpose wrapper types (e.g. BoundedBlock)
-#from vc2_conformance.bitstream.wrapper import *
-#
-## A performance-optimised implementation of the 'slice' structure from VC-2
-#from vc2_conformance.bitstream.vc2_slices import *
-#
-## Complete VC-2 bitstream structures
-#from vc2_conformance.bitstream.vc2 import *
+# Token-emitting generator I/O library functions and datatypes
+from vc2_conformance.bitstream.generator_io import *
+
+# VC-2 specific parts
+from vc2_conformance.bitstream.vc2 import *

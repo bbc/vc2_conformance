@@ -1,6 +1,6 @@
 import pytest
 
-from vc2_conformance.bitstream.formatters import (
+from vc2_conformance._string_formatters import (
     Number,
     Hex,
     Dec,

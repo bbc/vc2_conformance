@@ -2,11 +2,12 @@
 Constants defined by the VC-2 specification.
 """
 
-from enum import Enum
+from enum import IntEnum
 
 
 __all__ = [
     "PARSE_INFO_PREFIX",
+    "PARSE_INFO_HEADER_BYTES",
     "ParseCodes",
     "PictureCodingModes",
     "ColorDifferenceSamplingFormats",
@@ -30,8 +31,11 @@ PARSE_INFO_PREFIX = 0x42424344
 'BBCD' in ASCII.
 """
 
+PARSE_INFO_HEADER_BYTES = 13
+"""(15.5.1) The number of bytes in the parse_info header."""
 
-class ParseCodes(Enum):
+
+class ParseCodes(IntEnum):
     """
     (10.5.2) Valid parse_code values from (Table 10.1). Names are not normative.
     """
@@ -101,12 +105,12 @@ class ParseCodes(Enum):
         return (self.value & 0x28) == 0x08
 
 
-class PictureCodingModes(Enum):
+class PictureCodingModes(IntEnum):
     """(11.5) Indices defined in the text. Names are not normative."""
     pictures_are_frames = 0
     pictures_are_fields = 1
 
-class ColorDifferenceSamplingFormats(Enum):
+class ColorDifferenceSamplingFormats(IntEnum):
     """(11.4.4) Indices from (Table 11.2)"""
     
     color_4_4_4 = 0
@@ -114,13 +118,13 @@ class ColorDifferenceSamplingFormats(Enum):
     color_4_2_0 = 2
 
 
-class SourceSamplingModes(Enum):
+class SourceSamplingModes(IntEnum):
     """(11.4.5) Indices defined in the text. Names are not normative."""
     progressive = 0
     interlaced = 1
 
 
-class BaseVideoFormats(Enum):
+class BaseVideoFormats(IntEnum):
     """
     (11.3) Base video format indices from (Table 11.1). Names based on the
     normative values in this table.
@@ -152,7 +156,7 @@ class BaseVideoFormats(Enum):
     sd_pro486 = 22
 
 
-class Profiles(Enum):
+class Profiles(IntEnum):
     """
     (C.2) VC-2 Profiles.
     
@@ -162,7 +166,7 @@ class Profiles(Enum):
     high_quality = 3
 
 
-class PresetFrameRates(Enum):
+class PresetFrameRates(IntEnum):
     """
     (11.4.6) Preset framerate indices from (Table 11.1). Names are informative.
     
@@ -185,7 +189,7 @@ class PresetFrameRates(Enum):
     fps_120_over_1_001 = 15
     fps_120 = 16
 
-class PresetPixelAspectRatios(Enum):
+class PresetPixelAspectRatios(IntEnum):
     """
     (11.4.7) Pixel aspect ratio preset indices from (Table 11.4). Names are
     informative.
@@ -200,7 +204,7 @@ class PresetPixelAspectRatios(Enum):
     ratio_4_3 = 6  # reduced horizontal resolution systems
 
 
-class PresetSignalRanges(Enum):
+class PresetSignalRanges(IntEnum):
     """
     (11.4.9) Signal offsets/ranges preset indices from (Table 11.5). Names are
     informative and based on those in the table.
@@ -217,7 +221,7 @@ class PresetSignalRanges(Enum):
     range_16_bit_full_range = 8
 
 
-class PresetColorPrimaries(Enum):
+class PresetColorPrimaries(IntEnum):
     """
     (11.4.10.2) Color primaries from (Table 11.7). Names and comments are
     informative and based on those in the table.
@@ -231,7 +235,7 @@ class PresetColorPrimaries(Enum):
     uhdtv = 4  # Used in UHDTV and HDR
 
 
-class PresetColorMatrices(Enum):
+class PresetColorMatrices(IntEnum):
     """
     (11.4.10.3) Color primaries from (Table 11.8). Names and comments are
     informative and based on those in the table.
@@ -245,7 +249,7 @@ class PresetColorMatrices(Enum):
     uhdtv = 4
 
 
-class PresetTransferFunctions(Enum):
+class PresetTransferFunctions(IntEnum):
     """
     (11.4.10.4) Transfer functions from (Table 11.9). Names are informative and
     are based on those in the table.
@@ -260,7 +264,7 @@ class PresetTransferFunctions(Enum):
     hybrid_log_gamma = 5
 
 
-class PresetColorSpecs(Enum):
+class PresetColorSpecs(IntEnum):
     """
     (11.4.10.1) Preset color specification collections from (Table 11.6). Names
     are informative and based on those in the table.
@@ -277,7 +281,7 @@ class PresetColorSpecs(Enum):
     hdr_tv_hlg = 7
 
 
-class LiftingFilterTypes(Enum):
+class LiftingFilterTypes(IntEnum):
     """
     (15.4.4.1) Indices of lifting filter step types. Names are informative and
     based on an interpretation of the pseudo-code in the specification.
@@ -288,7 +292,7 @@ class LiftingFilterTypes(Enum):
     odd_subtract_even = 4
 
 
-class WaveletFilters(Enum):
+class WaveletFilters(IntEnum):
     """
     (12.4.2) Wavelet filter types supported by VC-2 using the indices
     normitively specified in  in (Table 12.1). Names are based on the
