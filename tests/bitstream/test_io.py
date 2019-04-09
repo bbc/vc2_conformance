@@ -186,6 +186,34 @@ class TestBistreamWriter(object):
         assert w.bits_past_eof == 0
 
 
+class TestBistreamPadAndTruncate(object):
+    
+    def test_tell(self):
+        p = bitstream.BitstreamPadAndTruncate()
+        
+        assert p.tell() == (0, 7)
+        
+        p.advance_bit_offset(1)
+        assert p.tell() == (0, 6)
+        
+        p.advance_bit_offset(6)
+        assert p.tell() == (0, 0)
+        
+        # Move into next byte
+        p.advance_bit_offset(1)
+        assert p.tell() == (1, 7)
+        
+        p.advance_bit_offset(1)
+        assert p.tell() == (1, 6)
+    
+    def test_seek(self):
+        p = bitstream.BitstreamPadAndTruncate()
+        for byte in range(2):
+            for bit in range(8):
+                p.seek(byte, bit)
+                assert p.tell() == (byte, bit)
+
+
 class TestReadNbits(object):
     
     def test_read_nothing(self):
@@ -234,6 +262,25 @@ class TestWriteNbits(object):
         assert w.tell() == (1, 7)
         w.flush()
         assert f.getvalue() == b"\xAB"
+
+
+class TestPadAndTruncateNbits(object):
+    
+    @pytest.fixture
+    def p(self):
+        return bitstream.BitstreamPadAndTruncate()
+    
+    def test_nothing(self, p):
+        assert p.pad_and_truncate_nbits(0) == 0
+        assert p.tell() == (0, 7)
+    
+    def test_truncate_excess_bits(self, p):
+        p.pad_and_truncate_nbits(12, 0xABCD) == 0xBCD
+        assert p.tell() == (1, 3)
+    
+    def test_zero_pad(self, p):
+        assert p.pad_and_truncate_nbits(16, 0xABC) == 0x0ABC
+        assert p.tell() == (2, 7)
 
 
 class TestReadBitArray(object):
@@ -288,6 +335,24 @@ class TestWriteBitArray(object):
         assert w.tell() == (0, 3)
         w.flush()
         assert f.getvalue() == b"\xA0"
+
+
+class TestPadAndTruncateBitArray(object):
+    
+    def test_nothing(self):
+        p = bitstream.BitstreamPadAndTruncate()
+        assert p.pad_and_truncate_bitarray(0) == bitarray()
+        assert p.tell() == (0, 7)
+    
+    def test_zero_pad(self):
+        p = bitstream.BitstreamPadAndTruncate()
+        assert p.pad_and_truncate_bitarray(8, bitarray("1111")) == bitarray("00001111")
+        assert p.tell() == (1, 7)
+    
+    def test_truncate(self):
+        p = bitstream.BitstreamPadAndTruncate()
+        assert p.pad_and_truncate_bitarray(4, bitarray("01011010")) == bitarray("1010")
+        assert p.tell() == (0, 3)
 
 
 class TestReadBytes(object):
@@ -355,6 +420,24 @@ class TestWriteBytes(object):
         assert w.tell() == (1, 7)
         w.flush()
         assert f.getvalue() == b"\xAB"
+
+
+class TestPadAndTruncateBytes(object):
+    
+    def test_nothing(self):
+        p = bitstream.BitstreamPadAndTruncate()
+        assert p.pad_and_truncate_bytes(0) == bytes()
+        assert p.tell() == (0, 7)
+    
+    def test_zero_pad(self):
+        p = bitstream.BitstreamPadAndTruncate()
+        assert p.pad_and_truncate_bytes(2, b"\xFF") == b"\x00\xFF"
+        assert p.tell() == (2, 7)
+    
+    def test_truncate(self):
+        p = bitstream.BitstreamPadAndTruncate()
+        assert p.pad_and_truncate_bytes(1, b"\xAA\xBB") == b"\xBB"
+        assert p.tell() == (1, 7)
 
 
 class TestReadUint(object):
@@ -436,6 +519,24 @@ class TestWriteUint(object):
         # Whole string falls off end
         bw = bitstream.BoundedWriter(w, 0)
         bw.write_uint(0)
+
+
+class TestPadAndTruncateUint(object):
+    
+    def test_nothing(self):
+        p = bitstream.BitstreamPadAndTruncate()
+        assert p.pad_and_truncate_uint() == 0
+        assert p.tell() == (0, 6)
+    
+    def test_clamp_at_zero(self):
+        p = bitstream.BitstreamPadAndTruncate()
+        assert p.pad_and_truncate_uint(-5) == 0
+        assert p.tell() == (0, 6)
+    
+    def test_length(self):
+        p = bitstream.BitstreamPadAndTruncate()
+        assert p.pad_and_truncate_uint(1) == 1
+        assert p.tell() == (0, 4)
 
 
 class TestReadSint(object):
@@ -545,6 +646,23 @@ class TestWriteSint(object):
         bw.write_sint(0)
 
 
+class TestPadAndTruncateSint(object):
+    
+    def test_nothing(self):
+        p = bitstream.BitstreamPadAndTruncate()
+        assert p.pad_and_truncate_sint() == 0
+        assert p.tell() == (0, 6)
+    
+    def test_length(self):
+        p = bitstream.BitstreamPadAndTruncate()
+        
+        assert p.pad_and_truncate_sint(1) == 1
+        assert p.tell() == (0, 3)
+        
+        assert p.pad_and_truncate_sint(-1) == -1
+        assert p.tell() == (1, 7)
+
+
 def test_bounded_reader():
     r = bitstream.BitstreamReader(BytesIO(b"\xA0"))
     br = bitstream.BoundedReader(r, 12)
@@ -611,3 +729,32 @@ def test_bounded_writer():
             bw.write_bit(bit)
         assert bw.bits_remaining == exp_bw_bits_remaining
         assert bw.bits_past_eof == exp_bw_bits_past_eof
+
+
+def test_bounded_pad_and_truncate():
+    p = bitstream.BitstreamPadAndTruncate()
+    bp_outer = bitstream.BoundedPadAndTruncate(p, 8)
+    bp = bitstream.BoundedPadAndTruncate(bp_outer, 12)
+    
+    for exp_tell, bit, exp_bits_past_eof, exp_bp_bits_remaining in [
+                # Within file
+                ((0, 7), 1, 0, 11),
+                ((0, 6), 0, 0, 10),
+                ((0, 5), 1, 0, 9),
+                ((0, 4), 0, 0, 8),
+                ((0, 3), 0, 0, 7),
+                ((0, 2), 0, 0, 6),
+                ((0, 1), 0, 0, 5),
+                ((0, 0), 0, 0, 4),
+                # Outer bounded reader limit
+                ((1, 7), 1, 1, 3),
+                ((1, 7), 1, 1, 2),
+                ((1, 7), 1, 1, 1),
+                ((1, 7), 1, 1, 0),
+                # Past bounded block end
+                ((1, 7), 1, 1, 0),
+                ((1, 7), 0, 1, 0),
+            ]:
+        assert bp.tell() == exp_tell
+        bp.pad_and_truncate_bit(bit)
+        assert bp.bits_remaining == exp_bp_bits_remaining

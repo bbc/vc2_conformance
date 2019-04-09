@@ -662,8 +662,10 @@ from functools import wraps
 from vc2_conformance.bitstream import (
     BitstreamReader,
     BitstreamWriter,
+    BitstreamPadAndTruncate,
     BoundedReader,
     BoundedWriter,
+    BoundedPadAndTruncate,
 )
 
 from vc2_conformance.exceptions import (
@@ -685,6 +687,8 @@ __all__ = [
     "read_interruptable",
     "write",
     "write_interruptable",
+    "pad_and_truncate",
+    "pad_and_truncate_interruptable",
     "context_type",
 ]
 
@@ -1114,7 +1118,7 @@ class TokenParserStateMachine(object):
         again.
     """
     
-    def __init__(self, generator, io, context=None):
+    def __init__(self, generator, io, context=None, truncate_lists=False):
         """
         Parameters
         ==========
@@ -1124,11 +1128,17 @@ class TokenParserStateMachine(object):
             The current I/O interface to use initially.
         context : dict
             The initial context dictionary.
+        truncate_lists : bool
+            If set to False (the default), throws exceptions when list targets
+            have an unexpected number of entries. If set to True, silently
+            discards any excess list entries.
         """
         self.generator = generator
         self.io = io
         self.context = context if context is not None else {}
         self.context_indices = {}
+        
+        self.truncate_lists = truncate_lists
         
         self.generator_stack = []
         self.io_stack = []
@@ -1218,6 +1228,24 @@ class TokenParserStateMachine(object):
                 return self.context[target][i]
             else:
                 raise ListTargetExhaustedError(self.describe_path(target))
+
+    def _peek_context_value(self, target):
+        """
+        Get a next value from the context dictionary, without marking it as
+        used and without moving on to the next list item (for list targets).
+        Returns 'None' when no value exists.
+        """
+        if self.context_indices.get(target, True) is True:
+            # Case: This target is not a list (and may or may not have been
+            # used already)
+            return self.context.get(target)
+        else:
+            # Case: This target has been declared as a list.
+            i = self.context_indices[target]
+            if i < len(self.context[target]):
+                return self.context[target][i]
+            else:
+                return None
 
     def _setdefault_context_value(self, target, default):
         """
@@ -1322,8 +1350,10 @@ class TokenParserStateMachine(object):
             self.io_stack.append(self.io)
             if isinstance(self.io, BitstreamReader):
                 self.io = BoundedReader(self.io, token_argument)
-            else:
+            elif isinstance(self.io, BitstreamWriter):
                 self.io = BoundedWriter(self.io, token_argument)
+            elif isinstance(self.io, BitstreamPadAndTruncate):
+                self.io = BoundedPadAndTruncate(self.io, token_argument)
             
             token_type = TokenTypes.nop
             token_argument = None
@@ -1387,6 +1417,7 @@ class TokenParserStateMachine(object):
             assert token_argument is None
             assert token_target is None
             
+            self._truncate_lists_if_required()
             self._verify_context_is_complete()
             
             self.context = self.context_stack.pop()
@@ -1452,6 +1483,18 @@ class TokenParserStateMachine(object):
         for generator in self.generator_stack:
             generator.close()
     
+    def _truncate_lists_if_required(self):
+        """
+        If 'truncate_lists' was set to True, removes any excess items from
+        list targets in the current context.
+        """
+        if self.truncate_lists:
+            for target, index in self.context_indices.items():
+                if index is not True:
+                    value = self.context.get(target)
+                    if isinstance(value, list) and len(value) > index:
+                        del value[index:]
+    
     def _verify_context_is_complete(self):
         """
         Verify that the current context is 'complete'. That is, every entry in
@@ -1478,6 +1521,7 @@ class TokenParserStateMachine(object):
         Verify that all values in the current context have been used and that
         no bounded blocks or nested contexts have been left over.
         """
+        self._truncate_lists_if_required()
         self._verify_context_is_complete()
         
         if self.context_stack:
@@ -1634,7 +1678,7 @@ def read_interruptable(generator, reader, interrupt=None,
     interrupt : None or function(:py;class:`TokenParserStateMachine`, :py:class:`Token`) -> bool
         If provided, this function will be called after every read operation
         and, if the function returns True, the :py:func:`read_interruptable`
-        generator will yield. If false, the generator wlil move onto the next
+        generator will yield. If false, the generator will move onto the next
         value without yielding.
         
         The :py:class:`TokenParserStateMachine` and token passed to the
@@ -1762,6 +1806,7 @@ def write(generator, writer, context, return_generator_return_value=False):
         A generator function which emits :py:class:`Token` tuples (or native
         3-tuples) which describe how the bitstream should be formatted.
     writer : :py:class:`BitstreamWriter`
+    context : dict
     return_generator_return_value : bool
         If False, the default, this function will return only the final context
         dictionary. If set to True, this generator will return both the final
@@ -1789,10 +1834,11 @@ def write_interruptable(generator, writer, context, interrupt=None,
     ==========
     generator : generator -> :py:class:`Token`
     writer : :py:class:`BitstreamWriter`
+    context : dict
     interrupt : None or function(:py;class:`TokenParserStateMachine`, :py:class:`Token`) -> bool
         If provided, this function will be called after every write operation
         and, if the function returns True, the :py:func:`write_interruptable`
-        generator will yield. If false, the generator wlil move onto the next
+        generator will yield. If false, the generator will move onto the next
         value without yielding.
         
         The :py:class:`TokenParserStateMachine` and token passed to the
@@ -1877,6 +1923,161 @@ def write_interruptable(generator, writer, context, interrupt=None,
                     fsm.io.write_sint(latest_value)
                 else:
                     raise UnknownTokenTypeError(token_type)
+                
+                # Pause if requested
+                if interrupt is not None and interrupt(fsm, original_token):
+                    yield (fsm, original_token)
+            
+            except StopIteration as r:
+                # Capture the return value of the final generator -- it may be
+                # returned here.
+                return_value = getattr(r, "value", None)
+                break
+            except Exception as e:
+                # The processes above may produce exceptions if a validation
+                # step fails. Send these up into the generator to produce more
+                # helpful stack traces for users.
+                fsm._generator_throw(e)
+    finally:
+        fsm._generator_close()
+    
+    fsm._verify_complete()
+    
+    if return_generator_return_value:
+        raise Return((fsm.context, return_value))
+    else:
+        raise Return(fsm.context)
+
+
+def pad_and_truncate(generator, context, return_generator_return_value=False):
+    """
+    Zero-pad and truncate all values in the supplied context to the expected
+    length.
+    
+    Parameters
+    ==========
+    generator : generator -> :py:class:`Token`
+        A generator function which emits :py:class:`Token` tuples (or native
+        3-tuples) which describe how the bitstream should be formatted.
+    context : dict
+    return_generator_return_value : bool
+        If False, the default, this function will return only the final context
+        dictionary. If set to True, this generator will return both the final
+        context and the generator's final return value in a 2-tuple.
+    """
+    try:
+        next(pad_and_truncate_interruptable(
+            generator,
+            context,
+            return_generator_return_value=return_generator_return_value,
+        ))
+        assert False, "pad_and_truncate_interruptable should not have paused"
+    except StopIteration as r:
+        return getattr(r, "value", None)
+
+
+def pad_and_truncate_interruptable(generator, context, interrupt=None,
+                                   return_generator_return_value=False):
+    """
+    Zero-pad and truncate all values in the supplied context to the appropriate
+    length, pausing when required.
+    
+    Parameters
+    ==========
+    generator : generator -> :py:class:`Token`
+    context : dict
+    interrupt : None or function(:py;class:`TokenParserStateMachine`, :py:class:`Token`) -> bool
+        If provided, this function will be called after token
+        and, if the function returns True, the
+        :py:func:`pad_and_truncate_interruptable` generator will yield. If
+        False, the generator will move onto the next value without yielding.
+        
+        The :py:class:`TokenParserStateMachine` and token passed to the
+        interrupt function reveal the current internal state and token which
+        has just been processed. These values should be treated as strictly
+        read-only.
+        
+        As an example, the following lambda function could be used to interrupt
+        parsing once a certain bitstream offset is reached::
+        
+            # Interrupt after 100 bytes
+            lambda fsm, token: fsm.io.tell() >= (100, 7)
+        
+    return_generator_return_value : bool
+    
+    Generates
+    =========
+    (:py:class:`TokenParserStateMachine`, :py:class:`Token`)
+        When this generator yields, it produces a
+        2-tuple describing with the same values as the interrupt argument.
+        These values may be used (in a strictly read-only fashion) to inspect
+        progress::
+        
+            >>> g = yield write_interruptable(...)
+            >>> fsm, token = next(g)
+            
+            >>> # Print out the field we've got up to
+            >>> fsm.describe_path(token.target)
+            SequenceHeader['source_parameters']['frame_size']['frame_width']
+    
+    Raises
+    ======
+    :py:exc:`Return`
+        When the token generator is exhausted. :py:exc:`Return` is raised with
+        ``value`` set to the (top-level) context dictionary used during
+        generation (which  may have been replaced with one of a different
+        type). If return_generator_return_value argument is True, a 2-tuple (context,
+        generator_return_value).
+    """
+    io = BitstreamPadAndTruncate()
+    fsm = TokenParserStateMachine(generator, io, context, truncate_lists=True)
+    
+    try:
+        # The value to be sent to the generator upon the next iteration.
+        latest_value = None
+        
+        while True:
+            try:
+                # Get the next token
+                original_token, token_type, token_argument, token_target = fsm._generator_send(latest_value)
+                
+                # Get the current value (if present)
+                if token_target is not None:
+                    latest_value = fsm._peek_context_value(token_target)
+                else:
+                    latest_value = None
+                
+                # Pad/truncate according to the value type
+                if token_type is TokenTypes.nop:
+                    assert token_argument is None
+                    assert token_target is None
+                elif token_type is TokenTypes.bool:
+                    assert token_argument is None
+                    assert token_target is not None
+                    latest_value = fsm.io.pad_and_truncate_bit(latest_value)
+                elif token_type is TokenTypes.nbits:
+                    assert token_target is not None
+                    latest_value = fsm.io.pad_and_truncate_nbits(token_argument, latest_value)
+                elif token_type is TokenTypes.bitarray:
+                    assert token_target is not None
+                    latest_value = fsm.io.pad_and_truncate_bitarray(token_argument, latest_value)
+                elif token_type is TokenTypes.bytes:
+                    assert token_target is not None
+                    latest_value = fsm.io.pad_and_truncate_bytes(token_argument, latest_value)
+                elif token_type is TokenTypes.uint:
+                    assert token_argument is None
+                    assert token_target is not None
+                    latest_value = fsm.io.pad_and_truncate_uint(latest_value)
+                elif token_type is TokenTypes.sint:
+                    assert token_argument is None
+                    assert token_target is not None
+                    latest_value = fsm.io.pad_and_truncate_sint(latest_value)
+                else:
+                    raise UnknownTokenTypeError(token_type)
+                
+                # Store the padded/truncated/new value
+                if token_target is not None:
+                    fsm._set_context_value(token_target, latest_value)
                 
                 # Pause if requested
                 if interrupt is not None and interrupt(fsm, original_token):

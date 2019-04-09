@@ -7,12 +7,19 @@ from bitarray import bitarray
 
 from vc2_conformance.exceptions import OutOfRangeError
 
+from vc2_conformance.exp_golomb import (
+    exp_golomb_length,
+    signed_exp_golomb_length,
+)
+
 
 __all__ = [
     "BitstreamReader",
     "BitstreamWriter",
+    "BitstreamPadAndTruncate",
     "BoundedReader",
     "BoundedWriter",
+    "BoundedPadAndTruncate",
 ]
 
 
@@ -267,7 +274,7 @@ class BitstreamWriter(object):
         
         for i in range(bits-1, -1, -1):
             self.write_bit((value >> i) & 1)
-
+    
     def write_bitarray(self, bits, value):
         """
         Write the 'bits' from the :py;class:`bitarray.bitarray` 'value'.
@@ -321,6 +328,122 @@ class BitstreamWriter(object):
         # Write sign bit
         if value != 0:
             self.write_bit(value < 0)
+
+
+class BitstreamPadAndTruncate(object):
+    """
+    Exposes a similar API to :py:class:`BitstreamReader` and
+    :py:class:`BitstreamWriter` but does not actually perform any
+    reading/writing. Instead two useful functions are implemented:
+    
+    * A virtual file position is maintained to track the length of the values
+      encountered.
+    * The various 'pad_and_truncate_' methods take None or an existing value
+      and then zero-pad or truncate that value to the specified length.
+    """
+    
+    def __init__(self):
+        # The current position of the virtual file
+        self._bit_offset = 0
+    
+    def tell(self):
+        """
+        Report the current bit-position within the stream.
+        
+        Returns
+        =======
+        (bytes, bits)
+            ``bytes`` is the offset of the current byte from the start of the
+            stream. ``bits`` is the offset in the current byte (starting at 7
+            (MSB) and advancing towards 0 (LSB) as bits are written).
+        """
+        bytes = self._bit_offset // 8
+        bits = 7 - (self._bit_offset % 8)
+        return (bytes, bits)
+    
+    def seek(self, bytes, bits=7):
+        """
+        Seek to a specific (absolute) position in the file. Seeking to a given
+        byte will overwrite any bits already set in that byte to 0.
+        
+        Parameters
+        ==========
+        bytes : int
+            The byte-offset from the start of the file.
+        bits : int
+            The bit offset into the specified byte to start writing to.
+        """
+        assert 0 <= bits <= 7
+        
+        self._bit_offset = (bytes*8) + (7 - bits)
+    
+    def advance_bit_offset(self, bits):
+        """
+        Advance 'bits' bits further.
+        """
+        self._bit_offset += bits
+    
+    def pad_and_truncate_bit(self, value=None):
+        """
+        A single bit.
+        """
+        self.advance_bit_offset(1)
+        return int(bool(value))
+    
+    def pad_and_truncate_nbits(self, bits, value=None):
+        """
+        A 'bits'-bit unsigned integer.
+        """
+        self.advance_bit_offset(bits)
+        return int(value or 0) & ((1<<bits) - 1)
+    
+    def pad_and_truncate_bitarray(self, bits, value=None):
+        """
+        A 'bits' long :py;class:`bitarray.bitarray` 'value'.
+        """
+        self.advance_bit_offset(bits)
+        
+        value = value or bitarray()
+        if len(value) == bits:
+            return value
+        elif len(value) < bits:
+            padding = bitarray(bits - len(value))
+            padding.setall(0)
+            return padding + value
+        else:  # len(value) > bits:
+            return value[-bits:]
+    
+    def pad_and_truncate_bytes(self, num_bytes, value=None):
+        """
+        A :py:class:`bytes` string.
+        """
+        self.advance_bit_offset(num_bytes * 8)
+        
+        value = value or bytes()
+        if len(value) == num_bytes:
+            return value
+        elif len(value) < num_bytes:
+            padding = b"\x00"*(num_bytes - len(value))
+            return padding + value
+        else:  # len(value) > num_bytes:
+            return value[-num_bytes:]
+    
+    def pad_and_truncate_uint(self, value=None):
+        """
+        An unsigned exp-golomb code.
+        """
+        if value is None or value < 0:
+            value = 0
+        self.advance_bit_offset(exp_golomb_length(value))
+        return value
+    
+    def pad_and_truncate_sint(self, value=None):
+        """
+        An signed exp-golomb code.
+        """
+        value = value or 0
+        self.advance_bit_offset(signed_exp_golomb_length(value))
+        return value
 
 
 class BoundedReader(BitstreamReader):
@@ -397,10 +520,42 @@ class BoundedWriter(BitstreamWriter):
     
     @property
     def bits_remaining(self):
-        """The number of bits left to be read in this block."""
+        """The number of bits left to be written in this block."""
         return self._bits_remaining
     
     @property
     def bits_past_eof(self):
         """The number of bits written beyond the end of the bounded block."""
         return self._bits_past_eof
+
+
+class BoundedPadAndTruncate(BitstreamPadAndTruncate):
+    """
+    A wrapper around a :py:class:`BitstreamPadAndTruncate` which implements
+    bounded access.
+    """
+    
+    def __init__(self, pad_and_truncate, length):
+        # NB: Intentionally don't call super() on purpose since none of the
+        # constructors functionality is useful.
+        self._pad_and_truncate = pad_and_truncate
+        self._bits_remaining = length
+    
+    def advance_bit_offset(self, bits):
+        if bits < self._bits_remaining:
+            self._pad_and_truncate.advance_bit_offset(bits)
+            self._bits_remaining -= bits
+        else:
+            self._pad_and_truncate.advance_bit_offset(self._bits_remaining)
+            self._bits_remaining = 0
+    
+    def tell(self):
+        return self._pad_and_truncate.tell()
+    
+    def seek(self, *args, **kwargs):
+        raise NotImplementedError("Seek not supported in BoundedWriter")
+    
+    @property
+    def bits_remaining(self):
+        """The number of bits left in this block."""
+        return self._bits_remaining

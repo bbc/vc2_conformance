@@ -7,8 +7,10 @@ from bitarray import bitarray
 from vc2_conformance.bitstream import (
     BitstreamReader,
     BitstreamWriter,
+    BitstreamPadAndTruncate,
     BoundedReader,
     BoundedWriter,
+    BoundedPadAndTruncate,
 )
 
 from vc2_conformance import exceptions
@@ -25,6 +27,8 @@ from vc2_conformance.bitstream.generator_io import (
     read_interruptable,
     write,
     write_interruptable,
+    pad_and_truncate,
+    pad_and_truncate_interruptable,
 )
 
 
@@ -46,6 +50,10 @@ def r(f):
 @pytest.fixture
 def w(f):
     return BitstreamWriter(f)
+
+@pytest.fixture
+def p(f):
+    return BitstreamPadAndTruncate(f)
 
 
 def test_return():
@@ -196,6 +204,35 @@ class TestTokenParserStateMachine(object):
         with pytest.raises(exceptions.ListTargetExhaustedError, match=r"dict\['populated_list'\]"):
             fsm._get_context_value("populated_list")
     
+    def test_peek_context_value(self):
+        context = {
+            "non_list": 123,
+            "empty_list": [],
+            "populated_list": [1, 2, 3],
+        }
+        fsm = TokenParserStateMachine(None, None, context)
+        fsm._declare_context_value_is_list("empty_list")
+        fsm._declare_context_value_is_list("populated_list")
+        
+        # Should be able to get non-list values
+        assert fsm._peek_context_value("non_list") == 123
+        assert fsm._peek_context_value("non_list") == 123
+        assert "non_list" not in fsm.context_indices
+        
+        # Should get 'None' for absent values
+        assert fsm._peek_context_value("non_existant") is None
+        assert "non_existant" not in fsm.context_indices
+        
+        # Should be able to get list items (from non-empty lists) but shouldn't
+        # advance the pointer
+        assert fsm._peek_context_value("populated_list") == 1
+        assert fsm._peek_context_value("populated_list") == 1
+        assert fsm.context_indices["populated_list"] is 0
+        
+        # Should return None for values beyond the end of a list
+        assert fsm._peek_context_value("empty_list") is None
+        assert fsm.context_indices["empty_list"] is 0
+    
     def test_setdefault_context_value(self):
         context = {
             "non_list": 123,
@@ -261,8 +298,12 @@ class TestTokenParserStateMachine(object):
         assert token_argument == expected_length
         assert token_target == "foo"
     
-    @pytest.mark.parametrize("use_reader", [True, False])
-    def test_generator_send_bounded_block(self, r, w, use_reader):
+    @pytest.mark.parametrize("make_io", [
+        lambda: BitstreamReader(BytesIO()),
+        lambda: BitstreamWriter(BytesIO()),
+        BitstreamPadAndTruncate,
+    ])
+    def test_generator_send_bounded_block(self, make_io):
         token_begin = Token(TokenTypes.bounded_block_begin, 123, None)
         token_end = Token(TokenTypes.bounded_block_end, None, "foo")
         def generator():
@@ -272,7 +313,8 @@ class TestTokenParserStateMachine(object):
             yield token_end
         g = generator()
         
-        fsm = TokenParserStateMachine(g, r if use_reader else w)
+        io = make_io()
+        fsm = TokenParserStateMachine(g, io)
         
         # Open the block
         original_token, token_type, token_argument, token_target = fsm._generator_send(None)
@@ -281,16 +323,20 @@ class TestTokenParserStateMachine(object):
         assert original_token is token_begin
         
         # Stacked up I/O
-        assert fsm.io_stack == [r if use_reader else w]
+        assert fsm.io_stack == [io]
         
         # Correct length
         assert fsm.io.bits_remaining == 123
         
         # Created bounded accessor of correct type
-        if use_reader:
+        if isinstance(io, BitstreamReader):
             assert isinstance(fsm.io, BoundedReader)
-        else:
+        elif isinstance(io, BitstreamWriter):
             assert isinstance(fsm.io, BoundedWriter)
+        elif isinstance(io, BitstreamPadAndTruncate):
+            assert isinstance(fsm.io, BoundedPadAndTruncate)
+        else:
+            assert False, "unreachable"
         
         # Passed through a nop
         assert token_type is TokenTypes.nop
@@ -302,7 +348,7 @@ class TestTokenParserStateMachine(object):
         
         assert original_token is token_end
         assert fsm.io_stack == []
-        assert fsm.io is (r if use_reader else w)
+        assert fsm.io is io
         
         # Passed through a bitarray of correct length
         assert token_type is TokenTypes.bitarray
@@ -312,10 +358,14 @@ class TestTokenParserStateMachine(object):
         # Repeat but this time read past end of block
         original_token, token_type, token_argument, token_target = fsm._generator_send(None)
         assert original_token is token_begin
-        if use_reader:
+        if isinstance(io, BitstreamReader):
             fsm.io.read_nbits(256)
-        else:
+        elif isinstance(io, BitstreamWriter):
             fsm.io.write_nbits(256, (1<<256) - 1)
+        elif isinstance(io, BitstreamPadAndTruncate):
+            fsm.io.advance_bit_offset(256)
+        else:
+            assert False, "unreachable"
         original_token, token_type, token_argument, token_target = fsm._generator_send(None)
         assert original_token is token_end
         
@@ -705,6 +755,32 @@ class TestTokenParserStateMachine(object):
         
         assert len(generator_opened) == 3
         assert len(generator_closed) == 3
+    
+    def test_truncate_lists_if_required(self):
+        # If everything is as expected, do nothing
+        fsm = TokenParserStateMachine(None, None, truncate_lists=True)
+        fsm._set_context_value("foo", 123)
+        fsm._declare_context_value_is_list("bar")
+        fsm._set_context_value("bar", 10)
+        fsm._set_context_value("bar", 20)
+        fsm._set_context_value("bar", 30)
+        fsm._truncate_lists_if_required()
+        assert fsm.context == {"foo": 123, "bar": [10, 20, 30]}
+        
+        # If have excess values, remove them (iff truncate_lists is True)
+        fsm = TokenParserStateMachine(None, None, {"bar": [0, 0, 0, 0, 0]})
+        fsm._set_context_value("foo", 123)
+        fsm._declare_context_value_is_list("bar")
+        fsm._set_context_value("bar", 10)
+        fsm._set_context_value("bar", 20)
+        fsm._set_context_value("bar", 30)
+        assert fsm.context == {"foo": 123, "bar": [10, 20, 30, 0, 0]}
+        fsm._truncate_lists_if_required()
+        assert fsm.context == {"foo": 123, "bar": [10, 20, 30, 0, 0]}
+        
+        fsm.truncate_lists = True
+        fsm._truncate_lists_if_required()
+        assert fsm.context == {"foo": 123, "bar": [10, 20, 30]}
     
     def test_verify_context_is_complete(self):
         fsm = TokenParserStateMachine(None, None)
@@ -1103,3 +1179,146 @@ def test_write_interruptable(r):
         next(g)
     assert excinfo.value.value == {"a": 0xAA, "b": 0xBB, "c": 0xCC, "d": 0xDD}
     assert f.getvalue() == b"\xAA\xBB\xCC\xDD"
+
+
+class TestPadAndTruncate(object):
+    
+    def test_nop(self):
+        def generator():
+            assert (yield Token(TokenTypes.nop, None, None)) is None
+        
+        # Nothing put in context
+        assert pad_and_truncate(generator(), {}) == {}
+    
+    @pytest.mark.parametrize("token_type,token_argument,value,exp_value", [
+        # bool
+        (TokenTypes.bool, None, False, False),
+        (TokenTypes.bool, None, True, True),
+        (TokenTypes.bool, None, 0, False),
+        (TokenTypes.bool, None, 100, True),
+        # nbits
+        (TokenTypes.nbits, 8, 0xAB, 0xAB),
+        (TokenTypes.nbits, 4, 0xAB, 0xB),
+        (TokenTypes.nbits, 12, 0xAB, 0x0AB),
+        # bitarray
+        (TokenTypes.bitarray, 8, bitarray("10100000"), bitarray("10100000")),
+        (TokenTypes.bitarray, 4, bitarray("10100101"), bitarray("0101")),
+        (TokenTypes.bitarray, 12, bitarray("10100101"), bitarray("000010100101")),
+        # bytes
+        (TokenTypes.bytes, 2, b"\xA0\xCD", b"\xA0\xCD"),
+        (TokenTypes.bytes, 1, b"\xA0\xCD", b"\xCD"),
+        (TokenTypes.bytes, 3, b"\xA0\xCD", b"\x00\xA0\xCD"),
+        # uint
+        (TokenTypes.uint, None, 1, 1),
+        (TokenTypes.uint, None, -1, 0),
+        # sint
+        (TokenTypes.sint, None, 1, 1),
+        (TokenTypes.sint, None, -1, -1),
+    ])
+    def test_primitives(self, token_type, token_argument,
+                        value, exp_value):
+        def generator():
+            assert (yield Token(token_type, token_argument, "target")) == exp_value
+        
+        assert pad_and_truncate(generator(), {"target": value}) == {"target": exp_value}
+    
+    def test_bad_token(self):
+        def generator():
+            yield Token(None, None, None)
+        
+        with pytest.raises(exceptions.UnknownTokenTypeError, match=r"None"):
+            pad_and_truncate(generator(), {})
+    
+    def test_returns_new_context(self):
+        @structured_dict
+        class StructuredDict(object):
+            foo = Value()
+        
+        @context_type(StructuredDict)
+        def generator():
+            yield Token(TokenTypes.computed_value, 123, "foo")
+        
+        context = pad_and_truncate(generator(), {})
+        assert isinstance(context, StructuredDict)
+        assert context.foo == 123
+    
+    def test_exceptions_propagate_to_generator(self):
+        generator_failed = [False]
+        def generator():
+            try:
+                yield Token(None, None, None)
+            except exceptions.UnknownTokenTypeError:
+                generator_failed[0] = True
+        
+        with pytest.raises(exceptions.UnknownTokenTypeError):
+            pad_and_truncate(generator(), {})
+        
+        assert generator_failed[0]
+    
+    def test_return_generator_return_value(self):
+        def generator():
+            yield Token(TokenTypes.nop, None, None)
+            raise Return(123)
+        
+        pad_and_truncate(generator(), {}, return_generator_return_value=True) == ({}, 123)
+    
+    def test_truncates_lists(self):
+        def generator():
+            yield Token(TokenTypes.declare_list, None, "list")
+            yield Token(TokenTypes.uint, None, "list")
+            yield Token(TokenTypes.uint, None, "list")
+            yield Token(TokenTypes.uint, None, "list")
+        
+        assert pad_and_truncate(generator(), {"list": [1, 2, 3, 4, 5]}) == {"list": [1, 2, 3]}
+    
+    def test_populates_missing(self):
+        def generator():
+            yield Token(TokenTypes.uint, None, "value")
+            yield Token(TokenTypes.declare_list, None, "list")
+            yield Token(TokenTypes.uint, None, "list")
+            yield Token(TokenTypes.uint, None, "list")
+            yield Token(TokenTypes.uint, None, "list")
+        
+        assert pad_and_truncate(generator(), {"list": [1, 2]}) == {"value": 0, "list": [1, 2, 0]}
+    
+    def test_checks_completeness(self):
+        def generator():
+            yield Token(TokenTypes.nested_context_enter, None, "foo")
+        
+        with pytest.raises(exceptions.UnclosedNestedContextError, match=r"dict\['foo'\]"):
+            pad_and_truncate(generator(), {})
+
+
+def test_pad_and_truncate_interruptable(r):
+    def generator():
+        assert (yield Token(TokenTypes.nbits, 8, "a")) == 0xAA
+        assert (yield Token(TokenTypes.nbits, 8, "b")) == 0xBB
+        assert (yield Token(TokenTypes.nbits, 8, "c")) == 0xCC
+        assert (yield Token(TokenTypes.nbits, 8, "d")) == 0xDD
+    
+    def interrupt(fsm, token):
+        if token.target == "c":
+            return True
+        elif fsm.io.tell()[0] == 2:
+            return True
+        else:
+            return False
+    
+    g = pad_and_truncate_interruptable(
+        generator(),
+        {"a": 0xAA, "b": 0xBB, "c": 0xCC, "d": 0xDD},
+        interrupt,
+    )
+    
+    # First stop should be on io.tell()[0] == 2
+    fsm, token = next(g)
+    assert token.target == "b"  # 'b' should have been just been reached
+    
+    # Second stop should be on target == 'c'
+    fsm, token = next(g)
+    assert token.target == "c"
+    
+    # Final stop should be the end
+    with pytest.raises(StopIteration) as excinfo:
+        next(g)
+    assert excinfo.value.value == {"a": 0xAA, "b": 0xBB, "c": 0xCC, "d": 0xDD}
