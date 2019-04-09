@@ -63,6 +63,9 @@ __all__ = [
     "PictureHeader",
     "WaveletTransform",
     
+    "FragmentParse",
+    "FragmentHeader",
+    
     "DataUnit",
     "Sequence",
 ]
@@ -134,8 +137,7 @@ class ScanFormat(object):
     """
     
     custom_scan_format_flag = Value(default=False)
-    source_sampling = Value(enum=SourceSamplingModes,
-                            type=SourceSamplingModes)
+    source_sampling = Value(enum=SourceSamplingModes)
 
 
 @structured_dict
@@ -227,9 +229,9 @@ class ColorSpec(object):
     
     custom_color_spec_flag = Value(default=False)
     index = Value(enum=PresetColorSpecs)
-    color_primaries = Value(type=ColorPrimaries)
-    color_matrix = Value(type=ColorMatrix)
-    transfer_function = Value(type=TransferFunction)
+    color_primaries = Value() # type=ColorPrimaries
+    color_matrix = Value() # type=ColorMatrix
+    transfer_function = Value() # type=TransferFunction
 
 @structured_dict
 class SourceParameters(object):
@@ -237,22 +239,14 @@ class SourceParameters(object):
     (11.4.1) Video format overrides defined by ``source_parameters()``.
     """
     
-    frame_size = Value(default_factory=FrameSize,
-                       type=FrameSize)
-    color_diff_sampling_format = Value(default_factory=ColorDiffSamplingFormat,
-                                       type=ColorDiffSamplingFormat)
-    scan_format = Value(default_factory=ScanFormat,
-                        type=ScanFormat)
-    frame_rate = Value(default_factory=FrameRate,
-                       type=FrameRate)
-    pixel_aspect_ratio = Value(default_factory=PixelAspectRatio,
-                               type=PixelAspectRatio)
-    clean_area = Value(default_factory=CleanArea,
-                       type=CleanArea)
-    signal_range = Value(default_factory=SignalRange,
-                         type=SignalRange)
-    color_spec = Value(default_factory=ColorSpec,
-                       type=ColorSpec)
+    frame_size = Value(default_factory=FrameSize)
+    color_diff_sampling_format = Value(default_factory=ColorDiffSamplingFormat)
+    scan_format = Value(default_factory=ScanFormat)
+    frame_rate = Value(default_factory=FrameRate)
+    pixel_aspect_ratio = Value(default_factory=PixelAspectRatio)
+    clean_area = Value(default_factory=CleanArea)
+    signal_range = Value(default_factory=SignalRange)
+    color_spec = Value(default_factory=ColorSpec)
 
 
 
@@ -263,13 +257,11 @@ class SequenceHeader(object):
     (11.1) Sequence header defined by ``sequence_header()``.
     """
     
-    padding = Value(default_factory=bitarray, type=bitarray)
-    parse_parameters = Value(default_factory=ParseParameters,
-                             type=ParseParameters)
+    padding = Value(default_factory=bitarray)
+    parse_parameters = Value(default_factory=ParseParameters)
     base_video_format = Value(default=BaseVideoFormats.custom_format,
                               enum=BaseVideoFormats)
-    video_parameters = Value(default_factory=SourceParameters,
-                             type=SourceParameters)
+    video_parameters = Value(default_factory=SourceParameters)
     picture_coding_mode = Value(default=PictureCodingModes.pictures_are_frames,
                                 enum=PictureCodingModes)
 
@@ -284,8 +276,8 @@ class AuxiliaryData(object):
     (10.4.4) Auxiliary data block (as per auxiliary_data()).
     """
     
-    padding = Value(default_factory=bitarray, type=bitarray)
-    bytes = Value(default_factory=bytes, type=bytes)
+    padding = Value(default_factory=bitarray)
+    bytes = Value(default_factory=bytes)
 
 
 @structured_dict
@@ -294,8 +286,8 @@ class Padding(object):
     (10.4.5) Padding data block (as per padding()).
     """
     
-    padding = Value(default_factory=bitarray, type=bitarray)
-    bytes = Value(default_factory=bytes, type=bytes)
+    padding = Value(default_factory=bitarray)
+    bytes = Value(default_factory=bytes)
 
 
 ################################################################################
@@ -339,7 +331,7 @@ class QuantMatrix(object):
     """
     
     custom_quant_matrix = Value(default=False)
-    quant_matrix = Value(type=list)
+    quant_matrix = Value()  # type=[int, ...]
 
 @structured_dict
 class TransformParameters(object):
@@ -350,12 +342,9 @@ class TransformParameters(object):
     wavelet_index = Value(default=WaveletFilters.deslauriers_dubuc_9_7,
                           enum=WaveletFilters)
     dwt_depth = Value(default=0)
-    extended_transform_parameters = Value(default_factory=ExtendedTransformParameters,
-                                          type=ExtendedTransformParameters)
-    slice_parameters = Value(default_factory=SliceParameters,
-                             type=SliceParameters)
-    quant_matrix = Value(default_factory=QuantMatrix,
-                         type=QuantMatrix)
+    extended_transform_parameters = Value(default_factory=ExtendedTransformParameters)
+    slice_parameters = Value(default_factory=SliceParameters)
+    quant_matrix = Value(default_factory=QuantMatrix)
 
 
 ################################################################################
@@ -379,11 +368,10 @@ class WaveletTransform(object):
     ``wavelet_transform()``.
     """
     
-    transform_parameters = Value(default_factory=TransformParameters,
-                                 type=TransformParameters)
-    padding = Value(default_factory=bitarray, type=bitarray)
-    ld_transform_data = Value(type=LDSliceArray)
-    hq_transform_data = Value(type=HQSliceArray)
+    transform_parameters = Value(default_factory=TransformParameters)
+    padding = Value(default_factory=bitarray)
+    ld_transform_data = Value()  # type=LDSliceArray
+    hq_transform_data = Value()  # type=HQSliceArray
 
 
 @structured_dict
@@ -392,12 +380,10 @@ class PictureParse(object):
     (12.1) A picture data unit defined by ``picture_parse()``
     """
     
-    padding1 = Value(default_factory=bitarray, type=bitarray)
-    picture_header = Value(default_factory=PictureHeader,
-                           type=PictureHeader)
-    padding2 = Value(default_factory=bitarray, type=bitarray)
-    wavelet_transform = Value(default_factory=WaveletTransform,
-                              type=WaveletTransform)
+    padding1 = Value(default_factory=bitarray)
+    picture_header = Value(default_factory=PictureHeader)
+    padding2 = Value(default_factory=bitarray)
+    wavelet_transform = Value(default_factory=WaveletTransform)
 
 
 ################################################################################
@@ -423,13 +409,12 @@ class FragmentParse(object):
     of a picture.
     """
     
-    padding1 = Value(default_factory=bitarray, type=bitarray)
-    fragment_header = Value(default_factory=FragmentHeader,
-                            type=FragmentHeader)
-    padding2 = Value(default_factory=bitarray, type=bitarray)
-    transform_parameters = Value(type=TransformParameters)
-    ld_fragment_data = Value(type=LDSliceArray)
-    hq_fragment_data = Value(type=HQSliceArray)
+    padding1 = Value(default_factory=bitarray)
+    fragment_header = Value(default_factory=FragmentHeader)
+    padding2 = Value(default_factory=bitarray)
+    transform_parameters = Value()  # type=TransformParameters
+    ld_fragment_data = Value()  # type=LDSliceArray
+    hq_fragment_data = Value()  # type=HQSliceArray
 
 
 ################################################################################
@@ -444,13 +429,13 @@ class DataUnit(object):
     iteration.
     """
     
-    parse_info = Value(default_factory=ParseInfo, type=ParseInfo)
+    parse_info = Value(default_factory=ParseInfo)
     
-    sequence_header = Value(type=SequenceHeader)
-    picture_parse = Value(type=PictureParse)
-    fragment_parse = Value(type=FragmentParse)
-    auxiliary_data = Value(type=AuxiliaryData)
-    padding = Value(type=Padding)
+    sequence_header = Value()  # type=SequenceHeader
+    picture_parse = Value()  # type=PictureParse
+    fragment_parse = Value()  # type=FragmentParse
+    auxiliary_data = Value()  # type=AuxiliaryData
+    padding = Value()  # type=Padding
 
 
 @structured_dict
@@ -459,4 +444,4 @@ def Sequence(object):
     (10.4.1) A VC-2 sequence.
     """
     
-    data_units = Value(type=list)
+    data_units = Value()  # type=[DataUnit, ...]

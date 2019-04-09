@@ -33,20 +33,19 @@ class LDSliceArray(object):
     Values in the contained lists are always flat lists of values in bitstream
     order.
     """
-    qindex = Value(default_factory=list, type=list)
+    qindex = Value(default_factory=list)
     
-    slice_y_length = Value(default_factory=list, type=list)
+    slice_y_length = Value(default_factory=list)
     
-    y_transform = Value(default_factory=list, type=list)
-    y_block_padding = Value(default_factory=list, type=list)
+    y_transform = Value(default_factory=list)
+    y_block_padding = Value(default_factory=list)
     
-    c1_transform = Value(default_factory=list, type=list)
-    c2_transform = Value(default_factory=list, type=list)
-    c_block_padding = Value(default_factory=list, type=list)
+    c1_transform = Value(default_factory=list)
+    c2_transform = Value(default_factory=list)
+    c_block_padding = Value(default_factory=list)
     
     # Computed values (used only for view interfaces)
-    _parameters = Value(default_factory=SliceArrayParameters,
-                        type=SliceArrayParameters)
+    _parameters = Value(default_factory=SliceArrayParameters)
     _slice_bytes_numerator = Value(default=0)
     _slice_bytes_denominator = Value(default=1)
     
@@ -77,25 +76,24 @@ class HQSliceArray(object):
     Values in the contained lists are always flat lists of values in bitstream
     order.
     """
-    prefix_bytes = Value(default_factory=list, type=list)
+    prefix_bytes = Value(default_factory=list)
     
-    qindex = Value(default_factory=list, type=list)
+    qindex = Value(default_factory=list)
     
-    slice_y_length = Value(default_factory=list, type=list)
-    y_transform = Value(default_factory=list, type=list)
-    y_block_padding = Value(default_factory=list, type=list)
+    slice_y_length = Value(default_factory=list)
+    y_transform = Value(default_factory=list)
+    y_block_padding = Value(default_factory=list)
     
-    slice_c1_length = Value(default_factory=list, type=list)
-    c1_transform = Value(default_factory=list, type=list)
-    c1_block_padding = Value(default_factory=list, type=list)
+    slice_c1_length = Value(default_factory=list)
+    c1_transform = Value(default_factory=list)
+    c1_block_padding = Value(default_factory=list)
     
-    slice_c2_length = Value(default_factory=list, type=list)
-    c2_transform = Value(default_factory=list, type=list)
-    c2_block_padding = Value(default_factory=list, type=list)
+    slice_c2_length = Value(default_factory=list)
+    c2_transform = Value(default_factory=list)
+    c2_block_padding = Value(default_factory=list)
     
     # Computed values (used only for view interfaces)
-    _parameters = Value(default_factory=SliceArrayParameters,
-                        type=SliceArrayParameters)
+    _parameters = Value(default_factory=SliceArrayParameters)
     _slice_prefix_bytes = Value(default=0)
     _slice_size_scaler = Value(default=1)
     

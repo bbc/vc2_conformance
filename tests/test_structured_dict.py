@@ -69,28 +69,6 @@ class TestValue(object):
         assert d2 == []
         assert d1 is not d2
     
-    def test_check_type(self):
-        # No enforcement by default
-        v = Value()
-        v.check_type(None)
-        v.check_type(123)
-        v.check_type(object())
-        
-        class A(object): pass
-        class B(A): pass
-        class C(B): pass
-        
-        # Enforces type
-        v = Value(type=B)
-        v.check_type(B())
-        v.check_type(C())
-        with pytest.raises(TypeError):
-            v.check_type(None)
-        with pytest.raises(TypeError):
-            v.check_type(123)
-        with pytest.raises(TypeError):
-            v.check_type(A())
-    
     def test_to_string(self):
         v = Value()
         assert v.to_string({}, 123) == "123"
@@ -126,8 +104,8 @@ class MyStructuredDict(object):
                 friendly_formatter_pass_dict=True,
                 formatter=hex)
     
-    # Hidden value (and with factory and typecheck)
-    _hidden = Value(default_factory=list, type=list)
+    # Hidden value (and with factory)
+    _hidden = Value(default_factory=list)
     
     # Not a Value
     other = "not a value"
@@ -232,36 +210,6 @@ class TestStructuredDict(object):
         
         with pytest.raises(AttributeError):
             del d.foo
-    
-    def test_type_checking(self):
-        # Can't construct with values of wrong type
-        with pytest.raises(TypeError):
-            d = MyStructuredDict(_hidden=123)
-        with pytest.raises(TypeError):
-            d = MyStructuredDict({"_hidden": 123})
-        
-        # Can't assign values of wrong type
-        d = MyStructuredDict()
-        with pytest.raises(TypeError):
-            d._hidden = 123
-        with pytest.raises(TypeError):
-            d["_hidden"] = 123
-        
-        # If default/factory produces values of wrong type, can't construct with
-        # defaults
-        @structured_dict
-        class InconsistentDefault(object):
-            contradiction = Value(default=[], type=dict)
-        InconsistentDefault(contradiction={})  # Should work (override default)
-        with pytest.raises(TypeError):
-            InconsistentDefault()
-        
-        @structured_dict
-        class InconsistentDefaultFactory(object):
-            contradiction = Value(default_factory=list, type=dict)
-        InconsistentDefaultFactory(contradiction={})  # Should work (override default)
-        with pytest.raises(TypeError):
-            InconsistentDefaultFactory()
     
     def test_contains(self):
         d = MyStructuredDict()
