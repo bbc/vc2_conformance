@@ -18,12 +18,16 @@ class for displaying numbers. For example::
 
 from attr import attrs, attrib
 
+from vc2_conformance._string_utils import ellipsise
+
 __all__ = [
     "Number",
     "Hex",
     "Dec",
     "Oct",
     "Bin",
+    "Bits",
+    "Bytes",
 ]
 
 
@@ -139,3 +143,94 @@ class Bin(Number):
     pad_digit = attrib(default="0")
     prefix = attrib(default="0b")
     format_code = attrib(default="b", repr=False, init=False)
+
+
+@attrs(frozen=True)
+class Bits(object):
+    """
+    A formatter for :py:class:`bitarray.bitarray` objects. Shows the value as a
+    string of the form '0b0101', using :py:func:`ellipsise` to shorten very
+    long, values.
+    
+    Parameters
+    ==========
+    prefix : str
+        A prefix to add to the string
+    context : int
+    min_length : int
+        See :py:func:`ellipsise`.
+    show_length : int or bool
+        If an integer, show the length of the bitarray in brackets if above the
+        specified length (in bits). If a bool, force display (or hiding) of the
+        length information.
+    """
+    
+    prefix = attrib(default="0b")
+    context = attrib(default=4)
+    min_length = attrib(default=8)
+    show_length = attrib(default=16)
+    
+    def __call__(self, ba):
+        string = ellipsise(ba.to01(), self.context, self.min_length)
+        if self.show_length is not False:
+            if self.show_length is True or len(ba) >= self.show_length:
+                string += " ({} bit{})".format(
+                    len(ba),
+                    "s" if len(ba) != 1 else "",
+                )
+        return "{}{}".format(self.prefix, string)
+
+
+@attrs(frozen=True)
+class Bytes(object):
+    """
+    A formatter for :py:class:`bytes` strings. Shows the value as a string of
+    the form '0xAB_CD_EF', using :py:func:`ellipsise` to shorten very long,
+    values.
+    
+    Parameters
+    ==========
+    prefix : str
+        A prefix to add to the string
+    separator : str
+        A string to place between each pair of hex digits.
+    context : int
+    min_length : int
+        See :py:func:`ellipsise`.
+    show_length : int or bool
+        If an integer, show the length of the bitarray in brackets if above the
+        specified length (in bytes). If a bool, force display (or hiding) of
+        the length information.
+    """
+    
+    prefix = attrib(default="0x")
+    separator = attrib(default="_")
+    context = attrib(default=2)
+    min_length = attrib(default=4)
+    show_length = attrib(default=8)
+    
+    def __call__(self, b):
+        string = "".join("{:02X}".format(n) for n in bytearray(b))
+        
+        before, ellipses, after = ellipsise(
+            string, self.context*2, self.min_length*2).partition("...")
+        
+        # Interleave bytes with separator
+        before = "".join(
+            c if (i % 2 == 0 or i == len(before) - 1) else "{}{}".format(c, self.separator)
+            for i, c in enumerate(before)
+        )
+        after = "".join(
+            c if ((len(after) - i) % 2 == 1 or i == 0) else "{}{}".format(self.separator, c)
+            for i, c in enumerate(after)
+        )
+        
+        string = before + ellipses + after
+        
+        if self.show_length is not False:
+            if self.show_length is True or len(b) >= self.show_length:
+                string += " ({} byte{})".format(
+                    len(b),
+                    "s" if len(b) != 1 else "",
+                )
+        return "{}{}".format(self.prefix, string)
