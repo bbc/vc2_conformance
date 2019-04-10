@@ -26,6 +26,7 @@ __all__ = [
     "Dec",
     "Oct",
     "Bin",
+    "Bool",
     "Bits",
     "Bytes",
 ]
@@ -143,6 +144,23 @@ class Bin(Number):
     pad_digit = attrib(default="0")
     prefix = attrib(default="0b")
     format_code = attrib(default="b", repr=False, init=False)
+
+
+@attrs(frozen=True)
+class Bool(object):
+    """
+    A formatter for :py:class:`bool` (or bool-castable) objects. For the values
+    0, 1, False and True, just shows 'True' or 'False'. For all other values,
+    shows also the true value in brackets.
+    """
+    
+    def __call__(self, b):
+        if b and b in (1, True):
+            return "True"
+        elif not b and b in (0, False):
+            return "False"
+        else:
+            return "{} ({})".format(bool(b), b)
 
 
 @attrs(frozen=True)

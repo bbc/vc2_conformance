@@ -8,6 +8,7 @@ from vc2_conformance._string_formatters import (
     Dec,
     Oct,
     Bin,
+    Bool,
     Bits,
     Bytes,
 )
@@ -67,6 +68,17 @@ def test_bin(formatter, number, expectation):
 ])
 def test_bin(formatter, number, expectation):
     assert formatter(number) == expectation
+
+@pytest.mark.parametrize("value,expectation", [
+    (True, "True"),
+    (1, "True"),
+    (False, "False"),
+    (0, "False"),
+    (123, "True (123)"),
+    (None, "False (None)"),
+])
+def test_bits(value, expectation):
+    assert Bool()(value) == expectation
 
 @pytest.mark.parametrize("formatter,number,expectation", [
     # Simple cases
