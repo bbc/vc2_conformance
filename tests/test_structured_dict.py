@@ -412,3 +412,15 @@ class TestStructuredDict(object):
         d = SDWithMissing(foo="bar")
         assert d["foo"] == "bar"
         assert d["unknown"] == "Missing unknown"
+    
+    def test_override(self):
+        # Allow overriding of functions
+        @structured_dict
+        class SDWithCustomStr(object):
+            foo = Value()
+            
+            def __str__(self):
+                return "String!"
+        
+        s = SDWithCustomStr(foo="bar")
+        assert str(s) == "String!"

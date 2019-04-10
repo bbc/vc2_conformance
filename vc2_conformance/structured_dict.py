@@ -465,7 +465,7 @@ def structured_dict(cls):
             if name in value_objs:
                 setattr(self, name, value)
             else:
-                raise TypeError("unexpected keyword argument '{}'".format(
+                raise TypeError("unexpected name '{}'".format(
                     name))
     
     methods["__init__"] = __init__
@@ -657,8 +657,9 @@ def structured_dict(cls):
     for name in value_objs:
         delattr(cls, name)
     
-    # Add the new methods
+    # Add the new methods (except where a method has already been defined)
     for name, method in methods.items():
-        setattr(cls, name, method)
+        if name not in cls.__dict__:
+            setattr(cls, name, method)
     
     return cls
