@@ -1746,7 +1746,8 @@ def context_type(dict_type):
         @wraps(f)
         def wrapper(*args, **kwargs):
             yield Token(TokenTypes.declare_context_type, dict_type, None)
-            yield Token(TokenTypes.use, f(*args, **kwargs), None)
+            return_value = yield Token(TokenTypes.use, f(*args, **kwargs), None)
+            raise Return(return_value)
         return wrapper
     return wrap
 
