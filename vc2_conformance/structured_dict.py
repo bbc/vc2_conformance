@@ -212,13 +212,25 @@ class Value(object):
             passed as first argument to the friendly_formatter function.
         enum : :py:class:`Enum`
             A convenience interface which is equivalent to the following
-            ``friendly_formatter`` argument::
+            ``formatter`` argument::
+            
+                def enum_formatter(value):
+                    try:
+                        return str(MyEnum(value).value)
+                    except ValueError:
+                        return str(value)
+            
+            And the following ``friendly_formatter`` argument::
             
                 def friendly_enum_formatter(value):
                     try:
-                        return enum(value).name
+                        return MyEnum(value).name
                     except ValueError:
                         return None
+            
+            If ``formatter`` or ``friendly_formatter`` are provided in addition
+            to ``enum``, they will override the functions implicitly defined by
+            ``enum``.
         """
         self._index = Value._counter
         Value._counter += 1
@@ -230,13 +242,21 @@ class Value(object):
         if "enum" in kwargs:
             enum_type = kwargs.pop("enum")
             
+            def enum_formatter(value):
+                try:
+                    return str(enum_type(value).value)
+                except ValueError:
+                    return str(value)
+            
+            kwargs.setdefault("formatter", enum_formatter)
+            
             def friendly_enum_formatter(value):
                 try:
                     return enum_type(value).name
                 except ValueError:
                     return None
             
-            kwargs["friendly_formatter"] = friendly_enum_formatter
+            kwargs.setdefault("friendly_formatter", friendly_enum_formatter)
         
         self.formatter = kwargs.pop("formatter", str)
         self.formatter_pass_dict = kwargs.pop("formatter_pass_dict", False)

@@ -1,6 +1,6 @@
 import pytest
 
-from enum import Enum
+from enum import IntEnum
 
 from vc2_conformance.structured_dict import structured_dict, Value
 
@@ -40,23 +40,33 @@ class TestValue(object):
         assert v.friendly_formatter is hex
     
     def test_enum(self):
-        class MyEnum(Enum):
+        class MyEnum(IntEnum):
             a = 1
             b = 2
             c = 3
         
         v = Value(enum=MyEnum)
         assert v.has_default is False
-        assert v.formatter is str
         
-        assert v.friendly_formatter(1) == "a"
-        assert v.friendly_formatter(2) == "b"
-        assert v.friendly_formatter(3) == "c"
-        assert v.friendly_formatter(MyEnum.a) == "a"
-        assert v.friendly_formatter(MyEnum.b) == "b"
-        assert v.friendly_formatter(MyEnum.c) == "c"
-        assert v.friendly_formatter(0) is None
-        assert v.friendly_formatter("foo") is None
+        assert v.to_string({}, 1) == "a (1)"
+        assert v.to_string({}, 2) == "b (2)"
+        assert v.to_string({}, 3) == "c (3)"
+        assert v.to_string({}, MyEnum.a) == "a (1)"
+        assert v.to_string({}, MyEnum.b) == "b (2)"
+        assert v.to_string({}, MyEnum.c) == "c (3)"
+        assert v.to_string({}, 0) == "0"
+        assert v.to_string({}, "foo") == "foo"
+        
+        # Check can override formatter/friendly_formatter
+        v = Value(enum=MyEnum, formatter=hex)
+        assert v.to_string({}, MyEnum.a) == "a (0x1)"
+        assert v.to_string({}, MyEnum.b) == "b (0x2)"
+        assert v.to_string({}, MyEnum.c) == "c (0x3)"
+        
+        v = Value(enum=MyEnum, friendly_formatter=repr)
+        assert v.to_string({}, MyEnum.a) == "<MyEnum.a: 1> (1)"
+        assert v.to_string({}, MyEnum.b) == "<MyEnum.b: 2> (2)"
+        assert v.to_string({}, MyEnum.c) == "<MyEnum.c: 3> (3)"
     
     def test_get_default(self):
         v = Value(default=123)
