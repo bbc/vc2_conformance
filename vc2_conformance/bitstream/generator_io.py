@@ -644,6 +644,10 @@ As an example::
 
 """
 
+import sys
+
+import traceback
+
 from collections import namedtuple
 
 from enum import Enum
@@ -1459,14 +1463,30 @@ class TokenParserStateMachine(object):
         
         return (original_token, token_type, token_argument, token_target)
     
-    def _generator_throw(self, exception):
+    def _generator_throw(self, exception_type, exception_value, orig_tb):
         """
-        Throw an exception up into the current generator. If this generator
-        tries to catch the exception, the exception will be re-thrown
-        immediately afterwards.
+        Throw an exception up into the current generator (as produced by
+        :py:func:`sys.excinfo`. If this generator tries to catch the exception,
+        the exception will be re-thrown immediately afterwards.
         """
         try:
-            self.generator.throw(exception)
+            frames = [self.generator.gi_frame] + [
+                g.gi_frame for g in reversed(self.generator_stack)
+            ]
+            
+            exception = _create_helpful_indirect_exception(
+                exception_type, exception_value, orig_tb,
+                frames,
+                filter_file=__file__,
+            )
+        except:
+            # NB: If generating the synthetic exception fails for some reason,
+            # just use the original exception.
+            exception = exception_value
+        
+        try:
+            #self.generator.throw(t, v, orig_tb)
+            self.generator.throw(type(exception), exception, orig_tb)
         except StopIteration:
             pass
         
@@ -1594,6 +1614,99 @@ class TokenParserStateMachine(object):
                 )
             )
         )
+
+_MockTraceback = namedtuple("_MockTraceback", "tb_frame,tb_lasti,tb_lineno,tb_next")
+"""
+A mock traceback object. Good enough to stand in for a real traceback in the
+various string formatting functions in :py:module:`traceback`.
+"""
+
+def _create_helpful_indirect_exception(exception_type, exception_value, tb,
+                                       frames, filter_file=None):
+    """
+    When an exception occurs in a token-emitting generator, the stack trace is
+    usually fairly useless because:
+    
+    1. It omits the 'call-stack' of generators resulting from use of
+       :py:data:`TokenTypes.use`.
+    2. It is typically filled with references to internal methods within this
+       file which are orthogonal to the user's plight.
+    
+    This function produces a new exception object which, when printed, includes
+    a more helpful stack trace which includes the complete stack of generators.
+    
+    Parameters
+    ==========
+    exception_type, exception_value, tb
+        As returned by :py:func:`sys.exc_info`
+    frames : [frame, ...]
+        A list of generator stack frame objects (``generator.gi_frame``),
+        starting with the inner-most (current) generator's frame and ending
+        with the outer-most generator's frame.
+    filter_file : str or None
+        If provided, strips all entries from the traceback which refer to the
+        named file.
+    
+    Returns
+    =======
+    exception
+        A new exception, which will be a subclass of the provided exception, and
+        will have a ``__str__`` implementation which prints more helpful
+        tracebacks. To get the original exception, use the 'exc' property.
+    """
+    
+    # Build the list of stack-frames in the current traceback
+    all_frames = []
+    while tb is not None:
+        all_frames.insert(0, tb.tb_frame)
+        tb = tb.tb_next
+    
+    # Add the user-provided frames
+    all_frames.extend(frames)
+    
+    # Filter out frames in the 'wrong' file
+    filtered_frames = [f for f in all_frames
+                       if traceback.extract_stack(f)[-1][0] != filter_file]
+    
+    # Make a mock traceback out of the filtered frame set
+    mock_tb = None
+    for frame in filtered_frames:
+        mock_tb = _MockTraceback(
+            tb_frame=frame,
+            tb_lasti=frame.f_lasti,
+            tb_lineno=frame.f_lineno,
+            tb_next=mock_tb,
+        )
+
+    # Turn into human-readable form
+    tb_string = "".join(traceback.format_exception(
+        exception_type,
+        exception_value,
+        mock_tb,
+    ))
+    
+    # Create an exception message which includes full exception information.
+    message = (
+        "{}\n"
+        "Synthesised traceback (most recent call last):\n"
+        "{}"
+    ).format(
+        str(exception_value),
+        # Remove included 'Traceback (most recent call last):' header.
+        "\n".join(tb_string.split("\n")[1:]),
+    )
+    
+    # Create a wrapper for the original exception
+    ExceptionWrapper = type(
+        "{}Wrapper".format(exception_type.__name__),
+        (exception_type, ),
+        {
+            "__init__": lambda self, exc: setattr(self, "exc", exc),
+            "__str__": lambda self: message,
+        },
+    )
+    
+    return ExceptionWrapper(exception_value)
 
 
 def nest_generator(generator, target):
@@ -1778,7 +1891,7 @@ def read_interruptable(generator, reader, interrupt=None,
                 # The processes above may produce exceptions if a validation
                 # step fails. Send these up into the generator to produce more
                 # helpful stack traces for users.
-                fsm._generator_throw(e)
+                fsm._generator_throw(*sys.exc_info())
     finally:
         fsm._generator_close()
     
@@ -1937,7 +2050,7 @@ def write_interruptable(generator, writer, context, interrupt=None,
                 # The processes above may produce exceptions if a validation
                 # step fails. Send these up into the generator to produce more
                 # helpful stack traces for users.
-                fsm._generator_throw(e)
+                fsm._generator_throw(*sys.exc_info())
     finally:
         fsm._generator_close()
     
@@ -2092,7 +2205,7 @@ def pad_and_truncate_interruptable(generator, context, interrupt=None,
                 # The processes above may produce exceptions if a validation
                 # step fails. Send these up into the generator to produce more
                 # helpful stack traces for users.
-                fsm._generator_throw(e)
+                fsm._generator_throw(*sys.exc_info())
     finally:
         fsm._generator_close()
     

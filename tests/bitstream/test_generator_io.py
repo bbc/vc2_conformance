@@ -1,5 +1,9 @@
 import pytest
 
+import re
+
+import sys
+
 from io import BytesIO
 
 from bitarray import bitarray
@@ -684,7 +688,81 @@ class TestTokenParserStateMachine(object):
         with pytest.raises(exceptions.ReusedTargetError, match=r"dict\['first'\]"):
             original_token, token_type, token_argument, token_target = fsm._generator_send(None)
     
-    def test_generator_throw(self, w):
+    def test_generator_throw_traceback(self, w):
+        # Also serves to test _create_helpful_indirect_exception
+        
+        # The generators are stacked to ensure the correct order appears in the
+        # synthesised traceback.
+        def gen_outer():
+            yield Token(TokenTypes.use, gen_middle(), None)
+        def gen_middle():
+            yield Token(TokenTypes.use, gen_inner(), None)
+        def gen_inner():
+            yield Token(TokenTypes.uint, None, "foo")
+        
+        # Run the generators up to the inner generator
+        fsm = TokenParserStateMachine(gen_outer(), None)
+        assert fsm._generator_send(None)[1] is TokenTypes.nop
+        assert fsm._generator_send(None)[1] is TokenTypes.nop
+        assert fsm._generator_send(None)[1] is TokenTypes.uint
+        
+        class MyException(Exception):
+            pass
+        
+        # Create an exception and traceback. The error source is also stacked
+        # to check traceback order there too.
+        def crash_outer():
+            crash_middle()
+        def crash_middle():
+            crash_inner()
+        def crash_inner():
+            raise MyException("Fail")
+        
+        try:
+            crash_outer()
+            assert False, "Unreachable"
+        except MyException as e:
+            raised_exception = e
+            with pytest.raises(MyException) as excinfo:
+                fsm._generator_throw(*sys.exc_info())
+        except:
+            raise
+        
+        # Created exception is a subclass of the original exception
+        assert isinstance(excinfo.value, MyException)
+        
+        # Created exception contains the original exception
+        assert excinfo.value.exc is raised_exception
+        
+        # Message contains useful traceback which includes everything in the
+        # correct order.
+        message = str(excinfo.value)
+        print(message)
+        assert re.match(
+            (
+                r'^Fail\n'
+                r'Synthesised traceback \(most recent call last\):\n'
+                r'  File "[^\n]+", line [0-9]+, in gen_outer\n'
+                r'    yield Token\(TokenTypes.use, gen_middle\(\), None\)\n'
+                r'  File "[^\n]+", line [0-9]+, in gen_middle\n'
+                r'    yield Token\(TokenTypes.use, gen_inner\(\), None\)\n'
+                r'  File "[^\n]+", line [0-9]+, in gen_inner\n'
+                r'    yield Token\(TokenTypes.uint, None, "foo"\)\n'
+                r'  File "[^\n]+", line [0-9]+, in test_generator_throw_traceback\n'
+                r'    fsm._generator_throw\(\*sys.exc_info\(\)\)\n'
+                r'  File "[^\n]+", line [0-9]+, in crash_outer\n'
+                r'    crash_middle\(\)\n'
+                r'  File "[^\n]+", line [0-9]+, in crash_middle\n'
+                r'    crash_inner\(\)\n'
+                r'  File "[^\n]+", line [0-9]+, in crash_inner\n'
+                r'    raise MyException\("Fail"\)\n'
+                r'[^\n]+\.MyException: Fail'
+                r'$'
+            ),
+            message,
+        ) is not None
+    
+    def test_generator_throw_always_produces_exception(self, w):
         generator_bail_exc = []
         def generator_bail():
             try:
@@ -708,18 +786,18 @@ class TestTokenParserStateMachine(object):
         fsm._generator_send(None)
         exc = Exception("Nope")
         with pytest.raises(Exception) as excinfo:
-            fsm._generator_throw(exc)
-        assert generator_bail_exc == [exc]
-        assert excinfo.value is exc
+            fsm._generator_throw(Exception, exc, None)
+        assert generator_bail_exc == [excinfo.value]
+        assert excinfo.value.exc is exc
         
         # When generator catches the exception, the exception is still thrown
         fsm = TokenParserStateMachine(gc, w)
         fsm._generator_send(None)
         exc = Exception("Nope")
         with pytest.raises(Exception) as excinfo:
-            fsm._generator_throw(exc)
-        assert generator_catch_exc == [exc]
-        assert excinfo.value is exc
+            fsm._generator_throw(Exception, exc, None)
+        assert generator_catch_exc == [excinfo.value]
+        assert excinfo.value.exc is exc
     
     def test_generator_close(self, w):
         generator_opened = []
