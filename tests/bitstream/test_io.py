@@ -247,8 +247,8 @@ class TestWriteNbits(object):
         assert w.tell() == (0, 7)
     
     def test_fail_on_too_many_bits(self, f, w):
-        with pytest.raises(OutOfRangeError):
-            w.write_nbits(12, 0xABCD)
+        with pytest.raises(OutOfRangeError, match=r"0b1010 is 4 bits, not 2"):
+            w.write_nbits(2, 0xA)
     
     def test_write_zeros_above_msb(self, f, w):
         w.write_nbits(16, 0xABC)
@@ -317,12 +317,12 @@ class TestWriteBitArray(object):
     
     def test_fails_on_wrong_length(self, f, w):
         # Too long
-        with pytest.raises(OutOfRangeError):
-            w.write_bitarray(1, bitarray([1, 0]))
+        with pytest.raises(OutOfRangeError, match=r"0b10 is 2 bits, not 1"):
+            w.write_bitarray(1, bitarray("10"))
         
         # Too short
-        with pytest.raises(OutOfRangeError):
-            w.write_bitarray(3, bitarray([1, 0]))
+        with pytest.raises(OutOfRangeError, match=r"0b10 is 2 bits, not 3"):
+            w.write_bitarray(3, bitarray("10"))
     
     def test_write(self, f, w):
         w.write_bitarray(8, bitarray([1, 0, 1, 0, 0, 0, 0, 0]))
@@ -395,11 +395,11 @@ class TestWriteBytes(object):
     
     def test_fails_on_wrong_length(self, f, w):
         # Too long
-        with pytest.raises(OutOfRangeError):
+        with pytest.raises(OutOfRangeError, match=r"0xAB_CD is 2 bytes, not 1"):
             w.write_bytes(1, b"\xAB\xCD")
         
         # Too short
-        with pytest.raises(OutOfRangeError):
+        with pytest.raises(OutOfRangeError, match=r"0xAB_CD is 2 bytes, not 3"):
             w.write_bytes(3, b"\xAB\xCD")
     
     def test_write_aligned(self, f, w):
@@ -502,7 +502,7 @@ class TestWriteUint(object):
     
     def test_write_out_of_range(self):
         w = bitstream.BitstreamWriter(BytesIO())
-        with pytest.raises(OutOfRangeError):
+        with pytest.raises(OutOfRangeError, match="-1 is negative, expected positive"):
             w.write_uint(-1)
     
     def test_write_past_eof(self):

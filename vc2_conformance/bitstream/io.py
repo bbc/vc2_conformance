@@ -7,6 +7,8 @@ from bitarray import bitarray
 
 from vc2_conformance.exceptions import OutOfRangeError
 
+from vc2_conformance._string_formatters import Bytes
+
 from vc2_conformance.exp_golomb import (
     exp_golomb_length,
     signed_exp_golomb_length,
@@ -270,7 +272,11 @@ class BitstreamWriter(object):
         the requested number of bits.
         """
         if value < 0 or value.bit_length() > bits:
-            raise OutOfRangeError(value)
+            raise OutOfRangeError("0b{:b} is {} bits, not {}".format(
+                value,
+                value.bit_length(),
+                bits,
+            ))
         
         for i in range(bits-1, -1, -1):
             self.write_bit((value >> i) & 1)
@@ -282,7 +288,11 @@ class BitstreamWriter(object):
         Throws an :py:exc:`OutOfRangeError` if the value has the wrong length.
         """
         if len(value) != bits:
-            raise OutOfRangeError(value)
+            raise OutOfRangeError("0b{} is {} bits, not {}".format(
+                value.to01(),
+                len(value),
+                bits,
+            ))
         
         for bit in value:
             self.write_bit(bit)
@@ -296,7 +306,11 @@ class BitstreamWriter(object):
         :py:exc:`OutOfRangeError` will be raised.
         """
         if len(value) != num_bytes:
-            raise OutOfRangeError(value)
+            raise OutOfRangeError("{} is {} bytes, not {}".format(
+                Bytes()(value),
+                len(value),
+                num_bytes,
+            ))
         
         for byte in bytearray(value):
             self.write_nbits(8, byte)
@@ -309,7 +323,7 @@ class BitstreamWriter(object):
         provided.
         """
         if value < 0:
-            raise OutOfRangeError(value)
+            raise OutOfRangeError("{} is negative, expected positive".format(value))
         
         value += 1
         
