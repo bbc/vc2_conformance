@@ -9,8 +9,6 @@ flat arrays below.
 See also :py:module:`slice_arrays_views` for user-friendly view APIs.
 """
 
-from bitarray import bitarray
-
 from vc2_conformance.structured_dict import structured_dict, Value
 
 from vc2_conformance.bitstream.vc2.structured_dicts.slice_arrays_views import (
@@ -66,6 +64,13 @@ class LDSliceArray(object):
         else:
             sx, sy = self._parameters.from_slice_index(key)
         return LDSliceView(self, sx, sy)
+    
+    def __str__(self):
+        return "<{} with {} slice{}>".format(
+            self.__class__.__name__,
+            len(self.qindex),
+            "s" if len(self.qindex) != 1 else "",
+        )
 
 
 @structured_dict
@@ -114,3 +119,10 @@ class HQSliceArray(object):
         else:
             sx, sy = self._parameters.from_slice_index(key)
         return HQSliceView(self, sx, sy)
+    
+    def __str__(self):
+        return "<{} with {} slice{}>".format(
+            self.__class__.__name__,
+            len(self.qindex),
+            "s" if len(self.qindex) != 1 else "",
+        )

@@ -7,7 +7,7 @@ from bitarray import bitarray
 
 from vc2_conformance.structured_dict import structured_dict, Value
 
-from vc2_conformance._string_formatters import Hex
+from vc2_conformance._string_formatters import Hex, Bool, Bits, Bytes
 
 from vc2_conformance.tables import (
     PARSE_INFO_PREFIX,
@@ -81,6 +81,7 @@ class ParseInfo(object):
     (10.5.1) Parse info header defined by ``parse_info()``.
     """
     
+    padding = Value(default_factory=bitarray, formatter=Bits())
     parse_info_prefix = Value(default=PARSE_INFO_PREFIX,
                               friendly_formatter=(lambda prefix:
                                   "Correct"
@@ -88,7 +89,8 @@ class ParseInfo(object):
                                   "INCORRECT"
                               ),
                               formatter=Hex(8))
-    parse_code = Value(enum=ParseCodes, formatter=Hex(2))
+    parse_code = Value(default=ParseCodes.end_of_sequence,
+                       enum=ParseCodes, formatter=Hex(2))
     next_parse_offset = Value(default=0)
     previous_parse_offset = Value(default=0)
 
@@ -114,7 +116,7 @@ class FrameSize(object):
     (11.4.3) Frame size override defined by ``frame_size()``.
     """
     
-    custom_dimensions_flag = Value(default=False)
+    custom_dimensions_flag = Value(default=False, formatter=Bool())
     frame_width = Value()
     frame_height = Value()
 
@@ -126,7 +128,7 @@ class ColorDiffSamplingFormat(object):
     ``color_diff_sampling_format()``.
     """
     
-    custom_color_diff_format_flag = Value(default=False)
+    custom_color_diff_format_flag = Value(default=False, formatter=Bool())
     color_diff_format_index = Value(enum=ColorDifferenceSamplingFormats)
 
 
@@ -136,7 +138,7 @@ class ScanFormat(object):
     (11.4.5) Scan format override defined by ``scan_format()``.
     """
     
-    custom_scan_format_flag = Value(default=False)
+    custom_scan_format_flag = Value(default=False, formatter=Bool())
     source_sampling = Value(enum=SourceSamplingModes)
 
 
@@ -146,7 +148,7 @@ class FrameRate(object):
     (11.4.6) Frame-rate override defined by ``frame_rate()``.
     """
     
-    custom_frame_rate_flag = Value(default=False)
+    custom_frame_rate_flag = Value(default=False, formatter=Bool())
     index = Value(enum=PresetFrameRates)
     frame_rate_numer = Value()
     frame_rate_denom = Value()
@@ -159,7 +161,7 @@ class PixelAspectRatio(object):
     (errata: also listed as ``aspect_ratio()`` in some parts of the spec).
     """
     
-    custom_pixel_aspect_ratio_flag = Value(default=False)
+    custom_pixel_aspect_ratio_flag = Value(default=False, formatter=Bool())
     index = Value(enum=PresetPixelAspectRatios)
     pixel_aspect_ratio_numer = Value()
     pixel_aspect_ratio_denom = Value()
@@ -171,7 +173,7 @@ class CleanArea(object):
     (11.4.8) Clean areas override defined by ``clean_area()``.
     """
     
-    custom_clean_area_flag = Value(default=False)
+    custom_clean_area_flag = Value(default=False, formatter=Bool())
     clean_width = Value()
     clean_height = Value()
     left_offset = Value()
@@ -184,7 +186,7 @@ class SignalRange(object):
     (11.4.9) Signal range override defined by ``signal_range()``.
     """
     
-    custom_signal_range_flag = Value(default=False)
+    custom_signal_range_flag = Value(default=False, formatter=Bool())
     index = Value(enum=PresetSignalRanges)
     luma_offset = Value()
     luma_excursion = Value()
@@ -198,7 +200,7 @@ class ColorPrimaries(object):
     (11.4.10.2) Colour primaries override defined by ``color_primaries()``.
     """
     
-    custom_color_primaries_flag = Value(default=False)
+    custom_color_primaries_flag = Value(default=False, formatter=Bool())
     index = Value(enum=PresetColorPrimaries)
 
 
@@ -208,7 +210,7 @@ class ColorMatrix(object):
     (11.4.10.3) Colour matrix override defined by ``color_matrix()``.
     """
     
-    custom_color_matrix_flag = Value(default=False)
+    custom_color_matrix_flag = Value(default=False, formatter=Bool())
     index = Value(enum=PresetColorMatrices)
 
 
@@ -218,7 +220,7 @@ class TransferFunction(object):
     (11.4.10.4) Transfer function override defined by ``transfer_function()``.
     """
     
-    custom_transfer_function_flag = Value(default=False)
+    custom_transfer_function_flag = Value(default=False, formatter=Bool())
     index = Value(enum=PresetTransferFunctions)
 
 @structured_dict
@@ -227,7 +229,7 @@ class ColorSpec(object):
     (11.4.10.1) Colour specification override defined by ``color_spec()``.
     """
     
-    custom_color_spec_flag = Value(default=False)
+    custom_color_spec_flag = Value(default=False, formatter=Bool())
     index = Value(enum=PresetColorSpecs)
     color_primaries = Value() # type=ColorPrimaries
     color_matrix = Value() # type=ColorMatrix
@@ -257,7 +259,7 @@ class SequenceHeader(object):
     (11.1) Sequence header defined by ``sequence_header()``.
     """
     
-    padding = Value(default_factory=bitarray)
+    padding = Value(default_factory=bitarray, formatter=Bits())
     parse_parameters = Value(default_factory=ParseParameters)
     base_video_format = Value(default=BaseVideoFormats.custom_format,
                               enum=BaseVideoFormats)
@@ -276,8 +278,8 @@ class AuxiliaryData(object):
     (10.4.4) Auxiliary data block (as per auxiliary_data()).
     """
     
-    padding = Value(default_factory=bitarray)
-    bytes = Value(default_factory=bytes)
+    padding = Value(default_factory=bitarray, formatter=Bits())
+    bytes = Value(default_factory=bytes, formatter=Bytes())
 
 
 @structured_dict
@@ -286,8 +288,8 @@ class Padding(object):
     (10.4.5) Padding data block (as per padding()).
     """
     
-    padding = Value(default_factory=bitarray)
-    bytes = Value(default_factory=bytes)
+    padding = Value(default_factory=bitarray, formatter=Bits())
+    bytes = Value(default_factory=bytes, formatter=Bytes())
 
 
 ################################################################################
@@ -314,8 +316,8 @@ class SliceParameters(object):
     (12.4.5.2) Slice dimension parameters defined by ``slice_parameters()``.
     """
     
-    slices_x = Value(default=1)
-    slices_y = Value(default=1)
+    slices_x = Value(default=0)
+    slices_y = Value(default=0)
     
     slice_bytes_numerator = Value()
     slice_bytes_denominator = Value()
@@ -369,9 +371,12 @@ class WaveletTransform(object):
     """
     
     transform_parameters = Value(default_factory=TransformParameters)
-    padding = Value(default_factory=bitarray)
-    ld_transform_data = Value()  # type=LDSliceArray
-    hq_transform_data = Value()  # type=HQSliceArray
+    padding = Value(default_factory=bitarray, formatter=Bits())
+    
+    # Called {ld,hq}_transform_data in spec and contains a more deeply nested
+    # structure.
+    ld_slice_array = Value()  # type=LDSliceArray
+    hq_slice_array = Value()  # type=HQSliceArray
 
 
 @structured_dict
@@ -380,9 +385,9 @@ class PictureParse(object):
     (12.1) A picture data unit defined by ``picture_parse()``
     """
     
-    padding1 = Value(default_factory=bitarray)
+    padding1 = Value(default_factory=bitarray, formatter=Bits())
     picture_header = Value(default_factory=PictureHeader)
-    padding2 = Value(default_factory=bitarray)
+    padding2 = Value(default_factory=bitarray, formatter=Bits())
     wavelet_transform = Value(default_factory=WaveletTransform)
 
 
@@ -409,12 +414,14 @@ class FragmentParse(object):
     of a picture.
     """
     
-    padding1 = Value(default_factory=bitarray)
+    padding1 = Value(default_factory=bitarray, formatter=Bits())
     fragment_header = Value(default_factory=FragmentHeader)
-    padding2 = Value(default_factory=bitarray)
+    padding2 = Value(default_factory=bitarray, formatter=Bits())
     transform_parameters = Value()  # type=TransformParameters
-    ld_fragment_data = Value()  # type=LDSliceArray
-    hq_fragment_data = Value()  # type=HQSliceArray
+    # Called {ld,hq}_fragment_data in spec and contains a more deeply nested
+    # structure.
+    ld_slice_array = Value()  # type=LDSliceArray
+    hq_slice_array = Value()  # type=HQSliceArray
 
 
 ################################################################################
@@ -439,9 +446,9 @@ class DataUnit(object):
 
 
 @structured_dict
-def Sequence(object):
+class Sequence(object):
     """
     (10.4.1) A VC-2 sequence.
     """
     
-    data_units = Value()  # type=[DataUnit, ...]
+    data_units = Value(default_factory=list)  # type=[DataUnit, ...]

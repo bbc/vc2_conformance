@@ -5,6 +5,8 @@ in the VC-2 spec.
 
 from vc2_conformance._string_formatters import Hex
 
+from vc2_conformance.tables import ParseCodes, WaveletFilters
+
 from vc2_conformance.structured_dict import structured_dict, Value
 
 __all__ = [

@@ -325,15 +325,15 @@ class BaseSliceView(object):
     qindex = SliceValueView("qindex")
     
     @property
-    def y_coeffs(self):
+    def y_transform(self):
         return ComponentView(self._slice_array, "y", self._sx, self._sy)
     
     @property
-    def c1_coeffs(self):
+    def c1_transform(self):
         return ComponentView(self._slice_array, "c1", self._sx, self._sy)
     
     @property
-    def c2_coeffs(self):
+    def c2_transform(self):
         return ComponentView(self._slice_array, "c2", self._sx, self._sy)
     
     def __repr__(self):
@@ -402,18 +402,18 @@ class LDSliceView(BaseSliceView):
         out = [
             "qindex: {}".format(self.qindex),
             "slice_y_length: {}".format(self.slice_y_length),
-            "y_coeffs:",
+            "y_transform:",
             indent(component_views_str(
                 self.true_slice_y_length,
                 str(self.y_block_padding),
-                self.y_coeffs,
+                self.y_transform,
             )),
-            "c1_coeffs & c2_coeffs:",
+            "c1_transform & c2_transform:",
             indent(component_views_str(
                 self.slice_c_length,
                 str(self.c_block_padding),
-                self.c1_coeffs,
-                self.c2_coeffs,
+                self.c1_transform,
+                self.c2_transform,
             )),
         ]
         
@@ -450,25 +450,25 @@ class HQSliceView(BaseSliceView):
         ) + [
             "qindex: {}".format(self.qindex),
             "slice_y_length: {}".format(self.slice_y_length),
-            "y_coeffs:",
+            "y_transform:",
             indent(component_views_str(
                 self.true_slice_y_length,
                 self.y_block_padding,
-                self.y_coeffs,
+                self.y_transform,
             )),
             "slice_c1_length: {}".format(self.slice_c1_length),
-            "c1_coeffs:",
+            "c1_transform:",
             indent(component_views_str(
                 self.true_slice_c1_length,
                 self.c1_block_padding,
-                self.c1_coeffs,
+                self.c1_transform,
             )),
             "slice_c2_length: {}".format(self.slice_c2_length),
-            "c2_coeffs:",
+            "c2_transform:",
             indent(component_views_str(
                 self.true_slice_c2_length,
                 self.c2_block_padding,
-                self.c2_coeffs,
+                self.c2_transform,
             )),
         ]
         
@@ -585,13 +585,13 @@ class ComponentSubbandView(object):
         self._subband_index = subband_index
         
         if self._component == "y":
-            self._data = self._slice_array.y_coeffs
+            self._data = self._slice_array.y_transform
             self._subband_dimensions = self._slice_array._parameters.luma_subband_dimensions
         elif self._component == "c1":
-            self._data = self._slice_array.c1_coeffs
+            self._data = self._slice_array.c1_transform
             self._subband_dimensions = self._slice_array._parameters.color_diff_subband_dimensions
         elif self._component == "c2":
-            self._data = self._slice_array.c2_coeffs
+            self._data = self._slice_array.c2_transform
             self._subband_dimensions = self._slice_array._parameters.color_diff_subband_dimensions
         else:
             raise ValueError("Invalid component.")

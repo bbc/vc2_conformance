@@ -16,6 +16,13 @@ specification but differs in some places:
 
 from vc2_conformance.math import intlog2
 
+from vc2_conformance.parse_code_functions import (
+    is_ld_picture,
+    is_hq_picture,
+    is_ld_fragment,
+    is_hq_fragment,
+)
+
 from vc2_conformance.slice_sizes import (
     subband_width,
     subband_height,
@@ -29,6 +36,7 @@ from vc2_conformance.slice_sizes import (
 from vc2_conformance.bitstream.generator_io import TokenTypes
 
 from vc2_conformance.bitstream.vc2.structured_dicts import (
+    SliceArrayParameters,
     LDSliceArray,
     HQSliceArray,
 )
@@ -84,9 +92,11 @@ def slice(state, sx, sy):
     """(13.5.2)"""
     # Errata: check for both picture and fragment types
     if is_ld_picture(state) or is_ld_fragment(state):
-        ld_slice(state, sx, sy)
+        # NB: Return generator here (faster than a 'use' token)
+        return ld_slice(state, sx, sy)
     elif is_hq_picture(state) or is_hq_fragment(state):
-        hq_slice(state, sx, sy)
+        # NB: Return generator here (faster than a 'use' token)
+        return hq_slice(state, sx, sy)
 
 def ld_slice(state, sx, sy):
     """(13.5.3.1)"""
@@ -99,30 +109,30 @@ def ld_slice(state, sx, sy):
     #slice_quantizers(state, qindex)
     
     length_bits = intlog2((8 * slice_bytes(state, sx, sy)) - 7)
-    slice_y_length = (yield (TokenTypes.nbits, length_bits, "slice_y_length")
+    slice_y_length = (yield (TokenTypes.nbits, length_bits, "slice_y_length"))
     slice_bits_left -= length_bits
     
     # The following statement is not part of spec, here to ensure robustness in
     # the presence of invalid bitstreams
-    if slice_y_length > slice_bits_left
+    if slice_y_length > slice_bits_left:
         slice_y_length = slice_bits_left
     
     yield (TokenTypes.bounded_block_begin, slice_y_length, None)
     if state["dwt_depth_ho"] == 0:
         # Errata: standard says 'luma_slice_band(state, 0, "LL", sx, sy)'
-        slice_band(state, "y_transform", 0, "LL", sx, sy)
+        yield (TokenTypes.use, slice_band(state, "y_transform", 0, "LL", sx, sy), None)
         for level in range(1, state["dwt_depth"] + 1):
             for orient in ["HL", "LH", "HH"]:
-                slice_band(state, "y_transform", level, orient, sx, sy)
+                yield (TokenTypes.use, slice_band(state, "y_transform", level, orient, sx, sy), None)
     else:
         # Errata: standard says 'luma_slice_band(state, 0, "L", sx, sy)'
-        slice_band(state, "y_transform", 0, "L", sx, sy)
+        yield (TokenTypes.use, slice_band(state, "y_transform", 0, "L", sx, sy), None)
         for level in range(1, state["dwt_depth_ho"] + 1):
-            slice_band(state, "y_transform", level, "H", sx, sy)
+            yield (TokenTypes.use, slice_band(state, "y_transform", level, "H", sx, sy), None)
         for level in range(state["dwt_depth_ho"] + 1, 
                            state["dwt_depth_ho"] + state["dwt_depth"] + 1):
             for orient in ["HL", "LH", "HH"]:
-                slice_band(state, "y_transform", level, orient, sx, sy)
+                yield (TokenTypes.use, slice_band(state, "y_transform", level, orient, sx, sy), None)
     yield (TokenTypes.bounded_block_end, None, "y_block_padding")
     
     slice_bits_left -= slice_y_length
@@ -130,19 +140,19 @@ def ld_slice(state, sx, sy):
     # Errata: The standard shows only 2D transform slices being read
     yield (TokenTypes.bounded_block_begin, slice_bits_left, None)
     if state["dwt_depth_ho"] == 0:
-        color_diff_slice_band(state, 0, "LL", sx, sy)
+        yield (TokenTypes.use, color_diff_slice_band(state, 0, "LL", sx, sy), None)
         for level in range(1, state["dwt_depth"] + 1):
             for orient in ["HL", "LH", "HH"]:
-                color_diff_slice_band(state, level, orient, sx, sy)
+                yield (TokenTypes.use, color_diff_slice_band(state, level, orient, sx, sy), None)
     else:
         # Errata: standard says 'luma_slice_band(state, 0, "L", sx, sy)'
-        color_diff_slice_band(state, 0, "L", sx, sy)
+        yield (TokenTypes.use, color_diff_slice_band(state, 0, "L", sx, sy), None)
         for level in range(1, state["dwt_depth_ho"] + 1):
-            color_diff_slice_band(state, level, "H", sx, sy)
+            yield (TokenTypes.use, color_diff_slice_band(state, level, "H", sx, sy), None)
         for level in range(state["dwt_depth_ho"] + 1, 
                            state["dwt_depth_ho"] + state["dwt_depth"] + 1):
             for orient in ["HL", "LH", "HH"]:
-                color_diff_slice_band(state, level, orient, sx, sy)
+                yield (TokenTypes.use, color_diff_slice_band(state, level, orient, sx, sy), None)
     yield (TokenTypes.bounded_block_end, None, "c_block_padding")
 
 
@@ -151,31 +161,29 @@ def hq_slice(state, sx, sy):
     """(13.5.4)"""
     yield (TokenTypes.bytes, state["slice_prefix_bytes"], "prefix_bytes")
     
-    qindex = (yield (TokenTypes.nbits, 8))
+    qindex = (yield (TokenTypes.nbits, 8, "qindex"))
     
     # Not needed
     #slice_quantizers(state, qindex)
     
     for component in ["y", "c1", "c2"]:
-        
-        length = state["slice_size_scaler"] * (yield (TokenTypes.nbits, 8, "{}_length".format(component)))
-        
+        length = state["slice_size_scaler"] * (yield (TokenTypes.nbits, 8, "slice_{}_length".format(component)))
         
         transform = "{}_transform".format(component)
         yield (TokenTypes.bounded_block_begin, 8*length, None)
         if state["dwt_depth_ho"] == 0:
-            slice_band(state, transform, 0, "LL", sx, sy)
+            yield (TokenTypes.use, slice_band(state, transform, 0, "LL", sx, sy), None)
             for level in range(1, state["dwt_depth"] + 1):
                 for orient in ["HL", "LH", "HH"]:
-                    slice_band(state, transform, level, orient, sx, sy)
+                    yield (TokenTypes.use, slice_band(state, transform, level, orient, sx, sy), None)
         else:
-            slice_band(state, transform, 0, "L", sx, sy)
+            yield (TokenTypes.use, slice_band(state, transform, 0, "L", sx, sy), None)
             for level in range(1, state["dwt_depth_ho"] + 1):
-                slice_band(state, transform, level, "H", sx, sy)
+                yield (TokenTypes.use, slice_band(state, transform, level, "H", sx, sy), None)
             for level in range(state["dwt_depth_ho"] + 1,
                                state["dwt_depth_ho"] + state["dwt_depth"] + 1):
                 for orient in ["HL", "LH", "HH"]:
-                    slice_band(state, transform, level, orient, sx, sy)
+                    yield (TokenTypes.use, slice_band(state, transform, level, orient, sx, sy), None)
         yield (TokenTypes.bounded_block_end, None, "{}_block_padding".format(component))
 
 def slice_band(state, transform, level, orient, sx, sy):
@@ -190,7 +198,8 @@ def slice_band(state, transform, level, orient, sx, sy):
 
 def color_diff_slice_band(state, level, orient, sx, sy):
     """(13.5.6.4) Read and dequantize interleaved color difference subbands in a slice."""
-    qi = state.quantizer[level][orient]
+    # Not needed
+    #qi = state.quantizer[level][orient]
     for y in range(slice_top(state, sy, "C1", level), slice_bottom(state, sy, "C1", level)):
         for x in range(slice_left(state, sx, "C1", level), slice_right(state, sx, "C1", level)):
             # Not needed
@@ -230,7 +239,6 @@ def fragment_data(state):
              state["fragment_x_offset"] + s) // state["slices_x"]
         )
         yield (TokenTypes.use, slice(state, state["slice_x"], state["slice_y"]), None)
-        
         
         # Not needed
         #state["fragment_slices_received"] += 1
@@ -282,12 +290,27 @@ def slice_array_begin(state, start_sx=0, start_sy=0, slice_count=None):
         yield (TokenTypes.computed_value, parameters, "_parameters")
         yield (TokenTypes.computed_value, state["slice_bytes_numerator"], "_slice_bytes_numerator")
         yield (TokenTypes.computed_value, state["slice_bytes_denominator"], "_slice_bytes_denominator")
+        yield (TokenTypes.declare_list, None, "slice_y_length")
+        yield (TokenTypes.declare_list, None, "y_block_padding")
+        yield (TokenTypes.declare_list, None, "c_block_padding")
     elif is_hq_picture(state) or is_hq_fragment(state):
         yield (TokenTypes.nested_context_enter, None, "hq_slice_array")
         yield (TokenTypes.declare_context_type, HQSliceArray, None)
         yield (TokenTypes.computed_value, parameters, "_parameters")
         yield (TokenTypes.computed_value, state["slice_prefix_bytes"], "_slice_prefix_bytes")
         yield (TokenTypes.computed_value, state["slice_size_scaler"], "_slice_size_scaler")
+        yield (TokenTypes.declare_list, None, "prefix_bytes")
+        yield (TokenTypes.declare_list, None, "slice_y_length")
+        yield (TokenTypes.declare_list, None, "slice_c1_length")
+        yield (TokenTypes.declare_list, None, "slice_c2_length")
+        yield (TokenTypes.declare_list, None, "y_block_padding")
+        yield (TokenTypes.declare_list, None, "c1_block_padding")
+        yield (TokenTypes.declare_list, None, "c2_block_padding")
+    
+    yield (TokenTypes.declare_list, None, "qindex")
+    yield (TokenTypes.declare_list, None, "y_transform")
+    yield (TokenTypes.declare_list, None, "c1_transform")
+    yield (TokenTypes.declare_list, None, "c2_transform")
 
 
 def slice_array_end(state):

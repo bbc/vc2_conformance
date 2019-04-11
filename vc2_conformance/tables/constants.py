@@ -52,57 +52,6 @@ class ParseCodes(IntEnum):
     # Picture fragments
     low_delay_picture_fragment = 0xCC
     high_quality_picture_fragment = 0xEC
-    
-    @property
-    def is_picture(self):
-        """
-        (10.5.2) (Table 10.2) Is picture or fragment type.
-        
-        Errata: In the spec, this function actually tests if this is a picture
-        *or* a fragment. See :py:attr:`is_picture_or_fragment` for this
-        behaviour.
-        """
-        return (self.value & 0x8C) == 0x88
-    
-    @property
-    def is_picture_or_fragment(self):
-        """
-        (10.5.2) (Table 10.2) Is picture or fragment type.
-        
-        Errata: In the spec, this function is called 'is_picture' but actually
-        tests for pictures *and* fragments.
-        """
-        return (self.value & 0x88) == 0x88
-    
-    @property
-    def is_low_delay(self):
-        """
-        (10.5.2) (Table 10.2) Is low-delay picture or fragment type.
-        
-        Errata: In the spec, this function is called 'is_ld_picture' but
-        actually tests for pictures *and* fragments.
-        """
-        return (self.value & 0xF8) == ParseCodes.low_delay_picture.value
-    
-    @property
-    def is_high_quality(self):
-        """
-        (10.5.2) (Table 10.2) Is high-quality picture or fragment type.
-        
-        Errata: In the spec, this function is called 'is_hq_picture' but
-        actually tests for pictures *and* fragments.
-        """
-        return (self.value & 0xF8) == ParseCodes.high_quality_picture.value
-    
-    @property
-    def is_fragment(self):
-        """(10.5.2) (Table 10.2)"""
-        return (self.value & 0x0C) == 0x0C
-    
-    @property
-    def using_dc_prediction(self):
-        """(10.5.2) (Table 10.2) a.k.a. is low-delay"""
-        return (self.value & 0x28) == 0x08
 
 
 class PictureCodingModes(IntEnum):

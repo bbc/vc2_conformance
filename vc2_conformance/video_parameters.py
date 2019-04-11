@@ -33,6 +33,7 @@ __all__ = [
     "preset_pixel_aspect_ratio",
     "preset_signal_range",
     "preset_color_primaries",
+    "preset_color_matrix",
     "preset_transfer_function",
     "preset_color_spec",
 ]

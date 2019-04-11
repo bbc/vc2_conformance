@@ -264,8 +264,8 @@ class Value(object):
         self.friendly_formatter_pass_dict = kwargs.pop("friendly_formatter_pass_dict", False)
         
         if kwargs:
-            raise TypeError("unexpected keyword arguments: {}".format(
-                ", ".join(kwargs.keys())))
+            raise TypeError("unexpected keyword arguments: {} for {}".format(
+                ", ".join(kwargs.keys()), self.__class__.__name__))
     
     def get_default(self):
         """Return the default value of this object."""
@@ -465,8 +465,8 @@ def structured_dict(cls):
             if name in value_objs:
                 setattr(self, name, value)
             else:
-                raise TypeError("unexpected name '{}'".format(
-                    name))
+                raise TypeError("unexpected name '{}' in {}".format(
+                    name, self.__class__.__name__))
     
     methods["__init__"] = __init__
     

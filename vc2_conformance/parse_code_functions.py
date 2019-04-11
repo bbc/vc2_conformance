@@ -26,9 +26,9 @@ is_padding_data     = lambda state: bool(state["parse_code"] == 0x30)
 
 # Errata: the is_*_picture functions in the spec also return True for
 # fragments. (The implementation below only returns True for pictures).
-is_picture          = lambda state: bool((state["parse_code"] & 0x88) == 0x8C)
-is_ld_picture       = lambda state: bool((state["parse_code"] & 0xF8) == 0xCC)
-is_hq_picture       = lambda state: bool((state["parse_code"] & 0xF8) == 0xEC)
+is_picture          = lambda state: bool((state["parse_code"] & 0x8C) == 0x88)
+is_ld_picture       = lambda state: bool((state["parse_code"] & 0xFC) == 0xC8)
+is_hq_picture       = lambda state: bool((state["parse_code"] & 0xFC) == 0xE8)
 
 is_fragment         = lambda state: bool((state["parse_code"] & 0x0C) == 0x0C)
 is_ld_fragment      = lambda state: bool((state["parse_code"] & 0xFC) == 0xCC)

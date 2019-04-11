@@ -18,6 +18,7 @@ from vc2_conformance.bitstream.generator_io import (
 from vc2_conformance.tables import *
 
 from vc2_conformance.state import State
+
 from vc2_conformance.video_parameters import (
     set_source_defaults,
     set_coding_parameters,
@@ -25,8 +26,20 @@ from vc2_conformance.video_parameters import (
     preset_pixel_aspect_ratio,
     preset_signal_range,
     preset_color_primaries,
+    preset_color_matrix,
     preset_transfer_function,
     preset_color_spec,
+)
+
+from vc2_conformance.parse_code_functions import (
+    is_seq_header,
+    is_end_of_sequence,
+    is_auxiliary_data,
+    is_padding_data,
+    is_picture,
+    is_ld_picture,
+    is_hq_picture,
+    is_fragment,
 )
 
 from vc2_conformance.bitstream.vc2.structured_dicts import *
@@ -35,6 +48,42 @@ from vc2_conformance.bitstream.vc2.slice_arrays import (
     transform_data,
     fragment_data,
 )
+
+__all__ = [
+    "parse_sequence",
+    
+    "auxiliary_data",
+    "padding",
+    
+    "parse_info",
+    
+    "sequence_header",
+    "parse_parameters",
+    "source_parameters",
+    "frame_size",
+    "color_diff_sampling_format",
+    "scan_format",
+    "frame_rate",
+    "pixel_aspect_ratio",
+    "clean_area",
+    "signal_range",
+    "color_spec",
+    "color_primaries",
+    "color_matrix",
+    "transfer_function",
+    
+    "picture_parse",
+    "picture_header",
+    "wavelet_transform",
+    
+    "transform_parameters",
+    "extended_transform_parameters",
+    "slice_parameters",
+    "quant_matrix",
+    
+    "fragment_parse",
+    "fragment_header",
+]
 
 
 ################################################################################
@@ -49,6 +98,9 @@ def nest(generator, target):
 
 def byte_align(target):
     return Token(TokenTypes.byte_align, None, target)
+
+def read_bool(target):
+    return Token(TokenTypes.bool, None, target)
 
 def read_uint_lit(num_bytes, target):
     return Token(TokenTypes.nbits, num_bytes*8, target)
@@ -73,6 +125,7 @@ def parse_sequence():
     yield Token(TokenTypes.declare_list, None, "data_units")
     
     yield Token(TokenTypes.nested_context_enter, None, "data_units")
+    yield Token(TokenTypes.declare_context_type, DataUnit, None)
     yield nest(parse_info(state), "parse_info")
     while not is_end_of_sequence(state):
         if is_seq_header(state):
@@ -80,17 +133,32 @@ def parse_sequence():
         elif is_picture(state):
             yield nest(picture_parse(state), "picture_parse")
         elif is_fragment(state):
-            yield nest(fragment(state), "fragment")
+            yield nest(fragment_parse(state), "fragment")
         elif is_auxiliary_data(state):
             yield nest(auxiliary_data(state), "auxiliary_data")
         elif is_padding_data(state):  # Errata: listed as 'is_padding' in standard
             yield nest(padding(state), "padding")
-        yield Token(TokenTypes.nested_context_leave, None, "data_units")
+        yield Token(TokenTypes.nested_context_leave, None, None)
         
         yield Token(TokenTypes.nested_context_enter, None, "data_units")
+        yield Token(TokenTypes.declare_context_type, DataUnit, None)
         yield nest(parse_info(state), "parse_info")
     
-    yield Token(TokenTypes.nested_context_leave, None, "data_units")
+    yield Token(TokenTypes.nested_context_leave, None, None)
+
+
+@context_type(ParseInfo)
+def parse_info(state):
+    """(10.5.1) Read a parse_info header."""
+    # Errata: Wording of spec requires this field to be aligned but the pseudo
+    # code doesn't include a byte_align (and nor does the 'parse_sequence
+    # function which calls it)
+    yield byte_align("padding")
+    
+    yield read_uint_lit(4, "parse_info_prefix")
+    state["parse_code"] = (yield read_uint_lit(1, "parse_code"))
+    state["next_parse_offset"] = (yield read_uint_lit(4, "next_parse_offset"))
+    state["previous_parse_offset"] = (yield read_uint_lit(4, "previous_parse_offset"))
 
 
 @context_type(AuxiliaryData)
@@ -107,38 +175,6 @@ def padding(state):
     yield Token(TokenTypes.bytes, state["next_parse_offset"] - PARSE_INFO_HEADER_BYTES, "bytes")
 
 
-@context_type(ParseInfo)
-def parse_info(state):
-    """(10.5.1) Read a parse_info header."""
-    yield read_uint_lit(4, "parse_info_prefix")
-    state["parse_code"] = (yield read_uint_lit(1, "parse_code"))
-    state["next_parse_offset"] = (yield read_uint_lit(4, "next_parse_offset"))
-    state["previous_parse_offset"] = (yield read_uint_lit(4, "previous_parse_offset"))
-
-
-
-"""
-(Table 10.2) Parse code functions
-"""
-
-is_seq_header       = lambda state: bool(state["parse_code"] == 0x00)
-is_end_of_sequence  = lambda state: bool(state["parse_code"] == 0x10)
-is_auxiliary_data   = lambda state: bool((state["parse_code"] & 0xF8) == 0x20)
-is_padding_data     = lambda state: bool(state["parse_code"] == 0x30)
-
-# Errata: the is_*_picture functions in the spec also return True for
-# fragments. (The implementation below only returns True for pictures).
-is_picture          = lambda state: bool((state["parse_code"] & 0x88) == 0x8C)
-is_ld_picture       = lambda state: bool((state["parse_code"] & 0xF8) == 0xCC)
-is_hq_picture       = lambda state: bool((state["parse_code"] & 0xF8) == 0xEC)
-
-is_fragment         = lambda state: bool((state["parse_code"] & 0x0C) == 0x0C)
-is_ld_fragment      = lambda state: bool((state["parse_code"] & 0xFC) == 0xCC)
-is_hq_fragment      = lambda state: bool((state["parse_code"] & 0xFC) == 0xEC)
-
-using_dc_prediction = lambda state: bool((state["parse_code"] & 0x28) == 0x08)
-
-
 ################################################################################
 # (11) Sequence header parsing
 ################################################################################
@@ -152,9 +188,16 @@ def sequence_header(state):
     yield nest(parse_parameters(state), "parse_parameters")
     
     base_video_format = (yield read_uint("base_video_format"))
+    
+    # For robustness against bad bitstreams, force unrecognised base formats to 'custom'
+    try:
+        BaseVideoFormats(base_video_format)
+    except ValueError:
+        base_video_format = BaseVideoFormats.custom_format
+    
     video_parameters = (yield nest(
         source_parameters(state, base_video_format),
-        "source_parameters",
+        "video_parameters",
     ))
     picture_coding_mode = (yield read_uint("picture_coding_mode"))
     set_coding_parameters(state, video_parameters, picture_coding_mode)
@@ -216,8 +259,18 @@ def scan_format(state, video_parameters):
 def frame_rate(state, video_parameters):
     """(11.4.6) Override frame-rate parameter."""
     custom_frame_rate_flag = (yield read_bool("custom_frame_rate_flag"))
+    
     if custom_frame_rate_flag:
         index = (yield read_uint("index"))
+        
+        # Not part of spec but required to prevent crashes on malformed inputs
+        # make an arbitrary choice
+        try:
+            if index != 0:
+                PresetFrameRates(index)
+        except ValueError:
+            index = PresetFrameRates.fps_24_over_1_001
+        
         if index == 0:
             video_parameters["frame_rate_numer"] = (yield read_uint("frame_rate_numer"))
             video_parameters["frame_rate_denom"] = (yield read_uint("frame_rate_denom"))
@@ -230,6 +283,15 @@ def pixel_aspect_ratio(state, video_parameters):  # Errata: called 'aspect_ratio
     custom_pixel_aspect_ratio_flag = (yield read_bool("custom_pixel_aspect_ratio_flag"))
     if custom_pixel_aspect_ratio_flag:
         index = (yield read_uint("index"))
+        
+        # Not part of spec but required to prevent crashes on malformed inputs
+        # make an arbitrary choice
+        try:
+            if index != 0:
+                PresetPixelAspectRatios(index)
+        except ValueError:
+            index = PresetPixelAspectRatios.ratio_1_1
+        
         if index == 0:
             video_parameters["pixel_aspect_ratio_numer"] = (yield read_uint("pixel_aspect_ratio_numer"))
             video_parameters["pixel_aspect_ratio_denom"] = (yield read_uint("pixel_aspect_ratio_denom"))
@@ -252,6 +314,15 @@ def signal_range(state, video_parameters):
     custom_signal_range_flag = (yield read_bool("custom_signal_range_flag"))
     if custom_signal_range_flag:
         index = (yield read_uint("index"))
+        
+        # Not part of spec but required to prevent crashes on malformed inputs
+        # make an arbitrary choice
+        try:
+            if index != 0:
+                PresetSignalRanges(index)
+        except ValueError:
+            index = PresetSignalRanges.range_8_bit_full_range
+        
         if index == 0:
             video_parameters["luma_offset"] = (yield read_uint("luma_offset"))
             video_parameters["luma_excursion"] = (yield read_uint("luma_excursion"))
@@ -266,6 +337,14 @@ def color_spec(state, video_parameters):
     custom_color_spec_flag = (yield read_bool("custom_color_spec_flag"))
     if custom_color_spec_flag:
         index = (yield read_uint("index"))
+        
+        # Not part of spec but required to prevent crashes on malformed inputs
+        # make an arbitrary choice
+        try:
+            PresetColorSpecs(index)
+        except ValueError:
+            index = PresetColorSpecs.sdtv_525
+        
         preset_color_spec(video_parameters, index)
         if index == 0:
             yield nest(color_primaries(state, video_parameters), "color_primaries")
@@ -278,6 +357,14 @@ def color_primaries(state, video_parameters):
     custom_color_primaries_flag = (yield read_bool("custom_color_primaries_flag"))
     if custom_color_primaries_flag:
         index = (yield read_uint("index"))
+        
+        # Not part of spec but required to prevent crashes on malformed inputs
+        # make an arbitrary choice
+        try:
+            PresetColorPrimaries(index)
+        except ValueError:
+            index = PresetColorPrimaries.hdtv
+        
         preset_color_primaries(video_parameters, index)
 
 @context_type(ColorMatrix)
@@ -286,6 +373,14 @@ def color_matrix(state, video_parameters):
     custom_color_matrix_flag = (yield read_bool("custom_color_matrix_flag"))
     if custom_color_matrix_flag:
         index = (yield read_uint("index"))
+        
+        # Not part of spec but required to prevent crashes on malformed inputs
+        # make an arbitrary choice
+        try:
+            PresetColorMatrices(index)
+        except ValueError:
+            index = PresetColorMatrices.hdtv
+        
         preset_color_matrix(video_parameters, index)
 
 @context_type(TransferFunction)
@@ -294,6 +389,14 @@ def transfer_function(state, video_parameters):
     custom_transfer_function_flag = (yield read_bool("custom_transfer_function_flag"))
     if custom_transfer_function_flag:
         index = (yield read_uint("index"))
+        
+        # Not part of spec but required to prevent crashes on malformed inputs
+        # make an arbitrary choice
+        try:
+            PresetTransferFunctions(index)
+        except ValueError:
+            index = PresetTransferFunctions.tv_gamma
+        
         preset_transfer_function(video_parameters, index)
 
 
@@ -319,7 +422,7 @@ def wavelet_transform(state):
     """(12.3)"""
     yield nest(transform_parameters(state), "transform_parameters")
     yield byte_align("padding")
-    yield nest(transform_data(state), "transform_data")
+    yield Token(TokenTypes.use, transform_data(state), None)
 
 @context_type(TransformParameters)
 def transform_parameters(state):
@@ -370,7 +473,7 @@ def quant_matrix(state):
         if state["dwt_depth_ho"] == 0:
             state["quant_matrix"][0]["LL"] = (yield read_uint("quant_matrix"))
         else:
-            state["quant_matrix"][0]["L"] = read_uint(state)
+            state["quant_matrix"][0]["L"] = (yield read_uint("quant_matrix"))
             for level in range(1, state["dwt_depth_ho"] + 1):
                 state["quant_matrix"][level]["H"] = (yield read_uint("quant_matrix"))
         
@@ -402,16 +505,15 @@ def fragment_parse(state):
         # initialize_fragment_state(state)
     else:
         yield byte_align("padding2")
-        yield nest(fragment_data(state), "fragment_data")
+        yield Token(TokenTypes.use, fragment_data(state), None)
 
 
 @context_type(FragmentHeader)
 def fragment_header(state):
     """14.2"""
-    state["picture_number"] = (yield read_uint_lit(4, "picture_number")
-    state["fragment_data_length"] = (yield read_uint_lit(2, "fragment_data_length")
-    state["fragment_slice_count"] = (yield read_uint_lit(2, "fragment_slice_count")
+    state["picture_number"] = (yield read_uint_lit(4, "picture_number"))
+    state["fragment_data_length"] = (yield read_uint_lit(2, "fragment_data_length"))
+    state["fragment_slice_count"] = (yield read_uint_lit(2, "fragment_slice_count"))
     if state["fragment_slice_count"] != 0:
-        state["fragment_x_offset"] = (yield read_uint_lit(2, "fragment_x_offset")
-        state["fragment_y_offset"] = (yield read_uint_lit(2, "fragment_y_offset")
-
+        state["fragment_x_offset"] = (yield read_uint_lit(2, "fragment_x_offset"))
+        state["fragment_y_offset"] = (yield read_uint_lit(2, "fragment_y_offset"))
