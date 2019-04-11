@@ -41,6 +41,9 @@ class BitstreamReader(object):
         # The index of the next bit to read
         self._next_bit = 7
         
+        # The current byte index being read
+        self._byte_offset = self._file.tell()
+        
         # The byte currently being read (or None if at the EOF)
         self._current_byte = None
         
@@ -53,6 +56,7 @@ class BitstreamReader(object):
     def _read_byte(self):
         """Internal method. Advance to the next byte. (A.2.2)"""
         byte = self._file.read(1)
+        self._byte_offset += 1
         if len(byte) == 1:
             self._current_byte = bytearray(byte)[0]
             self._next_bit = 7
@@ -71,10 +75,7 @@ class BitstreamReader(object):
             stream. ``bits`` is the offset in the current byte (starting at 7
             (MSB) and advancing towards 0 (LSB) as bits are read).
         """
-        if self._current_byte is not None:
-            return (self._file.tell() - 1, self._next_bit)
-        else:
-            return (self._file.tell(), self._next_bit)
+        return (self._byte_offset - 1, self._next_bit)
     
     def seek(self, bytes, bits=7):
         """
@@ -90,6 +91,7 @@ class BitstreamReader(object):
         assert 0 <= bits <= 7
         
         self._file.seek(bytes)
+        self._byte_offset = self._file.tell()
         self._read_byte()
         self._next_bit = bits
         self._bits_past_eof = 0
@@ -189,6 +191,9 @@ class BitstreamWriter(object):
         # The index of the next bit to write
         self._next_bit = 7
         
+        # The current byte index being written
+        self._byte_offset = self._file.tell()
+        
         # The byte currently being write
         self._current_byte = 0
     
@@ -197,6 +202,7 @@ class BitstreamWriter(object):
         self._file.write(bytearray([self._current_byte]))
         self._current_byte = 0
         self._next_bit = 7
+        self._byte_offset += 1
     
     def tell(self):
         """
@@ -209,7 +215,7 @@ class BitstreamWriter(object):
             stream. ``bits`` is the offset in the current byte (starting at 7
             (MSB) and advancing towards 0 (LSB) as bits are written).
         """
-        return (self._file.tell(), self._next_bit)
+        return (self._byte_offset, self._next_bit)
     
     def seek(self, bytes, bits=7):
         """
@@ -228,6 +234,7 @@ class BitstreamWriter(object):
         self.flush()
         
         self._file.seek(bytes)
+        self._byte_offset = self._file.tell()
         self._current_byte = 0
         self._next_bit = bits
     
