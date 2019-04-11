@@ -19,7 +19,7 @@ from vc2_conformance.bitstream import (
 
 from vc2_conformance import exceptions
 
-from vc2_conformance.structured_dict import structured_dict, Value
+from vc2_conformance.fixeddict import fixeddict, Entry
 
 from vc2_conformance.bitstream.generator_io import (
     Return,
@@ -394,13 +394,13 @@ class TestTokenParserStateMachine(object):
         assert token_target is None
     
     def test_generator_send_declare_context_type(self, w):
+        FixedDict = fixeddict(
+            "FixedDict",
+            Entry("a", default=123),
+            Entry("child", default=123),
+        )
         
-        @structured_dict
-        class StructuredDict(object):
-            a = Value(default=123)
-            child = Value(default=321)
-        
-        token_sd = Token(TokenTypes.declare_context_type, StructuredDict, None)
+        token_sd = Token(TokenTypes.declare_context_type, FixedDict, None)
         token_enter = Token(TokenTypes.nested_context_enter, None, "child")
         token_leave = Token(TokenTypes.nested_context_leave, None, None)
         def generator():
@@ -425,8 +425,8 @@ class TestTokenParserStateMachine(object):
         assert original_token is token_sd
         
         # Type changed, existing value remains, default values ignored
-        assert isinstance(fsm.context, StructuredDict)
-        assert fsm.context.a == 100
+        assert isinstance(fsm.context, FixedDict)
+        assert fsm.context["a"] == 100
         assert not hasattr(fsm.context, "child")
         
         # Nop output
@@ -437,7 +437,7 @@ class TestTokenParserStateMachine(object):
         # Nest (tested more thoroughly elsewhere)
         original_token, token_type, token_argument, token_target = fsm._generator_send(None)
         assert original_token is token_enter
-        assert fsm.context_stack[0].child is fsm.context
+        assert fsm.context_stack[0]["child"] is fsm.context
         
         # Pre-set a value in newly nested context
         fsm._set_context_value("a", 1000)
@@ -448,9 +448,9 @@ class TestTokenParserStateMachine(object):
         assert original_token is token_sd
         
         # Type changed, existing value remains, default values ignored
-        assert isinstance(fsm.context, StructuredDict)
-        assert fsm.context.a == 1000
-        assert not hasattr(fsm.context, "child")
+        assert isinstance(fsm.context, FixedDict)
+        assert fsm.context["a"] == 1000
+        assert "child" not in fsm.context
         
         # Value changed in parent (and value in parent is just a non-list
         # target
@@ -463,13 +463,13 @@ class TestTokenParserStateMachine(object):
         # Nest into list (tested more thoroughly elsewhere)
         original_token, token_type, token_argument, token_target = fsm._generator_send(None)
         assert original_token is token_enter
-        assert fsm.context_stack[1].child[1] is fsm.context
+        assert fsm.context_stack[1]["child"][1] is fsm.context
         
         # Change type and check parent is updated
         original_token, token_type, token_argument, token_target = fsm._generator_send(None)
         assert original_token is token_sd
-        assert isinstance(fsm.context, StructuredDict)
-        assert fsm.context_stack[1].child[1] is fsm.context
+        assert isinstance(fsm.context, FixedDict)
+        assert fsm.context_stack[1]["child"][1] is fsm.context
         
         # Nop output
         assert token_type is TokenTypes.nop
@@ -979,30 +979,26 @@ class TestTokenParserStateMachine(object):
         assert fsm.describe_path("foo") == "dict['child']['child'][0]['foo']"
         
         # With different types, prefix should be different
-        @structured_dict
-        class StructuredDict(object):
-            child = Value(default=321)
+        FixedDict = fixeddict("FixedDict", Entry("child", default=321))
         def generator():
-            yield Token(TokenTypes.declare_context_type, StructuredDict, None)
+            yield Token(TokenTypes.declare_context_type, FixedDict, None)
             yield Token(TokenTypes.nested_context_enter, None, "child")
         fsm = TokenParserStateMachine(generator(), w)
         fsm._generator_send(None)
         
-        assert fsm.describe_path() == "StructuredDict"
-        assert fsm.describe_path("foo") == "StructuredDict['foo']"
+        assert fsm.describe_path() == "FixedDict"
+        assert fsm.describe_path("foo") == "FixedDict['foo']"
         
         # When nested, outer-most dict defines the type
         fsm._generator_send(None)
-        assert fsm.describe_path() == "StructuredDict['child']"
-        assert fsm.describe_path("foo") == "StructuredDict['child']['foo']"
+        assert fsm.describe_path() == "FixedDict['child']"
+        assert fsm.describe_path("foo") == "FixedDict['child']['foo']"
 
 
 def test_context_type(w):
-    @structured_dict
-    class StructuredDict(object):
-        a = Value()
+    FixedDict = fixeddict("FixedDict", "a")
     
-    @context_type(StructuredDict)
+    @context_type(FixedDict)
     def generator(value):
         yield Token(TokenTypes.computed_value, -value, "a")
     fsm = TokenParserStateMachine(generator(123), w)
@@ -1013,8 +1009,8 @@ def test_context_type(w):
     except StopIteration:
         pass
     
-    assert isinstance(fsm.context, StructuredDict)
-    assert fsm.context.a == -123
+    assert isinstance(fsm.context, FixedDict)
+    assert fsm.context["a"] == -123
 
 
 class TestRead(object):
@@ -1170,17 +1166,15 @@ class TestWrite(object):
             write(generator(), w, {})
     
     def test_returns_new_context(self, w):
-        @structured_dict
-        class StructuredDict(object):
-            foo = Value()
+        FixedDict = fixeddict("FixedDict", "foo")
         
-        @context_type(StructuredDict)
+        @context_type(FixedDict)
         def generator():
             yield Token(TokenTypes.computed_value, 123, "foo")
         
         context = write(generator(), w, {})
-        assert isinstance(context, StructuredDict)
-        assert context.foo == 123
+        assert isinstance(context, FixedDict)
+        assert context["foo"] == 123
     
     def test_exceptions_propagate_to_generator(self, w):
         generator_failed = [False]
@@ -1301,17 +1295,15 @@ class TestPadAndTruncate(object):
             pad_and_truncate(generator(), {})
     
     def test_returns_new_context(self):
-        @structured_dict
-        class StructuredDict(object):
-            foo = Value()
+        FixedDict = fixeddict("FixedDict", "foo")
         
-        @context_type(StructuredDict)
+        @context_type(FixedDict)
         def generator():
             yield Token(TokenTypes.computed_value, 123, "foo")
         
         context = pad_and_truncate(generator(), {})
-        assert isinstance(context, StructuredDict)
-        assert context.foo == 123
+        assert isinstance(context, FixedDict)
+        assert context["foo"] == 123
     
     def test_exceptions_propagate_to_generator(self):
         generator_failed = [False]

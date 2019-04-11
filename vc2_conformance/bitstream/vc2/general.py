@@ -42,7 +42,7 @@ from vc2_conformance.parse_code_functions import (
     is_fragment,
 )
 
-from vc2_conformance.bitstream.vc2.structured_dicts import *
+from vc2_conformance.bitstream.vc2.fixeddicts import *
 
 from vc2_conformance.bitstream.vc2.slice_arrays import (
     transform_data,

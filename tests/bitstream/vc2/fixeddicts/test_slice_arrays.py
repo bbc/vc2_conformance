@@ -2,12 +2,12 @@ import pytest
 
 from bitarray import bitarray
 
-from vc2_conformance.bitstream.vc2.structured_dicts.slice_arrays import (
+from vc2_conformance.bitstream.vc2.fixeddicts.slice_arrays import (
     LDSliceArray,
     HQSliceArray,
 )
 
-from vc2_conformance.bitstream.vc2.structured_dicts.slice_arrays_views import (
+from vc2_conformance.bitstream.vc2.fixeddicts.slice_arrays_views import (
     SliceArrayParameters,
     BaseSliceView,
     ComponentView,
@@ -156,8 +156,8 @@ class TestSliceArrayParameters(object):
         
         # Iterate over the subband samples in what should be index order
         indices = []
-        for sy in range(p.slices_y + 1):  # NB: Also test we can go beyond slices_y
-            for sx in range(p.slices_x):
+        for sy in range(p["slices_y"] + 1):  # NB: Also test we can go beyond slices_y
+            for sx in range(p["slices_x"]):
                 # NB We start from sx=1, sy=0
                 if sx == 0 and sy == 0:
                     continue
@@ -236,11 +236,11 @@ class TestSliceArrayParameters(object):
         assert p.num_subbands == 1
         assert p.num_subband_levels == 1
         
-        p.dwt_depth = 3
+        p["dwt_depth"] = 3
         assert p.num_subbands == 1 + 3 + 3 + 3
         assert p.num_subband_levels == 1 + 3
         
-        p.dwt_depth_ho = 2
+        p["dwt_depth_ho"] = 2
         assert p.num_subbands == 1 + 1 + 1 + 3 + 3 + 3
         assert p.num_subband_levels == 1 + 2 + 3
     
@@ -299,14 +299,14 @@ class TestBaseSliceView(object):
         assert v.slice_index == 21
     
     def test_qindex(self, a, v):
-        a.qindex = [0]*10*5
+        a["qindex"] = [0]*10*5
         
         # Get
         v.qindex = 123
-        assert a.qindex[10*2 + 1] == 123
+        assert a["qindex"][10*2 + 1] == 123
         
         # Set
-        a.qindex[10*2 + 1] = 321
+        a["qindex"][10*2 + 1] = 321
         assert v.qindex == 321
     
     def test_coeffs(self, v):
@@ -389,30 +389,30 @@ class TestComponentView(object):
         assert v.component == "y"
     
     def test_len(self, p, v):
-        p.dwt_depth = 0
-        p.dwt_depth_ho = 0
+        p["dwt_depth"] = 0
+        p["dwt_depth_ho"] = 0
         assert len(v) == 1
         
-        p.dwt_depth = 1
-        p.dwt_depth_ho = 2
+        p["dwt_depth"] = 1
+        p["dwt_depth_ho"] = 2
         assert len(v) == 1 + 2 + 3
     
     def test_iter(self, p, v):
-        p.dwt_depth = 0
-        p.dwt_depth_ho = 0
+        p["dwt_depth"] = 0
+        p["dwt_depth_ho"] = 0
         assert [sv.subband_index for sv in v] == [0]
         
-        p.dwt_depth = 1
-        p.dwt_depth_ho = 2
+        p["dwt_depth"] = 1
+        p["dwt_depth_ho"] = 2
         assert [sv.subband_index for sv in v] == list(range(1 + 2 + 3))
     
     def test_items(self, p, v):
-        p.dwt_depth = 0
-        p.dwt_depth_ho = 0
+        p["dwt_depth"] = 0
+        p["dwt_depth_ho"] = 0
         assert [(l, s, sv.subband_index) for l, s, sv in v.items()] == [(0, "DC", 0)]
         
-        p.dwt_depth = 1
-        p.dwt_depth_ho = 2
+        p["dwt_depth"] = 1
+        p["dwt_depth_ho"] = 2
         assert [(l, s, sv.subband_index) for l, s, sv in v.items()] == [
             (0, "L", 0),
             (1, "H", 1),
@@ -423,13 +423,13 @@ class TestComponentView(object):
         ]
     
     def test_getitem(self, p, v):
-        p.dwt_depth = 0
-        p.dwt_depth_ho = 0
+        p["dwt_depth"] = 0
+        p["dwt_depth_ho"] = 0
         assert v[0].subband_index == 0
         assert v[0, "DC"].subband_index == 0
         
-        p.dwt_depth = 1
-        p.dwt_depth_ho = 2
+        p["dwt_depth"] = 1
+        p["dwt_depth_ho"] = 2
         for i, (l, s) in enumerate([(0, "L"), (1, "H"), (2, "H"),
                                     (3, "HL"), (3, "LH"), (3, "HH")]):
             assert v[i].subband_index == i
@@ -470,8 +470,8 @@ class TestComponentSubbandView(object):
         assert len(v) == 20 * 10
     
     def test_normalise_key(self, p, v):
-        p.start_sx = 0
-        p.start_sy = 0
+        p["start_sx"] = 0
+        p["start_sy"] = 0
         
         base = ((10*2)*200) + (20*10)
         assert v._normalise_key(0) == base
@@ -482,8 +482,8 @@ class TestComponentSubbandView(object):
         assert v._normalise_key((0, 5)) == base + (5*20)
         assert v._normalise_key((1, 5)) == base + (5*20) + 1
         
-        p.start_sx = 1
-        p.start_sy = 2
+        p["start_sx"] = 1
+        p["start_sy"] = 2
         assert v._normalise_key(0) == 0
         assert v._normalise_key((0, 0)) == 0
     
@@ -493,30 +493,30 @@ class TestComponentSubbandView(object):
         assert v.end_index == base + len(v)
     
     def test_get_and_set(self, p, a, v):
-        p.start_sx = 1
-        p.start_sy = 2
+        p["start_sx"] = 1
+        p["start_sy"] = 2
         for _ in range(20*10):
-            a.y_transform.append(0)
+            a["y_transform"].append(0)
         
         v[0, 1] = 123
-        assert a.y_transform[20] == 123
+        assert a["y_transform"][20] == 123
         
-        a.y_transform[20] = 321
+        a["y_transform"][20] = 321
         assert v[0, 1] == 321
     
     def test_iter(self, p, a, v):
-        p.start_sx = 1
-        p.start_sy = 2
+        p["start_sx"] = 1
+        p["start_sy"] = 2
         for i in range(20*10):
-            a.y_transform.append(i)
+            a["y_transform"].append(i)
         
         assert list(iter(v)) == list(range(20*10))
     
     def test_items(self, p, a, v):
-        p.start_sx = 1
-        p.start_sy = 2
+        p["start_sx"] = 1
+        p["start_sy"] = 2
         for i in range(20*10):
-            a.y_transform.append(i)
+            a["y_transform"].append(i)
         
         assert list(v.items()) == [
             (i%20, i//20, i)
@@ -558,21 +558,21 @@ class TestComponentViewsStr(object):
         a = T(_parameters=p)
         
         if T is LDSliceArray:
-            a.slice_y_length = [0] * 128*16
-            a.y_block_padding = [bitarray()] * 128*16
-            a.c_block_padding = [bitarray()] * 64*8
+            a["slice_y_length"] = [0] * 128*16
+            a["y_block_padding"] = [bitarray()] * 128*16
+            a["c_block_padding"] = [bitarray()] * 64*8
         else:
-            a.slice_y_length = [0] * 128*16
-            a.slice_c1_length = [0] * 64*8
-            a.slice_c2_length = [0] * 64*8
+            a["slice_y_length"] = [0] * 128*16
+            a["slice_c1_length"] = [0] * 64*8
+            a["slice_c2_length"] = [0] * 64*8
             
-            a.y_block_padding = [bitarray()] * 128*16
-            a.c1_block_padding = [bitarray()] * 64*8
-            a.c2_block_padding = [bitarray()] * 64*8
+            a["y_block_padding"] = [bitarray()] * 128*16
+            a["c1_block_padding"] = [bitarray()] * 64*8
+            a["c2_block_padding"] = [bitarray()] * 64*8
         
-        a.y_transform = [0] * 128*16
-        a.c1_transform = [0] * 64*8
-        a.c2_transform = [0] * 64*8
+        a["y_transform"] = [0] * 128*16
+        a["c1_transform"] = [0] * 64*8
+        a["c2_transform"] = [0] * 64*8
         
         return a
     

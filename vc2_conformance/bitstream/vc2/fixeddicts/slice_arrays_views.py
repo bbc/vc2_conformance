@@ -3,7 +3,7 @@
 
 from vc2_conformance.math import intlog2
 
-from vc2_conformance.structured_dict import structured_dict, Value
+from vc2_conformance.fixeddict import fixeddict, Entry
 
 from vc2_conformance.subband_indexing import index_to_subband, subband_to_index
 
@@ -20,40 +20,40 @@ __all__ = [
     "HQSliceView",
 ]
 
+_SliceArrayParameters = fixeddict(
+    "_SliceArrayParameters",
+    Entry("slices_x", default=1),
+    Entry("slices_y", default=1),
+    
+    Entry("start_sx", default=0),
+    Entry("start_sy", default=0),
+    Entry("slice_count", default=1),
+    
+    Entry("dwt_depth", default=0),
+    Entry("dwt_depth_ho", default=0),
+    
+    Entry("luma_width", default=1),
+    Entry("luma_height", default=1),
+    
+    Entry("color_diff_width", default=1),
+    Entry("color_diff_height", default=1),
+)
 
-@structured_dict
-class SliceArrayParameters(object):
+class SliceArrayParameters(_SliceArrayParameters):
     """
     The set of computed parameters which are required to be able to sensibly
     interact with arrays of slice data, along with various methods to compute
     further information (e.g. indices) based on these.
     """
     
-    slices_x = Value(default=1)
-    slices_y = Value(default=1)
-    
-    start_sx = Value(default=0)
-    start_sy = Value(default=0)
-    slice_count = Value(default=1)
-    
-    dwt_depth = Value(default=0)
-    dwt_depth_ho = Value(default=0)
-    
-    luma_width = Value(default=1)
-    luma_height = Value(default=1)
-    
-    color_diff_width = Value(default=1)
-    color_diff_height = Value(default=1)
-    
-    
     def to_slice_index(self, sx, sy):
         """
         Given a slice coordinate, return the index into this slice array of
         that coordinate.
         """
-        index = sx + (sy * self.slices_x)
+        index = sx + (sy * self["slices_x"])
         
-        offset = self.start_sx + (self.start_sy * self.slices_x)
+        offset = self["start_sx"] + (self["start_sy"] * self["slices_x"])
         index -= offset
         
         return index
@@ -62,11 +62,11 @@ class SliceArrayParameters(object):
         """
         Given an index into this slice array, return the (sx, sy) tuple.
         """
-        offset = self.start_sx + (self.start_sy * self.slices_x)
+        offset = self["start_sx"] + (self["start_sy"] * self["slices_x"])
         slice_index += offset
         
-        x = slice_index % self.slices_x
-        y = slice_index // self.slices_x
+        x = slice_index % self["slices_x"]
+        y = slice_index // self["slices_x"]
         
         return (x, y)
     
@@ -82,21 +82,21 @@ class SliceArrayParameters(object):
         level : int
             The transform level to compute this value for
         """
-        scale_w = 1 << (self.dwt_depth_ho + self.dwt_depth)
-        scale_h = 1 << self.dwt_depth
+        scale_w = 1 << (self["dwt_depth_ho"] + self["dwt_depth"])
+        scale_h = 1 << self["dwt_depth"]
         
         pw = scale_w * ( (w+scale_w-1) // scale_w)
         ph = scale_h * ( (h+scale_h-1) // scale_h)
         
         if level == 0:
-            subband_width = pw // (1 << (self.dwt_depth_ho + self.dwt_depth))
+            subband_width = pw // (1 << (self["dwt_depth_ho"] + self["dwt_depth"]))
         else:
-            subband_width = pw // (1 << (self.dwt_depth_ho + self.dwt_depth - level + 1))
+            subband_width = pw // (1 << (self["dwt_depth_ho"] + self["dwt_depth"] - level + 1))
         
-        if level <= self.dwt_depth_ho:
-            subband_height = ph // (1 << self.dwt_depth)
+        if level <= self["dwt_depth_ho"]:
+            subband_height = ph // (1 << self["dwt_depth"])
         else:
-            subband_height = ph // (1 << (self.dwt_depth_ho + self.dwt_depth - level + 1))
+            subband_height = ph // (1 << (self["dwt_depth_ho"] + self["dwt_depth"] - level + 1))
         
         return (subband_width, subband_height)
     
@@ -106,10 +106,10 @@ class SliceArrayParameters(object):
         using :py:meth:`subband_dimensions`.
         """
         return (
-            (subband_width * sx) // self.slices_x,
-            (subband_height * sy) // self.slices_y,
-            (subband_width * (sx + 1)) // self.slices_x,
-            (subband_height * (sy + 1)) // self.slices_y,
+            (subband_width * sx) // self["slices_x"],
+            (subband_height * sy) // self["slices_y"],
+            (subband_width * (sx + 1)) // self["slices_x"],
+            (subband_height * (sy + 1)) // self["slices_y"],
         )
     
     def to_coeff_index(self, subband_dimensions,
@@ -134,7 +134,7 @@ class SliceArrayParameters(object):
         accommodate situations where a bitstream (invalidly) contains slices
         past the end of the picture.
         """
-        if not (0 <= sx < self.slices_x):
+        if not (0 <= sx < self["slices_x"]):
             raise IndexError("slice x-coordinate out of range")
         
         # NB: Explicitly *don't* check range of 'sy'
@@ -154,7 +154,7 @@ class SliceArrayParameters(object):
                 subband_dimensions):
             # Top-left ('origin') slice bounds in full picture
             ox1, oy1, ox2, oy2 = self.slice_subband_bounds(
-                self.start_sx, self.start_sy,
+                self["start_sx"], self["start_sy"],
                 subband_width, subband_height,
             )
             
@@ -243,12 +243,12 @@ class SliceArrayParameters(object):
     @property
     def num_subband_levels(self):
         """The number of subband levels."""
-        return 1 + self.dwt_depth_ho + self.dwt_depth
+        return 1 + self["dwt_depth_ho"] + self["dwt_depth"]
     
     @property
     def num_subbands(self):
         """The total number of subbands."""
-        return 1 + self.dwt_depth_ho + (self.dwt_depth * 3)
+        return 1 + self["dwt_depth_ho"] + (self["dwt_depth"] * 3)
     
     @property
     def luma_subband_dimensions(self):
@@ -258,12 +258,12 @@ class SliceArrayParameters(object):
         """
         return tuple(
             self.subband_dimensions(
-                w=self.luma_width,
-                h=self.luma_height,
+                w=self["luma_width"],
+                h=self["luma_height"],
                 level=level,
             )
             for level in range(self.num_subband_levels)
-            for _ in range(1 if level < (1 + self.dwt_depth_ho) else 3)
+            for _ in range(1 if level < (1 + self["dwt_depth_ho"]) else 3)
         )
     
     @property
@@ -274,12 +274,12 @@ class SliceArrayParameters(object):
         """
         return tuple(
             self.subband_dimensions(
-                w=self.color_diff_width,
-                h=self.color_diff_height,
+                w=self["color_diff_width"],
+                h=self["color_diff_height"],
                 level=level,
             )
             for level in range(self.num_subband_levels)
-            for _ in range(1 if level < (1 + self.dwt_depth_ho) else 3)
+            for _ in range(1 if level < (1 + self["dwt_depth_ho"]) else 3)
         )
 
 
@@ -290,13 +290,13 @@ class SliceValueView(object):
         self._name = name
     
     def __get__(self, obj, type=None):
-        return getattr(obj._slice_array, self._name)[
-            obj._slice_array._parameters.to_slice_index(obj._sx, obj._sy)
+        return obj._slice_array[self._name][
+            obj._slice_array["_parameters"].to_slice_index(obj._sx, obj._sy)
         ]
     
     def __set__(self, obj, value):
-        getattr(obj._slice_array, self._name)[
-            obj._slice_array._parameters.to_slice_index(obj._sx, obj._sy)
+        obj._slice_array[self._name][
+            obj._slice_array["_parameters"].to_slice_index(obj._sx, obj._sy)
         ] = value
 
 
@@ -320,7 +320,7 @@ class BaseSliceView(object):
     
     @property
     def slice_index(self):
-        return self._slice_array._parameters.to_slice_index(self._sx, self._sy)
+        return self._slice_array["_parameters"].to_slice_index(self._sx, self._sy)
     
     qindex = SliceValueView("qindex")
     
@@ -361,15 +361,15 @@ class LDSliceView(BaseSliceView):
         # picture slice.
         slice_number = (
             self._sy *
-            self._slice_array._parameters.slices_x
+            self._slice_array["_parameters"]["slices_x"]
         ) + self._sx
         slice_bytes = (
-            ((slice_number + 1) * self._slice_array._slice_bytes_numerator) //
-            self._slice_array._slice_bytes_denominator
+            ((slice_number + 1) * self._slice_array["_slice_bytes_numerator"]) //
+            self._slice_array["_slice_bytes_denominator"]
         )
         slice_bytes -= (
-            (slice_number * self._slice_array._slice_bytes_numerator) //
-            self._slice_array._slice_bytes_denominator
+            (slice_number * self._slice_array["_slice_bytes_numerator"]) //
+            self._slice_array["_slice_bytes_denominator"]
         )
         return 8 * slice_bytes
     
@@ -445,7 +445,7 @@ class HQSliceView(BaseSliceView):
                 "prefix_bytes: {}".format(
                     " ".join(map(Hex(2), bytearray(self.prefix_bytes))))
             ]
-            if self._slice_array._parameters.slice_prefix_bytes != 0 else
+            if self._slice_array["_parameters"].slice_prefix_bytes != 0 else
             []
         ) + [
             "qindex: {}".format(self.qindex),
@@ -518,8 +518,8 @@ class ComponentView(object):
             key = subband_to_index(
                 level,
                 subband,
-                self._slice_array._parameters.dwt_depth,
-                self._slice_array._parameters.dwt_depth_ho,
+                self._slice_array["_parameters"]["dwt_depth"],
+                self._slice_array["_parameters"]["dwt_depth_ho"],
             )
         
         return ComponentSubbandView(
@@ -531,14 +531,14 @@ class ComponentView(object):
         )
     
     def __len__(self):
-        return self._slice_array._parameters.num_subbands
+        return self._slice_array["_parameters"].num_subbands
     
     def __iter__(self):
         """
         Iterate over :py:class:`ComponentSubbandView` views of the subbands for
         this component.
         """
-        for subband_index in range(self._slice_array._parameters.num_subbands):
+        for subband_index in range(self._slice_array["_parameters"].num_subbands):
             yield self[subband_index]
     
     def items(self):
@@ -549,8 +549,8 @@ class ComponentView(object):
         for i, transform_value in enumerate(self):
             level, subband = index_to_subband(
                 i,
-                self._slice_array._parameters.dwt_depth,
-                self._slice_array._parameters.dwt_depth_ho,
+                self._slice_array["_parameters"]["dwt_depth"],
+                self._slice_array["_parameters"]["dwt_depth_ho"],
             )
             yield (level, subband, transform_value)
     
@@ -585,14 +585,14 @@ class ComponentSubbandView(object):
         self._subband_index = subband_index
         
         if self._component == "y":
-            self._data = self._slice_array.y_transform
-            self._subband_dimensions = self._slice_array._parameters.luma_subband_dimensions
+            self._data = self._slice_array["y_transform"]
+            self._subband_dimensions = self._slice_array["_parameters"].luma_subband_dimensions
         elif self._component == "c1":
-            self._data = self._slice_array.c1_transform
-            self._subband_dimensions = self._slice_array._parameters.color_diff_subband_dimensions
+            self._data = self._slice_array["c1_transform"]
+            self._subband_dimensions = self._slice_array["_parameters"].color_diff_subband_dimensions
         elif self._component == "c2":
-            self._data = self._slice_array.c2_transform
-            self._subband_dimensions = self._slice_array._parameters.color_diff_subband_dimensions
+            self._data = self._slice_array["c2_transform"]
+            self._subband_dimensions = self._slice_array["_parameters"].color_diff_subband_dimensions
         else:
             raise ValueError("Invalid component.")
     
@@ -600,8 +600,8 @@ class ComponentSubbandView(object):
     def subband(self):
         return index_to_subband(
             self._subband_index,
-            self._slice_array._parameters.dwt_depth,
-            self._slice_array._parameters.dwt_depth_ho,
+            self._slice_array["_parameters"]["dwt_depth"],
+            self._slice_array["_parameters"]["dwt_depth_ho"],
         )
     
     @property
@@ -614,7 +614,7 @@ class ComponentSubbandView(object):
         The (x1, y1, x2, y2) bounds (within its component) of this subband's
         coefficient data.
         """
-        return self._slice_array._parameters.slice_subband_bounds(
+        return self._slice_array["_parameters"].slice_subband_bounds(
             self._sx, self._sy,
             *self._subband_dimensions[self._subband_index]
         )
@@ -637,7 +637,7 @@ class ComponentSubbandView(object):
             x = key % width
             y = key // width
             
-        return self._slice_array._parameters.to_coeff_index(
+        return self._slice_array["_parameters"].to_coeff_index(
             self._subband_dimensions,
             self._sx,
             self._sy,

@@ -468,8 +468,8 @@ have a corresponding representation in a generated bitstream and also that
 anything which ends up in the bitstream must come from the context dictionary.
 
 
-Structured Dictionaries
------------------------
+Fixed Dictionaries
+------------------
 
 In previous sections we've seen how bitstreams can be deserialised and
 serialised to and from nested hierarchies of context dictionaries. Though it is
@@ -507,31 +507,31 @@ requiring, for example, targets such as 'parse_info_prefix' to be filled out
 every time. Further, mistakes such as misspelled target names will only show up
 later when a :py:func:`read` or :py:func:`write` fails.
 
-The :py:module:`vc2_conformance.structured_dict` module provides an alternative
+The :py:module:`vc2_conformance.fixeddict` module provides an alternative
 to the standard Python :py:class:`dict` type providing numerous useful
 features:
 
 * **Default values can be provided.** This can save time populating many
-  structures (e.g. by setting 'parse_info_prefix' read by parse_info() to the
-  correct value).
+  structures (e.g. by defaulting 'parse_info_prefix' to the correct value).
 * **Improved string representation.** Including changing the base numbers are
   printed in or showing the names of enumerated values.
 * **The allowed entries are fixed ahead of time.** This ensures that no
   unexpected or misspelled target names can be used by accident.
 
-We might define a structured dictionary to go with our ``parse_info`` generator
+We might define a fixed dictionary to go with our ``parse_info`` generator
 like so::
 
-    from vc2_conformance.structured_dict import structured_dict, Value
+    from vc2_conformance.fixeddict import fixeddict, Entry
     from vc2_conformance.formatters import Hex
     from vc2_conformance.tables import ParseCodes
     
-    @structured_dict
-    class ParseInfo(object):
-        parse_info_prefix = Value(default=0x42424344, formatter=Hex(8))
-        parse_code = Value(default=ParseCodes.end_of_sequence, enum=ParseCodes)
-        next_parse_offset = Value(default=0)
-        previous_parse_offset = Value(default=0)
+    ParseInfo = fixeddict(
+        "ParseInfo",
+        Entry("parse_info_prefix", default=0x42424344, formatter=Hex(8)),
+        Entry("parse_code", default=ParseCodes.end_of_sequence, enum=ParseCodes),
+        Entry("next_parse_offset", default=0),
+        Entry("previous_parse_offset", default=0),
+    )
 
 We can demonstrate the key features like so::
 
@@ -552,8 +552,8 @@ We can demonstrate the key features like so::
       ...
     KeyError: parse-code
 
-Because structured dictionaries are still dictionaries, you can pass them as
-context dictionaries to :py:func:`write` and everything will work correctly::
+Because fixed dictionaries are still dictionaries, you can pass them as context
+dictionaries to :py:func:`write` and everything will work correctly::
 
     >>> write(parse_info(), writer, pi)  # Works!
 
@@ -580,7 +580,7 @@ with identical effect::
         state["previous_parse_offset"] = yield Token(TokenTypes.nbits, 32, "previous_parse_offset")
 
 Now when reading the context dictionary will be an instance of our
-``ParseInfo`` structured dict type::
+``ParseInfo`` fixed dict type::
 
     >>> context = read(parse_info(), reader)
     >>> str(context)
@@ -640,7 +640,7 @@ As an example::
 .. note::
 
     Values *prefixed* with an underscore are hidden in the string
-    representation of structured dictionaries.
+    representation of :py:module:`fixeddict` dictionaries.
 
 """
 

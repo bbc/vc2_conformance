@@ -35,7 +35,7 @@ from vc2_conformance.slice_sizes import (
 
 from vc2_conformance.bitstream.generator_io import TokenTypes
 
-from vc2_conformance.bitstream.vc2.structured_dicts import (
+from vc2_conformance.bitstream.vc2.fixeddicts import (
     SliceArrayParameters,
     LDSliceArray,
     HQSliceArray,

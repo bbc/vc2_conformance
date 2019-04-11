@@ -17,7 +17,7 @@ dictionary-like object with the following entries:
 * ``"luma_depth"``
 * ``"color_diff_depth"``
 """
-from vc2_conformance.structured_dict import structured_dict, Value
+from vc2_conformance.fixeddict import fixeddict, Entry
 
 from vc2_conformance.tables import *
 
@@ -39,51 +39,41 @@ __all__ = [
 ]
 
 
-@structured_dict
-class VideoParameters(object):
-    """(11.4) Video parameters struct."""
-    
+VideoParameters = fixeddict(
+    "VideoParameters",
     # (11.4.3) frame_size
-    frame_width = Value()
-    frame_height = Value()
-    
+    Entry("frame_width"),
+    Entry("frame_height"),
     # (11.4.4) color_diff_sampling_format
-    color_diff_format_index = Value(enum=ColorDifferenceSamplingFormats)
-    
+    Entry("color_diff_format_index", enum=ColorDifferenceSamplingFormats),
     # (11.4.5) scan_format
-    source_sampling = Value(enum=SourceSamplingModes)
-    
+    Entry("source_sampling", enum=SourceSamplingModes),
     # (11.4.5)
-    top_field_first = Value()
-    
+    Entry("top_field_first"),
     # (11.4.6) frame_rate
-    frame_rate_numer = Value()
-    frame_rate_denom = Value()
-    
+    Entry("frame_rate_numer"),
+    Entry("frame_rate_denom"),
     # (11.4.7) aspect_ratio
-    pixel_aspect_ratio_numer = Value()
-    pixel_aspect_ratio_denom = Value()
-    
+    Entry("pixel_aspect_ratio_numer"),
+    Entry("pixel_aspect_ratio_denom"),
     # (11.4.8) clean_area
-    clean_width = Value()
-    clean_height = Value()
-    left_offset = Value()
-    top_offset = Value()
-    
+    Entry("clean_width"),
+    Entry("clean_height"),
+    Entry("left_offset"),
+    Entry("top_offset"),
     # (11.4.9) signal_range
-    luma_offset = Value()
-    luma_excursion = Value()
-    color_diff_offset = Value()
-    color_diff_excursion = Value()
-    
+    Entry("luma_offset"),
+    Entry("luma_excursion"),
+    Entry("color_diff_offset"),
+    Entry("color_diff_excursion"),
     # (11.4.10.2) color_primaries
-    color_primaries = Value()
-    
+    Entry("color_primaries"),
     # (11.4.10.3) color_matrix
-    color_matrix = Value()
-    
+    Entry("color_matrix"),
     # (11.4.10.4) transfer_function
-    transfer_function = Value()
+    Entry("transfer_function"),
+)
+"""(11.4) Video parameters struct."""
 
 
 def set_source_defaults(base_video_format):

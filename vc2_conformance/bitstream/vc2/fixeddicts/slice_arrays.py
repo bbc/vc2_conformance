@@ -9,9 +9,9 @@ flat arrays below.
 See also :py:module:`slice_arrays_views` for user-friendly view APIs.
 """
 
-from vc2_conformance.structured_dict import structured_dict, Value
+from vc2_conformance.fixeddict import fixeddict, Entry
 
-from vc2_conformance.bitstream.vc2.structured_dicts.slice_arrays_views import (
+from vc2_conformance.bitstream.vc2.fixeddicts.slice_arrays_views import (
     SliceArrayParameters,
     LDSliceView,
     HQSliceView,
@@ -22,30 +22,32 @@ __all__ = [
     "HQSliceArray",
 ]
 
+_LDSliceArray = fixeddict(
+    "_LDSliceArray",
+    Entry("qindex", default_factory=list),
+    
+    Entry("slice_y_length", default_factory=list),
+    
+    Entry("y_transform", default_factory=list),
+    Entry("y_block_padding", default_factory=list),
+    
+    Entry("c1_transform", default_factory=list),
+    Entry("c2_transform", default_factory=list),
+    Entry("c_block_padding", default_factory=list),
+    
+    # Computed values (used only for view interfaces)
+    Entry("_parameters", default_factory=SliceArrayParameters),
+    Entry("_slice_bytes_numerator", default=0),
+    Entry("_slice_bytes_denominator", default=1),
+)
 
-@structured_dict
-class LDSliceArray(object):
+class LDSliceArray(_LDSliceArray):
     """
     An array of consecutive coded low-delay picture slices (13.5.3.1).
     
     Values in the contained lists are always flat lists of values in bitstream
     order.
     """
-    qindex = Value(default_factory=list)
-    
-    slice_y_length = Value(default_factory=list)
-    
-    y_transform = Value(default_factory=list)
-    y_block_padding = Value(default_factory=list)
-    
-    c1_transform = Value(default_factory=list)
-    c2_transform = Value(default_factory=list)
-    c_block_padding = Value(default_factory=list)
-    
-    # Computed values (used only for view interfaces)
-    _parameters = Value(default_factory=SliceArrayParameters)
-    _slice_bytes_numerator = Value(default=0)
-    _slice_bytes_denominator = Value(default=1)
     
     def iter_slices(self):
         """Iterate over views of all slices."""
@@ -62,45 +64,47 @@ class LDSliceArray(object):
         if isinstance(key, tuple):
             sx, sy = key
         else:
-            sx, sy = self._parameters.from_slice_index(key)
+            sx, sy = self["_parameters"].from_slice_index(key)
         return LDSliceView(self, sx, sy)
     
     def __str__(self):
         return "<{} with {} slice{}>".format(
             self.__class__.__name__,
-            len(self.qindex),
-            "s" if len(self.qindex) != 1 else "",
+            len(self["qindex"]),
+            "s" if len(self["qindex"]) != 1 else "",
         )
 
+_HQSliceArray = fixeddict(
+    "_HQSliceArray",
+    Entry("prefix_bytes", default_factory=list),
+    
+    Entry("qindex", default_factory=list),
+    
+    Entry("slice_y_length", default_factory=list),
+    Entry("slice_c1_length", default_factory=list),
+    Entry("slice_c2_length", default_factory=list),
+    
+    Entry("y_transform", default_factory=list),
+    Entry("c1_transform", default_factory=list),
+    Entry("c2_transform", default_factory=list),
+    
+    Entry("y_block_padding", default_factory=list),
+    Entry("c1_block_padding", default_factory=list),
+    Entry("c2_block_padding", default_factory=list),
+    
+    # Computed values (used only for view interfaces)
+    Entry("_parameters", default_factory=SliceArrayParameters),
+    Entry("_slice_prefix_bytes", default=0),
+    Entry("_slice_size_scaler", default=1),
+)
 
-@structured_dict
-class HQSliceArray(object):
+class HQSliceArray(_HQSliceArray):
     """
     An array of consecutive coded high-quality picture slices (13.5.4).
     
     Values in the contained lists are always flat lists of values in bitstream
     order.
     """
-    prefix_bytes = Value(default_factory=list)
-    
-    qindex = Value(default_factory=list)
-    
-    slice_y_length = Value(default_factory=list)
-    y_transform = Value(default_factory=list)
-    y_block_padding = Value(default_factory=list)
-    
-    slice_c1_length = Value(default_factory=list)
-    c1_transform = Value(default_factory=list)
-    c1_block_padding = Value(default_factory=list)
-    
-    slice_c2_length = Value(default_factory=list)
-    c2_transform = Value(default_factory=list)
-    c2_block_padding = Value(default_factory=list)
-    
-    # Computed values (used only for view interfaces)
-    _parameters = Value(default_factory=SliceArrayParameters)
-    _slice_prefix_bytes = Value(default=0)
-    _slice_size_scaler = Value(default=1)
     
     def iter_slices(self):
         """Iterate over views of all slices."""
@@ -117,12 +121,12 @@ class HQSliceArray(object):
         if isinstance(key, tuple):
             sx, sy = key
         else:
-            sx, sy = self._parameters.from_slice_index(key)
+            sx, sy = self["_parameters"].from_slice_index(key)
         return HQSliceView(self, sx, sy)
     
     def __str__(self):
         return "<{} with {} slice{}>".format(
             self.__class__.__name__,
-            len(self.qindex),
-            "s" if len(self.qindex) != 1 else "",
+            len(self["qindex"]),
+            "s" if len(self["qindex"]) != 1 else "",
         )
