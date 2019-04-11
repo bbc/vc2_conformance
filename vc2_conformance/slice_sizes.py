@@ -86,16 +86,16 @@ def slice_bytes(state, sx, sy):
 
 def slice_left(state, sx, c, level):
     """(13.5.6.2) Get the x coordinate of the LHS of the given slice."""
-    return (subband_width(state, level, c) * sx) // state.slices_x
+    return (subband_width(state, level, c) * sx) // state["slices_x"]
 
 def slice_right(state, sx, c, level):
     """(13.5.6.2) Get the x coordinate of the RHS of the given slice."""
-    return (subband_width(state, level, c) * (sx + 1)) // state.slices_x
+    return (subband_width(state, level, c) * (sx + 1)) // state["slices_x"]
 
 def slice_top(state, sy, c, level):
     """(13.5.6.2) Get the y coordinate of the top of the given slice."""
-    return (subband_height(state, level, c) * sy) // state.slices_y
+    return (subband_height(state, level, c) * sy) // state["slices_y"]
 
 def slice_bottom(state, sy, c, level):
     """(13.5.6.2) Get the y coordinate of the bottom of the given slice."""
-    return (subband_height(state, level, c) * (sy + 1)) // state.slices_y
+    return (subband_height(state, level, c) * (sy + 1)) // state["slices_y"]
