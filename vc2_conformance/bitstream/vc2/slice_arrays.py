@@ -188,8 +188,15 @@ def hq_slice(state, sx, sy):
 
 def slice_band(state, transform, level, orient, sx, sy):
     """(13.5.6.3) Read and dequantize a subband in a slice."""
-    for y in range(slice_top(state, sy, "Y", level), slice_bottom(state, sy, "Y", level)):
-        for x in range(slice_left(state, sx, "Y", level), slice_right(state, sx, "Y", level)):
+    # These values evaulated in the loop definition in the spec, moving them
+    # here saves a lot of computation
+    y1 = slice_top(state, sy, "Y", level)
+    y2 = slice_bottom(state, sy, "Y", level)
+    x1 = slice_left(state, sx, "Y", level)
+    x2 = slice_right(state, sx, "Y", level)
+    
+    for y in range(y1, y2):
+        for x in range(x1, x2):
             val = (yield (TokenTypes.sint, None, transform))
             
             # Not needed
@@ -198,10 +205,17 @@ def slice_band(state, transform, level, orient, sx, sy):
 
 def color_diff_slice_band(state, level, orient, sx, sy):
     """(13.5.6.4) Read and dequantize interleaved color difference subbands in a slice."""
+    # These values evaulated in the loop definition in the spec, moving them
+    # here saves a lot of computation
+    y1 = slice_top(state, sy, "C1", level)
+    y2 = slice_bottom(state, sy, "C1", level)
+    x1 = slice_left(state, sx, "C1", level)
+    x2 = slice_right(state, sx, "C1", level)
+    
     # Not needed
     #qi = state.quantizer[level][orient]
-    for y in range(slice_top(state, sy, "C1", level), slice_bottom(state, sy, "C1", level)):
-        for x in range(slice_left(state, sx, "C1", level), slice_right(state, sx, "C1", level)):
+    for y in range(y1, y2):
+        for x in range(x1, x2):
             # Not needed
             #qi = state.quantizer[level][orient]
             
