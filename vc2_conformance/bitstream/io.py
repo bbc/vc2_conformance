@@ -1,6 +1,12 @@
 """
 Low-level wrappers for file-like objects which facilitate bitwise read and
-write operations.
+write operations of the kinds used by VC-2's bitstream format.
+
+By contrast with the implementation defined by the VC-2 pseudo code:
+
+* Writing is implemented, as well as reading
+* More appropriate Python data types are returned
+* During writing, bounds checking is performed.
 """
 
 from bitarray import bitarray
@@ -18,10 +24,6 @@ from vc2_conformance.exp_golomb import (
 __all__ = [
     "BitstreamReader",
     "BitstreamWriter",
-    "BitstreamPadAndTruncate",
-    "BoundedReader",
-    "BoundedWriter",
-    "BoundedPadAndTruncate",
 ]
 
 
@@ -46,6 +48,11 @@ class BitstreamReader(object):
         
         # The byte currently being read (or None if at the EOF)
         self._current_byte = None
+        
+        # None, if not in a bounded block. Otherwise, the number of unused bits
+        # remaining in the block. If negative, indicates the number of bits
+        # read past the end of the block.
+        self._bits_remaining = None
         
         # The number of bits read past the end-of-file. Reset on 'seek'.
         self._bits_past_eof = 0
@@ -90,6 +97,9 @@ class BitstreamReader(object):
         """
         assert 0 <= bits <= 7
         
+        if self._bits_remaining is not None:
+            raise Exception("Cannot seek while in a bounded block.")
+        
         self._file.seek(bytes)
         self._byte_offset = self._file.tell()
         self._read_byte()
@@ -103,11 +113,52 @@ class BitstreamReader(object):
         """
         return self._bits_past_eof
     
+    @property
+    def bits_remaining(self):
+        """
+        The number of bits left in the current bounded block.
+        
+        None, if not in a bounded block. Otherwise, the number of unused bits
+        remaining in the block. If negative, indicates the number of bits read
+        past the end of the block.
+        """
+        return self._bits_remaining
+    
+    def bounded_block_begin(self, length):
+        """
+        Begin a bounded block of the specified length in bits.
+        """
+        if self._bits_remaining is not None:
+            raise Exception("Cannot nest bounded blocks")
+        self._bits_remaining = length
+    
+    def bounded_block_end(self):
+        """
+        Ends the current bounded block. Returns the number of unused bits
+        remaining, but does not read them or seek past them.
+        """
+        if self._bits_remaining is None:
+            raise Exception("Not in bounded block.")
+        
+        unused_bits = max(0, self._bits_remaining)
+        self._bits_remaining = None
+        
+        return unused_bits
+    
     def read_bit(self):
         """
         Read and return the next bit in the stream. (A.2.3) Reads '1' for
         values past the end of file.
         """
+        # Don't read past the end of the current bounded block
+        if self._bits_remaining is not None:
+            self._bits_remaining -= 1
+        
+            # NB: Checked *after* decrement hence <= -1 not <= 0
+            if self._bits_remaining <= -1:
+                return 1
+        
+        # Read '1's past the EOF
         if self._current_byte is None:
             self._bits_past_eof += 1
             return 1
@@ -196,6 +247,11 @@ class BitstreamWriter(object):
         
         # The byte currently being write
         self._current_byte = 0
+        
+        # None, if not in a bounded block. Otherwise, the number of unused bits
+        # remaining in the block. If negative, indicates the number of bits
+        # read past the end of the block.
+        self._bits_remaining = None
     
     def _write_byte(self):
         """Internal method. Write the current byte and start a new one. (A.2.2)"""
@@ -231,6 +287,9 @@ class BitstreamWriter(object):
         """
         assert 0 <= bits <= 7
         
+        if self._bits_remaining is not None:
+            raise Exception("Cannot seek while in a bounded block.")
+        
         self.flush()
         
         self._file.seek(bytes)
@@ -257,10 +316,54 @@ class BitstreamWriter(object):
         """The number of bits written beyond the end of the file. Always 0."""
         return 0
     
+    @property
+    def bits_remaining(self):
+        """
+        The number of bits left in the current bounded block.
+        
+        None, if not in a bounded block. Otherwise, the number of unused bits
+        remaining in the block. If negative, indicates the number of bits read
+        past the end of the block.
+        """
+        return self._bits_remaining
+    
+    def bounded_block_begin(self, length):
+        """
+        Begin a bounded block of the specified length in bits.
+        """
+        if self._bits_remaining is not None:
+            raise Exception("Cannot nest bounded blocks")
+        self._bits_remaining = length
+    
+    def bounded_block_end(self):
+        """
+        Ends the current bounded block. Returns the number of unused bits
+        remaining, but does not write them or seek past them.
+        """
+        if self._bits_remaining is None:
+            raise Exception("Not in bounded block.")
+        
+        unused_bits = max(0, self._bits_remaining)
+        self._bits_remaining = None
+        
+        return unused_bits
+    
     def write_bit(self, value):
         """
-        Write a bit into the bitstream.
+        Write a bit into the bitstream. If in a bounded block, raises a
+        :py:exc:`ValueError` if a '0' is written beyond the end of the block.
         """
+        # Don't write past the end of the current bounded block
+        if self._bits_remaining is not None:
+            self._bits_remaining -= 1
+        
+            # NB: Checked *after* decrement hence <= -1 not <= 0
+            if self._bits_remaining <= -1:
+                if not value:
+                    raise ValueError(
+                        "Cannot write 0s past the end of a bounded block.")
+                return
+        
         # Clear the target bit
         self._current_byte &= ~(1 << self._next_bit)
         # Set new value
@@ -349,234 +452,3 @@ class BitstreamWriter(object):
         # Write sign bit
         if value != 0:
             self.write_bit(value < 0)
-
-
-class BitstreamPadAndTruncate(object):
-    """
-    Exposes a similar API to :py:class:`BitstreamReader` and
-    :py:class:`BitstreamWriter` but does not actually perform any
-    reading/writing. Instead two useful functions are implemented:
-    
-    * A virtual file position is maintained to track the length of the values
-      encountered.
-    * The various 'pad_and_truncate_' methods take None or an existing value
-      and then zero-pad or truncate that value to the specified length.
-    """
-    
-    def __init__(self):
-        # The current position of the virtual file
-        self._bit_offset = 0
-    
-    def tell(self):
-        """
-        Report the current bit-position within the stream.
-        
-        Returns
-        =======
-        (bytes, bits)
-            ``bytes`` is the offset of the current byte from the start of the
-            stream. ``bits`` is the offset in the current byte (starting at 7
-            (MSB) and advancing towards 0 (LSB) as bits are written).
-        """
-        bytes = self._bit_offset // 8
-        bits = 7 - (self._bit_offset % 8)
-        return (bytes, bits)
-    
-    def seek(self, bytes, bits=7):
-        """
-        Seek to a specific (absolute) position in the file. Seeking to a given
-        byte will overwrite any bits already set in that byte to 0.
-        
-        Parameters
-        ==========
-        bytes : int
-            The byte-offset from the start of the file.
-        bits : int
-            The bit offset into the specified byte to start writing to.
-        """
-        assert 0 <= bits <= 7
-        
-        self._bit_offset = (bytes*8) + (7 - bits)
-    
-    def advance_bit_offset(self, bits):
-        """
-        Advance 'bits' bits further.
-        """
-        self._bit_offset += bits
-    
-    def pad_and_truncate_bit(self, value=None):
-        """
-        A single bit.
-        """
-        self.advance_bit_offset(1)
-        return int(bool(value))
-    
-    def pad_and_truncate_nbits(self, bits, value=None):
-        """
-        A 'bits'-bit unsigned integer.
-        """
-        self.advance_bit_offset(bits)
-        return int(value or 0) & ((1<<bits) - 1)
-    
-    def pad_and_truncate_bitarray(self, bits, value=None):
-        """
-        A 'bits' long :py;class:`bitarray.bitarray` 'value'.
-        """
-        self.advance_bit_offset(bits)
-        
-        value = value or bitarray()
-        if len(value) == bits:
-            return value
-        elif len(value) < bits:
-            padding = bitarray(bits - len(value))
-            padding.setall(0)
-            return padding + value
-        else:  # len(value) > bits:
-            return value[-bits:]
-    
-    def pad_and_truncate_bytes(self, num_bytes, value=None):
-        """
-        A :py:class:`bytes` string.
-        """
-        self.advance_bit_offset(num_bytes * 8)
-        
-        value = value or bytes()
-        if len(value) == num_bytes:
-            return value
-        elif len(value) < num_bytes:
-            padding = b"\x00"*(num_bytes - len(value))
-            return padding + value
-        else:  # len(value) > num_bytes:
-            return value[-num_bytes:]
-    
-    def pad_and_truncate_uint(self, value=None):
-        """
-        An unsigned exp-golomb code.
-        """
-        if value is None or value < 0:
-            value = 0
-        self.advance_bit_offset(exp_golomb_length(value))
-        return value
-    
-    def pad_and_truncate_sint(self, value=None):
-        """
-        An signed exp-golomb code.
-        """
-        value = value or 0
-        self.advance_bit_offset(signed_exp_golomb_length(value))
-        return value
-
-
-class BoundedReader(BitstreamReader):
-    """
-    A wrapper around a :py:class:`BitstreamReader` which implements bounded
-    reading whereby bits past the end of the defined block are read as '1'.
-    """
-    
-    def __init__(self, reader, length):
-        # NB: Intentionally don't call super() on purpose since none of the
-        # file-reading parts are useful.
-        self._reader = reader
-        self._bits_remaining = length
-        self._bits_past_eof = 0
-    
-    def read_bit(self):
-        if self._bits_remaining > 0:
-            self._bits_remaining -= 1
-            return self._reader.read_bit()
-        else:
-            self._bits_past_eof += 1
-            return 1
-    
-    def tell(self):
-        return self._reader.tell()
-    
-    def seek(self, *args, **kwargs):
-        raise NotImplementedError("Seek not supported in BoundedReader")
-    
-    @property
-    def bits_remaining(self):
-        """The number of bits left to be read in this block."""
-        return self._bits_remaining
-    
-    @property
-    def bits_past_eof(self):
-        """The number of bits read beyond the end of the bounded block."""
-        return self._bits_past_eof
-
-
-class BoundedWriter(BitstreamWriter):
-    """
-    A wrapper around a :py:class:`BitstreamWriter` which implements bounded
-    writing whereby bits past the end of the defined block are checked to
-    ensure that they are '1'.
-    """
-    
-    def __init__(self, writer, length):
-        # NB: Intentionally don't call super() on purpose since none of the
-        # file-writing parts are useful.
-        self._writer = writer
-        self._bits_remaining = length
-        self._bits_past_eof = 0
-    
-    def write_bit(self, value):
-        if self._bits_remaining > 0:
-            self._bits_remaining -= 1
-            return self._writer.write_bit(value)
-        else:
-            if not value:
-                raise ValueError(
-                    "Cannot write 0s past the end of a BoundedWriter.")
-            self._bits_past_eof += 1
-            return 0
-    
-    def tell(self):
-        return self._writer.tell()
-    
-    def seek(self, *args, **kwargs):
-        raise NotImplementedError("Seek not supported in BoundedWriter")
-    
-    def flush(self):
-        return self._writer.flush()
-    
-    @property
-    def bits_remaining(self):
-        """The number of bits left to be written in this block."""
-        return self._bits_remaining
-    
-    @property
-    def bits_past_eof(self):
-        """The number of bits written beyond the end of the bounded block."""
-        return self._bits_past_eof
-
-
-class BoundedPadAndTruncate(BitstreamPadAndTruncate):
-    """
-    A wrapper around a :py:class:`BitstreamPadAndTruncate` which implements
-    bounded access.
-    """
-    
-    def __init__(self, pad_and_truncate, length):
-        # NB: Intentionally don't call super() on purpose since none of the
-        # constructors functionality is useful.
-        self._pad_and_truncate = pad_and_truncate
-        self._bits_remaining = length
-    
-    def advance_bit_offset(self, bits):
-        if bits < self._bits_remaining:
-            self._pad_and_truncate.advance_bit_offset(bits)
-            self._bits_remaining -= bits
-        else:
-            self._pad_and_truncate.advance_bit_offset(self._bits_remaining)
-            self._bits_remaining = 0
-    
-    def tell(self):
-        return self._pad_and_truncate.tell()
-    
-    def seek(self, *args, **kwargs):
-        raise NotImplementedError("Seek not supported in BoundedWriter")
-    
-    @property
-    def bits_remaining(self):
-        """The number of bits left in this block."""
-        return self._bits_remaining
