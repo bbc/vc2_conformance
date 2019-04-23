@@ -184,10 +184,14 @@ def slice_band(serdes, state, transform, level, orient, sx, sy):
     """(13.5.6.3) Read and dequantize a subband in a slice."""
     # These values evaulated in the loop definition in the spec, moving them
     # here saves a lot of computation
-    y1 = slice_top(state, sy, "Y", level)
-    y2 = slice_bottom(state, sy, "Y", level)
-    x1 = slice_left(state, sx, "Y", level)
-    x2 = slice_right(state, sx, "Y", level)
+    #
+    # Errata: 'Y' is always used in the spec but should respect whatever
+    # transform is specified.
+    comp = "Y" if transform.startswith("y") else "C1"
+    y1 = slice_top(state, sy, comp, level)
+    y2 = slice_bottom(state, sy, comp, level)
+    x1 = slice_left(state, sx, comp, level)
+    x2 = slice_right(state, sx, comp, level)
     
     for y in range(y1, y2):
         for x in range(x1, x2):

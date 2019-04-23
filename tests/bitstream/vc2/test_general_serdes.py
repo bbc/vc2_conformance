@@ -9,7 +9,7 @@ from vc2_conformance import tables
 from vc2_conformance.state import State
 from vc2_conformance.video_parameters import VideoParameters
 
-from vc2_conformance.bitstream import (BitstreamWriter, Serialiser)
+from vc2_conformance.bitstream import BitstreamWriter, Serialiser
 
 from vc2_conformance.bitstream import vc2
 
