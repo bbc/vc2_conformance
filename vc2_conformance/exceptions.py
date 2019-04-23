@@ -8,16 +8,10 @@ class OutOfRangeError(ValueError):
     writing function.
     """
 
-class UnknownTokenTypeError(ValueError):
-    """
-    Thrown by functions in :py:module:`vc2_conformance.bitstream` when an
-    unrecognised :py:class:`TokenTypes` value is encountered.
-    """
-
 class UnusedTargetError(ValueError):
     """
     Thrown by functions in :py:module:`vc2_conformance.bitstream` when a
-    value in a context dictionary was not used by any token.
+    value in a context dictionary was left used.
     """
 
 class ReusedTargetError(ValueError):
@@ -42,13 +36,13 @@ class ListTargetContainsNonListError(ValueError):
 class UnclosedBoundedBlockError(ValueError):
     """
     Thrown by functions in :py:module:`vc2_conformance.bitstream` when some
-    :py:data:`TokenTypes.bounded_block_begin` tokens do not have corresponding
-    :py:data:`TokenTypes.bounded_block_end` tokens.
+    :py:meth:`SerDes.bounded_block_begin` does not have corresponding
+    :py:meth:`SerDes.bounded_block_end`.
     """
 
 class UnclosedNestedContextError(ValueError):
     """
     Thrown by functions in :py:module:`vc2_conformance.bitstream` when some
-    :py:data:`TokenTypes.nested_context_enter` tokens do not have corresponding
-    :py:data:`TokenTypes.nested_context_leave` tokens.
+    :py:meth:`SerDes.subcontext_enter` does not have corresponding
+    :py:meth:`SerDes.subcontext_leave`.
     """

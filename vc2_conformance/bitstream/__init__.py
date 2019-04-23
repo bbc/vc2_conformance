@@ -23,25 +23,24 @@ This module is split into three parts.
 
 1. The :py:module:`io` provide a simple API for performing low-level bitwise
    I/O on file-like objects.
-2. The :py:module:`generator_io` module implements a *generic* framework for
+2. The :py:module:`serdes` module implements a *generic* framework for
    serialising, deserialising and analysing bitstreams described in the
    procedural-style used in the VC-2 specification pseudo code.
 3. The :py:module:`vc2` module contains all of the VC-2 specific code which
    defines the underlying bitstream format.
 
-The :py:module:`generator_io` library forms the heart of this implementation
-and effectively allows pseudo code to be copied from the specification and,
-with minimal transformation, be used to drive a bitstream
-serialiser/deserialiser. This module relies on lesser-used Python features (for
-example :py:meth:`generator.send`) and it is strongly recommended that future
-implementers begin by reading the introduction to that module.
+The :py:module:`serdes` library forms the heart of this implementation and
+effectively allows pseudo code to be copied from the specification and, with
+minimal transformation, be used to drive a bitstream serialiser/deserialiser.
+It is strongly recommended that future implementers begin by reading the
+introduction to that module.
 """
 
 # Low-level bitwise file reading/writing
 from vc2_conformance.bitstream.io import *
 
-# Token-emitting generator I/O library functions and datatypes
-from vc2_conformance.bitstream.generator_io import *
+# Generic bitstream serialisation/deserialisation framework
+from vc2_conformance.bitstream.serdes import *
 
 # VC-2 specific parts
 from vc2_conformance.bitstream.vc2 import *

@@ -1,18 +1,20 @@
 """
-Token-emitting generators which read consecutive slice structures from a VC-2
+Transformations of the VC-2 pseudo-code which read slice structures from a VC-2
 bitstream.
 
-The implementation is loosely based around the definitions from the VC-2
-specification but differs in some places:
+The implementation is based on the definitions from the VC-2 specification but
+differs slightly in some places:
 
-* To avoid performance overheads relating to Python object creation, the simple
-  flat structures defined in ;py:class:`LDSliceArray` and
-  ;py:class:`HQSliceArray` are used.
+* To avoid performance overheads relating to Python object creation, a single
+  'flat' context dictionary (;py:class:`LDSliceArray` and
+  ;py:class:`HQSliceArray`) is used to hold all values associated with
+  consecutive slices in the bitstream.
 * Complications in the specification related to the need to later perform a
   wavelet transform (e.g. collecting and organising if coefficients) are
   omitted.
-
 """
+
+from contextlib import contextmanager
 
 from vc2_conformance.math import intlog2
 
@@ -33,8 +35,6 @@ from vc2_conformance.slice_sizes import (
     slice_bottom,
 )
 
-from vc2_conformance.bitstream.generator_io import TokenTypes
-
 from vc2_conformance.bitstream.vc2.fixeddicts import (
     SliceArrayParameters,
     LDSliceArray,
@@ -52,8 +52,7 @@ __all__ = [
     "slice_band",
     "color_diff_slice_band",
     
-    "slice_array_begin",
-    "slice_array_end",
+    "slice_array",
 ]
 
 
@@ -62,20 +61,17 @@ __all__ = [
 ################################################################################
 
 
-def transform_data(state):
+def transform_data(serdes, state):
     """(13.5.2)"""
     # Transform data not captured here
     #state["y_transform"] = initialize_wavelet_data(state, "Y")
     #state["c1_transform"] = initialize_wavelet_data(state, "C1")
     #state["c2_transform"] = initialize_wavelet_data(state, "C2")
     
-    yield (TokenTypes.use, slice_array_begin(state), None)
-    
-    for sy in range(state["slices_y"]):
-        for sx in range(state["slices_x"]):
-            yield (TokenTypes.use, slice(state, sx, sy), None)
-    
-    yield (TokenTypes.use, slice_array_end(state), None)
+    with slice_array(serdes, state):
+        for sy in range(state["slices_y"]):
+            for sx in range(state["slices_x"]):
+                slice(serdes, state, sx, sy)
     
     # Transform data not captured here
     #if using_dc_prediction(state):
@@ -88,28 +84,26 @@ def transform_data(state):
     #        dc_prediction(state["c1_transform"][0]["L"])
     #        dc_prediction(state["c2_transform"][0]["L"])
 
-def slice(state, sx, sy):
+def slice(serdes, state, sx, sy):
     """(13.5.2)"""
     # Errata: check for both picture and fragment types
     if is_ld_picture(state) or is_ld_fragment(state):
-        # NB: Return generator here (faster than a 'use' token)
-        return ld_slice(state, sx, sy)
+        ld_slice(serdes, state, sx, sy)
     elif is_hq_picture(state) or is_hq_fragment(state):
-        # NB: Return generator here (faster than a 'use' token)
-        return hq_slice(state, sx, sy)
+        hq_slice(serdes, state, sx, sy)
 
-def ld_slice(state, sx, sy):
+def ld_slice(serdes, state, sx, sy):
     """(13.5.3.1)"""
     slice_bits_left = 8*slice_bytes(state, sx, sy)
     
-    qindex = (yield (TokenTypes.nbits, 7, "qindex"))
+    qindex = serdes.nbits("qindex", 7)
     slice_bits_left -= 7
     
     # Not needed
     #slice_quantizers(state, qindex)
     
     length_bits = intlog2((8 * slice_bytes(state, sx, sy)) - 7)
-    slice_y_length = (yield (TokenTypes.nbits, length_bits, "slice_y_length"))
+    slice_y_length = serdes.nbits("slice_y_length", length_bits)
     slice_bits_left -= length_bits
     
     # The following statement is not part of spec, here to ensure robustness in
@@ -117,76 +111,76 @@ def ld_slice(state, sx, sy):
     if slice_y_length > slice_bits_left:
         slice_y_length = slice_bits_left
     
-    yield (TokenTypes.bounded_block_begin, slice_y_length, None)
+    serdes.bounded_block_begin(slice_y_length)
     if state["dwt_depth_ho"] == 0:
         # Errata: standard says 'luma_slice_band(state, 0, "LL", sx, sy)'
-        yield (TokenTypes.use, slice_band(state, "y_transform", 0, "LL", sx, sy), None)
+        slice_band(serdes, state, "y_transform", 0, "LL", sx, sy)
         for level in range(1, state["dwt_depth"] + 1):
             for orient in ["HL", "LH", "HH"]:
-                yield (TokenTypes.use, slice_band(state, "y_transform", level, orient, sx, sy), None)
+                slice_band(serdes, state, "y_transform", level, orient, sx, sy)
     else:
         # Errata: standard says 'luma_slice_band(state, 0, "L", sx, sy)'
-        yield (TokenTypes.use, slice_band(state, "y_transform", 0, "L", sx, sy), None)
+        slice_band(serdes, state, "y_transform", 0, "L", sx, sy)
         for level in range(1, state["dwt_depth_ho"] + 1):
-            yield (TokenTypes.use, slice_band(state, "y_transform", level, "H", sx, sy), None)
+            slice_band(serdes, state, "y_transform", level, "H", sx, sy)
         for level in range(state["dwt_depth_ho"] + 1, 
                            state["dwt_depth_ho"] + state["dwt_depth"] + 1):
             for orient in ["HL", "LH", "HH"]:
-                yield (TokenTypes.use, slice_band(state, "y_transform", level, orient, sx, sy), None)
-    yield (TokenTypes.bounded_block_end, None, "y_block_padding")
+                slice_band(serdes, state, "y_transform", level, orient, sx, sy)
+    serdes.bounded_block_end("y_block_padding")
     
     slice_bits_left -= slice_y_length
     
     # Errata: The standard shows only 2D transform slices being read
-    yield (TokenTypes.bounded_block_begin, slice_bits_left, None)
+    serdes.bounded_block_begin(slice_bits_left)
     if state["dwt_depth_ho"] == 0:
-        yield (TokenTypes.use, color_diff_slice_band(state, 0, "LL", sx, sy), None)
+        color_diff_slice_band(serdes, state, 0, "LL", sx, sy)
         for level in range(1, state["dwt_depth"] + 1):
             for orient in ["HL", "LH", "HH"]:
-                yield (TokenTypes.use, color_diff_slice_band(state, level, orient, sx, sy), None)
+                color_diff_slice_band(serdes, state, level, orient, sx, sy)
     else:
         # Errata: standard says 'luma_slice_band(state, 0, "L", sx, sy)'
-        yield (TokenTypes.use, color_diff_slice_band(state, 0, "L", sx, sy), None)
+        color_diff_slice_band(serdes, state, 0, "L", sx, sy)
         for level in range(1, state["dwt_depth_ho"] + 1):
-            yield (TokenTypes.use, color_diff_slice_band(state, level, "H", sx, sy), None)
+            color_diff_slice_band(serdes, state, level, "H", sx, sy)
         for level in range(state["dwt_depth_ho"] + 1, 
                            state["dwt_depth_ho"] + state["dwt_depth"] + 1):
             for orient in ["HL", "LH", "HH"]:
-                yield (TokenTypes.use, color_diff_slice_band(state, level, orient, sx, sy), None)
-    yield (TokenTypes.bounded_block_end, None, "c_block_padding")
+                color_diff_slice_band(serdes, state, level, orient, sx, sy)
+    serdes.bounded_block_end("c_block_padding")
 
 
 
-def hq_slice(state, sx, sy):
+def hq_slice(serdes, state, sx, sy):
     """(13.5.4)"""
-    yield (TokenTypes.bytes, state["slice_prefix_bytes"], "prefix_bytes")
+    serdes.bytes("prefix_bytes", state["slice_prefix_bytes"])
     
-    qindex = (yield (TokenTypes.nbits, 8, "qindex"))
+    qindex = serdes.nbits("qindex", 8)
     
     # Not needed
     #slice_quantizers(state, qindex)
     
     for component in ["y", "c1", "c2"]:
-        length = state["slice_size_scaler"] * (yield (TokenTypes.nbits, 8, "slice_{}_length".format(component)))
+        length = state["slice_size_scaler"] * serdes.nbits("slice_{}_length".format(component), 8)
         
         transform = "{}_transform".format(component)
-        yield (TokenTypes.bounded_block_begin, 8*length, None)
+        serdes.bounded_block_begin(8*length)
         if state["dwt_depth_ho"] == 0:
-            yield (TokenTypes.use, slice_band(state, transform, 0, "LL", sx, sy), None)
+            slice_band(serdes, state, transform, 0, "LL", sx, sy)
             for level in range(1, state["dwt_depth"] + 1):
                 for orient in ["HL", "LH", "HH"]:
-                    yield (TokenTypes.use, slice_band(state, transform, level, orient, sx, sy), None)
+                    slice_band(serdes, state, transform, level, orient, sx, sy)
         else:
-            yield (TokenTypes.use, slice_band(state, transform, 0, "L", sx, sy), None)
+            slice_band(serdes, state, transform, 0, "L", sx, sy)
             for level in range(1, state["dwt_depth_ho"] + 1):
-                yield (TokenTypes.use, slice_band(state, transform, level, "H", sx, sy), None)
+                slice_band(serdes, state, transform, level, "H", sx, sy)
             for level in range(state["dwt_depth_ho"] + 1,
                                state["dwt_depth_ho"] + state["dwt_depth"] + 1):
                 for orient in ["HL", "LH", "HH"]:
-                    yield (TokenTypes.use, slice_band(state, transform, level, orient, sx, sy), None)
-        yield (TokenTypes.bounded_block_end, None, "{}_block_padding".format(component))
+                    slice_band(serdes, state, transform, level, orient, sx, sy)
+        serdes.bounded_block_end("{}_block_padding".format(component))
 
-def slice_band(state, transform, level, orient, sx, sy):
+def slice_band(serdes, state, transform, level, orient, sx, sy):
     """(13.5.6.3) Read and dequantize a subband in a slice."""
     # These values evaulated in the loop definition in the spec, moving them
     # here saves a lot of computation
@@ -197,13 +191,13 @@ def slice_band(state, transform, level, orient, sx, sy):
     
     for y in range(y1, y2):
         for x in range(x1, x2):
-            val = (yield (TokenTypes.sint, None, transform))
+            val = serdes.sint(transform)
             
             # Not needed
             #qi = state.quantizer[level][orient]
             #transform[level][orient][y][x] = inverse_quant(val, qi)
 
-def color_diff_slice_band(state, level, orient, sx, sy):
+def color_diff_slice_band(serdes, state, level, orient, sx, sy):
     """(13.5.6.4) Read and dequantize interleaved color difference subbands in a slice."""
     # These values evaulated in the loop definition in the spec, moving them
     # here saves a lot of computation
@@ -219,11 +213,11 @@ def color_diff_slice_band(state, level, orient, sx, sy):
             # Not needed
             #qi = state.quantizer[level][orient]
             
-            val = (yield (TokenTypes.sint, None, "c1_transform"))
+            val = serdes.sint("c1_transform")
             # Not needed
             #state.c1_transform[level][orient][y][x] = inverse_quant(val, qi)
             
-            val = (yield (TokenTypes.sint, None, "c2_transform"))
+            val = serdes.sint("c2_transform")
             # Not needed
             #state.c2_transform[level][orient][y][x] = inverse_quant(val, qi)
 
@@ -232,51 +226,47 @@ def color_diff_slice_band(state, level, orient, sx, sy):
 # (14.4) Fragment data
 ################################################################################
 
-def fragment_data(state):
+def fragment_data(serdes, state):
     """(14.4) Unpack and dequantize transform data from a fragment."""
-    yield (TokenTypes.use, slice_array_begin(
-        state,
-        state["fragment_x_offset"],
-        state["fragment_y_offset"],
-        state["fragment_slice_count"],
-    ), None)
-    
-    # Errata: In the spec this loop goes from 0 to fragment_slice_count
-    # inclusive but should be fragment_slice_count *exclusive (as below)
-    for s in range(state["fragment_slice_count"]):
-        state["slice_x"] = (
-            ((state["fragment_y_offset"] * state["slices_x"]) +
-             state["fragment_x_offset"] + s) % state["slices_x"]
-        )
-        state["slice_y"] = (
-            ((state["fragment_y_offset"] * state["slices_x"]) +
-             state["fragment_x_offset"] + s) // state["slices_x"]
-        )
-        yield (TokenTypes.use, slice(state, state["slice_x"], state["slice_y"]), None)
-        
-        # Not needed
-        #state["fragment_slices_received"] += 1
-        #
-        #if state["fragment_slices_received"] == (state["slice_x"] * state["slice_y"]):
-        #    state["fragmented_picture_done"] = True
-        #    if using_dc_prediction(state):
-        #        if state["dwt_depth_ho"] == 0:
-        #            dc_prediction(state["y_transform"][0][LL])
-        #            dc_prediction(state["c1_transform"][0][LL])
-        #            dc_prediction(state["c2_transform"][0][LL])
-        #        else:
-        #            dc_prediction(state["y_transform"][0][L])
-        #            dc_prediction(state["c1_transform"][0][L])
-        #            dc_prediction(state["c2_transform"][0][L])
-    
-    yield (TokenTypes.use, slice_array_end(state), None)
+    with slice_array(serdes, state,
+                     state["fragment_x_offset"],
+                     state["fragment_y_offset"],
+                     state["fragment_slice_count"]):
+        # Errata: In the spec this loop goes from 0 to fragment_slice_count
+        # inclusive but should be fragment_slice_count *exclusive (as below)
+        for s in range(state["fragment_slice_count"]):
+            state["slice_x"] = (
+                ((state["fragment_y_offset"] * state["slices_x"]) +
+                 state["fragment_x_offset"] + s) % state["slices_x"]
+            )
+            state["slice_y"] = (
+                ((state["fragment_y_offset"] * state["slices_x"]) +
+                 state["fragment_x_offset"] + s) // state["slices_x"]
+            )
+            slice(serdes, state, state["slice_x"], state["slice_y"])
+            
+            # Not needed
+            #state["fragment_slices_received"] += 1
+            #
+            #if state["fragment_slices_received"] == (state["slice_x"] * state["slice_y"]):
+            #    state["fragmented_picture_done"] = True
+            #    if using_dc_prediction(state):
+            #        if state["dwt_depth_ho"] == 0:
+            #            dc_prediction(state["y_transform"][0][LL])
+            #            dc_prediction(state["c1_transform"][0][LL])
+            #            dc_prediction(state["c2_transform"][0][LL])
+            #        else:
+            #            dc_prediction(state["y_transform"][0][L])
+            #            dc_prediction(state["c1_transform"][0][L])
+            #            dc_prediction(state["c2_transform"][0][L])
 
 
 ################################################################################
 # Slice array begin/end methods (not part of spec)
 ################################################################################
 
-def slice_array_begin(state, start_sx=0, start_sy=0, slice_count=None):
+@contextmanager
+def slice_array(serdes, state, start_sx=0, start_sy=0, slice_count=None):
     """
     Not part of spec. Initialises a :py:class:`LDSliceArray` or
     :py:class:`HQSliceArray` (and its inner computed values).
@@ -299,33 +289,33 @@ def slice_array_begin(state, start_sx=0, start_sy=0, slice_count=None):
     )
     
     if is_ld_picture(state) or is_ld_fragment(state):
-        yield (TokenTypes.nested_context_enter, None, "ld_slice_array")
-        yield (TokenTypes.declare_context_type, LDSliceArray, None)
-        yield (TokenTypes.computed_value, parameters, "_parameters")
-        yield (TokenTypes.computed_value, state["slice_bytes_numerator"], "_slice_bytes_numerator")
-        yield (TokenTypes.computed_value, state["slice_bytes_denominator"], "_slice_bytes_denominator")
-        yield (TokenTypes.declare_list, None, "slice_y_length")
-        yield (TokenTypes.declare_list, None, "y_block_padding")
-        yield (TokenTypes.declare_list, None, "c_block_padding")
+        serdes.subcontext_enter("ld_slice_array")
+        serdes.set_context_type(LDSliceArray)
+        serdes.computed_value("_parameters", parameters)
+        serdes.computed_value("_slice_bytes_numerator", state["slice_bytes_numerator"])
+        serdes.computed_value("_slice_bytes_denominator", state["slice_bytes_denominator"])
+        serdes.declare_list("slice_y_length")
+        serdes.declare_list("y_block_padding")
+        serdes.declare_list("c_block_padding")
     elif is_hq_picture(state) or is_hq_fragment(state):
-        yield (TokenTypes.nested_context_enter, None, "hq_slice_array")
-        yield (TokenTypes.declare_context_type, HQSliceArray, None)
-        yield (TokenTypes.computed_value, parameters, "_parameters")
-        yield (TokenTypes.computed_value, state["slice_prefix_bytes"], "_slice_prefix_bytes")
-        yield (TokenTypes.computed_value, state["slice_size_scaler"], "_slice_size_scaler")
-        yield (TokenTypes.declare_list, None, "prefix_bytes")
-        yield (TokenTypes.declare_list, None, "slice_y_length")
-        yield (TokenTypes.declare_list, None, "slice_c1_length")
-        yield (TokenTypes.declare_list, None, "slice_c2_length")
-        yield (TokenTypes.declare_list, None, "y_block_padding")
-        yield (TokenTypes.declare_list, None, "c1_block_padding")
-        yield (TokenTypes.declare_list, None, "c2_block_padding")
+        serdes.subcontext_enter("hq_slice_array")
+        serdes.set_context_type(HQSliceArray)
+        serdes.computed_value("_parameters", parameters)
+        serdes.computed_value("_slice_prefix_bytes", state["slice_prefix_bytes"])
+        serdes.computed_value("_slice_size_scaler", state["slice_size_scaler"])
+        serdes.declare_list("prefix_bytes")
+        serdes.declare_list("slice_y_length")
+        serdes.declare_list("slice_c1_length")
+        serdes.declare_list("slice_c2_length")
+        serdes.declare_list("y_block_padding")
+        serdes.declare_list("c1_block_padding")
+        serdes.declare_list("c2_block_padding")
     
-    yield (TokenTypes.declare_list, None, "qindex")
-    yield (TokenTypes.declare_list, None, "y_transform")
-    yield (TokenTypes.declare_list, None, "c1_transform")
-    yield (TokenTypes.declare_list, None, "c2_transform")
-
-
-def slice_array_end(state):
-    yield (TokenTypes.nested_context_leave, None, None)
+    serdes.declare_list("qindex")
+    serdes.declare_list("y_transform")
+    serdes.declare_list("c1_transform")
+    serdes.declare_list("c2_transform")
+    
+    yield
+    
+    serdes.subcontext_leave()

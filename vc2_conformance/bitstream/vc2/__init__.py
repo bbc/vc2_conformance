@@ -11,9 +11,9 @@ This module is divided into two parts:
    :py:module:`vc2_conformance.fixeddict`) which should be used to
    represent deserialised VC-2 bitstreams. (the :py:module:`fixeddicts`
    sub-module)
-2. A set of token-emitting generator functions (see :py:module`generator_io`)
-   which are, where possible, very nearly copy-and-pasted from the VC-2
-   specification pseudo-code (the rest of this sub-module).
+2. A set of :py:class:`SerDes`-using (see :py:module`serdes`) which are, where
+   possible, very nearly copy-and-pasted from the VC-2 specification
+   pseudo-code.
 
 The structure definitions largely serve to document the hierarchy of 'context'
 objects assembled/used when processing bitstreams but in some cases also
