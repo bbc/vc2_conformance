@@ -182,6 +182,12 @@ class BitstreamReader(object):
         
         return value
     
+    def read_uint_lit(self, num_bytes):
+        """
+        Read a 'num-bytes' long integer (like read_uint_lit (A.3.4)).
+        """
+        return self.read_nbits(num_bytes * 8)
+    
     def read_bitarray(self, bits):
         """
         Read 'bits' bits returning the value as a
@@ -390,6 +396,15 @@ class BitstreamWriter(object):
         
         for i in range(bits-1, -1, -1):
             self.write_bit((value >> i) & 1)
+    
+    def write_uint_lit(self, num_bytes, value):
+        """
+        Write a 'num-bytes' long integer. The complement of read_uint_lit (A.3.4).
+        
+        Throws an :py:exc:`OutOfRangeError` if the value is too large to fit in
+        the requested number of bytes.
+        """
+        self.write_nbits(num_bytes * 8, value)
     
     def write_bitarray(self, bits, value):
         """

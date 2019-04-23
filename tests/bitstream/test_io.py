@@ -349,6 +349,44 @@ class TestWriteNbits(object):
         assert f.getvalue() == b"\x0A\xBC"
 
 
+class TestReadUIntLit(object):
+    
+    def test_read_nothing(self):
+        r = bitstream.BitstreamReader(BytesIO())
+        assert r.read_uint_lit(0) == 0
+        assert r.tell() == (0, 7)
+    
+    def test_read_bytes_msb_first(self):
+        r = bitstream.BitstreamReader(BytesIO(b"\xA0\x50\xFF"))
+        assert r.read_uint_lit(2) == 0xA050
+        assert r.tell() == (2, 7)
+
+
+class TestWriteUintLit(object):
+    
+    @pytest.fixture
+    def f(self):
+        return BytesIO()
+    
+    @pytest.fixture
+    def w(self, f):
+        return bitstream.BitstreamWriter(f)
+    
+    def test_write_nothing(self, w):
+        w.write_uint_lit(0, 0)
+        assert w.tell() == (0, 7)
+    
+    def test_fail_on_too_many_bits(self, f, w):
+        with pytest.raises(OutOfRangeError, match=r"0b101000000000 is 12 bits, not 8"):
+            w.write_uint_lit(1, 0xA00)
+    
+    def test_write_zeros_above_msb(self, f, w):
+        w.write_uint_lit(2, 0xABC)
+        assert w.tell() == (2, 7)
+        w.flush()
+        assert f.getvalue() == b"\x0A\xBC"
+
+
 class TestReadBitArray(object):
     
     def test_read_nothing(self):
