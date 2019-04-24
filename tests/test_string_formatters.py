@@ -11,6 +11,8 @@ from vc2_conformance._string_formatters import (
     Bool,
     Bits,
     Bytes,
+    Object,
+    List,
 )
 
 @pytest.mark.parametrize("formatter,number,expectation", [
@@ -127,3 +129,40 @@ def test_bits(formatter, number, expectation):
 ])
 def test_bytes(formatter, number, expectation):
     assert formatter(number) == expectation
+
+@pytest.mark.parametrize("formatter,value,expectation", [
+    # Default prefix/suffix should work
+    (Object(), 123, "<int>"),
+    (Object(), {}, "<dict>"),
+    (Object(), Object(), "<Object>"),
+    # Custom prefix/suffix should work
+    (Object(prefix="(", suffix=")"), 123, "(int)"),
+])
+def test_object(formatter, value, expectation):
+    assert formatter(value) == expectation
+
+@pytest.mark.parametrize("formatter,value,expectation", [
+    # Empty list
+    (List(), [], "[]"),
+    # Singleton
+    (List(), [1], "[1]"),
+    # No (adjacent) repeats
+    (List(), [1, 2, 3, 2, 1], "[1, 2, 3, 2, 1]"),
+    # All repeats collapsed (by default)
+    (List(), [0, 0, 0], "[0]*3"),
+    (List(), [0, 0, 0, 0], "[0]*4"),
+    # Multiple repeated values can be adjacent
+    (List(), [0, 0, 0, 1, 1, 1, 1], "[0]*3 + [1]*4"),
+    # Mixed repeat and no repeat
+    (List(), [0, 0, 0, 2, 1], "[0]*3 + [2, 1]"),
+    (List(), [1, 2, 0, 0, 0], "[1, 2] + [0]*3"),
+    (List(), [1, 2, 0, 0, 0, 2, 1], "[1, 2] + [0]*3 + [2, 1]"),
+    # Custom formatters
+    (List(formatter=Hex()), [1, 2, 3, 0, 0, 0], "[0x1, 0x2, 0x3] + [0x0]*3"),
+    # Equality test is based on string value
+    (List(formatter=Object()), [1, 2, 3, 0, 0, 0], "[<int>]*6"),
+    # Custom repeat limit
+    (List(min_run_length=2), [1, 2, 2, 3, 3, 3, 4, 4, 4, 4], "[1] + [2]*2 + [3]*3 + [4]*4"),
+])
+def test_list(formatter, value, expectation):
+    assert formatter(value) == expectation

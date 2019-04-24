@@ -29,6 +29,8 @@ __all__ = [
     "Bool",
     "Bits",
     "Bytes",
+    "Object",
+    "List",
 ]
 
 
@@ -252,3 +254,102 @@ class Bytes(object):
                     "s" if len(b) != 1 else "",
                 )
         return "{}{}".format(self.prefix, string)
+
+
+@attrs(frozen=True)
+class Object(object):
+    """
+    A formatter for opaque python Objects. Shows only the object type name.
+    """
+    
+    prefix = attrib(default="<")
+    suffix = attrib(default=">")
+    
+    def __call__(self, o):
+        return "{}{}{}".format(
+            self.prefix,
+            type(o).__name__,
+            self.suffix,
+        )
+
+
+@attrs(frozen=True)
+class List(object):
+    """
+    A formatter for lists which collapses repeated entries.
+    
+    Examples::
+        
+        >>> # Use Python-style notation for repeated entries
+        >>> List()([1, 1, 1, 1])
+        [1]*4
+        
+        >>> # Also displays lists with some non-repeated values
+        >>> List()([1, 2, 3, 0, 0, 0, 0, 0, 4, 5])
+        [1, 2, 3] + [0]*5 + [4, 5]
+        
+        >>> # A custom formatter may be supplied for formatting the list
+        >>> # entries
+        >>> List(formatter=Hex())([1, 2, 3, 0, 0, 0])
+        [0x1, 0x2, 0x3] + [0x0]*3
+        
+        >>> # Equality is based on the string formatted value, not the raw
+        >>> # value
+        >>> List(formatter=Object())([1, 2, 3, 0, 0, 0])
+        [<int>]*6
+        
+        >>> # The minimum run-length before truncation may be overridden
+        >>> List(min_run_length=3)([1, 2, 2, 3, 3, 3])
+        [1, 2, 2] + [3]*3
+    """
+    
+    min_run_length = attrib(default=3)
+    formatter = attrib(default=str)
+    
+    def __call__(self, lst):
+        # Special case (avoids complications below)
+        if len(lst) == 0:
+            return "[]"
+        
+        values = [self.formatter(v) for v in lst]
+        
+        # For each value in the input list, count the run length at that point
+        # of that value.
+        run_lengths = [1]
+        for last_value, value in zip(values, values[1:]):
+            if last_value == value:
+                run_lengths.append(run_lengths[-1] + 1)
+            else:
+                run_lengths.append(1)
+        
+        # Accumulate a list of lists and tuples. For every series of
+        # non-identical values, a list of values will be included. For every
+        # run of values, a (value, run_length) tuple will be included.
+        out = [[]]
+        while values:
+            run_length = run_lengths.pop()
+            value = values.pop()
+            
+            if run_length < self.min_run_length:
+                out[0].insert(0, value)
+            else:
+                if len(out[0]) == 0:
+                    del out[0]
+                out.insert(0, (value, run_length))
+                out.insert(0, [])
+                
+                del run_lengths[-(run_length-1):]
+                del values[-(run_length-1):]
+        
+        if len(out[0]) == 0:
+            del out[0]
+        
+        # Format as a string
+        return " + ".join(
+            (
+                "[{}]".format(", ".join(value_run))
+                if isinstance(value_run, list) else
+                "[{}]*{}".format(*value_run)
+            )
+            for value_run in out
+        )
