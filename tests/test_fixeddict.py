@@ -49,25 +49,25 @@ class TestEntry(object):
         v = Entry("v", enum=MyEnum)
         assert v.has_default is False
         
-        assert v.to_string({}, 1) == "a (1)"
-        assert v.to_string({}, 2) == "b (2)"
-        assert v.to_string({}, 3) == "c (3)"
-        assert v.to_string({}, MyEnum.a) == "a (1)"
-        assert v.to_string({}, MyEnum.b) == "b (2)"
-        assert v.to_string({}, MyEnum.c) == "c (3)"
-        assert v.to_string({}, 0) == "0"
-        assert v.to_string({}, "foo") == "foo"
+        assert v.to_string(1) == "a (1)"
+        assert v.to_string(2) == "b (2)"
+        assert v.to_string(3) == "c (3)"
+        assert v.to_string(MyEnum.a) == "a (1)"
+        assert v.to_string(MyEnum.b) == "b (2)"
+        assert v.to_string(MyEnum.c) == "c (3)"
+        assert v.to_string(0) == "0"
+        assert v.to_string("foo") == "foo"
         
         # Check can override formatter/friendly_formatter
         v = Entry("v", enum=MyEnum, formatter=hex)
-        assert v.to_string({}, MyEnum.a) == "a (0x1)"
-        assert v.to_string({}, MyEnum.b) == "b (0x2)"
-        assert v.to_string({}, MyEnum.c) == "c (0x3)"
+        assert v.to_string(MyEnum.a) == "a (0x1)"
+        assert v.to_string(MyEnum.b) == "b (0x2)"
+        assert v.to_string(MyEnum.c) == "c (0x3)"
         
         v = Entry("v", enum=MyEnum, friendly_formatter=repr)
-        assert v.to_string({}, MyEnum.a) == "<MyEnum.a: 1> (1)"
-        assert v.to_string({}, MyEnum.b) == "<MyEnum.b: 2> (2)"
-        assert v.to_string({}, MyEnum.c) == "<MyEnum.c: 3> (3)"
+        assert v.to_string(MyEnum.a) == "<MyEnum.a: 1> (1)"
+        assert v.to_string(MyEnum.b) == "<MyEnum.b: 2> (2)"
+        assert v.to_string(MyEnum.c) == "<MyEnum.c: 3> (3)"
     
     def test_get_default(self):
         v = Entry("v", default=123)
@@ -82,25 +82,17 @@ class TestEntry(object):
     
     def test_to_string(self):
         v = Entry("v")
-        assert v.to_string({}, 123) == "123"
-        assert v.to_string({}, "abc") == "abc"
+        assert v.to_string(123) == "123"
+        assert v.to_string("abc") == "abc"
         
         v = Entry("v", formatter=bin)
-        assert v.to_string({}, 0b1010) == "0b1010"
+        assert v.to_string(0b1010) == "0b1010"
         
         v = Entry("v", friendly_formatter=str.upper)
-        assert v.to_string({}, "foo") == "FOO (foo)"
+        assert v.to_string("foo") == "FOO (foo)"
         
         v = Entry("v", formatter=str.lower, friendly_formatter=str.upper)
-        assert v.to_string({}, "Foo") == "FOO (foo)"
-        
-        v = Entry("v", formatter=lambda d,v: "{} in {}".format(v, d), formatter_pass_dict=True)
-        assert v.to_string({"a": "Foo"}, "Foo") == "Foo in {'a': 'Foo'}"
-        
-        v = Entry("v",
-                  friendly_formatter=lambda d,v: "{} in {}".format(v, d),
-                  friendly_formatter_pass_dict=True)
-        assert v.to_string({"a": "Foo"}, "Foo") == "Foo in {'a': 'Foo'} (Foo)"
+        assert v.to_string("Foo") == "FOO (foo)"
 
 
 MyFixedDict = fixeddict(
@@ -108,10 +100,7 @@ MyFixedDict = fixeddict(
     # With default
     Entry("name", default="Anon"),
     # Without default, also has a formatter
-    Entry("age",
-          friendly_formatter=lambda d, v: "{} (one of {} entries)".format(v, len(d)),
-          friendly_formatter_pass_dict=True,
-          formatter=hex),
+    Entry("age", friendly_formatter=str, formatter=hex),
     # Hidden value (and with factory)
     Entry("_hidden", default_factory=list),
 )
@@ -224,7 +213,7 @@ class TestFixedDict(object):
         assert str(d) == (
             "MyFixedDict:\n"
             "  name: Anon\n"
-            "  age: 32 (one of 3 entries) (0x20)"
+            "  age: 32 (0x20)"
         )
         
         # Should handle multi-line values
@@ -234,7 +223,7 @@ class TestFixedDict(object):
             "  name: foo\n"
             "  bar\n"
             "  baz\n"
-            "  age: 32 (one of 3 entries) (0x20)"
+            "  age: 32 (0x20)"
         )
 
         # Should work if we delete all values
