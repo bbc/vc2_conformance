@@ -18,6 +18,47 @@ purposes but expect several seconds-per-frame (not frames-per-second)
 processing times.
 
 
+Quick-start/teaser example
+--------------------------
+
+The following minimal example can be used to deserialise a complete VC-2
+bitstream sequence::
+
+    >>> from vc2_conformance.bitstream import Deserialiser, BitstreamReader, parse_sequence
+    
+    >>> with open("/path/to/bitstream.vc2", "rb") as f:
+    ...     reader = BitstreamReader(f)
+    ...     with Deserialiser(reader) as serdes:
+    ...         parse_sequence(serdes)
+    
+    >>> # Display in pretty-printed human-readable form
+    >>> str(serdes.context)
+    Sequence:
+      data_units: 
+        0: DataUnit:
+          parse_info: ParseInfo:
+            padding: 0b
+            parse_info_prefix: Correct (0x42424344)
+            parse_code: sequence_header (0x00)
+            next_parse_offset: 17
+            previous_parse_offset: 0
+          sequence_header: SequenceHeader:
+            padding: 0b
+            parse_parameters: ParseParameters:
+              major_version: 3
+              minor_version: 0
+    <...and so on...>
+    
+    >>> # Deserialised values are kept in a nested dictionary structure which can
+    >>> # be accessed as usual:
+    >>> serdes.context["data_units"][0]["parse_info"]["parse_info_prefix"]
+    1111638852
+
+New users of this module should begin by reading the introduction to the
+:py:class:`serdes` module which provides the :py:class:`Deserialiser` class
+described above.
+
+
 Implementation
 --------------
 
