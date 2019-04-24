@@ -117,6 +117,9 @@ def parse_sequence(serdes):
     """
     state = State()
     
+    # Not part of spec; initialise context dictionary.
+    serdes.computed_value("_state", state)
+    
     serdes.declare_list("data_units")
     
     serdes.subcontext_enter("data_units")

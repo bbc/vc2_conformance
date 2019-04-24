@@ -34,7 +34,7 @@ bitstream sequence::
     >>> # Display in pretty-printed human-readable form
     >>> str(serdes.context)
     Sequence:
-      data_units: 
+      data_units:
         0: DataUnit:
           parse_info: ParseInfo:
             padding: 0b

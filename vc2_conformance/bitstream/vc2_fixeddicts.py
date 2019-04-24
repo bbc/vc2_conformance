@@ -523,6 +523,8 @@ Based on the values read by parse_sequence() (10.4.1) in each iteration.
 Sequence = fixeddict(
     "Sequence",
     Entry("data_units", default_factory=list, formatter=MultilineList(heading="")),  # type=[DataUnit, ...]
+    # Computed value: The State object being populated by the parser.
+    Entry("_state", default_factory=State),
 )
 """
 (10.4.1) A VC-2 sequence.
