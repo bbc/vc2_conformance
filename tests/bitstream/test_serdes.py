@@ -48,13 +48,13 @@ class TestSerDes(object):
         # Auto-create context
         serdes = SerDes(r)
         assert serdes.io is r
-        assert serdes._context == {}
+        assert serdes.cur_context == {}
         
         # Use context if provided
         context = {}
         serdes = SerDes(r, context)
         assert serdes.io is r
-        assert serdes._context is context
+        assert serdes.cur_context is context
     
     def test_declare_list(self):
         context = {
@@ -67,18 +67,18 @@ class TestSerDes(object):
         
         # Declaring something not in the context should work
         serdes.declare_list("non_existant_list")
-        assert serdes._context["non_existant_list"] == []
-        assert serdes._context_indices["non_existant_list"] == 0
+        assert serdes.cur_context["non_existant_list"] == []
+        assert serdes._cur_context_indices["non_existant_list"] == 0
         
         # Declaring something already a list should work (including already
         # populated lists.
         serdes.declare_list("empty_list")
-        assert serdes._context["empty_list"] == []
-        assert serdes._context_indices["empty_list"] == 0
+        assert serdes.cur_context["empty_list"] == []
+        assert serdes._cur_context_indices["empty_list"] == 0
         
         serdes.declare_list("populated_list")
-        assert serdes._context["populated_list"] == [1, 2, 3]
-        assert serdes._context_indices["populated_list"] == 0
+        assert serdes.cur_context["populated_list"] == [1, 2, 3]
+        assert serdes._cur_context_indices["populated_list"] == 0
         
         # Declaring something already declared or used should fail
         serdes._set_context_value("non_list_1", 123)
@@ -108,32 +108,32 @@ class TestSerDes(object):
         
         # Should be able to over-write something already there (the first time)
         serdes._set_context_value("non_list_1", 1234)
-        assert serdes._context["non_list_1"] == 1234
-        assert serdes._context_indices["non_list_1"] is True
+        assert serdes.cur_context["non_list_1"] == 1234
+        assert serdes._cur_context_indices["non_list_1"] is True
         
         # Should be able to set a non-existant value
         serdes._set_context_value("non_list_2", 4321)
-        assert serdes._context["non_list_2"] == 4321
-        assert serdes._context_indices["non_list_2"] is True
+        assert serdes.cur_context["non_list_2"] == 4321
+        assert serdes._cur_context_indices["non_list_2"] is True
         
         # Should be able to add to an empty list
         serdes._set_context_value("empty_list", 10)
         serdes._set_context_value("empty_list", 20)
         serdes._set_context_value("empty_list", 30)
-        assert serdes._context["empty_list"] == [10, 20, 30]
-        assert serdes._context_indices["empty_list"] == 3
+        assert serdes.cur_context["empty_list"] == [10, 20, 30]
+        assert serdes._cur_context_indices["empty_list"] == 3
         
         # Should be able to overwrite in a non-empty list
         serdes._set_context_value("populated_list", 100)
-        assert serdes._context["populated_list"] == [100, 2, 3]
-        assert serdes._context_indices["populated_list"] == 1
+        assert serdes.cur_context["populated_list"] == [100, 2, 3]
+        assert serdes._cur_context_indices["populated_list"] == 1
         
         # Should be able to write past end of non-empty list to add new items
         serdes._set_context_value("populated_list", 200)
         serdes._set_context_value("populated_list", 300)
         serdes._set_context_value("populated_list", 400)
-        assert serdes._context["populated_list"] == [100, 200, 300, 400]
-        assert serdes._context_indices["populated_list"] == 4
+        assert serdes.cur_context["populated_list"] == [100, 200, 300, 400]
+        assert serdes._cur_context_indices["populated_list"] == 4
         
         # Shouldn't be able to re-set already set non-list property
         with pytest.raises(exceptions.ReusedTargetError, match=r"dict\['non_list_1'\]"):
@@ -151,13 +151,13 @@ class TestSerDes(object):
         
         # Should be able to get non-list values (first time...)
         assert serdes._get_context_value("non_list") == 123
-        assert serdes._context_indices["non_list"] is True
+        assert serdes._cur_context_indices["non_list"] is True
         
         # Should be able to get list items (from non-empty lists)
         assert serdes._get_context_value("populated_list") == 1
         assert serdes._get_context_value("populated_list") == 2
         assert serdes._get_context_value("populated_list") == 3
-        assert serdes._context_indices["populated_list"] is 3
+        assert serdes._cur_context_indices["populated_list"] is 3
         
         # Should fail to get values which have already been accessed
         with pytest.raises(exceptions.ReusedTargetError, match=r"dict\['non_list'\]"):
@@ -181,23 +181,23 @@ class TestSerDes(object):
         
         # Should be able to get non-list values (first time...)
         assert serdes._setdefault_context_value("non_list", 321) == 123
-        assert serdes._context_indices["non_list"] is True
+        assert serdes._cur_context_indices["non_list"] is True
         
         # Should be able to get list values
         assert serdes._setdefault_context_value("populated_list", 321) == 1
         assert serdes._setdefault_context_value("populated_list", 321) == 2
         assert serdes._setdefault_context_value("populated_list", 321) == 3
-        assert serdes._context_indices["populated_list"] == 3
+        assert serdes._cur_context_indices["populated_list"] == 3
         
         # Getting from non-existing value should create them
         assert serdes._setdefault_context_value("new_target", 321) == 321
-        assert serdes._context_indices["new_target"] is True
+        assert serdes._cur_context_indices["new_target"] is True
         
         # Getting from non-existing list item should add them
         assert serdes._setdefault_context_value("empty_list", 100) == 100
-        assert serdes._context_indices["empty_list"] == 1
+        assert serdes._cur_context_indices["empty_list"] == 1
         assert serdes._setdefault_context_value("populated_list", 40) == 40
-        assert serdes._context_indices["populated_list"] == 4
+        assert serdes._cur_context_indices["populated_list"] == 4
         
         # Re-using a target should still fail
         with pytest.raises(exceptions.ReusedTargetError, match=r"dict\['non_list'\]"):
@@ -274,8 +274,8 @@ class TestSerDes(object):
         serdes.declare_list("foo")
         
         # Effect has been had
-        assert serdes._context["foo"] == []
-        assert serdes._context_indices["foo"] == 0
+        assert serdes.cur_context["foo"] == []
+        assert serdes._cur_context_indices["foo"] == 0
     
     def test_subcontext_non_list(self):
         serdes = SerDes(None)
@@ -396,13 +396,13 @@ class TestSerDes(object):
         
         # Should have set the required value
         serdes.computed_value("value", 123)
-        assert serdes._context == {"value": 123}
-        assert serdes._context_indices == {"value": True}
+        assert serdes.cur_context == {"value": 123}
+        assert serdes._cur_context_indices == {"value": True}
         
         # Should fail on re-used value
         with pytest.raises(exceptions.ReusedTargetError, match=r"dict\['value'\]"):
             serdes.computed_value("value", 321)
-        assert serdes._context == {"value": 123}
+        assert serdes.cur_context == {"value": 123}
     
     def test_verify_context_is_complete(self, w):
         serdes = SerDes(w)
@@ -482,12 +482,12 @@ class TestSerDes(object):
         serdes = SerDes(w)
         
         # Already in root context
-        root = serdes._context
+        root = serdes.cur_context
         assert serdes.context is root
         
         # In child context
         serdes.subcontext_enter("child")
-        assert serdes._context is not root
+        assert serdes.cur_context is not root
         assert serdes.context is root
     
     def test_path(self):

@@ -352,6 +352,8 @@ class SerDes(object):
         The I/O interface in use.
     context : dict or None
         The (top-level) context dictionary.
+    cur_context : dict or None
+        The context dictionary currently being populated.
     """
     
     def __init__(self, io, context=None):
@@ -367,7 +369,7 @@ class SerDes(object):
         
         # The current context dictionary.
         # {target_name: value, ...}
-        self._context = context if context is not None else {}
+        self.cur_context = context if context is not None else {}
         
         # Logs which target names have already been used. Initially an empty
         # dictionary.
@@ -381,10 +383,10 @@ class SerDes(object):
         # increment the counter.
         #
         # {target_name: True or int, ...}
-        self._context_indices = {}
+        self._cur_context_indices = {}
         
         # Whenever :py:meth:`subcontext_enter` is used, the current
-        # self._context and self._context_indices dictionaries and the
+        # self.cur_context and self._cur_context_indices dictionaries and the
         # specified target name are pushed onto their respective stacks. The
         # :py:meth:`subcontext_leave` method pops these values again.
         self._context_stack = []  # [<context dict>, ...]
@@ -396,21 +398,21 @@ class SerDes(object):
         Add a value to a context dictionary, checking that the value has not
         already been set and extending list targets if necessary.
         """
-        if target not in self._context_indices:
+        if target not in self._cur_context_indices:
             # Case: This target has not been declared as a list and this is the
             # first time it has been accessed.
-            self._context[target] = value
-            self._context_indices[target] = True
-        elif self._context_indices[target] is True:
+            self.cur_context[target] = value
+            self._cur_context_indices[target] = True
+        elif self._cur_context_indices[target] is True:
             # Case: This target has not been declared as a list and has already
             # been accessed.
             raise ReusedTargetError(self.describe_path(target))
         else:
             # Case: This target has been declared as a list.
-            i = self._context_indices[target]
-            self._context_indices[target] += 1
+            i = self._cur_context_indices[target]
+            self._cur_context_indices[target] += 1
             
-            target_list = self._context[target]
+            target_list = self.cur_context[target]
             if len(target_list) == i:
                 # List is being filled for the first time
                 target_list.append(value)
@@ -424,19 +426,19 @@ class SerDes(object):
         already been accessed and moving on to the next list item for list
         targets.
         """
-        if target not in self._context_indices:
+        if target not in self._cur_context_indices:
             # Case: This target is not a list and has not been used before
-            self._context_indices[target] = True
-            return self._context[target]
-        elif self._context_indices[target] is True:
+            self._cur_context_indices[target] = True
+            return self.cur_context[target]
+        elif self._cur_context_indices[target] is True:
             # Case: This target is not a list but has already been used
             raise ReusedTargetError(self.describe_path(target))
         else:
             # Case: This target has been declared as a list.
-            i = self._context_indices[target]
-            if i < len(self._context[target]):
-                self._context_indices[target] += 1
-                return self._context[target][i]
+            i = self._cur_context_indices[target]
+            if i < len(self.cur_context[target]):
+                self._cur_context_indices[target] += 1
+                return self.cur_context[target][i]
             else:
                 raise ListTargetExhaustedError(self.describe_path(target))
     
@@ -445,20 +447,20 @@ class SerDes(object):
         Attempt to get a value (or next value, for lists) for a particular
         target. If the value does not exist, sets it to the supplied default.
         """
-        if target not in self._context_indices:
+        if target not in self._cur_context_indices:
             # Case: This target is not a list and has not been used before
-            self._context_indices[target] = True
-            return self._context.setdefault(target, default)
-        elif self._context_indices[target] is True:
+            self._cur_context_indices[target] = True
+            return self.cur_context.setdefault(target, default)
+        elif self._cur_context_indices[target] is True:
             # Case: This target is not a list but has already been used. Fail.
             raise ReusedTargetError(self.describe_path(target))
         else:
             # Case: This target has been declared as a list.
-            i = self._context_indices[target]
-            self._context_indices[target] += 1
-            if i == len(self._context[target]):
-                self._context[target].append(default)
-            return self._context[target][i]
+            i = self._cur_context_indices[target]
+            self._cur_context_indices[target] += 1
+            if i == len(self.cur_context[target]):
+                self.cur_context[target].append(default)
+            return self.cur_context[target][i]
         
     def bool(self, target):
         """
@@ -667,21 +669,21 @@ class SerDes(object):
         target : str
             The target name to be declared as a list.
         """
-        if target in self._context_indices:
+        if target in self._cur_context_indices:
             # Target has already been used or delcared
             raise ReusedTargetError(self.describe_path(target))
         
-        if target not in self._context:
+        if target not in self.cur_context:
             # Target not yet defined in context; create a new empty list
-            self._context[target] = []
+            self.cur_context[target] = []
         else:
             # The target already exists in the context; make sure it is a list
-            if not isinstance(self._context[target], list):
+            if not isinstance(self.cur_context[target], list):
                 raise ListTargetContainsNonListError(
                     "{} contains {!r} (which is not a list)".format(
-                        self.describe_path(target), self._context[target]))
+                        self.describe_path(target), self.cur_context[target]))
         
-        self._context_indices[target] = 0
+        self._cur_context_indices[target] = 0
     
     def set_context_type(self, context_type):
         """
@@ -698,8 +700,8 @@ class SerDes(object):
             new type used in its place.
         """
         # Only replace the type if necessary to avoid unnecessary copying.
-        if type(self._context) is not context_type:
-            self._context = context_type(self._context)
+        if type(self.cur_context) is not context_type:
+            self.cur_context = context_type(self.cur_context)
             
             # Replace the reference to this context in its parent context
             if self._context_stack:
@@ -710,12 +712,12 @@ class SerDes(object):
                 if parent_target_index is True:
                     # The child context is in a normal target in the parent context
                     # dict
-                    parent_context[parent_target] = self._context
+                    parent_context[parent_target] = self.cur_context
                 else:
                     # The child context is in a list target in the parent context dict
                     # (NB: The parent_target_index value is the *next* index in the
                     # list, hence being decremented by one here).
-                    parent_context[parent_target][parent_target_index-1] = self._context
+                    parent_context[parent_target][parent_target_index-1] = self.cur_context
             else:
                 # Context stack is empty so there must be no parent to update!
                 pass
@@ -737,12 +739,12 @@ class SerDes(object):
         new_context = self._setdefault_context_value(target, {})
         
         # Push the old context onto the stack
-        self._context_stack.append(self._context)
-        self._context_indices_stack.append(self._context_indices)
+        self._context_stack.append(self.cur_context)
+        self._context_indices_stack.append(self._cur_context_indices)
         self._target_stack.append(target)
         
-        self._context = new_context
-        self._context_indices = {}
+        self.cur_context = new_context
+        self._cur_context_indices = {}
     
     def subcontext_leave(self):
         """
@@ -752,8 +754,8 @@ class SerDes(object):
         """
         self._verify_context_is_complete()
         
-        self._context = self._context_stack.pop()
-        self._context_indices = self._context_indices_stack.pop()
+        self.cur_context = self._context_stack.pop()
+        self._cur_context_indices = self._context_indices_stack.pop()
         self._target_stack.pop()
     
     @contextmanager
@@ -818,12 +820,12 @@ class SerDes(object):
         ======
         :py:exc:`UnusedTargetError`
         """
-        for target, value in self._context.items():
-            if target not in self._context_indices:
+        for target, value in self.cur_context.items():
+            if target not in self._cur_context_indices:
                 # Target not used
                 raise UnusedTargetError(self.describe_path(target))
             else:
-                index = self._context_indices[target]
+                index = self._cur_context_indices[target]
                 if index is True:
                     # Target was used (and it is not a list)
                     pass
@@ -886,7 +888,7 @@ class SerDes(object):
         if self._context_stack:
             return self._context_stack[0]
         else:
-            return self._context
+            return self.cur_context
     
     def path(self, target=None):
         """
@@ -906,8 +908,8 @@ class SerDes(object):
         full_context_indices_stack = list(self._context_indices_stack)
         full_target_stack = list(self._target_stack)
         if target is not None:
-            full_context_stack += [self._context]
-            full_context_indices_stack += [self._context_indices]
+            full_context_stack += [self.cur_context]
+            full_context_indices_stack += [self._cur_context_indices]
             full_target_stack += [target]
         
         out = []
