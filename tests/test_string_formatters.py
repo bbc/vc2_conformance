@@ -2,18 +2,7 @@ import pytest
 
 from bitarray import bitarray
 
-from vc2_conformance._string_formatters import (
-    Number,
-    Hex,
-    Dec,
-    Oct,
-    Bin,
-    Bool,
-    Bits,
-    Bytes,
-    Object,
-    List,
-)
+from vc2_conformance._string_formatters import *
 
 @pytest.mark.parametrize("formatter,number,expectation", [
     # Formatters
@@ -165,4 +154,19 @@ def test_object(formatter, value, expectation):
     (List(min_run_length=2), [1, 2, 2, 3, 3, 3, 4, 4, 4, 4], "[1] + [2]*2 + [3]*3 + [4]*4"),
 ])
 def test_list(formatter, value, expectation):
+    assert formatter(value) == expectation
+
+@pytest.mark.parametrize("formatter,value,expectation", [
+    # Empty list
+    (MultilineList(), [], ""),
+    # Single-line values
+    (MultilineList(), ["one", "two", "three"], "0: one\n1: two\n2: three"),
+    # Multi-line values (no special treatment)
+    (MultilineList(), ["one", "two\nlines", "three"], "0: one\n1: two\nlines\n2: three"),
+    # Custom formatter
+    (MultilineList(formatter=Hex()), [1, 2, 3], "0: 0x1\n1: 0x2\n2: 0x3"),
+    # Custom heading
+    (MultilineList(heading="Foo"), ["a", "b"], "Foo\n  0: a\n  1: b"),
+])
+def test_multiline_list(formatter, value, expectation):
     assert formatter(value) == expectation

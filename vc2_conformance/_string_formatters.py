@@ -18,7 +18,7 @@ class for displaying numbers. For example::
 
 from attr import attrs, attrib
 
-from vc2_conformance._string_utils import ellipsise
+from vc2_conformance._string_utils import indent, ellipsise
 
 __all__ = [
     "Number",
@@ -31,6 +31,7 @@ __all__ = [
     "Bytes",
     "Object",
     "List",
+    "MultilineList",
 ]
 
 
@@ -353,3 +354,44 @@ class List(object):
             )
             for value_run in out
         )
+
+@attrs(frozen=True)
+class MultilineList(object):
+    """
+    A formatter for lists which displays each value on its own line.
+    
+    Examples::
+        
+        >>> MultilineList()(["one", "two", "three"])
+        0: one
+        1: two
+        2: three
+        
+        >>> # A custom formatter may be supplied for formatting the list
+        >>> # entries
+        >>> MultilineList(formatter=Hex())([1, 2, 3])
+        0: 0x1
+        1: 0x2
+        2: 0x3
+        
+        >>> # A heading may be added
+        >>> MultilineList(heading="MyList")(["one", "two", "three"])
+        MyList
+          0: one
+          1: two
+          2: three
+    """
+    
+    heading = attrib(default=None)
+    formatter = attrib(default=str)
+    
+    def __call__(self, lst):
+        lines = "\n".join(
+            "{}: {}".format(i, self.formatter(value))
+            for i, value in enumerate(lst)
+        )
+        
+        if self.heading is None:
+            return lines
+        else:
+            return "{}\n{}".format(self.heading, indent(lines))
