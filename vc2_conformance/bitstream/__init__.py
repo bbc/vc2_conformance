@@ -2,38 +2,45 @@ r"""
 VC-2 bitstream serialisation/deserialistion library.
 ====================================================
 
-This module implements a library for deserialising, manipulating and
-serialising VC-2 bitstreams at a low-level. It is intended for the following
-purposes:
+This module implements facilities for for deserialising, displaying,
+manipulating and serialising VC-2 bitstreams at a low-level. It is intended to
+be able to handle both conformant and out-of-spec bitstreams. It explicitly
+does *not* form part of the reference conformance checking decoder, however.
 
-* Displaying VC-2 bitstream-level information in a human readable form,
-  including out-of-spec bitstreams.
-* Manipulating existing VC-2 bitstreams.
-* Hand-crafting VC-2 bitstreams from scratch.
-* Creating in- and out-of-spec bitstreams.
+This module is used by the VC-2 conformance software to produce human-friendly
+descriptions of VC-2 bitstreams and also to generate sample bitstreams. It may
+also be used by advanced external users for mechanically generating, inspecting
+or manipulating bitstreams, if required.
 
-Specifically, this module is emphatically *not* intended to be used as the
-bitstream parser for a conformance-checking decoder implementation and should
-be considered 'informative' only.
+As with the conformance checking decoder, this module prioritises correctness
+over all other factors. As such, performance is usuable for development
+purposes but expect several seconds-per-frame (not frames-per-second)
+processing times.
+
 
 Implementation
 --------------
 
-This module is split into three parts.
+This module is split into three parts:
 
-1. The :py:module:`io` provide a simple API for performing low-level bitwise
-   I/O on file-like objects.
-2. The :py:module:`serdes` module implements a *generic* framework for
-   serialising, deserialising and analysing bitstreams described in the
-   procedural-style used in the VC-2 specification pseudo code.
-3. The :py:module:`vc2` module contains all of the VC-2 specific code which
-   defines the underlying bitstream format.
+* The generic :py:mod:`serdes` serialiser/deserialiser framework
+* A VC-2 bitstream description based on the :py:mod:`serdes` framework (in
+  :py:mod:`vc2`)
+* A set of :py:mod:`fixeddict` dictionary types which make it easy to display
+  and safely manipulate deserialised bitstreams (in :py:mod:`vc2_fixeddicts`).
 
-The :py:module:`serdes` library forms the heart of this implementation and
-effectively allows pseudo code to be copied from the specification and, with
-minimal transformation, be used to drive a bitstream serialiser/deserialiser.
-It is strongly recommended that future implementers begin by reading the
-introduction to that module.
+To encourage correctness, the provided serialiser/deserialiser was designed in
+such a way as to closely match the pseudo-code of the reference VC-2 decoder in
+the VC-2 specification. To facilitate this, the :py:mod:`serdes` submodule
+implements a framework for turning VC-2 pseudo-code descriptions into complete
+bitstream serialisers and deserialisers.
+
+Where possible, the same Python-translation of the VC-2 pseudo code is used as
+the conformance-checking decoder. In some cases, however, deviations are
+required either to support the :py:mod:`serdes` framework or to enable
+out-of-spec values to be handled. These serialisation/deserialisation specific
+versions of the VC-2 pseudo code can be found in the :py:mod:`vc2` submodule.
+
 """
 
 # Low-level bitwise file reading/writing
@@ -44,3 +51,4 @@ from vc2_conformance.bitstream.serdes import *
 
 # VC-2 specific parts
 from vc2_conformance.bitstream.vc2 import *
+from vc2_conformance.bitstream.vc2_fixeddicts import *

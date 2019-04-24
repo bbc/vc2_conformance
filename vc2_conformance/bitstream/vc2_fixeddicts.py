@@ -1,13 +1,22 @@
 r"""
-Structured dictionaries to hold VC-2 bitstream values in a hierarchy which
-strongly mimics the bitstream structure.
+:py:mod:`fixeddict` definitions for holding VC-2 bitstream values in a
+hierarchy which strongly mimics the bitstream structure.
 """
 
 from bitarray import bitarray
 
 from vc2_conformance.fixeddict import fixeddict, Entry
 
-from vc2_conformance._string_formatters import Hex, Bool, Bits, Bytes
+from vc2_conformance._string_formatters import (
+    Hex,
+    Bool,
+    Bits,
+    Bytes,
+    List,
+    Object,
+)
+
+from vc2_conformance.state import State
 
 from vc2_conformance.tables import (
     PARSE_INFO_PREFIX,
@@ -25,11 +34,6 @@ from vc2_conformance.tables import (
     PresetColorMatrices,
     PresetTransferFunctions,
     WaveletFilters,
-)
-
-from vc2_conformance.bitstream.vc2.fixeddicts import (
-    LDSliceArray,
-    HQSliceArray,
 )
 
 
@@ -59,12 +63,17 @@ __all__ = [
     "SliceParameters",
     "QuantMatrix",
     
-    "PictureParse",
     "PictureHeader",
+    "TransformData",
     "WaveletTransform",
+    "PictureParse",
     
-    "FragmentParse",
+    "LDSlice",
+    "HQSlice",
+    
     "FragmentHeader",
+    "FragmentData",
+    "FragmentParse",
     
     "DataUnit",
     "Sequence",
@@ -338,6 +347,65 @@ TransformParameters = fixeddict(
 (12.4.1) Wavelet transform parameters defined by ``transform_parameters()``.
 """
 
+################################################################################
+# Slice related structures
+#
+# Note that in the VC2 spec, slices are unpacked into a series of 2D arrays
+# according to the transform to be performed. By contrast, the structures
+# defined below mimic the layout of the transform data in the bitstream.
+################################################################################
+
+LDSlice = fixeddict(
+    "LDSlice",
+    Entry("qindex", default=0),
+    
+    Entry("slice_y_length", default=0),
+    
+    # Transform coefficients (in bitstream order)
+    Entry("y_transform", default_factory=list, formatter=List()),
+    Entry("c_transform", default_factory=list, formatter=List()),
+    
+    # Unused bits from bounded blocks
+    Entry("y_block_padding", default_factory=bitarray, formatter=Bits()),
+    Entry("c_block_padding", default_factory=bitarray, formatter=Bits()),
+    
+    # Computed value: The slice coordinates.
+    Entry("_sx"),
+    Entry("_sy"),
+)
+"""
+(13.5.3.1) The data associated with a single low-delay slice, defined by
+``ld_slice()``.
+"""
+
+HQSlice = fixeddict(
+    "HQSlice",
+    Entry("prefix_bytes", default=b"", formatter=Bytes()),
+    
+    Entry("qindex", default=0),
+    
+    Entry("slice_y_length", default=0),
+    Entry("slice_c1_length", default=0),
+    Entry("slice_c2_length", default=0),
+    
+    # Transform coefficients (in bitstream order)
+    Entry("y_transform", default_factory=list, formatter=List()),
+    Entry("c1_transform", default_factory=list, formatter=List()),
+    Entry("c2_transform", default_factory=list, formatter=List()),
+    
+    # Unused bits from bounded blocks
+    Entry("y_block_padding", default_factory=bitarray, formatter=Bits()),
+    Entry("c1_block_padding", default_factory=bitarray, formatter=Bits()),
+    Entry("c2_block_padding", default_factory=bitarray, formatter=Bits()),
+    
+    # Computed value: The slice coordinates.
+    Entry("_sx"),
+    Entry("_sy"),
+)
+"""
+(13.5.4) The data associated with a single high-quality slice, defined by
+``hq_slice()``.
+"""
 
 ################################################################################
 # picture_parse and associated structures
@@ -352,20 +420,29 @@ PictureHeader = fixeddict(
 (12.2) Picture header information defined by ``picture_header()``.
 """
 
+TransformData = fixeddict(
+    "TransformData",
+    Entry("ld_slices", formatter=List(formatter=Object())),  # type=[LDSlice, ...]
+    Entry("hq_slices", formatter=List(formatter=Object())),  # type=[HQSlice, ...]
+    
+    # Computed value: A copy of the State dictionary held when processing this
+    # transform data. May be used to work out how the deseriallised values
+    # correspond to transform components within the slices above.
+    Entry("_state", default_factory=State),
+)
+"""
+(13.5.2) Transform coefficient data slices read by ``transform_data()``.
+"""
 
 WaveletTransform = fixeddict(
     "WaveletTransform",
     Entry("transform_parameters", default_factory=TransformParameters),
     Entry("padding", default_factory=bitarray, formatter=Bits()),
-    # Called {ld,hq}_transform_data in spec and contains a more deeply nested
-    # structure.
-    Entry("ld_slice_array"),  # type=LDSliceArray
-    Entry("hq_slice_array"),  # type=HQSliceArray
+    Entry("transform_data", default_factory=TransformData),
 )
 """
 (12.3) Wavelet parameters and coefficients defined by ``wavelet_transform()``.
 """
-
 
 PictureParse = fixeddict(
     "PictureParse",
@@ -395,19 +472,30 @@ FragmentHeader = fixeddict(
 (14.2) Fragment header defined by ``fragment_header()``.
 """
 
+FragmentData = fixeddict(
+    "FragmentData",
+    Entry("ld_slices", formatter=List(formatter=Object())),  # type=[LDSlice, ...]
+    Entry("hq_slices", formatter=List(formatter=Object())),  # type=[HQSlice, ...]
+    
+    # Computed value: A copy of the State dictionary held when processing this
+    # fragment data. May be used to work out how the deseriallised values
+    # correspond to transform components within the slices above.
+    Entry("_state", default_factory=State),
+)
+"""
+(14.4) Transform coefficient data slices read by ``fragment_data()``.
+"""
+
 FragmentParse = fixeddict(
     "FragmentParse",
     Entry("padding1", default_factory=bitarray, formatter=Bits()),
     Entry("fragment_header", default_factory=FragmentHeader),
     Entry("padding2", default_factory=bitarray, formatter=Bits()),
     Entry("transform_parameters"),  # type=TransformParameters
-    # Called {ld,hq}_fragment_data in spec and contains a more deeply nested
-    # structure.
-    Entry("ld_slice_array"),  # type=LDSliceArray
-    Entry("hq_slice_array"),  # type=HQSliceArray
+    Entry("fragment_data"),  # type=FragmentData
 )
 """
-(14.1) A fragment data unit defined by ``picture_parse()`` containing part of a
+(14.1) A fragment data unit defined by ``fragment_parse()`` containing part of a
 picture.
 """
 
