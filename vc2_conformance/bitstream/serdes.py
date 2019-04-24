@@ -1051,10 +1051,10 @@ class MonitoredMixin(object):
         """
         Parameters
         ==========
-        monitor : callable(serdes, target)
+        monitor : callable(serdes, target, value)
             A function which will be called after every primitive I/O operation
             completes. This function is passed the :py:class:`SerDes` instance
-            and the target name of the target just used.
+            and the target name and value of the target just used.
         io : :py:class:`BitstreamReader` or :py:class:`BitstreamWriter`
         context : dict
         """
@@ -1063,37 +1063,37 @@ class MonitoredMixin(object):
     
     def bool(self, target):
         value = super(MonitoredMixin, self).bool(target)
-        self.monitor(self, target)
+        self.monitor(self, target, value)
         return value
     
     def nbits(self, target, num_bits):
         value = super(MonitoredMixin, self).nbits(target, num_bits)
-        self.monitor(self, target)
+        self.monitor(self, target, value)
         return value
     
     def uint_lit(self, target, num_bytes):
         value = super(MonitoredMixin, self).uint_lit(target, num_bytes)
-        self.monitor(self, target)
+        self.monitor(self, target, value)
         return value
     
     def bitarray(self, target, num_bits):
         value = super(MonitoredMixin, self).bitarray(target, num_bits)
-        self.monitor(self, target)
+        self.monitor(self, target, value)
         return value
     
     def bytes(self, target, num_bytes):
         value = super(MonitoredMixin, self).bytes(target, num_bytes)
-        self.monitor(self, target)
+        self.monitor(self, target, value)
         return value
     
     def uint(self, target):
         value = super(MonitoredMixin, self).uint(target)
-        self.monitor(self, target)
+        self.monitor(self, target, value)
         return value
     
     def sint(self, target):
         value = super(MonitoredMixin, self).sint(target)
-        self.monitor(self, target)
+        self.monitor(self, target, value)
         return value
 
 
@@ -1105,10 +1105,10 @@ class MonitoredSerialiser(MonitoredMixin, Serialiser):
     
     Parameters
     ==========
-    monitor : callable(serdes, target)
+    monitor : callable(serdes, target, value)
         A function which will be called after every primitive I/O operation
         completes. This function is passed this :py:class:`MonitoredSerialiser`
-        instance and the target name of the target just serialised.
+        instance and the target name and value of the target just serialised.
         
         This function may be used to inform a user of the current progress of
         serialisation (e.g. using :py:meth:`SerDes.describe_path` or
@@ -1127,11 +1127,11 @@ class MonitoredDeserialiser(MonitoredMixin, Deserialiser):
     
     Parameters
     ==========
-    monitor : callable(serdes, target)
+    monitor : callable(serdes, target, value)
         A function which will be called after every primitive I/O operation
         completes. This function is passed this
-        :py:class:`MonitoredDeserialiser` instance and the target name of the
-        target just serialised.
+        :py:class:`MonitoredDeserialiser` instance and the target name and
+        value of the target just serialised.
         
         This function may be used to inform a user of the current progress of
         deserialisation (e.g. using :py:meth:`SerDes.context`,

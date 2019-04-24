@@ -645,7 +645,7 @@ def test_serialiser(method, arguments, value, exp_bitstream, exp_tell, w, f):
 ])
 def test_monitored_serdes(T, make_io, method, arguments, value, exp_tell):
     tells = []
-    monitor = Mock(side_effect=lambda serdes, target: tells.append(serdes.io.tell()))
+    monitor = Mock(side_effect=lambda serdes, target, value: tells.append(serdes.io.tell()))
     
     with T(monitor, make_io(), {"target": value}) as serdes:
         assert getattr(serdes, method)("target", *arguments) == value
@@ -653,7 +653,7 @@ def test_monitored_serdes(T, make_io, method, arguments, value, exp_tell):
     assert serdes.io.tell() == exp_tell
     
     # Monitor was called
-    monitor.assert_called_with(serdes, "target")
+    monitor.assert_called_with(serdes, "target", value)
     
     # Call occurred *after* the read/write
     assert tells == [exp_tell]
