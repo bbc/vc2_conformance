@@ -888,6 +888,43 @@ class SerDes(object):
         else:
             return self._context
     
+    def path(self, target=None):
+        """
+        Produce a 'path' describing the part of the bitstream the parser is
+        currently processing.
+        
+        If 'target' is None, only includes the path of the current nested context
+        dictionary. If 'target' is a target name in the current target
+        dictionary, the path to the last-used target will be included.
+        
+        A path might look like::
+        
+            ['source_parameters', 'frame_size', 'frame_width']
+        """
+        
+        full_context_stack = list(self._context_stack)
+        full_context_indices_stack = list(self._context_indices_stack)
+        full_target_stack = list(self._target_stack)
+        if target is not None:
+            full_context_stack += [self._context]
+            full_context_indices_stack += [self._context_indices]
+            full_target_stack += [target]
+        
+        out = []
+        
+        for context, context_indices, target in zip(full_context_stack,
+                                                    full_context_indices_stack,
+                                                    full_target_stack):
+            out.append(target)
+            
+            index = context_indices.get(target, True)
+            if index is not True and index != 0:
+                # NB: context_indices includes the index of the first unused
+                # index, hence being decremented by one here.
+                out.append(index - 1)
+        
+        return out
+    
     def describe_path(self, target=None):
         """
         Produce a human-readable description of the part of the bitstream the
@@ -902,39 +939,10 @@ class SerDes(object):
             SequenceHeader['source_parameters']['frame_size']['frame_width']
         
         """
-        full_context_stack = list(self._context_stack)
-        full_context_indices_stack = list(self._context_indices_stack)
-        full_target_stack = list(self._target_stack)
-        if target is not None:
-            full_context_stack += [self._context]
-            full_context_indices_stack += [self._context_indices]
-            full_target_stack += [target]
-        
         root_type = self.context.__class__.__name__
         
-        return "{}{}".format(
-            root_type,
-            "".join(
-                (
-                    "[{!r}]".format(target)
-                    if (
-                        context_indices.get(target, True) is True or
-                        context_indices.get(target, True) == 0
-                    ) else
-                    "[{!r}][{}]".format(
-                        target,
-                        # NB: context_indices includes the index of the first
-                        # unused index, hence being decremented by one here.
-                        context_indices[target]-1,
-                    )
-                )
-                for context, context_indices, target in zip(
-                    full_context_stack,
-                    full_context_indices_stack,
-                    full_target_stack,
-                )
-            )
-        )
+        return "{}{}".format(root_type, "".join(
+            "[{!r}]".format(p) for p in self.path(target)))
 
 
 class Deserialiser(SerDes):

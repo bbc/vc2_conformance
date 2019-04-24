@@ -490,14 +490,55 @@ class TestSerDes(object):
         assert serdes._context is not root
         assert serdes.context is root
     
+    def test_path(self):
+        serdes = SerDes(None)
+        
+        # At root should work
+        assert serdes.path() == []
+        assert serdes.path("foo") == ["foo"]
+        
+        # List items in root should work
+        serdes.declare_list("list")
+        assert serdes.path("list") == ["list"]
+        serdes.computed_value("list", 10)
+        assert serdes.path("list") == ["list", 0]
+        serdes.computed_value("list", 20)
+        assert serdes.path("list") == ["list", 1]
+        serdes.computed_value("list", 30)
+        assert serdes.path("list") == ["list", 2]
+        
+        # When nested, the same should work
+        serdes.subcontext_enter("child")
+        
+        assert serdes.path() == ["child"]
+        assert serdes.path("foo") == ["child", "foo"]
+        
+        # List items in root should work
+        serdes.declare_list("list")
+        assert serdes.path("list") == ["child", "list"]
+        serdes.computed_value("list", 10)
+        assert serdes.path("list") == ["child", "list", 0]
+        serdes.computed_value("list", 20)
+        assert serdes.path("list") == ["child", "list", 1]
+        serdes.computed_value("list", 30)
+        assert serdes.path("list") == ["child", "list", 2]
+        
+        # When nested into an array, the same should work
+        serdes.declare_list("child")
+        serdes.subcontext_enter("child")
+        assert serdes.path() == ["child", "child", 0]
+        assert serdes.path("foo") == ["child", "child", 0, 'foo']
+    
     def test_describe_path(self):
         serdes = SerDes(None)
         
         # At root should work
         assert serdes.describe_path() == "dict"
+        
+        # At one level should work
         assert serdes.describe_path("foo") == "dict['foo']"
         
-        # List items in root should work
+        # List values should work
         serdes.declare_list("list")
         assert serdes.describe_path("list") == "dict['list']"
         serdes.computed_value("list", 10)
@@ -506,28 +547,6 @@ class TestSerDes(object):
         assert serdes.describe_path("list") == "dict['list'][1]"
         serdes.computed_value("list", 30)
         assert serdes.describe_path("list") == "dict['list'][2]"
-        
-        # When nested, the same should work
-        serdes.subcontext_enter("child")
-        
-        assert serdes.describe_path() == "dict['child']"
-        assert serdes.describe_path("foo") == "dict['child']['foo']"
-        
-        # List items in root should work
-        serdes.declare_list("list")
-        assert serdes.describe_path("list") == "dict['child']['list']"
-        serdes.computed_value("list", 10)
-        assert serdes.describe_path("list") == "dict['child']['list'][0]"
-        serdes.computed_value("list", 20)
-        assert serdes.describe_path("list") == "dict['child']['list'][1]"
-        serdes.computed_value("list", 30)
-        assert serdes.describe_path("list") == "dict['child']['list'][2]"
-        
-        # When nested into an array, the same should work
-        serdes.declare_list("child")
-        serdes.subcontext_enter("child")
-        assert serdes.describe_path() == "dict['child']['child'][0]"
-        assert serdes.describe_path("foo") == "dict['child']['child'][0]['foo']"
     
     def test_describe_path_custom_type(self):
         # With different types, prefix should be different
