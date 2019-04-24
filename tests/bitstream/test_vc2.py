@@ -36,6 +36,44 @@ def f():
 def w(f):
     return BitstreamWriter(f)
 
+def test_parse_sequence(w):
+    seq_in = vc2.Sequence(data_units=[
+        vc2.DataUnit(
+            parse_info=vc2.ParseInfo(
+                parse_code=tables.ParseCodes.padding_data,
+                next_parse_offset=13,
+            ),
+            padding=vc2.Padding()
+        ),
+        vc2.DataUnit(
+            parse_info=vc2.ParseInfo(parse_code=tables.ParseCodes.end_of_sequence),
+        ),
+    ])
+    with Serialiser(w, seq_in) as serdes:
+        vc2.parse_sequence(serdes)
+    seq = serdes.context
+    assert str(seq) == (
+        "Sequence:\n"
+        "  data_units: \n"
+        "    0: DataUnit:\n"
+        "      parse_info: ParseInfo:\n"
+        "        padding: 0b\n"
+        "        parse_info_prefix: Correct (0x42424344)\n"
+        "        parse_code: padding_data (0x30)\n"
+        "        next_parse_offset: 13\n"
+        "        previous_parse_offset: 0\n"
+        "      padding: Padding:\n"
+        "        padding: 0b\n"
+        "        bytes: 0x\n"
+        "    1: DataUnit:\n"
+        "      parse_info: ParseInfo:\n"
+        "        padding: 0b\n"
+        "        parse_info_prefix: Correct (0x42424344)\n"
+        "        parse_code: end_of_sequence (0x10)\n"
+        "        next_parse_offset: 0\n"
+        "        previous_parse_offset: 0"
+    )
+
 
 def test_parse_info(w):
     pi_in = vc2.ParseInfo()

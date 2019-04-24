@@ -14,6 +14,7 @@ from vc2_conformance._string_formatters import (
     Bytes,
     List,
     Object,
+    MultilineList,
 )
 
 from vc2_conformance.state import State
@@ -521,7 +522,7 @@ Based on the values read by parse_sequence() (10.4.1) in each iteration.
 
 Sequence = fixeddict(
     "Sequence",
-    Entry("data_units", default_factory=list),  # type=[DataUnit, ...]
+    Entry("data_units", default_factory=list, formatter=MultilineList(heading="")),  # type=[DataUnit, ...]
 )
 """
 (10.4.1) A VC-2 sequence.
