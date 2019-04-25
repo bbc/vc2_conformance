@@ -1,6 +1,16 @@
 r"""
 :py:mod:`fixeddict` definitions for holding VC-2 bitstream values in a
 hierarchy which strongly mimics the bitstream structure.
+
+.. note::
+
+    In all fixeddict types, the 'type' entry annotation is used to indicate
+    which other fixeddict types nest within that entry (but not necessarily the
+    exact type contained by the entry, e.g. an entry holding a list of
+    :py:class:`DataUnit` will have its type set to :py:class:`DataUnit`).
+    
+    This information is used for introspection purposes and has no effect on
+    the structures or their correct interpretation.
 """
 
 from bitarray import bitarray
@@ -231,9 +241,9 @@ ColorSpec = fixeddict(
     "ColorSpec",
     Entry("custom_color_spec_flag", default=False, formatter=Bool()),
     Entry("index", enum=PresetColorSpecs),
-    Entry("color_primaries"), # type=ColorPrimaries
-    Entry("color_matrix"), # type=ColorMatrix
-    Entry("transfer_function"), # type=TransferFunction
+    Entry("color_primaries", type=ColorPrimaries),
+    Entry("color_matrix", type=ColorMatrix),
+    Entry("transfer_function", type=TransferFunction),
 )
 """
 (11.4.10.1) Colour specification override defined by ``color_spec()``.
@@ -241,14 +251,18 @@ ColorSpec = fixeddict(
 
 SourceParameters = fixeddict(
     "SourceParameters",
-    Entry("frame_size", default_factory=FrameSize),
-    Entry("color_diff_sampling_format", default_factory=ColorDiffSamplingFormat),
-    Entry("scan_format", default_factory=ScanFormat),
-    Entry("frame_rate", default_factory=FrameRate),
-    Entry("pixel_aspect_ratio", default_factory=PixelAspectRatio),
-    Entry("clean_area", default_factory=CleanArea),
-    Entry("signal_range", default_factory=SignalRange),
-    Entry("color_spec", default_factory=ColorSpec),
+    Entry("frame_size", default_factory=FrameSize, type=FrameSize),
+    Entry("color_diff_sampling_format",
+          default_factory=ColorDiffSamplingFormat,
+          type=ColorDiffSamplingFormat),
+    Entry("scan_format", default_factory=ScanFormat, type=ScanFormat),
+    Entry("frame_rate", default_factory=FrameRate, type=FrameRate),
+    Entry("pixel_aspect_ratio",
+          default_factory=PixelAspectRatio,
+          type=PixelAspectRatio),
+    Entry("clean_area", default_factory=CleanArea, type=CleanArea),
+    Entry("signal_range", default_factory=SignalRange, type=SignalRange),
+    Entry("color_spec", default_factory=ColorSpec, type=ColorSpec),
 )
 """
 (11.4.1) Video format overrides defined by ``source_parameters()``.
@@ -257,11 +271,15 @@ SourceParameters = fixeddict(
 SequenceHeader = fixeddict(
     "SequenceHeader",
     Entry("padding", default_factory=bitarray, formatter=Bits()),
-    Entry("parse_parameters", default_factory=ParseParameters),
+    Entry("parse_parameters",
+          default_factory=ParseParameters,
+          type=ParseParameters),
     Entry("base_video_format",
           default=BaseVideoFormats.custom_format,
           enum=BaseVideoFormats),
-    Entry("video_parameters", default_factory=SourceParameters),
+    Entry("video_parameters",
+          default_factory=SourceParameters,
+          type=SourceParameters),
     Entry("picture_coding_mode",
           default=PictureCodingModes.pictures_are_frames,
           enum=PictureCodingModes),
@@ -340,9 +358,12 @@ TransformParameters = fixeddict(
           enum=WaveletFilters),
     Entry("dwt_depth", default=0),
     Entry("extended_transform_parameters",
-          default_factory=ExtendedTransformParameters),
-    Entry("slice_parameters", default_factory=SliceParameters),
-    Entry("quant_matrix", default_factory=QuantMatrix),
+          default_factory=ExtendedTransformParameters,
+          type=ExtendedTransformParameters),
+    Entry("slice_parameters",
+          default_factory=SliceParameters,
+          type=SliceParameters),
+    Entry("quant_matrix", default_factory=QuantMatrix, type=QuantMatrix),
 )
 """
 (12.4.1) Wavelet transform parameters defined by ``transform_parameters()``.
@@ -437,7 +458,9 @@ TransformData = fixeddict(
 
 WaveletTransform = fixeddict(
     "WaveletTransform",
-    Entry("transform_parameters", default_factory=TransformParameters),
+    Entry("transform_parameters",
+          default_factory=TransformParameters,
+          type=TransformParameters),
     Entry("padding", default_factory=bitarray, formatter=Bits()),
     Entry("transform_data", default_factory=TransformData),
 )
@@ -448,9 +471,11 @@ WaveletTransform = fixeddict(
 PictureParse = fixeddict(
     "PictureParse",
     Entry("padding1", default_factory=bitarray, formatter=Bits()),
-    Entry("picture_header", default_factory=PictureHeader),
+    Entry("picture_header", default_factory=PictureHeader, type=PictureHeader),
     Entry("padding2", default_factory=bitarray, formatter=Bits()),
-    Entry("wavelet_transform", default_factory=WaveletTransform),
+    Entry("wavelet_transform",
+          default_factory=WaveletTransform,
+          type=WaveletTransform),
 )
 """
 (12.1) A picture data unit defined by ``picture_parse()``
@@ -475,8 +500,8 @@ FragmentHeader = fixeddict(
 
 FragmentData = fixeddict(
     "FragmentData",
-    Entry("ld_slices", formatter=List(formatter=Object())),  # type=[LDSlice, ...]
-    Entry("hq_slices", formatter=List(formatter=Object())),  # type=[HQSlice, ...]
+    Entry("ld_slices", formatter=List(formatter=Object()), type=LDSlice),
+    Entry("hq_slices", formatter=List(formatter=Object()), type=HQSlice),
     
     # Computed value: A copy of the State dictionary held when processing this
     # fragment data. May be used to work out how the deseriallised values
@@ -490,10 +515,12 @@ FragmentData = fixeddict(
 FragmentParse = fixeddict(
     "FragmentParse",
     Entry("padding1", default_factory=bitarray, formatter=Bits()),
-    Entry("fragment_header", default_factory=FragmentHeader),
+    Entry("fragment_header",
+          default_factory=FragmentHeader,
+          type=FragmentHeader),
     Entry("padding2", default_factory=bitarray, formatter=Bits()),
-    Entry("transform_parameters"),  # type=TransformParameters
-    Entry("fragment_data"),  # type=FragmentData
+    Entry("transform_parameters", type=TransformParameters),
+    Entry("fragment_data", type=FragmentData),
 )
 """
 (14.1) A fragment data unit defined by ``fragment_parse()`` containing part of a
@@ -508,11 +535,11 @@ picture.
 DataUnit = fixeddict(
     "DataUnit",
     Entry("parse_info", default_factory=ParseInfo),
-    Entry("sequence_header"),  # type=SequenceHeader
-    Entry("picture_parse"),  # type=PictureParse
-    Entry("fragment_parse"),  # type=FragmentParse
-    Entry("auxiliary_data"),  # type=AuxiliaryData
-    Entry("padding"),  # type=Padding
+    Entry("sequence_header", type=SequenceHeader),
+    Entry("picture_parse", type=PictureParse),
+    Entry("fragment_parse", type=FragmentParse),
+    Entry("auxiliary_data", type=AuxiliaryData),
+    Entry("padding", type=Padding),
 )
 """
 A data unit (e.g. sequence header or picture) and its associated parse info.
@@ -522,7 +549,10 @@ Based on the values read by parse_sequence() (10.4.1) in each iteration.
 
 Sequence = fixeddict(
     "Sequence",
-    Entry("data_units", default_factory=list, formatter=MultilineList(heading="")),  # type=[DataUnit, ...]
+    Entry("data_units",
+          default_factory=list,
+          formatter=MultilineList(heading=""),
+          type=DataUnit),
     # Computed value: The State object being populated by the parser.
     Entry("_state", default_factory=State),
 )
