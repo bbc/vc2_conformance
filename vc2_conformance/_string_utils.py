@@ -76,6 +76,20 @@ def ellipsise(text, context=4, min_length=8):
         )
 
 
+def ellipsise_lossy(text, max_length=80):
+    """
+    Given a string which may not fit within a given line length, trnucate the
+    string by adding ellipses in the middle.
+    """
+    if len(text) <= max_length:
+        # Already short enough
+        return text
+    else:
+        before_length = (max_length - 3) // 2
+        after_length = (max_length - 3) - before_length
+        return "{}...{}".format(text[:before_length], text[-after_length:])
+
+
 def table(table_strings, column_sep="  ", indent_prefix="  "):
     """
     Concatenate and lay out a table of strings.

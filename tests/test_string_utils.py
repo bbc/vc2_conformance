@@ -3,6 +3,7 @@ import pytest
 from vc2_conformance._string_utils import (
     indent,
     ellipsise,
+    ellipsise_lossy,
     table,
 )
 
@@ -43,6 +44,23 @@ def test_indent(string, expected):
 ])
 def test_ellipsise(string, expected):
     assert ellipsise(string) == expected
+
+@pytest.mark.parametrize("string,max_length,expected", [
+    # Empty string
+    ("", 0, ""),
+    ("", 5, ""),
+    # Short-enough string
+    ("hi", 5, "hi"),
+    ("hello", 5, "hello"),
+    # Truncate (odd length)
+    ("hello world", 5, "h...d"),
+    ("hello world", 9, "hel...rld"),
+    # Truncate (even length)
+    ("hello world", 6, "h...ld"),
+    ("hello world", 10, "hel...orld"),
+])
+def test_ellipsise_lossy(string, max_length, expected):
+    assert ellipsise_lossy(string, max_length) == expected
 
 
 @pytest.mark.parametrize("tabular_strings,expected", [
