@@ -2,7 +2,8 @@
 Metadata about the VC-2 bitstream seriallisation/deseriallisation process.
 """
 
-from vc2_conformance import bitstream
+from vc2_conformance.bitstream import vc2
+from vc2_conformance.bitstream.vc2_fixeddicts import HQSlice, LDSlice
 
 
 __all__ = [
@@ -21,8 +22,8 @@ A dictionary of the shape ``{function_name: [type, ...], ...}``.
 """
 
 # Populate pseudocode_function_to_fixeddicts
-for name in bitstream.vc2.__all__:
-    function = getattr(bitstream.vc2, name)
+for name in vc2.__all__:
+    function = getattr(vc2, name)
     if hasattr(function, "context_type"):
         pseudocode_function_to_fixeddicts[name] = [function.context_type]
     else:
@@ -32,8 +33,8 @@ for name in bitstream.vc2.__all__:
 # a @context_type decorator
 assert "slice" in pseudocode_function_to_fixeddicts
 assert pseudocode_function_to_fixeddicts["slice"] == []
-pseudocode_function_to_fixeddicts["slice"].append(bitstream.HQSlice)
-pseudocode_function_to_fixeddicts["slice"].append(bitstream.LDSlice)
+pseudocode_function_to_fixeddicts["slice"].append(HQSlice)
+pseudocode_function_to_fixeddicts["slice"].append(LDSlice)
 
 # Special case: 'slice_band' and 'color_diff_slice_band' both only serve to
 # update an existing slice and so don't have a type. Remove these from the
