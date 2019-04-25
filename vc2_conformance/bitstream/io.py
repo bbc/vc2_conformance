@@ -22,9 +22,31 @@ from vc2_conformance.exp_golomb import (
 
 
 __all__ = [
+    "to_bit_offset",
+    "from_bit_offset",
     "BitstreamReader",
     "BitstreamWriter",
 ]
+
+
+def to_bit_offset(bytes, bits=7):
+    """
+    Convert from a (bytes, bits) tuple (as used by
+    :py:meth:`BitstreamReader.tell` and :py:meth:`BitstreamWriter.tell`) into a
+    total number of bits.
+    """
+    return (bytes * 8) + (7 - bits)
+
+
+def from_bit_offset(total_bits):
+    """
+    Convert from a bit offset into a (bytes, bits) tuple (as used by
+    :py:meth:`BitstreamReader.tell` and :py:meth:`BitstreamWriter.tell`).
+    """
+    bytes = total_bits // 8
+    bits = total_bits % 8
+    
+    return (bytes, 7 - bits)
 
 
 class BitstreamReader(object):
@@ -97,8 +119,29 @@ class BitstreamReader(object):
         """
         assert 0 <= bits <= 7
         
+        # Special case: in a bounded block
         if self._bits_remaining is not None:
-            raise Exception("Cannot seek while in a bounded block.")
+            new_offset = to_bit_offset(bytes, bits)
+            cur_offset = to_bit_offset(*self.tell())
+            delta = new_offset - cur_offset
+            
+            # Special case: If the seek attemts to move past the end of the
+            # bounded block, this is not possible so fail
+            if delta > 0 and self._bits_remaining - delta < 0:
+                raise Exception("Cannot seek() past end of bounded block.")
+            
+            if self._bits_remaining <= 0 and delta == 0:
+                # We're past the end but not moving, don't change the count
+                pass
+            elif self._bits_remaining < 0 and delta < 0:
+                # We're currently past the end of the bounded block and the
+                # seek moves us back before the block, reset the bits remaining
+                # accordingly
+                self._bits_remaining = -delta
+            else:
+                # We're moving, adjust the remaining bit count accordingly
+                self._bits_remaining -= delta
+
         
         self._file.seek(bytes)
         self._byte_offset = self._file.tell()
@@ -293,8 +336,28 @@ class BitstreamWriter(object):
         """
         assert 0 <= bits <= 7
         
+        # Special case: in a bounded block
         if self._bits_remaining is not None:
-            raise Exception("Cannot seek while in a bounded block.")
+            new_offset = to_bit_offset(bytes, bits)
+            cur_offset = to_bit_offset(*self.tell())
+            delta = new_offset - cur_offset
+            
+            # Special case: If the seek attemts to move past the end of the
+            # bounded block, this is not possible so fail
+            if delta > 0 and self._bits_remaining - delta < 0:
+                raise Exception("Cannot seek() past end of bounded block.")
+            
+            if self._bits_remaining <= 0 and delta == 0:
+                # We're past the end but not moving, don't change the count
+                pass
+            elif self._bits_remaining < 0 and delta < 0:
+                # We're currently past the end of the bounded block and the
+                # seek moves us back before the block, reset the bits remaining
+                # accordingly
+                self._bits_remaining = -delta
+            else:
+                # We're moving, adjust the remaining bit count accordingly
+                self._bits_remaining -= delta
         
         self.flush()
         

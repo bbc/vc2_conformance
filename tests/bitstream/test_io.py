@@ -9,6 +9,24 @@ from vc2_conformance.exceptions import OutOfRangeError
 from vc2_conformance import bitstream
 
 
+@pytest.mark.parametrize("bytes,bits,offset", [
+    (0, 7, 0),
+    (0, 6, 1),
+    (0, 5, 2),
+    (0, 4, 3),
+    (0, 3, 4),
+    (0, 2, 5),
+    (0, 1, 6),
+    (0, 0, 7),
+    (1, 7, 8),
+    (1, 6, 9),
+    (2, 6, 17),
+])
+def test_to_and_from_bit_offset(bytes, bits, offset):
+    assert bitstream.to_bit_offset(bytes, bits) == offset
+    assert bitstream.from_bit_offset(offset) == (bytes, bits)
+
+
 class TestBistreamReader(object):
     
     def test_reading(self):
@@ -98,10 +116,6 @@ class TestBistreamReader(object):
         
         r.bounded_block_begin(4)
         
-        # Can't seek in a bounded block
-        with pytest.raises(Exception, match=r".*bounded block.*"):
-            r.seek(0, 0)
-        
         # Can't nest bounded blocks
         with pytest.raises(Exception, match=r".*nest.*"):
             r.bounded_block_begin(1)
@@ -147,6 +161,49 @@ class TestBistreamReader(object):
         # If unused bits remain in block, those are reported
         r.bounded_block_begin(3)
         assert r.bounded_block_end() == 3
+    
+    def test_bounded_block_seek(self):
+        r = bitstream.BitstreamReader(BytesIO(b"\xA0"))
+        
+        r.bounded_block_begin(4)
+        assert r.tell() == (0, 7)
+        assert r.bits_remaining == 4
+        
+        # Should be able to seek to current position and succeed
+        r.seek(0, 7)
+        assert r.tell() == (0, 7)
+        assert r.bits_remaining == 4
+        
+        # Should be able to seek to end of bounded block and succeed
+        r.seek(0, 3)
+        assert r.tell() == (0, 3)
+        assert r.bits_remaining == 0
+        
+        # Should be able to come back again
+        r.seek(0, 4)
+        assert r.tell() == (0, 4)
+        assert r.bits_remaining == 1
+        
+        # After reading past the end of the block, seeking to the end of the
+        # block shouldn't change bits remaining
+        assert r.read_nbits(5) == 0b01111
+        assert r.tell() == (0, 3)
+        assert r.bits_remaining == -4
+        r.seek(0, 3)
+        assert r.tell() == (0, 3)
+        assert r.bits_remaining == -4
+        
+        # Moving before the end of block again should adjust the count
+        # accordingly, however.
+        r.seek(0, 4)
+        assert r.tell() == (0, 4)
+        assert r.bits_remaining == 1
+        
+        # Should not be able to seek past the end of the block
+        with pytest.raises(Exception):
+            r.seek(0, 2)
+        assert r.tell() == (0, 4)
+        assert r.bits_remaining == 1
 
 
 class TestBistreamWriter(object):
@@ -246,10 +303,6 @@ class TestBistreamWriter(object):
         
         w.bounded_block_begin(4)
         
-        # Can't seek in a bounded block
-        with pytest.raises(Exception, match=r".*bounded block.*"):
-            w.seek(0, 0)
-        
         # Can't nest bounded blocks
         with pytest.raises(Exception, match=r".*nest.*"):
             w.bounded_block_begin(1)
@@ -309,6 +362,50 @@ class TestBistreamWriter(object):
         # If unused bits remain in block, those are reported
         w.bounded_block_begin(2)
         assert w.bounded_block_end() == 2
+    
+    def test_bounded_block_seek(self):
+        f = BytesIO()
+        w = bitstream.BitstreamWriter(f)
+        
+        w.bounded_block_begin(4)
+        assert w.tell() == (0, 7)
+        assert w.bits_remaining == 4
+        
+        # Should be able to seek to current position and succeed
+        w.seek(0, 7)
+        assert w.tell() == (0, 7)
+        assert w.bits_remaining == 4
+        
+        # Should be able to seek to end of bounded block and succeed
+        w.seek(0, 3)
+        assert w.tell() == (0, 3)
+        assert w.bits_remaining == 0
+        
+        # Should be able to come back again
+        w.seek(0, 4)
+        assert w.tell() == (0, 4)
+        assert w.bits_remaining == 1
+        
+        # After writing past the end of the block, seeking to the end of the
+        # block shouldn't change bits remaining
+        w.write_nbits(5, 0b01111)
+        assert w.tell() == (0, 3)
+        assert w.bits_remaining == -4
+        w.seek(0, 3)
+        assert w.tell() == (0, 3)
+        assert w.bits_remaining == -4
+        
+        # Moving before the end of block again should adjust the count
+        # accordingly, however.
+        w.seek(0, 4)
+        assert w.tell() == (0, 4)
+        assert w.bits_remaining == 1
+        
+        # Should not be able to seek past the end of the block
+        with pytest.raises(Exception):
+            w.seek(0, 2)
+        assert w.tell() == (0, 4)
+        assert w.bits_remaining == 1
 
 
 class TestReadNbits(object):
