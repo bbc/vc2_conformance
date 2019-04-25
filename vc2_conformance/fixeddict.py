@@ -160,6 +160,10 @@ class Entry(object):
             If ``formatter`` or ``friendly_formatter`` are provided in addition
             to ``enum``, they will override the functions implicitly defined by
             ``enum``.
+        type : any
+            A user-defined annotation. This annotation may be used by end users
+            for whatever purpose they desire and may be inspected using the
+            ``entry_objs`` attribute of the fixeddict.
         """
         self.name = name
         
@@ -188,6 +192,8 @@ class Entry(object):
         
         self.formatter = kwargs.pop("formatter", str)
         self.friendly_formatter = kwargs.pop("friendly_formatter", None)
+        
+        self.type = kwargs.pop("type", None)
         
         if kwargs:
             raise TypeError("unexpected keyword arguments: {} for {}".format(

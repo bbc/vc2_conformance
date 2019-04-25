@@ -570,6 +570,8 @@ def test_context_type():
     def func(serdes, value):
         serdes.computed_value("a", -value)
     
+    assert func.context_type is FixedDict
+    
     serdes = SerDes(None)
     
     func(serdes, 123)

@@ -93,3 +93,6 @@ from vc2_conformance.bitstream.serdes import *
 # VC-2 specific parts
 from vc2_conformance.bitstream.vc2 import *
 from vc2_conformance.bitstream.vc2_fixeddicts import *
+
+# Metadata for introspection purposes
+from vc2_conformance.bitstream.metadata import *

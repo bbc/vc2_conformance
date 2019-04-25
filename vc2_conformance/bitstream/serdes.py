@@ -1162,11 +1162,15 @@ def context_type(dict_type):
             # ...
     
     The wrapped function must take a :py:class:`SerDes` as its first argument.
+    
+    For introspection purposes, the wrapper function will be given a
+    'context_type' attribute holding the passed 'dict_type'.
     """
     def wrap(f):
         @wraps(f)
         def wrapper(serdes, *args, **kwargs):
             serdes.set_context_type(dict_type)
             return f(serdes, *args, **kwargs)
+        wrapper.context_type = dict_type
         return wrapper
     return wrap

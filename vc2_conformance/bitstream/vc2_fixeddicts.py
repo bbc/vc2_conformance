@@ -462,7 +462,7 @@ WaveletTransform = fixeddict(
           default_factory=TransformParameters,
           type=TransformParameters),
     Entry("padding", default_factory=bitarray, formatter=Bits()),
-    Entry("transform_data", default_factory=TransformData),
+    Entry("transform_data", default_factory=TransformData, type=TransformData),
 )
 """
 (12.3) Wavelet parameters and coefficients defined by ``wavelet_transform()``.
@@ -534,7 +534,7 @@ picture.
 
 DataUnit = fixeddict(
     "DataUnit",
-    Entry("parse_info", default_factory=ParseInfo),
+    Entry("parse_info", default_factory=ParseInfo, type=ParseInfo),
     Entry("sequence_header", type=SequenceHeader),
     Entry("picture_parse", type=PictureParse),
     Entry("fragment_parse", type=FragmentParse),
