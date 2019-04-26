@@ -25,6 +25,8 @@ The 'c' or 'comp' arguments should be set to one of the following strings:
 * ``"C2"``
 """
 
+from vc2_conformance.metadata import ref_pseudocode
+
 __all__ = [
     "subband_width",
     "subband_height",
@@ -36,6 +38,7 @@ __all__ = [
 ]
 
 
+@ref_pseudocode(verbatim=False)
 def subband_width(state, level, comp):
     """(13.2.3)"""
     if comp == "Y":
@@ -55,6 +58,7 @@ def subband_width(state, level, comp):
     elif level > state["dwt_depth_ho"]:
         return pw // (1 << (state["dwt_depth_ho"] + state["dwt_depth"] - level + 1))
 
+@ref_pseudocode(verbatim=False)
 def subband_height(state, level, comp):
     """(13.2.3)"""
     if comp == "Y":
@@ -74,7 +78,7 @@ def subband_height(state, level, comp):
     elif level > state["dwt_depth_ho"]:
         return ph // (1 << (state["dwt_depth_ho"] + state["dwt_depth"] - level + 1))
 
-
+@ref_pseudocode
 def slice_bytes(state, sx, sy):
     """(13.5.3.2) Compute the number of bytes in a low-delay picture slice."""
     slice_number = (sy * state["slices_x"]) + sx
@@ -84,18 +88,22 @@ def slice_bytes(state, sx, sy):
               state["slice_bytes_denominator"])
     return bytes
 
+@ref_pseudocode
 def slice_left(state, sx, c, level):
     """(13.5.6.2) Get the x coordinate of the LHS of the given slice."""
     return (subband_width(state, level, c) * sx) // state["slices_x"]
 
+@ref_pseudocode
 def slice_right(state, sx, c, level):
     """(13.5.6.2) Get the x coordinate of the RHS of the given slice."""
     return (subband_width(state, level, c) * (sx + 1)) // state["slices_x"]
 
+@ref_pseudocode
 def slice_top(state, sy, c, level):
     """(13.5.6.2) Get the y coordinate of the top of the given slice."""
     return (subband_height(state, level, c) * sy) // state["slices_y"]
 
+@ref_pseudocode
 def slice_bottom(state, sy, c, level):
     """(13.5.6.2) Get the y coordinate of the bottom of the given slice."""
     return (subband_height(state, level, c) * (sy + 1)) // state["slices_y"]

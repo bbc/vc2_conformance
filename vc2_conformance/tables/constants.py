@@ -4,6 +4,7 @@ Constants defined by the VC-2 specification.
 
 from enum import IntEnum
 
+from vc2_conformance.metadata import ref_value, ref_enum
 
 __all__ = [
     "PARSE_INFO_PREFIX",
@@ -25,16 +26,17 @@ __all__ = [
     "WaveletFilters",
 ]
 
-PARSE_INFO_PREFIX = 0x42424344
+PARSE_INFO_PREFIX = ref_value(0x42424344, "10.5.1")
 """
 (10.5.1) The 'magic bytes' used to identify the start of a parse info header.
 'BBCD' in ASCII.
 """
 
-PARSE_INFO_HEADER_BYTES = 13
+PARSE_INFO_HEADER_BYTES = ref_value(13, "15.5.1")
 """(15.5.1) The number of bytes in the parse_info header."""
 
 
+@ref_enum
 class ParseCodes(IntEnum):
     """
     (10.5.2) Valid parse_code values from (Table 10.1). Names are not normative.
@@ -54,11 +56,13 @@ class ParseCodes(IntEnum):
     high_quality_picture_fragment = 0xEC
 
 
+@ref_enum
 class PictureCodingModes(IntEnum):
     """(11.5) Indices defined in the text. Names are not normative."""
     pictures_are_frames = 0
     pictures_are_fields = 1
 
+@ref_enum
 class ColorDifferenceSamplingFormats(IntEnum):
     """(11.4.4) Indices from (Table 11.2)"""
     
@@ -67,12 +71,14 @@ class ColorDifferenceSamplingFormats(IntEnum):
     color_4_2_0 = 2
 
 
+@ref_enum
 class SourceSamplingModes(IntEnum):
     """(11.4.5) Indices defined in the text. Names are not normative."""
     progressive = 0
     interlaced = 1
 
 
+@ref_enum
 class BaseVideoFormats(IntEnum):
     """
     (11.3) Base video format indices from (Table 11.1). Names based on the
@@ -105,6 +111,7 @@ class BaseVideoFormats(IntEnum):
     sd_pro486 = 22
 
 
+@ref_enum
 class Profiles(IntEnum):
     """
     (C.2) VC-2 Profiles.
@@ -115,6 +122,7 @@ class Profiles(IntEnum):
     high_quality = 3
 
 
+@ref_enum
 class PresetFrameRates(IntEnum):
     """
     (11.4.6) Preset framerate indices from (Table 11.1). Names are informative.
@@ -138,6 +146,7 @@ class PresetFrameRates(IntEnum):
     fps_120_over_1_001 = 15
     fps_120 = 16
 
+@ref_enum
 class PresetPixelAspectRatios(IntEnum):
     """
     (11.4.7) Pixel aspect ratio preset indices from (Table 11.4). Names are
@@ -153,6 +162,7 @@ class PresetPixelAspectRatios(IntEnum):
     ratio_4_3 = 6  # reduced horizontal resolution systems
 
 
+@ref_enum
 class PresetSignalRanges(IntEnum):
     """
     (11.4.9) Signal offsets/ranges preset indices from (Table 11.5). Names are
@@ -170,6 +180,7 @@ class PresetSignalRanges(IntEnum):
     range_16_bit_full_range = 8
 
 
+@ref_enum
 class PresetColorPrimaries(IntEnum):
     """
     (11.4.10.2) Color primaries from (Table 11.7). Names and comments are
@@ -184,6 +195,7 @@ class PresetColorPrimaries(IntEnum):
     uhdtv = 4  # Used in UHDTV and HDR
 
 
+@ref_enum
 class PresetColorMatrices(IntEnum):
     """
     (11.4.10.3) Color primaries from (Table 11.8). Names and comments are
@@ -198,6 +210,7 @@ class PresetColorMatrices(IntEnum):
     uhdtv = 4
 
 
+@ref_enum
 class PresetTransferFunctions(IntEnum):
     """
     (11.4.10.4) Transfer functions from (Table 11.9). Names are informative and
@@ -213,6 +226,7 @@ class PresetTransferFunctions(IntEnum):
     hybrid_log_gamma = 5
 
 
+@ref_enum
 class PresetColorSpecs(IntEnum):
     """
     (11.4.10.1) Preset color specification collections from (Table 11.6). Names
@@ -230,6 +244,7 @@ class PresetColorSpecs(IntEnum):
     hdr_tv_hlg = 7
 
 
+@ref_enum
 class LiftingFilterTypes(IntEnum):
     """
     (15.4.4.1) Indices of lifting filter step types. Names are informative and
@@ -241,6 +256,7 @@ class LiftingFilterTypes(IntEnum):
     odd_subtract_even = 4
 
 
+@ref_enum
 class WaveletFilters(IntEnum):
     """
     (12.4.2) Wavelet filter types supported by VC-2 using the indices

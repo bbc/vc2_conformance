@@ -6,6 +6,8 @@ from attr import attrs, attrib
 
 from fractions import Fraction
 
+from vc2_conformance.metadata import ref_value
+
 from vc2_conformance.tables.constants import (
     ParseCodes,
     Profiles,
@@ -52,7 +54,7 @@ class ProfileParameters(object):
     """
 
 
-PROFILES = {
+PROFILES = ref_value({
     # (C.2.2)
     Profiles.low_delay: ProfileParameters([
         ParseCodes.sequence_header,
@@ -69,13 +71,13 @@ PROFILES = {
         ParseCodes.padding_data,
         ParseCodes.high_quality_picture,
     ]),
-}
+}, "C.2")
 """
 The list of supported profiles from (C.2) indexed by :py:class:`Profiles`.
 """
 
 
-PRESET_FRAME_RATES = {
+PRESET_FRAME_RATES = ref_value({
     PresetFrameRates.fps_24_over_1_001:  Fraction(24000, 1001),
     PresetFrameRates.fps_24:             Fraction(24, 1),
     PresetFrameRates.fps_25:             Fraction(25, 1),
@@ -92,23 +94,25 @@ PRESET_FRAME_RATES = {
     PresetFrameRates.fps_100:            Fraction(100, 1),
     PresetFrameRates.fps_120_over_1_001: Fraction(120000, 1001),
     PresetFrameRates.fps_120:            Fraction(120, 1),
-}
+}, "Table 11.3")
 """
 (11.4.6) Frame-rate presets from (Table 11.3) indexed by
 :py:class:`PresetFrameRates`.
 """
 
 
-PRESET_PIXEL_ASPECT_RATIOS = {
+PRESET_PIXEL_ASPECT_RATIOS = ref_value({
     PresetPixelAspectRatios.ratio_1_1: Fraction(1, 1),
     PresetPixelAspectRatios.ratio_4_3_525_line: Fraction(10, 11),
     PresetPixelAspectRatios.ratio_4_3_625_line: Fraction(12, 11),
     PresetPixelAspectRatios.ratio_16_9_525_line: Fraction(40, 33),
     PresetPixelAspectRatios.ratio_16_9_625_line: Fraction(16, 11),
     PresetPixelAspectRatios.ratio_4_3: Fraction(4, 3),
-}
-"""(11.4.7) Pixel aspect ratio presets from (Table 11.4) indexed by
-:py:class:`PresetPixelAspectRatios`"""
+}, "Table 11.4")
+"""
+(11.4.7) Pixel aspect ratio presets from (Table 11.4) indexed by
+:py:class:`PresetPixelAspectRatios`
+"""
 
 
 @attrs(frozen=True)
@@ -130,7 +134,7 @@ class SignalRangeParameters(object):
     """The maximum value of an offset color difference value."""
 
 
-PRESET_SIGNAL_RANGES = {
+PRESET_SIGNAL_RANGES = ref_value({
     PresetSignalRanges.range_8_bit_full_range: SignalRangeParameters(0, 255, 128, 255),
     PresetSignalRanges.range_8_bit_video: SignalRangeParameters(16, 219, 128, 224),
     PresetSignalRanges.range_10_bit_video: SignalRangeParameters(64, 876, 512, 896),
@@ -139,20 +143,20 @@ PRESET_SIGNAL_RANGES = {
     PresetSignalRanges.range_12_bit_full_range: SignalRangeParameters(0, 4095, 2048, 4095),
     PresetSignalRanges.range_16_bit_video: SignalRangeParameters(4096, 56064, 32768, 57344),
     PresetSignalRanges.range_16_bit_full_range: SignalRangeParameters(0, 65535, 32768, 65535),
-}
+}, "Table 11.5")
 """
 (11.4.9) Signal offsets/ranges presets from (Table 11.5) indexed by
 :py:class:`PresetSignalRanges`.
 """
 
 
-PRESET_COLOR_PRIMARIES = {
+PRESET_COLOR_PRIMARIES = ref_value({
     PresetColorPrimaries.hdtv: "ITU-R BT.709",
     PresetColorPrimaries.sdtv_525: "ITU-R BT.601",
     PresetColorPrimaries.sdtv_625: "ITU-R BT.601",
     PresetColorPrimaries.d_cinema: "SMPTE ST 428-1",
     PresetColorPrimaries.uhdtv: "ITU-R BT.2020",
-}
+}, "Table 11.7")
 """
 (11.4.10.2) Normative specification names for color primaries from (Table 11.7)
 indexed by :py:class:`PresetColorPrimaries`.
@@ -169,27 +173,27 @@ class ColorMatrixParameters(object):
     color_matrix = attrib()
     """Normative color matrix description."""
 
-PRESET_COLOR_MATRICES = {
+PRESET_COLOR_MATRICES = ref_value({
     PresetColorMatrices.hdtv: ColorMatrixParameters("ITU-R BT.709", "K_R=0:2126,K_B=0:0722"),
     PresetColorMatrices.sdtv: ColorMatrixParameters("ITU-R BT.601", "K_R=0:299,K_B=0:114"),
     PresetColorMatrices.reversible: ColorMatrixParameters("ITU-T H.264", "YC_GC_O"),
     PresetColorMatrices.rgb: ColorMatrixParameters(None, "Y=G, C_1=B, C_2=R"),
     PresetColorMatrices.uhdtv: ColorMatrixParameters("ITU-R BT.2020", "K_R=0:2627,K_B =0:0593"),
-}
+}, "Table 11.8")
 """
 (11.4.10.3) Color matrices from (Table 11.8) indexed by
 :py:class:`PresetColorMatrices`.
 """
 
 
-PRESET_TRANSFER_FUNCTIONS = {
+PRESET_TRANSFER_FUNCTIONS = ref_value({
     PresetTransferFunctions.tv_gamma: "ITU-R BT.2020",
     PresetTransferFunctions.extended_gamut: "ITU-R BT.1361 (suppressed)",
     PresetTransferFunctions.linear: "Linear",
     PresetTransferFunctions.d_cinema_transfer_function: "SMPTE ST 428-1",
     PresetTransferFunctions.perceptual_quality: "ITU-R BT.2100",
     PresetTransferFunctions.hybrid_log_gamma: "ITU-R BT.2100",
-}
+}, "Table 11.9")
 """
 (11.4.10.4) Normative specification names for transfer functions from (Table
 11.9) indexed by :py:class:`PresetTransferFunctions`.
@@ -210,7 +214,7 @@ class ColorSpecificiation(object):
     """A :py:class:`PresetTransferFunctions` index."""
 
 
-PRESET_COLOR_SPECS = {
+PRESET_COLOR_SPECS = ref_value({
     PresetColorSpecs.custom: ColorSpecificiation(
         PresetColorPrimaries.hdtv,
         PresetColorMatrices.hdtv,
@@ -243,7 +247,7 @@ PRESET_COLOR_SPECS = {
         PresetColorPrimaries.uhdtv,
         PresetColorMatrices.uhdtv,
         PresetTransferFunctions.hybrid_log_gamma),
-}
+}, "Table 11.6")
 """
 (11.4.10.1) Preset color specification collections from (Table 11.6), indexed
 by :py:class:`PresetColorSpecs`.
@@ -290,7 +294,7 @@ class BaseVideoFormatParameters(object):
     """The color specification, an entry from the enum :py:class:`PresetColorSpecs`."""
 
 
-BASE_VIDEO_FORMAT_PARAMETERS = {
+BASE_VIDEO_FORMAT_PARAMETERS = ref_value({
     BaseVideoFormats.custom_format: BaseVideoFormatParameters(
         frame_width=640,
         frame_height=480,
@@ -613,7 +617,7 @@ BASE_VIDEO_FORMAT_PARAMETERS = {
         top_offset=0,
         signal_range_index=PresetSignalRanges.range_10_bit_video,
         color_spec_index=PresetColorSpecs.hdtv),
-}
+}, "Table B.1a, B.1b, B.1c")
 """
 (B) Base video format specifications from (Table B.1a, B.1b, B.1c), indexed by
 :py:class:`BaseVideoFormats`.
@@ -659,7 +663,7 @@ class LiftingFilterParameters(object):
     with this filter.
     """
 
-LIFTING_FILTERS = {
+LIFTING_FILTERS = ref_value({
     WaveletFilters.deslauriers_dubuc_9_7: LiftingFilterParameters(
         stages=[
             LiftingStage(lift_type=LiftingFilterTypes(2), S=2, L=2, D=0, taps=[1, 1]),
@@ -711,7 +715,7 @@ LIFTING_FILTERS = {
         ],
         filter_bit_shift=1,
     ),
-}
+}, "Table 15.1 to 15.6")
 """
 (15.4.4.3) Filter definitions taken from (Table 15.1 to 15.6) indexed by :py:class:`WaveletFilters`.
 """
