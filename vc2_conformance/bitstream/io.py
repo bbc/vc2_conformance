@@ -76,9 +76,6 @@ class BitstreamReader(object):
         # read past the end of the block.
         self._bits_remaining = None
         
-        # The number of bits read past the end-of-file. Reset on 'seek'.
-        self._bits_past_eof = 0
-        
         # Load-in the first byte
         self._read_byte()
     
@@ -147,14 +144,6 @@ class BitstreamReader(object):
         self._byte_offset = self._file.tell()
         self._read_byte()
         self._next_bit = bits
-        self._bits_past_eof = 0
-    
-    @property
-    def bits_past_eof(self):
-        """
-        The number of bits read beyond the end of the file.
-        """
-        return self._bits_past_eof
     
     @property
     def bits_remaining(self):
@@ -201,10 +190,8 @@ class BitstreamReader(object):
             if self._bits_remaining <= -1:
                 return 1
         
-        # Read '1's past the EOF
         if self._current_byte is None:
-            self._bits_past_eof += 1
-            return 1
+            raise EOFError()
         
         bit = (self._current_byte >> self._next_bit) & 1
         
@@ -379,11 +366,6 @@ class BitstreamWriter(object):
             self._file.seek(-1, 1)  # Seek backward 1 byte
         
         self._file.flush()
-    
-    @property
-    def bits_past_eof(self):
-        """The number of bits written beyond the end of the file. Always 0."""
-        return 0
     
     @property
     def bits_remaining(self):

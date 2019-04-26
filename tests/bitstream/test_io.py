@@ -36,10 +36,6 @@ class TestBistreamReader(object):
                     0, 0, 0, 0, 1, 1, 1, 1]  # 0x0F
         for expected_bit in expected:
             assert r.read_bit() == expected_bit
-        
-        # Reading past the end should return 1...
-        for _ in range(16):
-            assert r.read_bit() == 1
     
     def test_tell(self):
         r = bitstream.BitstreamReader(BytesIO(b"\xA5\x0F"))
@@ -58,38 +54,16 @@ class TestBistreamReader(object):
         
         for _ in range(8):
             r.read_bit()
-        
-        # Read past end
-        assert r.tell() == (2, 7)
-        assert r.read_bit() == 1
-        assert r.tell() == (2, 7)
     
-    def test_bits_past_eof(self):
+    def test_read_past_eof(self):
         r = bitstream.BitstreamReader(BytesIO(b"\xA5\x0F"))
         
-        assert r.bits_past_eof == 0
         for _ in range(16):
             r.read_bit()
-        assert r.bits_past_eof == 0
         
         # Read past end
-        r.read_bit()
-        assert r.bits_past_eof == 1
-        r.read_bit()
-        assert r.bits_past_eof == 2
-        
-        # Reset by seek
-        r.seek(1, 7)
-        assert r.bits_past_eof == 0
-        for _ in range(8):
+        with pytest.raises(EOFError):
             r.read_bit()
-        assert r.bits_past_eof == 0
-        
-        # Past end again
-        r.read_bit()
-        assert r.bits_past_eof == 1
-        r.read_bit()
-        assert r.bits_past_eof == 2
     
     def test_seek(self):
         r = bitstream.BitstreamReader(BytesIO(b"\xA5\x0F"))
@@ -105,11 +79,14 @@ class TestBistreamReader(object):
         
         # Past end of file
         r.seek(2, 7)
-        assert r.read_bit() == 1
+        with pytest.raises(EOFError):
+            r.read_bit()
         r.seek(2, 0)
-        assert r.read_bit() == 1
+        with pytest.raises(EOFError):
+            r.read_bit()
         r.seek(100, 7)
-        assert r.read_bit() == 1
+        with pytest.raises(EOFError):
+            r.read_bit()
     
     def test_bounded_block(self):
         r = bitstream.BitstreamReader(BytesIO(b"\xA0"))
@@ -288,14 +265,6 @@ class TestBistreamWriter(object):
         w.flush()
         
         assert f.getvalue() == b"\x40\x01"
-    
-    def test_bits_past_eof(self):
-        w = bitstream.BitstreamWriter(BytesIO())
-        
-        # Always 0
-        assert w.bits_past_eof == 0
-        w.write_bit(True)
-        assert w.bits_past_eof == 0
     
     def test_bounded_block(self):
         f = BytesIO()

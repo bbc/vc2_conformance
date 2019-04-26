@@ -603,7 +603,6 @@ def test_deserialiser(method, arguments, bitstream, exp_value, exp_tell):
         assert getattr(serdes, method)("target", *arguments) == exp_value
     assert serdes.context == {"target": exp_value}
     assert r.tell() == exp_tell
-    assert r.bits_past_eof == 0
 
 
 @pytest.mark.parametrize("method,arguments,value,exp_bitstream,exp_tell", [
