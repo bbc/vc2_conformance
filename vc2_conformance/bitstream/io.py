@@ -52,6 +52,9 @@ def from_bit_offset(total_bits):
 class BitstreamReader(object):
     """
     An open file which may be read one bit at a time.
+    
+    When the end-of-file is encountered, reads will result in a
+    :py:exc:`EOFError`.
     """
     
     def __init__(self, file):
@@ -260,6 +263,29 @@ class BitstreamReader(object):
                 value = -value
         
         return value
+    
+    def try_read_bitarray(self, bits):
+        """
+        Attempt to read the next 'bits' bits from the bitstream file, leaving
+        any bounded blocks we might be in if necessary). May read fewer bits if
+        the end-of-file is encountered (but will not throw a :py:exc:`EOFError`
+        like other methods of this class).
+        
+        Intended for the display of error messages (i.e. as the final use of a
+        :py:class:`BitstreamReader` instance) only since this method may (or
+        may not) exit the current bounded block as a side effect.
+        """
+        out = bitarray()
+        
+        try:
+            for _ in range(bits):
+                if self.bits_remaining is not None and self.bits_remaining <= 0:
+                    self.bounded_block_end()
+                out.append(self.read_bit())
+        except EOFError:
+            pass
+        
+        return out
 
 
 class BitstreamWriter(object):

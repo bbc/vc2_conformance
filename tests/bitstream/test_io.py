@@ -181,6 +181,20 @@ class TestBistreamReader(object):
             r.seek(0, 2)
         assert r.tell() == (0, 4)
         assert r.bits_remaining == 1
+    
+    def test_try_read_bitarray(self):
+        # Read next few bits
+        r = bitstream.BitstreamReader(BytesIO(b"\xAA"))
+        assert r.try_read_bitarray(4).to01() == "1010"
+        
+        # Try to read past EOF
+        r = bitstream.BitstreamReader(BytesIO(b"\xAA"))
+        assert r.try_read_bitarray(16).to01() == "10101010"
+        
+        # Read past bounded block
+        r = bitstream.BitstreamReader(BytesIO(b"\xAA"))
+        r.bounded_block_begin(4)
+        assert r.try_read_bitarray(8).to01() == "10101010"
 
 
 class TestBistreamWriter(object):
