@@ -126,9 +126,9 @@ implementation of :py:class:`SerDes` like so::
     >>> from vc2_conformance.bitstream import BitstreamReader, Deserialiser
     >>> reader = BitstreamReader(open("frame_size_snippet.bin", "rb"))
    
-    >>> with Deserialiser(reader) as serdes:
-    ...     frame_size(serdes, {})
-    >>> serdes.context
+    >>> with Deserialiser(reader) as des:
+    ...     frame_size(des, {})
+    >>> des.context
     {"custom_dimensions_flag": True, "frame_width": 1920, "frame_height": 1080}
 
 The :py:attr:`SerDes.context` property is a :py:class:`dict` which contains
@@ -146,8 +146,8 @@ similar shape and passed to a :py:class:`Serialiser`::
     >>> writer = BitstreamWriter(open("frame_size_snippet.bin", "wb"))
     
     >>> context = {"custom_dimensions_flag": True, "frame_width": 1920, "frame_height": 1080}
-    >>> with Serialiser(writer, context) as serdes:
-    ...     frame_size(serdes, {})
+    >>> with Serialiser(writer, context) as ser:
+    ...     frame_size(ser, {})
 
 In this example a bitstream containing a '1' followed by the variable-length
 integers '1920' and '1080' would be written to the bitstream.
@@ -195,11 +195,11 @@ we've seen above. To collect together related values we can use
 
 This results in a nested dictionary structure::
 
-    >>> with Deserialiser(reader) as serdes:
-    ...     video_parameters = source_parameters(serdes)
+    >>> with Deserialiser(reader) as des:
+    ...     video_parameters = source_parameters(des)
     
     >>> from pprint import pprint
-    >>> pprint(serdes.context)
+    >>> pprint(des.context)
     {
         "video_parameters": {
             "custom_dimensions_flag": True,
@@ -243,14 +243,14 @@ For example, here's how the ``parse_info`` header (10.5.1) might be represented:
 Using the above we can quickly create structures ready for serialisation::
 
     >>> context = ParseInfo(previous_parse_offset=1234)
-    >>> with Deserialiser(writer, context) as serdes:
-    ...     parse_info(serdes, {})
+    >>> with Deserialiser(writer, context) as des:
+    ...     parse_info(des, {})
 
 We also benefit from improved string formatting when deserialising values::
     
-    >>> with Deserialiser(reader) as serdes:
-    ...     parse_info(serdes, {})
-    >>> str(serdes.context)
+    >>> with Deserialiser(reader) as des:
+    ...     parse_info(des, {})
+    >>> str(des.context)
     ParseInfo:
       parse_info_prefix: 0x42424344
       parse_code: end_of_sequence (0x10)
@@ -273,17 +273,17 @@ lists. For example::
 
 When deserialising, the result will look like::
     
-    >>> with Deserialiser(reader) as serdes:
-    ...     list_example(serdes)
-    >>> serdes.context
+    >>> with Deserialiser(reader) as des:
+    ...     list_example(des)
+    >>> des.context
     {"three_values": [100, 200, 300]}
 
 Likewise, when serialising, a list of values (of the correct length) should
 also be provided:
 
     >>> context = {"three_values": [10, 20, 30]}
-    >>> with Deserialiser(writer, context) as serdes:
-    ...     list_example(serdes)
+    >>> with Deserialiser(writer, context) as des:
+    ...     list_example(des)
 
 As usual, the :py:class:`SerDes` classes will verify that the correct number of
 values is present and will throw exceptions when too many or too few are
@@ -1107,7 +1107,7 @@ class MonitoredSerialiser(MonitoredMixin, Serialiser):
     
     Parameters
     ==========
-    monitor : callable(serdes, target, value)
+    monitor : callable(ser, target, value)
         A function which will be called after every primitive I/O operation
         completes. This function is passed this :py:class:`MonitoredSerialiser`
         instance and the target name and value of the target just serialised.
@@ -1129,7 +1129,7 @@ class MonitoredDeserialiser(MonitoredMixin, Deserialiser):
     
     Parameters
     ==========
-    monitor : callable(serdes, target, value)
+    monitor : callable(des, target, value)
         A function which will be called after every primitive I/O operation
         completes. This function is passed this
         :py:class:`MonitoredDeserialiser` instance and the target name and

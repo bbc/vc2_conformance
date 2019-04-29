@@ -4,8 +4,9 @@ VC-2 bitstream serialisation/deserialistion library.
 
 This module implements facilities for for deserialising, displaying,
 manipulating and serialising VC-2 bitstreams at a low-level. It is intended to
-be able to handle both conformant and out-of-spec bitstreams. It explicitly
-does *not* form part of the reference conformance checking decoder, however.
+be able to both deserialise and serialise conformant and out-of-spec
+bitstreams. It explicitly does *not* form part of the reference conformance
+checking decoder, however.
 
 This module is used by the VC-2 conformance software to produce human-friendly
 descriptions of VC-2 bitstreams and also to generate sample bitstreams. It may
@@ -28,11 +29,11 @@ bitstream sequence::
     
     >>> with open("/path/to/bitstream.vc2", "rb") as f:
     ...     reader = BitstreamReader(f)
-    ...     with Deserialiser(reader) as serdes:
-    ...         parse_sequence(serdes)
+    ...     with Deserialiser(reader) as des:
+    ...         parse_sequence(des)
     
     >>> # Display in pretty-printed human-readable form
-    >>> str(serdes.context)
+    >>> str(des.context)
     Sequence:
       data_units:
         0: DataUnit:
@@ -51,7 +52,7 @@ bitstream sequence::
     
     >>> # Deserialised values are kept in a nested dictionary structure which can
     >>> # be accessed as usual:
-    >>> serdes.context["data_units"][0]["parse_info"]["parse_info_prefix"]
+    >>> des.context["data_units"][0]["parse_info"]["parse_info_prefix"]
     1111638852
 
 New users of this module should begin by reading the introduction to the
