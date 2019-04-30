@@ -315,7 +315,7 @@ always ignored.
     prefixed or suffixed with an underscore.
 """
 
-from functools import wraps
+from vc2_conformance._py2k_compat import wraps
 
 from contextlib import contextmanager
 
@@ -1172,5 +1172,6 @@ def context_type(dict_type):
             serdes.set_context_type(dict_type)
             return f(serdes, *args, **kwargs)
         wrapper.context_type = dict_type
+        wrapper.__wrapped__ = f
         return wrapper
     return wrap

@@ -135,20 +135,10 @@ from vc2_conformance.tables import PARSE_INFO_PREFIX
 from vc2_conformance._string_utils import ellipsise_lossy
 from vc2_conformance._string_formatters import Hex
 
-try:
-    # Python 3.x
-    from itertools import zip_longest
-except ImportError:
-    # Python 2.x
-    from itertools import izip_longest as zip_longest
-
-try:
-    # Python 3.x
-    from shutil import get_terminal_size
-except ImportError:
-    # Python 2.x crude alternative
-    def get_terminal_size(fallback=(80, 20)):
-        return fallback
+from vc2_conformance._py2k_compat import (
+    zip_longest,
+    get_terminal_size,
+)
 
 
 DEFAULT_CONTEXT_BITS = 128

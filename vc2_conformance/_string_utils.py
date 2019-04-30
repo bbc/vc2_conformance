@@ -2,12 +2,7 @@
 Internal minor string formatting utility functions.
 """
 
-try:
-    # Python 3.x
-    from itertools import zip_longest
-except ImportError:
-    # Python 2.x
-    from itertools import izip_longest as zip_longest
+from vc2_conformance._py2k_compat import zip_longest
 
 
 def indent(text, prefix="  "):
