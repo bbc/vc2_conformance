@@ -18,7 +18,7 @@ def example1(a, b):
     return a + b
 
 example2_line = 21
-@metadata.ref_pseudocode(verbatim=False)
+@metadata.ref_pseudocode(deviation="alternative_implementation")
 def example2(a, b):
     """
     (TestDoc: XXX 1.3) Example function. Subtracts b from a.
