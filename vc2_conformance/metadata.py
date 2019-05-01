@@ -3,8 +3,6 @@ Metadata about the code and values in this library.
 
 This metadata is used to help produce more helpful error messages and also as
 part of the module's own test suite.
-
-
 """
 
 import re
