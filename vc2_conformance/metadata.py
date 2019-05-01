@@ -12,6 +12,8 @@ import sys
 import inspect
 import functools
 
+from vc2_conformance._py2k_compat import unwrap
+
 from collections import namedtuple
 
 __all__ = [
@@ -171,8 +173,8 @@ def ref_value(value, section=None, document=None,
     if filename == "auto" or lineno == "auto":
         try:
             # First, try using introspection to determine the value's origin
-            auto_filename = inspect.getsourcefile(value)
-            auto_lineno = inspect.getsourcelines(value)[1]
+            auto_filename = inspect.getsourcefile(unwrap(value))
+            auto_lineno = inspect.getsourcelines(unwrap(value))[1]
         except (TypeError, IOError):
             auto_filename = None
             auto_lineno = None
