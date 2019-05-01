@@ -171,7 +171,7 @@ def parse_info(serdes, state):
 
 
 @context_type(AuxiliaryData)
-@ref_pseudocode(deviation="serdes")
+@ref_pseudocode(deviation="alternative_implementation")
 def auxiliary_data(serdes, state):
     """(10.4.4) Read an auxiliary data block."""
     serdes.byte_align("padding")
@@ -179,7 +179,7 @@ def auxiliary_data(serdes, state):
 
 
 @context_type(Padding)
-@ref_pseudocode(deviation="serdes")
+@ref_pseudocode(deviation="alternative_implementation")
 def padding(serdes, state):
     """(10.4.5) Read a padding data block."""
     serdes.byte_align("padding")
