@@ -80,7 +80,7 @@ VideoParameters = fixeddict(
 ref_value(VideoParameters, "11.4")
 
 
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="inferred_implementation")
 def set_source_defaults(base_video_format):
     """
     (11.4.2) Create a VideoParameters object with the parameters specified in a

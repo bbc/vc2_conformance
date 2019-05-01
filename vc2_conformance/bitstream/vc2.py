@@ -111,7 +111,7 @@ __all__ = [
 ################################################################################
 
 @context_type(Sequence)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def parse_sequence(serdes):
     """
     (10.4.1) Parse a whole VC-2 sequence (i.e. file), discarding the contents.
@@ -156,7 +156,7 @@ def parse_sequence(serdes):
 
 
 @context_type(ParseInfo)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def parse_info(serdes, state):
     """(10.5.1) Read a parse_info header."""
     # Errata: Wording of spec requires this field to be aligned but the pseudo
@@ -171,7 +171,7 @@ def parse_info(serdes, state):
 
 
 @context_type(AuxiliaryData)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def auxiliary_data(serdes, state):
     """(10.4.4) Read an auxiliary data block."""
     serdes.byte_align("padding")
@@ -179,7 +179,7 @@ def auxiliary_data(serdes, state):
 
 
 @context_type(Padding)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def padding(serdes, state):
     """(10.4.5) Read a padding data block."""
     serdes.byte_align("padding")
@@ -192,7 +192,7 @@ def padding(serdes, state):
 
 
 @context_type(SequenceHeader)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def sequence_header(serdes, state):
     """(11.1) Parse a sequence header returning a VideoParameters object."""
     serdes.byte_align("padding")
@@ -217,7 +217,7 @@ def sequence_header(serdes, state):
 
 
 @context_type(ParseParameters)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def parse_parameters(serdes, state):
     """(11.2.1)"""
     state["major_version"] = serdes.uint("major_version")
@@ -227,7 +227,7 @@ def parse_parameters(serdes, state):
 
 
 @context_type(SourceParameters)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def source_parameters(serdes, state, base_video_format):
     """
     (11.4.1) Parse the video source parameters. Returns a VideoParameters
@@ -255,7 +255,7 @@ def source_parameters(serdes, state, base_video_format):
     return video_parameters
 
 @context_type(FrameSize)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def frame_size(serdes, state, video_parameters):
     """(11.4.3) Override video parameter."""
     custom_dimensions_flag = serdes.bool("custom_dimensions_flag")
@@ -264,7 +264,7 @@ def frame_size(serdes, state, video_parameters):
         video_parameters["frame_height"] = serdes.uint("frame_height")
 
 @context_type(ColorDiffSamplingFormat)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def color_diff_sampling_format(serdes, state, video_parameters):
     """(11.4.4) Override color sampling parameter."""
     custom_color_diff_format_flag = serdes.bool("custom_color_diff_format_flag")
@@ -272,7 +272,7 @@ def color_diff_sampling_format(serdes, state, video_parameters):
         video_parameters["color_diff_format_index"] = serdes.uint("color_diff_format_index")
 
 @context_type(ScanFormat)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def scan_format(serdes, state, video_parameters):
     """(11.4.5) Override source sampling parameter."""
     custom_scan_format_flag = serdes.bool("custom_scan_format_flag")
@@ -280,7 +280,7 @@ def scan_format(serdes, state, video_parameters):
         video_parameters["source_sampling"] = serdes.uint("source_sampling")
 
 @context_type(FrameRate)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def frame_rate(serdes, state, video_parameters):
     """(11.4.6) Override frame-rate parameter."""
     custom_frame_rate_flag = serdes.bool("custom_frame_rate_flag")
@@ -303,7 +303,7 @@ def frame_rate(serdes, state, video_parameters):
             preset_frame_rate(video_parameters, index)
 
 @context_type(PixelAspectRatio)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def pixel_aspect_ratio(serdes, state, video_parameters):  # Errata: called 'aspect_ratio' in spec
     """(11.4.7) Override pixel aspect ratio parameter."""
     custom_pixel_aspect_ratio_flag = serdes.bool("custom_pixel_aspect_ratio_flag")
@@ -325,7 +325,7 @@ def pixel_aspect_ratio(serdes, state, video_parameters):  # Errata: called 'aspe
             preset_pixel_aspect_ratio(video_parameters, index)
 
 @context_type(CleanArea)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def clean_area(serdes, state, video_parameters):
     """(11.4.8) Override clean area parameter."""
     custom_clean_area_flag = serdes.bool("custom_clean_area_flag")
@@ -336,7 +336,7 @@ def clean_area(serdes, state, video_parameters):
         video_parameters["top_offset"] = serdes.uint("top_offset")
 
 @context_type(SignalRange)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def signal_range(serdes, state, video_parameters):
     """(11.4.9) Override signal parameter."""
     custom_signal_range_flag = serdes.bool("custom_signal_range_flag")
@@ -360,7 +360,7 @@ def signal_range(serdes, state, video_parameters):
             preset_signal_range(video_parameters, index)
 
 @context_type(ColorSpec)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def color_spec(serdes, state, video_parameters):
     """(11.4.10.1) Override color specification parameter."""
     custom_color_spec_flag = serdes.bool("custom_color_spec_flag")
@@ -384,7 +384,7 @@ def color_spec(serdes, state, video_parameters):
                 transfer_function(serdes, state, video_parameters)
 
 @context_type(ColorPrimaries)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def color_primaries(serdes, state, video_parameters):
     """(11.4.10.2) Override color primaries parameter."""
     custom_color_primaries_flag = serdes.bool("custom_color_primaries_flag")
@@ -401,7 +401,7 @@ def color_primaries(serdes, state, video_parameters):
         preset_color_primaries(video_parameters, index)
 
 @context_type(ColorMatrix)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def color_matrix(serdes, state, video_parameters):
     """(11.4.10.3) Override color matrix parameter."""
     custom_color_matrix_flag = serdes.bool("custom_color_matrix_flag")
@@ -418,7 +418,7 @@ def color_matrix(serdes, state, video_parameters):
         preset_color_matrix(video_parameters, index)
 
 @context_type(TransferFunction)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def transfer_function(serdes, state, video_parameters):
     """(11.4.10.4) Override color transfer function parameter."""
     custom_transfer_function_flag = serdes.bool("custom_transfer_function_flag")
@@ -440,7 +440,7 @@ def transfer_function(serdes, state, video_parameters):
 ################################################################################
 
 @context_type(PictureParse)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def picture_parse(serdes, state):
     """(12.1)"""
     serdes.byte_align("padding1")
@@ -451,13 +451,13 @@ def picture_parse(serdes, state):
         wavelet_transform(serdes, state)
 
 @context_type(PictureHeader)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def picture_header(serdes, state):
     """(12.2)"""
     state["picture_number"] = serdes.uint_lit("picture_number", 4)
 
 @context_type(WaveletTransform)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def wavelet_transform(serdes, state):
     """(12.3)"""
     with serdes.subcontext("transform_parameters"):
@@ -467,7 +467,7 @@ def wavelet_transform(serdes, state):
         transform_data(serdes, state)
 
 @context_type(TransformParameters)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def transform_parameters(serdes, state):
     """(12.4.1) Read transform parameters."""
     state["wavelet_index"] = serdes.uint("wavelet_index")
@@ -485,7 +485,7 @@ def transform_parameters(serdes, state):
         quant_matrix(serdes, state)
 
 @context_type(ExtendedTransformParameters)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def extended_transform_parameters(serdes, state):
     """(12.4.4.1) Read horizontal only transform parameters."""
     asym_transform_index_flag = serdes.bool("asym_transform_index_flag")
@@ -497,7 +497,7 @@ def extended_transform_parameters(serdes, state):
         state["dwt_depth_ho"] = serdes.uint("dwt_depth_ho")
 
 @context_type(SliceParameters)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def slice_parameters(serdes, state):
     """(12.4.5.2) Read slice parameters"""
     state["slices_x"] = serdes.uint("slices_x")
@@ -513,7 +513,7 @@ def slice_parameters(serdes, state):
         state["slice_size_scaler"] = serdes.uint("slice_size_scaler")
 
 @context_type(QuantMatrix)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def quant_matrix(serdes, state):
     """(12.4.5.3) Read quantisation matrix"""
     custom_quant_matrix = serdes.bool("custom_quant_matrix")
@@ -543,7 +543,7 @@ def quant_matrix(serdes, state):
 ################################################################################
 
 @context_type(TransformData)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def transform_data(serdes, state):
     """(13.5.2)"""
     # Not required
@@ -585,7 +585,7 @@ def slice(serdes, state, sx, sy):
             hq_slice(serdes, state, sx, sy)
 
 @context_type(LDSlice)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def ld_slice(serdes, state, sx, sy):
     """(13.5.3.1)"""
     slice_bits_left = 8*slice_bytes(state, sx, sy)
@@ -658,7 +658,7 @@ def ld_slice(serdes, state, sx, sy):
 
 
 @context_type(HQSlice)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def hq_slice(serdes, state, sx, sy):
     """(13.5.4)"""
     serdes.bytes("prefix_bytes", state["slice_prefix_bytes"])
@@ -699,7 +699,7 @@ def hq_slice(serdes, state, sx, sy):
         serdes.bounded_block_end("{}_block_padding".format(component))
         #flush_inputb(state)
 
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def slice_band(serdes, state, transform, level, orient, sx, sy):
     """(13.5.6.3) Read and dequantize a subband in a slice."""
     # These values evaulated in the loop definition in the spec, moving them
@@ -721,7 +721,7 @@ def slice_band(serdes, state, transform, level, orient, sx, sy):
             #qi = state.quantizer[level][orient]
             #transform[level][orient][y][x] = inverse_quant(val, qi)
 
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def color_diff_slice_band(serdes, state, level, orient, sx, sy):
     """(13.5.6.4) Read and dequantize interleaved color difference subbands in a slice."""
     # These values evaulated in the loop definition in the spec, moving them
@@ -751,7 +751,7 @@ def color_diff_slice_band(serdes, state, level, orient, sx, sy):
 ################################################################################
 
 @context_type(FragmentParse)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def fragment_parse(serdes, state):
     """(14.1)"""
     serdes.byte_align("padding1")
@@ -771,7 +771,7 @@ def fragment_parse(serdes, state):
 
 
 @context_type(FragmentHeader)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def fragment_header(serdes, state):
     """(14.2)"""
     state["picture_number"] = serdes.uint_lit("picture_number", 4)
@@ -783,7 +783,7 @@ def fragment_header(serdes, state):
 
 
 @context_type(FragmentData)
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="serdes")
 def fragment_data(serdes, state):
     """(14.4) Unpack and dequantize transform data from a fragment."""
     # Not in spec; initialise context dictionary

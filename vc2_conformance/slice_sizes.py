@@ -38,7 +38,7 @@ __all__ = [
 ]
 
 
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="inferred_implementation")
 def subband_width(state, level, comp):
     """(13.2.3)"""
     if comp == "Y":
@@ -58,7 +58,7 @@ def subband_width(state, level, comp):
     elif level > state["dwt_depth_ho"]:
         return pw // (1 << (state["dwt_depth_ho"] + state["dwt_depth"] - level + 1))
 
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="inferred_implementation")
 def subband_height(state, level, comp):
     """(13.2.3)"""
     if comp == "Y":

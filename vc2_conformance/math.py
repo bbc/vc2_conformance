@@ -15,18 +15,20 @@ __all__ = [
 ]
 
 
-@ref_pseudocode(name="intlog2", verbatim=True)
+@ref_pseudocode(name="intlog2")
 def intlog2_float(n):
     """
     (5.5.3) Implemented as described in the spec, requiring floating point
     arithmetic.
     
-    In practice, :py:func:`intlog2` should be used instead.
+    In practice, the alternative implementation in :py:func:`intlog2` should be
+    used instead since it does not rely on floating point arithmetic (and is
+    therefore faster and has unlimited precision).
     """
     return int(math.ceil(math.log(n, 2)))
 
 
-@ref_pseudocode(verbatim=False)
+@ref_pseudocode(deviation="alternative_implementation")
 def intlog2(n):
     """
     (5.5.3) Implemented via pure integer, arbitrary-precision operations.

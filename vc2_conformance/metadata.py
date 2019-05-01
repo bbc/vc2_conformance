@@ -37,7 +37,7 @@ If not otherwise specified, the specification section numbers refer to.
 
 ReferencedValue = namedtuple(
     "ReferencedValue",
-    "value,section,document,verbatim,name,filename,lineno",
+    "value,section,document,deviation,name,filename,lineno",
 )
 """
 A value in this codebase, referenced back to a specification document.
@@ -51,9 +51,21 @@ section : str
 document : str
     The name of the document being referenced. Defaults to the main VC-2
     specification.
-verbatim : bool
-    True if the value referenced matches the specification verbaitm, False if
-    the value is a derrivative from the specification.
+deviation : str or None
+    Does the definition of this value deviate from the specification. If None,
+    this value must match the contents of the specification exactly. If a
+    string, it should indicate how it differs. Allowed values are:
+    
+    * ``"inferred_implementation"``: An implementation inferred from the
+      specification where no explicit implementation is provided.
+    * ``"alternative_implementation"``: An alternative implementation, e.g. for
+      performance or correctness reasons.
+    * ``"serdes"``: This implementation has been modified to perform
+      seriallisation and deseriallisation using the
+      :py:mod:`vc2.bitstream.serdes` library. Briefly, it should match the
+      original except "read_*" calls will have been replaced with "serdes.*"
+      calls and non-bitstream related functionality may have been commented
+      out.
 name : str or None
     A meaningful identifier for this value.
 filename : str, None or "auto"
@@ -82,7 +94,7 @@ particular order.
 
 
 def ref_value(value, section=None, document=None,
-              verbatim=True, name="auto",
+              deviation=None, name="auto",
               filename="auto", lineno="auto"):
     """
     Record the fact that the provided Python value should be referenced back to
@@ -95,38 +107,26 @@ def ref_value(value, section=None, document=None,
     Parameters
     ==========
     value : any
-        The Python value to be referenced.
     section : str or None
-        A document reference (e.g. "1.34.2" or "Table 1.3").
-        
         If None, the value being recorded must have a ``__doc__`` string which
         starts with the section number in perentheses, e.g. ``(1.34.2)``. If
         this number is of the form ``(SMPTE ST 2042-1:2017: 1.34.2)``, the
         first part (before the final colon) will be treated as the document
         name.
     document : str
-        The name of the document being referenced. Defaults to the main VC-2
-        specification.
-    verbatim : bool
-        True if the value referenced matches the specification verbaitm, False
-        if the value is a derrivative from the specification.
+        Defaults to the main VC-2 specification if None and not specified in
+        the value's ``__doc__`` string.
+    deviation : str or None
     name : str, None or "auto"
-        A meaningful identifier for this value.
-        
         If "auto", uses the ``__name__`` attribute of the value. If no
         ``__name__`` attribute is present, falls back on whatever appears
         before the "=" on the line of code where ``ref_value`` was called.
     filename : str, None or "auto"
-        The filename of the Python source file within this codebase for the
-        location where the value being referenced is defined.
-        
         If "auto", the location will be determined automatically if possible,
         falling back on the location where 'ref_value' was called.
         
         If None, no value will be recorded.
     lineno : int, None or "auto"
-        The line number at which the definition of this value appears.
-        
         If "auto", the location will be determined automatically if possible,
         falling back on the line where 'ref_value' was called.
         
@@ -199,7 +199,7 @@ def ref_value(value, section=None, document=None,
         value=value,
         section=section,
         document=document,
-        verbatim=verbatim,
+        deviation=deviation,
         name=name,
         filename=filename,
         lineno=lineno,
@@ -222,9 +222,9 @@ def ref_pseudocode(*args, **kwargs):
             ''''(10.5.1) Read a parse_info header.'''
             # ...
         
-        @ref_pseudocode("10.5.1", verbatim=False)
+        @ref_pseudocode("10.5.1", deviation="alternative_implementation")
         def parse_info(state):
-            '''Some alternative implementation of parse info (10.5.1).'''
+            '''Some alternative implementation of parse info.'''
     
     
     .. info::
