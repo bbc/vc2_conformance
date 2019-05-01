@@ -1,5 +1,8 @@
 """
 Metadata about the VC-2 bitstream seriallisation/deseriallisation process.
+
+Specifically, records the relationship between VC-2 psudocode functions and
+fixeddict types.
 """
 
 from vc2_conformance.bitstream import vc2
