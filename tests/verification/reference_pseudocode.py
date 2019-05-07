@@ -46,7 +46,7 @@ def parse_sequence():
 
 # Errata: missing '_' in name
 def auxiliary_data(state):
-    """10.4.4"""
+    """(10.4.4)"""
     byte_align(state)
     for i in range(state["next_parse_offset"]-13):
         # Errata: is 'read_byte' in the spec
@@ -54,7 +54,7 @@ def auxiliary_data(state):
 
 
 def padding(state):
-    """10.4.5"""
+    """(10.4.5)"""
     byte_align(state)
     for i in range(state["next_parse_offset"]-13):
         # Errata: is 'read_byte' in the spec
@@ -652,7 +652,7 @@ def slice_band(state, transform, level, orient, sx, sy):
 
 
 def color_diff_slice_band(state, level, orient, sx, sy):
-    """(13.5.6.3)"""
+    """(13.5.6.4)"""
     # Errata: the following line is not necessary
     #qi = state["quantizer"][level][orient]
     

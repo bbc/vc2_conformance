@@ -23,4 +23,8 @@ from vc2_conformance.metadata import referenced_values
 def test_equivalence_of_vc2_bitstream_pseudocode(name, referenced_value):
     ref_func = getattr(reference_pseudocode, name)
     imp_func = referenced_value.value
+    # Same function
     assert compare_functions(ref_func, imp_func, SerdesChangesOnly()) is True
+    
+    # Same reference to the spec
+    assert ref_func.__doc__ == "({})".format(referenced_value.section)
