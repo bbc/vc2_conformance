@@ -78,7 +78,7 @@ class SerdesChangesOnly(NodeComparator):
        bitstream IO system).
        * ``read_bool`` -> ``serdes.bool``
        * ``read_nbits`` -> ``serdes.nbits``
-       * ``read_uint_lit`` -> ``serdes.uint_lit``
+       * ``read_uint_lit`` -> ``serdes.uint_lit`` or ``serdes.bytes``
        * ``read_uint`` -> ``serdes.uint``
        * ``read_sint`` -> ``serdes.sint``
        * ``byte_align`` -> ``serdes.byte_align``
@@ -153,6 +153,7 @@ class SerdesChangesOnly(NodeComparator):
             ("read_bool", "serdes.bool"),
             ("read_nbits", "serdes.nbits"),
             ("read_uint_lit", "serdes.uint_lit"),
+            ("read_uint_lit", "serdes.bytes"),
             ("read_uint", "serdes.uint"),
             ("read_sint", "serdes.sint"),
             ("byte_align", "serdes.byte_align"),
