@@ -79,8 +79,8 @@ class SerdesChangesOnly(NodeComparator):
        * ``read_bool`` -> ``serdes.bool``
        * ``read_nbits`` -> ``serdes.nbits``
        * ``read_uint_lit`` -> ``serdes.uint_lit`` or ``serdes.bytes``
-       * ``read_uint`` -> ``serdes.uint``
-       * ``read_sint`` -> ``serdes.sint``
+       * ``read_uint`` or ``read_uint`` -> ``serdes.uint``
+       * ``read_sint`` or ``read_sint`` -> ``serdes.sint``
        * ``byte_align`` -> ``serdes.byte_align``
        * ``flush_inputb`` -> ``serdes.bounded_block_end``
     9. Substitution of empty dictionary creation for creation of
@@ -155,7 +155,9 @@ class SerdesChangesOnly(NodeComparator):
             ("read_uint_lit", "serdes.uint_lit"),
             ("read_uint_lit", "serdes.bytes"),
             ("read_uint", "serdes.uint"),
+            ("read_uintb", "serdes.uint"),
             ("read_sint", "serdes.sint"),
+            ("read_sintb", "serdes.sint"),
             ("byte_align", "serdes.byte_align"),
             ("flush_inputb", "serdes.bounded_block_end")
         )

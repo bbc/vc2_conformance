@@ -172,6 +172,8 @@ class TestSerdesChangesOnly(object):
             "  L = read_uint_lit(state, a - b)\n"
             "  u = read_uint(state)\n"
             "  s = read_sint(state)\n"
+            "  U = read_uintb(state)\n"
+            "  S = read_sintb(state)\n"
             "  flush_inputb(state)\n"
         )
         n2 = ast.parse(
@@ -183,6 +185,8 @@ class TestSerdesChangesOnly(object):
             "  L = serdes.bytes('L', a - b)\n"
             "  u = serdes.uint('u')\n"
             "  s = serdes.sint('s')\n"
+            "  U = serdes.uint('U')\n"
+            "  S = serdes.sint('S')\n"
             "  serdes.bounded_block_end('e')\n"
         )
         
@@ -199,6 +203,8 @@ class TestSerdesChangesOnly(object):
             "  L = serdes.bytes('L', a - b)\n"
             "  u = serdes.uint('u')\n"
             "  s = serdes.sint('s')\n"
+            "  U = serdes.uint('U')\n"
+            "  S = serdes.sint('S')\n"
             "  serdes.bounded_block_end('e')\n"
         )
         
