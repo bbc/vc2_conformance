@@ -248,10 +248,10 @@ class TestCompareSources(object):
     
     def test_differing_field_lengths(self):
         assert format_summary(compare_sources("foo(a, b)", "foo(a, b, c, d)", Identical())) == (
-            "2 extra values in implementation's args (in reference code, line 1 col 0 and implementation code, line 1 col 0)"
+            "2 extra values in implementation's args (in reference code, line 1 col 7 and implementation code, line 1 col 13)"
         )
         assert format_summary(compare_sources("foo(a, b, c)", "foo(a, b)", Identical())) == (
-            "1 extra value in reference's args (in reference code, line 1 col 0 and implementation code, line 1 col 0)"
+            "1 extra value in reference's args (in reference code, line 1 col 10 and implementation code, line 1 col 7)"
         )
     
     def test_tokenisation_errors(self):
