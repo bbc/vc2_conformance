@@ -35,10 +35,11 @@ def parse_sequence():
         elif (is_picture(state)):
             picture_parse(state)
         elif (is_fragment(state)):
-            fragment(state)
+            # Errata: is 'fragment' in the spec
+            fragment_parse(state)
         elif (is_auxiliary_data(state)):
             auxiliary_data(state)
-        elif (is_padding(state)):
+        elif (is_padding_data(state)):  # Errata: is 'is_padding' in the spec
             padding(state)
         parse_info(state)
 
@@ -48,20 +49,23 @@ def auxiliary_data(state):
     """10.4.4"""
     byte_align(state)
     for i in range(state["next_parse_offset"]-13):
-        read_byte(state)
+        # Errata: is 'read_byte' in the spec
+        read_uint_lit(state, 1)
 
 
-def auxiliary(state):
+def padding(state):
     """10.4.5"""
     byte_align(state)
     for i in range(state["next_parse_offset"]-13):
-        read_byte(state)
+        # Errata: is 'read_byte' in the spec
+        read_uint_lit(state, 1)
 
 
 def parse_info(state):
     """(10.5.1)"""
+    byte_align(state)  # Errata: missing in spec
     read_uint_lit(state, 4)
-    state["parse_code"] = read_byte(state)
+    state["parse_code"] = read_uint_lit(state, 1)  # Errata: 'read_byte' in spec
     state["next_parse_offset"] = read_uint_lit(state, 4)
     state["previous_parse_offset"] = read_uint_lit(state, 4)
 
@@ -157,9 +161,10 @@ def parse_parameters(state):
     state["level"] = read_uint(state)
 
 
-def source_parameters(state, video_format):
+# Errata: argument is 'video_format' in the spec
+def source_parameters(state, base_video_format):
     """(11.4.1)"""
-    video_parameters = set_source_defaults(state, base_video_format)
+    video_parameters = set_source_defaults(base_video_format)
     frame_size(state, video_parameters)
     color_diff_sampling_format(state, video_parameters)
     scan_format(state, video_parameters)
@@ -207,7 +212,8 @@ def frame_rate(state, video_parameters):
             preset_frame_rate(video_parameters, index)
 
 
-def aspect_ratio(state, video_parameters):
+# Errata: called 'aspect_ratio' in spec
+def pixel_aspect_ratio(state, video_parameters):
     """(11.4.7)"""
     custom_pixel_aspect_ratio_flag = read_bool(state)
     if(custom_pixel_aspect_ratio_flag):
@@ -216,7 +222,8 @@ def aspect_ratio(state, video_parameters):
             video_parameters["pixel_aspect_ratio_numer"] = read_uint(state)
             video_parameters["pixel_aspect_ratio_denom"] = read_uint(state)
         else:
-            preset_aspect_ratio(video_parameters, index)
+            # Errata: called 'preset_aspect_ratio' in spec
+            preset_pixel_aspect_ratio(video_parameters, index)
 
 
 def clean_area(state, video_parameters):
@@ -359,10 +366,12 @@ def slice_parameters(state):
     """(12.4.5.2)"""
     state["slices_x"] = read_uint(state)
     state["slices_y"] = read_uint(state)
-    if(is_ld_picture(state)):
+    # Errata: just uses 'is_ld_picture' and 'is_hq_picture' in spec but should
+    # check fragment types too
+    if is_ld_picture(state) or is_ld_fragment(state):
         state["slice_bytes_numerator"] = read_uint(state)
         state["slice_bytes_denominator"] = read_uint(state)
-    if(is_hq_picture(state)):
+    if is_hq_picture(state) or is_hq_fragment(state):
         state["slice_prefix_bytes"] = read_uint(state)
         state["slice_size_scaler"] = read_uint(state)
 
@@ -378,7 +387,7 @@ def quant_matrix(state):
             for level in range(1, state["dwt_depth_ho"] + 1):
                 state["quant_matrix"][level]["H"] = read_uint(state)
         for level in range(state["dwt_depth_ho"] + 1,
-                           state["dwt_depth_ho"] + state[dwt_depth] + 1):
+                           state["dwt_depth_ho"] + state["dwt_depth"] + 1):
             state["quant_matrix"][level]["HL"] = read_uint(state)
             state["quant_matrix"][level]["LH"] = read_uint(state)
             state["quant_matrix"][level]["HH"] = read_uint(state)
@@ -480,11 +489,11 @@ def dc_prediction(band):
 
 def transform_data(state):
     """(13.5.2)"""
-    state["y_transform"] = initialize_wavelet_data("Y")
-    state["c1_transform"] = initialize_wavelet_data("C1")
-    state["c2_transform"] = initialize_wavelet_data("C2")
-    for sy in range(0, state["slices_y"]):
-        for sx in range(0, state["slices_x"]):
+    state["y_transform"] = initialize_wavelet_data(state, "Y")
+    state["c1_transform"] = initialize_wavelet_data(state, "C1")
+    state["c2_transform"] = initialize_wavelet_data(state, "C2")
+    for sy in range(state["slices_y"]):
+        for sx in range(state["slices_x"]):
             slice(state, sx, sy)
     if (using_dc_prediction(state)):  # Errata: '= True' in spec, should be '== True'
         if (state["dwt_depth_ho"] == 0):
@@ -499,9 +508,16 @@ def transform_data(state):
 
 def slice(state, sx, sy):
     """(13.5.2)"""
-    if (ld_picture(state)):  # Errata: Mismatched brackets in spec
+    # Errata: In the spec the if/elif conditions below had mismatched brackets
+    #
+    # Errata: In the spec the if/elif conditions only tested for picture types,
+    # not pictures and fragments.
+    #
+    # Errata: In the spec the if/elif condition function names were missing a
+    # leading 'is_'.
+    if is_ld_picture(state) or is_ld_fragment(state):
         ld_slice(state, sx, sy)
-    elif (hq_picture(state)):  # Errata: Mismatched brackets in spec
+    elif is_hq_picture(state) or is_hq_fragment(state):
         hq_slice(state, sx, sy)
 
 
@@ -516,13 +532,17 @@ def ld_slice(state, sx, sy):
     slice_bits_left -= length_bits
     state["bits_left"] = slice_y_length
     if (state["dwt_depth_ho"] == 0):
-        luma_slice_band(0, "LL", sx, sy)
+        # Errata: called 'luma_slice_band' in spec and missing "y_transform"
+        # argument.
+        slice_band(state, "y_transform", 0, "LL", sx, sy)
         for level in range(1, state["dwt_depth"] + 1):
             for orient in ["HL", "LH", "HH"]:
                 slice_band(state, "y_transform", level, orient, sx, sy)
     else:
-        luma_slice_band(0, "L", sx, sy)
-        for level in range(1, state["dwt_depth_ho"] + 11):
+        # Errata: called 'luma_slice_band' in spec and missing "y_transform"
+        # argument.
+        slice_band(state, "y_transform", 0, "L", sx, sy)
+        for level in range(1, state["dwt_depth_ho"] + 1):
             slice_band(state, "y_transform", level, "H", sx, sy)
         for level in range(state["dwt_depth_ho"] + 1,
                            state["dwt_depth_ho"] + state["dwt_depth"] + 1):
@@ -531,10 +551,21 @@ def ld_slice(state, sx, sy):
     flush_inputb(state)
     slice_bits_left -= slice_y_length
     state["bits_left"] = slice_bits_left
-    color_diff_slice_band(state, 0, "LL", sx, sy)
-    for level in range(1, state["dwt_depth"] + 1):
-        for orient in ["HL", "LH", "HH"]:
-            color_diff_slice_band(state, level,orient,sx,sy)
+    # Errata: in spec, the HO/2D cases are not handled correctly (the new
+    # code below is based on the code above for the luma case
+    if (state["dwt_depth_ho"] == 0):
+        color_diff_slice_band(state, 0, "LL", sx, sy)
+        for level in range(1, state["dwt_depth"] + 1):
+            for orient in ["HL", "LH", "HH"]:
+                color_diff_slice_band(state, level, orient, sx, sy)
+    else:
+        color_diff_slice_band(state, 0, "L", sx, sy)
+        for level in range(1, state["dwt_depth_ho"] + 1):
+            color_diff_slice_band(state, level, "H", sx, sy)
+        for level in range(state["dwt_depth_ho"] + 1,
+                           state["dwt_depth_ho"] + state["dwt_depth"] + 1):
+            for orient in ["HL", "LH", "HH"]:
+                color_diff_slice_band(state, level, orient, sx, sy)
     flush_inputb(state)
 
 
@@ -555,7 +586,7 @@ def hq_slice(state, sx, sy):
         length = state["slice_size_scaler"]* read_uint_lit(state, 1)
         state["bits_left"] = 8*length
         if (state["dwt_depth_ho"] == 0):
-            slice_band(transform, 0, "LL", sx, sy)
+            slice_band(state, transform, 0, "LL", sx, sy)
             for level in range(1, state["dwt_depth"] + 1):
                 for orient in ["HL", "LH", "HH"]:
                     slice_band(state, transform, level, orient, sx, sy)
@@ -609,8 +640,12 @@ def slice_bottom(state, sy,c,level):
 
 def slice_band(state, transform, level, orient, sx, sy):
     """(13.5.6.3)"""
-    for y in range(slice_top(state, sy,"Y",level), slice_bottom(state, sy,"Y",level)):
-        for x in range(slice_left(state, sx,"Y",level), slice_right(state, sx,"Y",level)):
+    # Errata: 'Y' is always used in the spec but should respect whatever
+    # transform is specified.
+    comp = "Y" if transform.startswith("y") else "C1"
+    
+    for y in range(slice_top(state, sy,comp,level), slice_bottom(state, sy,comp,level)):
+        for x in range(slice_left(state, sx,comp,level), slice_right(state, sx,comp,level)):
             val = read_sintb(state)
             qi = state["quantizer"][level][orient]
             state[transform][level][orient][y][x] = inverse_quant(val, qi)
@@ -618,7 +653,9 @@ def slice_band(state, transform, level, orient, sx, sy):
 
 def color_diff_slice_band(state, level, orient, sx, sy):
     """(13.5.6.3)"""
-    qi = state["quantizer"][level][orient]
+    # Errata: the following line is not necessary
+    #qi = state["quantizer"][level][orient]
+    
     for y in range(slice_top(state,sy,"C1",level), slice_bottom(state,sy,"C1",level)):
         for x in range(slice_left(state,sx,"C1",level), slice_right(state,sx,"C1",level)):
             qi = state["quantizer"][level][orient]
@@ -663,24 +700,26 @@ def initialize_fragment_state (state):
     state["fragment_picture_done"] = False
 
 
-def fragment_data (state):
+def fragment_data(state):
     """(14.4)"""
-    for s in range(0, state[fragment_slice_count] + 1):
+    # Errata: In the spec this loop goes from 0 to fragment_slice_count
+    # inclusive but should be fragment_slice_count *exclusive* (as below)
+    for s in range(0, state["fragment_slice_count"]):
         state["slice_x"] = (state["fragment_y_offset"]*state["slices_x"] + state["fragment_x_offset"] + s)%state["slices_x"]
         state["slice_y"] = (state["fragment_y_offset"]*state["slices_x"] + state["fragment_x_offset"] + s)//state["slices_x"]
         slice(state, state["slice_x"], state["slice_y"])
         state["fragment_slices_received"] += 1
         if (state["fragment_slices_received"] == state["slice_x"]*state["slice_y"]):
             state["fragmented_picture_done"] = True
-        if (using_dc_prediction(state)):
-            if (state["dwt_depth_ho"] == 0):
-                dc_prediction(state["y_transform"][0]["LL"])
-                dc_prediction(state["c1_transform"][0]["LL"])
-                dc_prediction(state["c2_transform"][0]["LL"])
-            else:
-                dc_prediction(state["y_transform"][0]["L"])
-                dc_prediction(state["c1_transform"][0]["L"])
-                dc_prediction(state["c2_transform"][0]["L"])
+            if (using_dc_prediction(state)):
+                if (state["dwt_depth_ho"] == 0):
+                    dc_prediction(state["y_transform"][0]["LL"])
+                    dc_prediction(state["c1_transform"][0]["LL"])
+                    dc_prediction(state["c2_transform"][0]["LL"])
+                else:
+                    dc_prediction(state["y_transform"][0]["L"])
+                    dc_prediction(state["c1_transform"][0]["L"])
+                    dc_prediction(state["c2_transform"][0]["L"])
 
 
 ################################################################################
