@@ -52,12 +52,22 @@ class TestSerdesChangesOnly(object):
         assert c.compare(n1, n2) is True
         assert c.compare(n2, n1) is not True
     
-    def test_allow_serdes_argument(self):
+    def test_allow_serdes_argument_def(self):
         # Allowed change no. 4
         c = SerdesChangesOnly()
         
         n1 = ast.parse("def func(a, b): return a + b")
         n2 = ast.parse("def func(serdes, a, b): return a + b")
+        
+        assert c.compare(n1, n2) is True
+        assert c.compare(n2, n1) is not True
+    
+    def test_allow_serdes_argument_call(self):
+        # Allowed change no. 4
+        c = SerdesChangesOnly()
+        
+        n1 = ast.parse("func(a, b)")
+        n2 = ast.parse("func(serdes, a, b)")
         
         assert c.compare(n1, n2) is True
         assert c.compare(n2, n1) is not True
@@ -190,3 +200,41 @@ class TestSerdesChangesOnly(object):
         )
         
         assert c.compare(n1, n3) is not True
+    
+    def test_allow_swap_in_fixed_dicts(self):
+        # Allowed change no. 9
+        c = SerdesChangesOnly()
+        
+        n1 = ast.parse("a = {}")
+        n2 = ast.parse("a = State()")
+        assert c.compare(n1, n2) is True
+        assert c.compare(n2, n1) is not True
+        
+        n1 = ast.parse("a = {}")
+        n2 = ast.parse("a = VideoParameters()")
+        assert c.compare(n1, n2) is True
+        assert c.compare(n2, n1) is not True
+        
+        # Not one of the approved functions
+        n1 = ast.parse("a = {}")
+        n2 = ast.parse("a = Foobar()")
+        assert c.compare(n1, n2) is not True
+        
+        # Non-empty dict
+        n1 = ast.parse("a = {1: 2}")
+        n2 = ast.parse("a = State()")
+        assert c.compare(n1, n2) is not True
+        
+        # Non-empty arguments
+        n1 = ast.parse("a = {}")
+        n2 = ast.parse("a = State(1)")
+        assert c.compare(n1, n2) is not True
+        n1 = ast.parse("a = {}")
+        n2 = ast.parse("a = State(a=1)")
+        assert c.compare(n1, n2) is not True
+        n1 = ast.parse("a = {}")
+        n2 = ast.parse("a = State(*a)")
+        assert c.compare(n1, n2) is not True
+        n1 = ast.parse("a = {}")
+        n2 = ast.parse("a = State(**k)")
+        assert c.compare(n1, n2) is not True

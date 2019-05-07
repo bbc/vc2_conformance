@@ -82,6 +82,10 @@ class SerdesChangesOnly(NodeComparator):
        * ``read_sint`` -> ``serdes.sint``
        * ``byte_align`` -> ``serdes.byte_align``
        * ``flush_inputb`` -> ``serdes.bounded_block_end``
+    9. Substitution of empty dictionary creation for creation of
+       :py:class:`vc2_conformance.state.State` or
+       :py:class:`vc2_conformance.video_parameters.VideoParameters` fixed dicts
+       is allowed.
     """
     
     def compare_FunctionDef(self, n1, n2):
@@ -141,7 +145,7 @@ class SerdesChangesOnly(NodeComparator):
         return self.generic_compare(n1.value, n2.value.args[0])
     
     def compare_Call(self, n1, n2):
-        # Allowed change no. 8.
+        # Allowed change no. 4 and 8
         
         # Test if the function name has changed in one of the expected ways
         allowed_name_changes = (
@@ -169,10 +173,16 @@ class SerdesChangesOnly(NodeComparator):
             return self.generic_compare(
                 n1, n2,
                 ignore_fields=["func"],
+                # Ignores 'state' (in ref version) and 'serdes' (in impl.
+                # version)
                 filter_fields={"args": ignore_first_n(1)},
             )
         else:
-            return self.generic_compare(n1, n2)
+            return self.generic_compare(
+                n1, n2,
+                # Allowed change no. 4
+                filter_fields={"args": (None, ignore_leading_arguments("serdes"))}
+            )
     
     def compare_Module(self, n1, n2):
         return self.generic_compare(n1, n2, filter_fields={
@@ -201,3 +211,23 @@ class SerdesChangesOnly(NodeComparator):
             "body": (None, SerdesChangesOnly.common_body_filters),
             "orelse": (None, SerdesChangesOnly.common_body_filters),
         })
+    
+    def compare_Dict_Call(self, n1, n2):
+        # Allowed change no. 9
+        is_empty_dict = len(n1.keys) == 0 and len(n1.values) == 0
+        is_empty_constructor = (
+            len(n2.args) == 0 and
+            len(n2.keywords) == 0 and
+            # Python 2.x
+            len(getattr(n2, "starargs", [])) == 0 and
+            len(getattr(n2, "kwargs", [])) == 0
+        )
+        is_allowed_fixeddict = name_to_str(n2.func) in (
+            "State",
+            "VideoParameters",
+        )
+        
+        if is_empty_dict and is_empty_constructor and is_allowed_fixeddict:
+            return True
+        else:
+            return self.generic_compare(n1, n2)
