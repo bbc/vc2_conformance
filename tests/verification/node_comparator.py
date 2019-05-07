@@ -195,7 +195,14 @@ class NodeComparator(object):
                         v2 = list(fn2(v2))
                 
                 if len(v1) != len(v2):
+                    # Give line number of last child element so that when
+                    # printing up-to-and-including the reported numbers the
+                    # complete set of elements are visible
                     n1_row_col, n2_row_col = self.get_row_col()
+                    if len(v1) and hasattr(v1[-1], "lineno") and hasattr(v1[-1], "col_offset"):
+                        n1_row_col = (v1[-1].lineno, v1[-1].col_offset)
+                    if len(v2) and hasattr(v2[-1], "lineno") and hasattr(v2[-1], "col_offset"):
+                        n2_row_col = (v2[-1].lineno, v2[-1].col_offset)
                     return NodeFieldLengthsDiffer(
                         n1, n1_row_col,
                         n2, n2_row_col,

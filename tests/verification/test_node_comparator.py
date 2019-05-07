@@ -27,16 +27,17 @@ class TestEquality(object):
         assert match.n2_row_col == (1, 0)
     
     def test_list_field_length_differs(self):
-        n1 = ast.parse("foo(a, b, c)")
-        n2 = ast.parse("foo(a, b)")
+        n1 = ast.parse("foo(a,\nb,\nc)")
+        n2 = ast.parse("foo(a,\nb)")
         
         match = NodeComparator().compare(n1, n2)
         assert match.reason == "Node 'args' fields have different lengths (3 and 2)"
         assert match.field == "args"
         assert len(match.v1) == 3
         assert len(match.v2) == 2
-        assert match.n1_row_col == (1, 0)
-        assert match.n2_row_col == (1, 0)
+        # Should point to line with last element on it
+        assert match.n1_row_col == (3, 0)
+        assert match.n2_row_col == (2, 0)
     
     def test_list_field_value_differs(self):
         # NB: The current Python grammar does not include a node with a list of
