@@ -54,6 +54,23 @@ def ignore_leading_arguments(*expected_arg_names):
     return filter
 
 
+def ignore_leading_call_arguments(*expected_arg_names):
+    """
+    Filter factory for filtering the 'args' field of :py:class:`ast.Call` to
+    remove leading arguments which consist of the provided list of variable
+    names.
+    """
+    def filter(args):
+        arg_names = tuple(map(name_to_str, args))
+        
+        if arg_names[:len(expected_arg_names)] == expected_arg_names:
+            return args[len(expected_arg_names):]
+        else:
+            return args
+    
+    return filter
+
+
 def ignore_named_decorators(*ignored_decorator_names):
     """
     Filter factory for filtering any of the named decorators from the

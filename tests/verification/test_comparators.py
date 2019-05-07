@@ -66,8 +66,8 @@ class TestSerdesChangesOnly(object):
         # Allowed change no. 4
         c = SerdesChangesOnly()
         
-        n1 = ast.parse("func(a, b)")
-        n2 = ast.parse("func(serdes, a, b)")
+        n1 = ast.parse("func(123, 321)")
+        n2 = ast.parse("func(serdes, 123, 321)")
         
         assert c.compare(n1, n2) is True
         assert c.compare(n2, n1) is not True

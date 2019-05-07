@@ -14,6 +14,7 @@ from verification.field_filters import (
     cascade,
     ignore_named_decorators,
     ignore_leading_arguments,
+    ignore_leading_call_arguments,
     ignore_docstrings,
     ignore_calls_to,
     ignore_first_n,
@@ -181,7 +182,7 @@ class SerdesChangesOnly(NodeComparator):
             return self.generic_compare(
                 n1, n2,
                 # Allowed change no. 4
-                filter_fields={"args": (None, ignore_leading_arguments("serdes"))}
+                filter_fields={"args": (None, ignore_leading_call_arguments("serdes"))}
             )
     
     def compare_Module(self, n1, n2):

@@ -8,6 +8,7 @@ from verification.field_filters import (
     cascade,
     ignore_docstrings,
     ignore_leading_arguments,
+    ignore_leading_call_arguments,
     ignore_named_decorators,
     ignore_calls_to,
     ignore_first_n,
@@ -114,6 +115,49 @@ class TestIgnoreLeadingArguments(object):
         assert c.compare(n1, n1) is True
         assert c.compare(n1, n2) is True
         assert c.compare(n2, n1) is True
+
+
+class TestIgnoreLeadingCallArguments(object):
+    
+    @pytest.fixture
+    def c(self):
+        class MyNC(NodeComparator):
+            def compare_Call(self, n1, n2):
+                return self.generic_compare(n1, n2, filter_fields={
+                    "args": ignore_leading_call_arguments("foo", "bar"),
+                })
+        
+        return MyNC()
+    
+    @pytest.mark.parametrize("case", [
+        # Arguments are not names
+        "f(1, 2, 3)",
+        "f('foo')",
+        "f('foo', 'bar')",
+        "f(foo, 'bar')",
+        "f('foo', bar)",
+        # Not all arguments provided
+        "f(foo, qux)",
+        # Wrong order
+        "f(bar, foo)",
+    ])
+    def test_leading_arguments_not_present(self, c, case):
+        n1 = ast.parse(case)
+        n2 = ast.parse("f()")
+        
+        assert c.compare(n1, n2) is not True
+    
+    def test_leading_arguments_not_present_but_match_anyway(self, c):
+        n1 = ast.parse("f(baz, 123, qux)")
+        n2 = ast.parse("f(baz,123,qux)")
+        
+        assert c.compare(n1, n2) is True
+    
+    def test_leading_arguments_present(self, c):
+        n1 = ast.parse("f(baz, 123, qux)")
+        n2 = ast.parse("f(foo, bar, baz, 123, qux)")
+        
+        assert c.compare(n1, n2) is True
 
 
 class TestIgnoreNamedDecorators(object):
