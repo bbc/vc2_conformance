@@ -120,7 +120,6 @@ def parse_sequence(serdes):
     """
     state = State()
     
-    # Not part of spec; initialise context dictionary.
     serdes.computed_value("_state", state)
     
     serdes.declare_list("data_units")
@@ -142,7 +141,7 @@ def parse_sequence(serdes):
         elif is_auxiliary_data(state):
             with serdes.subcontext("auxiliary_data"):
                 auxiliary_data(serdes, state)
-        elif is_padding_data(state):  # Errata: listed as 'is_padding' in standard
+        elif is_padding_data(state):
             with serdes.subcontext("padding"):
                 padding(serdes, state)
         serdes.subcontext_leave()
@@ -159,9 +158,6 @@ def parse_sequence(serdes):
 @ref_pseudocode(deviation="serdes")
 def parse_info(serdes, state):
     """(10.5.1) Read a parse_info header."""
-    # Errata: Wording of spec requires this field to be aligned but the pseudo
-    # code doesn't include a byte_align (and nor does the 'parse_sequence
-    # function which calls it)
     serdes.byte_align("padding")
     
     serdes.uint_lit("parse_info_prefix", 4)
@@ -171,19 +167,23 @@ def parse_info(serdes, state):
 
 
 @context_type(AuxiliaryData)
-@ref_pseudocode(deviation="alternative_implementation")
+@ref_pseudocode(deviation="serdes")
 def auxiliary_data(serdes, state):
     """(10.4.4) Read an auxiliary data block."""
     serdes.byte_align("padding")
-    serdes.bytes("bytes", state["next_parse_offset"] - PARSE_INFO_HEADER_BYTES)
+    ### for i in range(state["next_parse_offset"]-13):
+    ###     read_uint_lit(state, 1)
+    serdes.bytes("bytes", state["next_parse_offset"] - PARSE_INFO_HEADER_BYTES) ## Not in spec
 
 
 @context_type(Padding)
-@ref_pseudocode(deviation="alternative_implementation")
+@ref_pseudocode(deviation="serdes")
 def padding(serdes, state):
     """(10.4.5) Read a padding data block."""
     serdes.byte_align("padding")
-    serdes.bytes("bytes", state["next_parse_offset"] - PARSE_INFO_HEADER_BYTES)
+    ### for i in range(state["next_parse_offset"]-13):
+    ###     read_uint_lit(state, 1)
+    serdes.bytes("bytes", state["next_parse_offset"] - PARSE_INFO_HEADER_BYTES) ## Not in spec
 
 
 ################################################################################
@@ -203,10 +203,12 @@ def sequence_header(serdes, state):
     base_video_format = serdes.uint("base_video_format")
     
     # For robustness against bad bitstreams, force unrecognised base formats to 'custom'
+    ## Begin not in spec
     try:
         BaseVideoFormats(base_video_format)
     except ValueError:
         base_video_format = BaseVideoFormats.custom_format
+    ## End not in spec
     
     with serdes.subcontext("video_parameters"):
         video_parameters = source_parameters(serdes, state, base_video_format)
@@ -288,13 +290,15 @@ def frame_rate(serdes, state, video_parameters):
     if custom_frame_rate_flag:
         index = serdes.uint("index")
         
-        # Not part of spec but required to prevent crashes on malformed inputs
-        # make an arbitrary choice
+        # Required to prevent crashes on malformed inputs make an arbitrary
+        # choice
+        ## Begin not in spec
         try:
             if index != 0:
                 PresetFrameRates(index)
         except ValueError:
             index = PresetFrameRates.fps_24_over_1_001
+        ## End not in spec
         
         if index == 0:
             video_parameters["frame_rate_numer"] = serdes.uint("frame_rate_numer")
@@ -304,19 +308,21 @@ def frame_rate(serdes, state, video_parameters):
 
 @context_type(PixelAspectRatio)
 @ref_pseudocode(deviation="serdes")
-def pixel_aspect_ratio(serdes, state, video_parameters):  # Errata: called 'aspect_ratio' in spec
+def pixel_aspect_ratio(serdes, state, video_parameters):
     """(11.4.7) Override pixel aspect ratio parameter."""
     custom_pixel_aspect_ratio_flag = serdes.bool("custom_pixel_aspect_ratio_flag")
     if custom_pixel_aspect_ratio_flag:
         index = serdes.uint("index")
         
-        # Not part of spec but required to prevent crashes on malformed inputs
-        # make an arbitrary choice
+        # Required to prevent crashes on malformed inputs make an arbitrary
+        # choice
+        ## Begin not in spec
         try:
             if index != 0:
                 PresetPixelAspectRatios(index)
         except ValueError:
             index = PresetPixelAspectRatios.ratio_1_1
+        ## End not in spec
         
         if index == 0:
             video_parameters["pixel_aspect_ratio_numer"] = serdes.uint("pixel_aspect_ratio_numer")
@@ -343,13 +349,15 @@ def signal_range(serdes, state, video_parameters):
     if custom_signal_range_flag:
         index = serdes.uint("index")
         
-        # Not part of spec but required to prevent crashes on malformed inputs
-        # make an arbitrary choice
+        # Required to prevent crashes on malformed inputs make an arbitrary
+        # choice
+        ## Begin not in spec
         try:
             if index != 0:
                 PresetSignalRanges(index)
         except ValueError:
             index = PresetSignalRanges.range_8_bit_full_range
+        ## End not in spec
         
         if index == 0:
             video_parameters["luma_offset"] = serdes.uint("luma_offset")
@@ -367,12 +375,14 @@ def color_spec(serdes, state, video_parameters):
     if custom_color_spec_flag:
         index = serdes.uint("index")
         
-        # Not part of spec but required to prevent crashes on malformed inputs
-        # make an arbitrary choice
+        # Required to prevent crashes on malformed inputs make an arbitrary
+        # choice
+        ## Begin not in spec
         try:
             PresetColorSpecs(index)
         except ValueError:
             index = PresetColorSpecs.sdtv_525
+        ## End not in spec
         
         preset_color_spec(video_parameters, index)
         if index == 0:
@@ -391,12 +401,14 @@ def color_primaries(serdes, state, video_parameters):
     if custom_color_primaries_flag:
         index = serdes.uint("index")
         
-        # Not part of spec but required to prevent crashes on malformed inputs
-        # make an arbitrary choice
+        # Required to prevent crashes on malformed inputs make an arbitrary
+        # choice
+        ## Begin not in spec
         try:
             PresetColorPrimaries(index)
         except ValueError:
             index = PresetColorPrimaries.hdtv
+        ## End not in spec
         
         preset_color_primaries(video_parameters, index)
 
@@ -408,12 +420,14 @@ def color_matrix(serdes, state, video_parameters):
     if custom_color_matrix_flag:
         index = serdes.uint("index")
         
-        # Not part of spec but required to prevent crashes on malformed inputs
-        # make an arbitrary choice
+        # Required to prevent crashes on malformed inputs make an arbitrary
+        # choice
+        ## Begin not in spec
         try:
             PresetColorMatrices(index)
         except ValueError:
             index = PresetColorMatrices.hdtv
+        ## End not in spec
         
         preset_color_matrix(video_parameters, index)
 
@@ -425,12 +439,14 @@ def transfer_function(serdes, state, video_parameters):
     if custom_transfer_function_flag:
         index = serdes.uint("index")
         
-        # Not part of spec but required to prevent crashes on malformed inputs
-        # make an arbitrary choice
+        # Required to prevent crashes on malformed inputs make an arbitrary
+        # choice
+        ## Begin not in spec
         try:
             PresetTransferFunctions(index)
         except ValueError:
             index = PresetTransferFunctions.tv_gamma
+        ## End not in spec
         
         preset_transfer_function(video_parameters, index)
 
@@ -503,8 +519,6 @@ def slice_parameters(serdes, state):
     state["slices_x"] = serdes.uint("slices_x")
     state["slices_y"] = serdes.uint("slices_y")
     
-    # Errata: just uses 'is_ld_picture' and 'is_hq_picture', should check
-    # fragment types too
     if is_ld_picture(state) or is_ld_fragment(state):
         state["slice_bytes_numerator"] = serdes.uint("slice_bytes_numerator")
         state["slice_bytes_denominator"] = serdes.uint("slice_bytes_denominator")
@@ -520,7 +534,7 @@ def quant_matrix(serdes, state):
     if custom_quant_matrix:
         serdes.declare_list("quant_matrix")
         
-        state["quant_matrix"] = defaultdict(dict)
+        state["quant_matrix"] = defaultdict(dict)  ## Not in spec
         if state["dwt_depth_ho"] == 0:
             state["quant_matrix"][0]["LL"] = serdes.uint("quant_matrix")
         else:
@@ -534,9 +548,9 @@ def quant_matrix(serdes, state):
             state["quant_matrix"][level]["LH"] = serdes.uint("quant_matrix")
             state["quant_matrix"][level]["HH"] = serdes.uint("quant_matrix")
     else:
-        # Not required
-        #set_quant_matrix(state)
-        pass
+        # Not required for bitstream decoding
+        ### set_quant_matrix(state)
+        pass  ## Not in spec
 
 ################################################################################
 # (13) Transform data syntax
@@ -546,37 +560,42 @@ def quant_matrix(serdes, state):
 @ref_pseudocode(deviation="serdes")
 def transform_data(serdes, state):
     """(13.5.2)"""
-    # Not required
-    #state["y_transform"] = initialize_wavelet_data(state, Y)
-    #state["c1_transform"] = initialize_wavelet_data(state, C1)
-    #state["c2_transform"] = initialize_wavelet_data(state, C2)
+    # Not required for bitstream decoding
+    ### state["y_transform"] = initialize_wavelet_data(state, "Y")
+    ### state["c1_transform"] = initialize_wavelet_data(state, "C1")
+    ### state["c2_transform"] = initialize_wavelet_data(state, "C2")
     
-    # Not in spec; initialise context dictionary
+    # Initialise context dictionary
+    ## Begin not in spec
     serdes.computed_value("_state", state.copy())
     if is_ld_picture(state):
         serdes.declare_list("ld_slices")
     if is_hq_picture(state):
         serdes.declare_list("hq_slices")
+    ## End not in spec
     
     for sy in range(state["slices_y"]):
         for sx in range(state["slices_x"]):
             slice(serdes, state, sx, sy)
     
-    # Not required
-    #if using_dc_prediction(state):
-    #    if state["dwt_depth_ho"] == 0:
-    #        dc_prediction(state["y_transform"][0][LL])
-    #        dc_prediction(state["c1_transform"][0][LL])
-    #        dc_prediction(state["c2_transform"][0][LL])
-    #    else:
-    #        dc_prediction(state["y_transform"][0][L])
-    #        dc_prediction(state["c1_transform"][0][L])
-    #        dc_prediction(state["c2_transform"][0][L])
+    # Not required for bitstream decoding
+    ### if using_dc_prediction(state):
+    ###     if state["dwt_depth_ho"] == 0:
+    ###         dc_prediction(state["y_transform"][0]["LL"])
+    ###         dc_prediction(state["c1_transform"][0]["LL"])
+    ###         dc_prediction(state["c2_transform"][0]["LL"])
+    ###     else:
+    ###         dc_prediction(state["y_transform"][0]["L"])
+    ###         dc_prediction(state["c1_transform"][0]["L"])
+    ###         dc_prediction(state["c2_transform"][0]["L"])
+    
+    # Following line included to ensure the above comment is considered part of
+    # this function
+    pass  ## Not in spec
 
+@ref_pseudocode(deviation="serdes")
 def slice(serdes, state, sx, sy):
     """(13.5.2)"""
-    # Errata: just uses 'is_ld_picture' and 'is_hq_picture', should check
-    # fragment types too
     if is_ld_picture(state) or is_ld_fragment(state):
         with serdes.subcontext("ld_slices"):
             ld_slice(serdes, state, sx, sy)
@@ -593,35 +612,33 @@ def ld_slice(serdes, state, sx, sy):
     qindex = serdes.nbits("qindex", 7)
     slice_bits_left -= 7
     
-    # Not required
-    #slice_quantizers(state, qindex)
+    # Not required for bitstream unpacking
+    ### slice_quantizers(state, qindex)
     
     length_bits = intlog2((8 * slice_bytes(state, sx, sy)) - 7)
     slice_y_length = serdes.nbits("slice_y_length", length_bits)
     slice_bits_left -= length_bits
     
-    # Not in spec; here to ensure robustness in the presence of invalid
-    # bitstreams
+    # Ensure robustness in the presence of invalid bitstreams
+    ## Begin not in spec
     if slice_y_length > slice_bits_left:
         slice_y_length = slice_bits_left
+    ## End not in spec
     
-    # Not in spec; initialise context dictionary
+    # Initialise context dictionary
     serdes.computed_value("_sx", sx)
     serdes.computed_value("_sy", sy)
     serdes.declare_list("y_transform")
     serdes.declare_list("c_transform")
     
     serdes.bounded_block_begin(slice_y_length)
-    #state.bits_left = slice_y_length
     
     if state["dwt_depth_ho"] == 0:
-        # Errata: standard says 'luma_slice_band(state, 0, "LL", sx, sy)'
         slice_band(serdes, state, "y_transform", 0, "LL", sx, sy)
         for level in range(1, state["dwt_depth"] + 1):
             for orient in ["HL", "LH", "HH"]:
                 slice_band(serdes, state, "y_transform", level, orient, sx, sy)
     else:
-        # Errata: standard says 'luma_slice_band(state, 0, "L", sx, sy)'
         slice_band(serdes, state, "y_transform", 0, "L", sx, sy)
         for level in range(1, state["dwt_depth_ho"] + 1):
             slice_band(serdes, state, "y_transform", level, "H", sx, sy)
@@ -631,14 +648,11 @@ def ld_slice(serdes, state, sx, sy):
                 slice_band(serdes, state, "y_transform", level, orient, sx, sy)
     
     serdes.bounded_block_end("y_block_padding")
-    #flush_inputb(state)
     
     slice_bits_left -= slice_y_length
     
     serdes.bounded_block_begin(slice_bits_left)
-    #state.bits_left = slice_bits_left
     
-    # Errata: The standard shows only 2D transform slices being read
     if state["dwt_depth_ho"] == 0:
         color_diff_slice_band(serdes, state, 0, "LL", sx, sy)
         for level in range(1, state["dwt_depth"] + 1):
@@ -654,7 +668,6 @@ def ld_slice(serdes, state, sx, sy):
                 color_diff_slice_band(serdes, state, level, orient, sx, sy)
     
     serdes.bounded_block_end("c_block_padding")
-    #flush_inputb(state)
 
 
 @context_type(HQSlice)
@@ -663,25 +676,24 @@ def hq_slice(serdes, state, sx, sy):
     """(13.5.4)"""
     serdes.bytes("prefix_bytes", state["slice_prefix_bytes"])
     
-    qindex = serdes.nbits("qindex", 8)
+    qindex = serdes.uint_lit("qindex", 1)
     
-    # Not required
-    #slice_quantizers(state, qindex)
+    # Not required for bitstream unpacking
+    ### slice_quantizers(state, qindex)
     
-    # Not in spec; initialise context dictionary
+    # Initialise context dictionary
     serdes.computed_value("_sx", sx)
     serdes.computed_value("_sy", sy)
     serdes.declare_list("y_transform")
     serdes.declare_list("c1_transform")
     serdes.declare_list("c2_transform")
     
-    for component in ["y", "c1", "c2"]:
-        length = state["slice_size_scaler"] * serdes.nbits("slice_{}_length".format(component), 8)
+    for transform in ["y_transform", "c1_transform", "c2_transform"]:
+        component = transform.split("_")[0]  ## Not in spec
+        length = state["slice_size_scaler"] * serdes.uint_lit("slice_{}_length".format(component), 1)
         
         serdes.bounded_block_begin(8*length)
-        #state.bits_left = 8*length
         
-        transform = "{}_transform".format(component)
         if state["dwt_depth_ho"] == 0:
             slice_band(serdes, state, transform, 0, "LL", sx, sy)
             for level in range(1, state["dwt_depth"] + 1):
@@ -697,54 +709,63 @@ def hq_slice(serdes, state, sx, sy):
                     slice_band(serdes, state, transform, level, orient, sx, sy)
         
         serdes.bounded_block_end("{}_block_padding".format(component))
-        #flush_inputb(state)
 
 @ref_pseudocode(deviation="serdes")
 def slice_band(serdes, state, transform, level, orient, sx, sy):
     """(13.5.6.3) Read and dequantize a subband in a slice."""
+    comp = "Y" if transform.startswith("y") else "C1"
+    
     # These values evaulated in the loop definition in the spec, moving them
     # here saves a lot of computation
-    #
-    # Errata: 'Y' is always used in the spec but should respect whatever
-    # transform is specified.
-    comp = "Y" if transform.startswith("y") else "C1"
+    ## Begin not in spec
     y1 = slice_top(state, sy, comp, level)
     y2 = slice_bottom(state, sy, comp, level)
     x1 = slice_left(state, sx, comp, level)
     x2 = slice_right(state, sx, comp, level)
+    ## End not in spec
     
-    for y in range(y1, y2):
-        for x in range(x1, x2):
+    ### for y in range(slice_top(state, sy,comp,level), slice_bottom(state, sy,comp,level)):
+    ###     for x in range(slice_left(state, sx,comp,level), slice_right(state, sx,comp,level)):
+    for y in range(y1, y2):  ## Not in spec
+        for x in range(x1, x2):  ## Not in spec
             val = serdes.sint(transform)
             
-            # Not required
-            #qi = state.quantizer[level][orient]
-            #transform[level][orient][y][x] = inverse_quant(val, qi)
+            # Not required for bitstream unpacking
+            ### qi = state["quantizer"][level][orient]
+            ### state[transform][level][orient][y][x] = inverse_quant(val, qi)
+    
+    # Following line included to ensure the trailing comment above is
+    # considered part of this function
+    pass  ## Not in spec
 
 @ref_pseudocode(deviation="serdes")
 def color_diff_slice_band(serdes, state, level, orient, sx, sy):
     """(13.5.6.4) Read and dequantize interleaved color difference subbands in a slice."""
     # These values evaulated in the loop definition in the spec, moving them
     # here saves a lot of computation
+    ## Begin not in spec
     y1 = slice_top(state, sy, "C1", level)
     y2 = slice_bottom(state, sy, "C1", level)
     x1 = slice_left(state, sx, "C1", level)
     x2 = slice_right(state, sx, "C1", level)
+    ## End not in spec
     
-    # Not required
-    #qi = state.quantizer[level][orient]
-    for y in range(y1, y2):
-        for x in range(x1, x2):
-            # Not required
-            #qi = state.quantizer[level][orient]
+    ### for y in range(slice_top(state,sy,"C1",level), slice_bottom(state,sy,"C1",level)):
+    ###     for x in range(slice_left(state,sx,"C1",level), slice_right(state,sx,"C1",level)):
+    for y in range(y1, y2):  ## Not in spec
+        for x in range(x1, x2):  ## Not in spec
+            # Not required for bitstream unpacking
+            ### qi = state["quantizer"][level][orient]
             
             val = serdes.sint("c_transform")
-            # Not required
-            #state.c1_transform[level][orient][y][x] = inverse_quant(val, qi)
+            ### state["c1_transform"][level][orient][y][x] = inverse_quant(val, qi)
             
             val = serdes.sint("c_transform")
-            # Not required
-            #state.c2_transform[level][orient][y][x] = inverse_quant(val, qi)
+            ### state["c2_transform"][level][orient][y][x] = inverse_quant(val, qi)
+    
+    # Following line included to ensure the trailing comment above is
+    # considered part of this function
+    pass  ## Not in spec
 
 ################################################################################
 # (14) Fragment syntax
@@ -762,8 +783,9 @@ def fragment_parse(serdes, state):
         with serdes.subcontext("transform_parameters"):
             transform_parameters(serdes, state)
         
-        # Not required (prepares structures used for decoding and termination detection)
-        # initialize_fragment_state(state)
+        # Not required (prepares structures used for decoding and termination
+        # detection)
+        ### initialize_fragment_state(state)
     else:
         serdes.byte_align("padding2")
         with serdes.subcontext("fragment_data"):
@@ -786,16 +808,16 @@ def fragment_header(serdes, state):
 @ref_pseudocode(deviation="serdes")
 def fragment_data(serdes, state):
     """(14.4) Unpack and dequantize transform data from a fragment."""
-    # Not in spec; initialise context dictionary
+    # Initialise context dictionary
+    ## Begin not in spec
     serdes.computed_value("_state", state.copy())
     if is_ld_fragment(state):
         serdes.declare_list("ld_slices")
     if is_hq_fragment(state):
         serdes.declare_list("hq_slices")
+    ## End not in spec
     
-    # Errata: In the spec this loop goes from 0 to fragment_slice_count
-    # inclusive but should be fragment_slice_count *exclusive* (as below)
-    for s in range(state["fragment_slice_count"]):
+    for s in range(0, state["fragment_slice_count"]):
         state["slice_x"] = (
             ((state["fragment_y_offset"] * state["slices_x"]) +
              state["fragment_x_offset"] + s) % state["slices_x"]
@@ -806,17 +828,21 @@ def fragment_data(serdes, state):
         )
         slice(serdes, state, state["slice_x"], state["slice_y"])
         
-        # Not required
-        #state["fragment_slices_received"] += 1
-        #
-        #if state["fragment_slices_received"] == (state["slice_x"] * state["slice_y"]):
-        #    state["fragmented_picture_done"] = True
-        #    if using_dc_prediction(state):
-        #        if state["dwt_depth_ho"] == 0:
-        #            dc_prediction(state["y_transform"][0][LL])
-        #            dc_prediction(state["c1_transform"][0][LL])
-        #            dc_prediction(state["c2_transform"][0][LL])
-        #        else:
-        #            dc_prediction(state["y_transform"][0][L])
-        #            dc_prediction(state["c1_transform"][0][L])
-        #            dc_prediction(state["c2_transform"][0][L])
+        # Not required for bitstream unpacking
+        ### state["fragment_slices_received"] += 1
+        ### 
+        ### if state["fragment_slices_received"] == (state["slice_x"] * state["slice_y"]):
+        ###     state["fragmented_picture_done"] = True
+        ###     if using_dc_prediction(state):
+        ###         if state["dwt_depth_ho"] == 0:
+        ###             dc_prediction(state["y_transform"][0]["LL"])
+        ###             dc_prediction(state["c1_transform"][0]["LL"])
+        ###             dc_prediction(state["c2_transform"][0]["LL"])
+        ###         else:
+        ###             dc_prediction(state["y_transform"][0]["L"])
+        ###             dc_prediction(state["c1_transform"][0]["L"])
+        ###             dc_prediction(state["c2_transform"][0]["L"])
+    
+    # Following line included to ensure the trailing comment above is
+    # considered part of this function
+    pass  ## Not in spec
