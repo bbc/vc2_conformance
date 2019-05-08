@@ -142,7 +142,7 @@ class SerdesChangesOnly(NodeComparator):
         })
     
     # Filters to be applied to all lists of 'body' statements
-    common_body_filters = cascade(
+    common_body_filters = staticmethod(cascade(
         # Allowed change no. 5
         unwrap_named_context_managers("serdes.subcontext"),
         # Allowed change no. 6
@@ -153,7 +153,7 @@ class SerdesChangesOnly(NodeComparator):
             "serdes.declare_list",
             "serdes.computed_value",
         ),
-    )
+    ))
     
     def compare_Assign_Expr(self, n1, n2):
         # Allowed change no. 7
