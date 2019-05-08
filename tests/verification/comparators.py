@@ -256,8 +256,8 @@ class SerdesChangesOnly(NodeComparator):
             len(n2.args) == 0 and
             len(n2.keywords) == 0 and
             # Python 2.x
-            len(getattr(n2, "starargs", [])) == 0 and
-            len(getattr(n2, "kwargs", [])) == 0
+            getattr(n2, "starargs", None) is None and
+            getattr(n2, "kwargs", None) is None
         )
         is_allowed_fixeddict = name_to_str(n2.func) in (
             "State",
