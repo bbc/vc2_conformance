@@ -6,6 +6,8 @@ spec with their implementations in the :py:mod:`vc2_conformance` package.
 
 import ast
 
+from vc2_conformance import tables
+
 from verification.node_comparator import NodeComparator, NodesDiffer
 
 from verification.ast_utils import name_to_str
@@ -24,18 +26,49 @@ from verification.field_filters import (
 
 class Identical(NodeComparator):
     """
-    Compares two function implementations only allowing differences in their
-    docstrings and the presence of a
-    :py:func:`vc2_conformance.metadata.ref_pseudocode` decorator on the second
-    function.
+    Compares two function implementations only allowing the following
+    differences:
+    
+    1. Their docstrings may be different.
+    2. A :py:func:`vc2_conformance.metadata.ref_pseudocode` decorator may be
+       present in the second function.
+    3. Constants from  the :py:mod:`vc2_conformance.tables` module may be
+       used in place of literals in the second function.
     """
     
     
     def compare_FunctionDef(self, n1, n2):
         return self.generic_compare(n1, n2, filter_fields={
+            # Allowed change no. 1
+            "body": ignore_docstrings,
+            # Allowed change no. 2
             "decorator_list": (None, ignore_named_decorators("ref_pseudocode")),
-            "body": ignore_docstrings
         })
+    
+    
+    def compare_Num_Attribute(self, n1, n2):
+        # Allowed change no. 3
+        
+        # Resolve the constant used
+        name_parts = name_to_str(n2).split(".")
+        value = tables
+        for part in name_parts:
+            if hasattr(value, part):
+                value = getattr(value, part)
+                print(value)
+            else:
+                value = None
+                break
+        
+        # Must be same value as the literal
+        if n1.n == value:
+            return True
+        else:
+            return self.generic_compare(n1, n2)
+    
+    def compare_Num_Name(self, n1, n2):
+        # Allowed change no. 3
+        return self.compare_Num_Attribute(n1, n2)
 
 
 class SerdesChangesOnly(NodeComparator):

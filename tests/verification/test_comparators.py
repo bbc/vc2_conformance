@@ -28,6 +28,26 @@ class TestIdentical(object):
         # First value not allowed to contain extra decorators (only second one
         # may have which may be ignored decorators)
         assert c.compare(n2, n1) is not True
+    
+    def test_allow_swapping_literals_for_named_constants(self):
+        c = Identical()
+        
+        n1 = ast.parse("13")
+        n2 = ast.parse("PARSE_INFO_HEADER_BYTES")
+        
+        n3 = ast.parse("0x10")
+        n4 = ast.parse("ParseCodes.end_of_sequence")
+        n5 = ast.parse("ParseCodes.end_of_sequence.value")
+        
+        assert c.compare(n1, n2) is True
+        assert c.compare(n2, n1) is not True
+        assert c.compare(n3, n2) is not True
+        
+        assert c.compare(n3, n4) is True
+        assert c.compare(n3, n5) is True
+        assert c.compare(n4, n3) is not True
+        assert c.compare(n5, n3) is not True
+        
 
 
 class TestSerdesChangesOnly(object):
