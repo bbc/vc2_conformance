@@ -53,7 +53,14 @@ to performs this step.
 
 import re
 
-import tokenize
+from tokenize import COMMENT
+
+try:
+    # Python 2.x
+    from tokenize import generate_tokens as tokenize
+except ImportError:
+    # Python 3.x
+    from tokenize import tokens
 
 from functools import partial
 
@@ -174,8 +181,8 @@ def undo_amendments(source):
     # Find the amendment comments in the source
     not_in_spec_stack = []  # [srow, ...]
     readline = partial(next, (line.encode("utf-8") for line in source_lines))
-    for type, string, (srow, scol), (erow, ecol), lineno in tokenize.tokenize(readline):
-        if type == tokenize.COMMENT:
+    for type, string, (srow, scol), (erow, ecol), lineno in tokenize(readline):
+        if type == COMMENT:
             comment_only_line = source_lines[srow-1][:scol].strip() == ""
             
             if _RE_DISABLED_COMMENT.match(string) and comment_only_line:
