@@ -47,7 +47,7 @@ from vc2_conformance.parse_code_functions import (
     is_fragment,
 )
 
-from vc2_conformance.math import intlog2
+from vc2_conformance.vc2_math import intlog2
 
 from vc2_conformance.slice_sizes import (
     subband_width,

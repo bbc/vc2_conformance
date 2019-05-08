@@ -19,7 +19,7 @@ This Python package includes the following key components:
 from vc2_conformance import exceptions
 
 # VC-2 pseudocode functions
-from vc2_conformance import math
+from vc2_conformance import vc2_math
 from vc2_conformance import parse_code_functions
 from vc2_conformance import slice_sizes
 from vc2_conformance import video_parameters

@@ -24,7 +24,7 @@ from vc2_conformance.fixeddict import fixeddict, Entry
 
 from vc2_conformance.tables import *
 
-from vc2_conformance.math import intlog2
+from vc2_conformance.vc2_math import intlog2
 
 __all__ = [
     "VideoParameters",
