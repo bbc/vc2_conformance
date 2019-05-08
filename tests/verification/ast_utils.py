@@ -59,4 +59,4 @@ def with_to_items(with_node):
     else:
         # In Python 2.x, context_expr and optional_vars are part of the With
         # AST node
-        return [with_node.context_expr, with_node.optional_vars]
+        return [(with_node.context_expr, with_node.optional_vars)]
