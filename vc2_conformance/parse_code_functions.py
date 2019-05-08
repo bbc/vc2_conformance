@@ -25,59 +25,57 @@ __all__ = [
 @ref_pseudocode
 def is_seq_header(state):
     """(Table 10.2)"""
-    return bool(state["parse_code"] == 0x00)
+    return (state["parse_code"] == 0x00)
 
 @ref_pseudocode
 def is_end_of_sequence(state):
     """(Table 10.2)"""
-    return bool(state["parse_code"] == 0x10)
+    return (state["parse_code"] == 0x10)
 
 @ref_pseudocode
 def is_auxiliary_data(state):
     """(Table 10.2)"""
-    return bool((state["parse_code"] & 0xF8) == 0x20)
+    return ((state["parse_code"] & 0xF8) == 0x20)
 
 @ref_pseudocode
 def is_padding_data(state):
     """(Table 10.2)"""
-    return bool(state["parse_code"] == 0x30)
+    return (state["parse_code"] == 0x30)
 
 
-# Errata: the is_*_picture functions in the spec also return True for
-# fragments. (The implementation below only returns True for pictures).
 @ref_pseudocode
 def is_picture(state):
     """(Table 10.2)"""
-    return bool((state["parse_code"] & 0x8C) == 0x88)
+    return ((state["parse_code"] & 0x8C) == 0x88)
 
 @ref_pseudocode
 def is_ld_picture(state):
     """(Table 10.2)"""
-    return bool((state["parse_code"] & 0xFC) == 0xC8)
+    return ((state["parse_code"] & 0xFC) == 0xC8)
 
 @ref_pseudocode
 def is_hq_picture(state):
     """(Table 10.2)"""
-    return bool((state["parse_code"] & 0xFC) == 0xE8)
+    return ((state["parse_code"] & 0xFC) == 0xE8)
 
 
 @ref_pseudocode
 def is_fragment(state):
     """(Table 10.2)"""
-    return bool((state["parse_code"] & 0x0C) == 0x0C)
+    return ((state["parse_code"] & 0x0C) == 0x0C)
 
 @ref_pseudocode
 def is_ld_fragment(state):
     """(Table 10.2)"""
-    return bool((state["parse_code"] & 0xFC) == 0xCC)
+    return ((state["parse_code"] & 0xFC) == 0xCC)
 
 @ref_pseudocode
 def is_hq_fragment(state):
     """(Table 10.2)"""
-    return bool((state["parse_code"] & 0xFC) == 0xEC)
+    return ((state["parse_code"] & 0xFC) == 0xEC)
 
 
 @ref_pseudocode
 def using_dc_prediction(state):
     """(Table 10.2)"""
-    return bool((state["parse_code"] & 0x28) == 0x08)
+    return ((state["parse_code"] & 0x28) == 0x08)
