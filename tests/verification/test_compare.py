@@ -1,5 +1,6 @@
 import pytest
 
+import re
 import sys
 import inspect
 
@@ -146,7 +147,7 @@ class TestFormatDetailedSummary(object):
             '        """Example function"""\n'
             '        return a + b\n'
             '--------^\n'
-            '{file}:24\n'
+            '{file}:25\n'
             '\n'
             'Implementation source:\n'
             '    def f(a, b):\n'
@@ -155,7 +156,7 @@ class TestFormatDetailedSummary(object):
             '        """\n'
             '        return a - b\n'
             '--------^\n'
-            '{file}:37'
+            '{file}:38'
         ).format(file=_test_script_filename)
     
     def test_source_with_col(self, T):
@@ -175,7 +176,7 @@ class TestFormatDetailedSummary(object):
             '        """Example function"""\n'
             '        return a + b\n'
             '---------------^\n'
-            '{file}:24 (col 11)\n'
+            '{file}:25 (col 11)\n'
             '\n'
             'Implementation source:\n'
             '    def f(a, b):\n'
@@ -184,7 +185,7 @@ class TestFormatDetailedSummary(object):
             '        """\n'
             '        return a - b\n'
             '---------------^\n'
-            '{file}:37 (col 11)'
+            '{file}:38 (col 11)'
         ).format(file=_test_script_filename)
 
 
@@ -267,17 +268,21 @@ class TestCompareSources(object):
         )
     
     def test_syntax_errors(self):
+        # NB: Syntax error reported column numbers differ depending on the
+        # python interpreter used.
         with pytest.raises(ComparisonError) as exc_info:
-            compare_sources("1 + ", "", Identical())
-        assert format_summary(exc_info.value) == (
-            "invalid syntax (in reference code, line 1 col 5)"
-        )
+            compare_sources("1 +/", "", Identical())
+        assert re.match(
+            r"invalid syntax \(in reference code, line 1 col [34]\)",
+            format_summary(exc_info.value),
+        ) is not None
         
         with pytest.raises(ComparisonError) as exc_info:
-            compare_sources("", "1 + ", Identical())
-        assert format_summary(exc_info.value) == (
-            "invalid syntax (in implementation code, line 1 col 5)"
-        )
+            compare_sources("", "1 +/", Identical())
+        assert re.match(
+            r"invalid syntax \(in implementation code, line 1 col [34]\)",
+            format_summary(exc_info.value),
+        ) is not None
     
     def test_bad_amendment_comment(self):
         # Can only occur in implementation code since these come from
