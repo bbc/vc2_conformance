@@ -16,8 +16,6 @@ class for displaying numbers. For example::
     '0x00001234'
 """
 
-from attr import attrs, attrib
-
 from vc2_conformance._string_utils import indent, ellipsise
 
 __all__ = [
@@ -35,7 +33,6 @@ __all__ = [
 ]
 
 
-@attrs(frozen=True)
 class Number(object):
     """
     A formatter which uses Python's built-in :py:meth:`str.format` method to
@@ -53,10 +50,11 @@ class Number(object):
         The value to use to pad absent digits
     """
     
-    format_code = attrib()
-    num_digits = attrib(default=0)
-    pad_digit = attrib(default="0")
-    prefix = attrib(default="")
+    def __init__(self, format_code, num_digits=0, pad_digit="0", prefix=""):
+        self.format_code = format_code
+        self.num_digits = num_digits
+        self.pad_digit = pad_digit
+        self.prefix = prefix
     
     def __call__(self, number):
         return "{}{}{:{}{}{}}".format(
@@ -68,7 +66,6 @@ class Number(object):
             self.format_code,
         )
 
-@attrs(frozen=True)
 class Hex(Number):
     """
     Prints numbers in hexadecimal.
@@ -83,12 +80,9 @@ class Hex(Number):
         Defaults to "0x"
     """
     
-    num_digits = attrib(default=0)
-    pad_digit = attrib(default="0")
-    prefix = attrib(default="0x")
-    format_code = attrib(default="X", repr=False, init=False)
+    def __init__(self, num_digits=0, pad_digit="0", prefix="0x"):
+        super(Hex, self).__init__("X", num_digits, pad_digit, prefix)
 
-@attrs(frozen=True)
 class Dec(Number):
     """
     Prints numbers in decimal.
@@ -103,12 +97,9 @@ class Dec(Number):
         Defaults to ""
     """
     
-    num_digits = attrib(default=0)
-    pad_digit = attrib(default="0")
-    prefix = attrib(default="")
-    format_code = attrib(default="d", repr=False, init=False)
+    def __init__(self, num_digits=0, pad_digit="0", prefix=""):
+        super(Dec, self).__init__("d", num_digits, pad_digit, prefix)
 
-@attrs(frozen=True)
 class Oct(Number):
     """
     Prints numbers in octal.
@@ -123,12 +114,9 @@ class Oct(Number):
         Defaults to "0o"
     """
     
-    num_digits = attrib(default=0)
-    pad_digit = attrib(default="0")
-    prefix = attrib(default="0o")
-    format_code = attrib(default="o", repr=False, init=False)
+    def __init__(self, num_digits=0, pad_digit="0", prefix="0o"):
+        super(Oct, self).__init__("o", num_digits, pad_digit, prefix)
 
-@attrs(frozen=True)
 class Bin(Number):
     """
     Prints numbers in binary.
@@ -143,13 +131,10 @@ class Bin(Number):
         Defaults to "0b"
     """
     
-    num_digits = attrib(default=0)
-    pad_digit = attrib(default="0")
-    prefix = attrib(default="0b")
-    format_code = attrib(default="b", repr=False, init=False)
+    def __init__(self, num_digits=0, pad_digit="0", prefix="0b"):
+        super(Bin, self).__init__("b", num_digits, pad_digit, prefix)
 
 
-@attrs(frozen=True)
 class Bool(object):
     """
     A formatter for :py:class:`bool` (or bool-castable) objects. For the values
@@ -166,7 +151,6 @@ class Bool(object):
             return "{} ({})".format(bool(b), b)
 
 
-@attrs(frozen=True)
 class Bits(object):
     """
     A formatter for :py:class:`bitarray.bitarray` objects. Shows the value as a
@@ -186,10 +170,11 @@ class Bits(object):
         length information.
     """
     
-    prefix = attrib(default="0b")
-    context = attrib(default=4)
-    min_length = attrib(default=8)
-    show_length = attrib(default=16)
+    def __init__(self, prefix="0b", context=4, min_length=8, show_length=16):
+        self.prefix = prefix
+        self.context = context
+        self.min_length = min_length
+        self.show_length = show_length
     
     def __call__(self, ba):
         string = ellipsise(ba.to01(), self.context, self.min_length)
@@ -202,7 +187,6 @@ class Bits(object):
         return "{}{}".format(self.prefix, string)
 
 
-@attrs(frozen=True)
 class Bytes(object):
     """
     A formatter for :py:class:`bytes` strings. Shows the value as a string of
@@ -224,11 +208,12 @@ class Bytes(object):
         the length information.
     """
     
-    prefix = attrib(default="0x")
-    separator = attrib(default="_")
-    context = attrib(default=2)
-    min_length = attrib(default=4)
-    show_length = attrib(default=8)
+    def __init__(self, prefix="0x", separator="_", context=2, min_length=4, show_length=8):
+        self.prefix = prefix
+        self.separator = separator
+        self.context = context
+        self.min_length = min_length
+        self.show_length = show_length
     
     def __call__(self, b):
         string = "".join("{:02X}".format(n) for n in bytearray(b))
@@ -257,14 +242,14 @@ class Bytes(object):
         return "{}{}".format(self.prefix, string)
 
 
-@attrs(frozen=True)
 class Object(object):
     """
     A formatter for opaque python Objects. Shows only the object type name.
     """
     
-    prefix = attrib(default="<")
-    suffix = attrib(default=">")
+    def __init__(self, prefix="<", suffix=">"):
+        self.prefix = prefix
+        self.suffix = suffix
     
     def __call__(self, o):
         return "{}{}{}".format(
@@ -274,7 +259,6 @@ class Object(object):
         )
 
 
-@attrs(frozen=True)
 class List(object):
     """
     A formatter for lists which collapses repeated entries.
@@ -304,8 +288,9 @@ class List(object):
         [1, 2, 2] + [3]*3
     """
     
-    min_run_length = attrib(default=3)
-    formatter = attrib(default=str)
+    def __init__(self, min_run_length=3, formatter=str):
+        self.min_run_length = min_run_length
+        self.formatter = formatter
     
     def __call__(self, lst):
         # Special case (avoids complications below)
@@ -355,7 +340,6 @@ class List(object):
             for value_run in out
         )
 
-@attrs(frozen=True)
 class MultilineList(object):
     """
     A formatter for lists which displays each value on its own line.
@@ -382,8 +366,9 @@ class MultilineList(object):
           2: three
     """
     
-    heading = attrib(default=None)
-    formatter = attrib(default=str)
+    def __init__(self, heading=None, formatter=str):
+        self.heading = heading
+        self.formatter = formatter
     
     def __call__(self, lst):
         lines = "\n".join(
