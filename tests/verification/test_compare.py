@@ -1,5 +1,6 @@
 import pytest
 
+import sys
 import inspect
 
 from verification.compare import (
@@ -49,6 +50,8 @@ def f5(a, b):
 
 ################################################################################
 
+# Filename of this script (not its *.pyc file)
+_test_script_filename = inspect.getsourcefile(sys.modules[__name__])
 
 class TestFormatSummary(object):
     
@@ -93,7 +96,7 @@ class TestFormatSummary(object):
             ref_func=f,
         )) == "foobar (in reference code, line {} col 10 of {})".format(
             1000 + inspect.getsourcelines(f)[1],
-            __file__,
+            _test_script_filename,
         )
         
         assert format_summary(T(
@@ -103,7 +106,7 @@ class TestFormatSummary(object):
             imp_func=f,
         )) == "foobar (in implementation code, line {} col 10 of {})".format(
             1000 + inspect.getsourcelines(f)[1],
-            __file__,
+            _test_script_filename,
         )
     
     def test_both_functions_at_once(self, T):
@@ -143,7 +146,7 @@ class TestFormatDetailedSummary(object):
             '        """Example function"""\n'
             '        return a + b\n'
             '--------^\n'
-            '{file}:23\n'
+            '{file}:24\n'
             '\n'
             'Implementation source:\n'
             '    def f(a, b):\n'
@@ -152,8 +155,8 @@ class TestFormatDetailedSummary(object):
             '        """\n'
             '        return a - b\n'
             '--------^\n'
-            '{file}:36'
-        ).format(file=__file__)
+            '{file}:37'
+        ).format(file=_test_script_filename)
     
     def test_source_with_col(self, T):
         assert format_detailed_summary(T(
@@ -172,7 +175,7 @@ class TestFormatDetailedSummary(object):
             '        """Example function"""\n'
             '        return a + b\n'
             '---------------^\n'
-            '{file}:23 (col 11)\n'
+            '{file}:24 (col 11)\n'
             '\n'
             'Implementation source:\n'
             '    def f(a, b):\n'
@@ -181,8 +184,8 @@ class TestFormatDetailedSummary(object):
             '        """\n'
             '        return a - b\n'
             '---------------^\n'
-            '{file}:36 (col 11)'
-        ).format(file=__file__)
+            '{file}:37 (col 11)'
+        ).format(file=_test_script_filename)
 
 
 class TestCompareSources(object):

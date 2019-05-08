@@ -163,6 +163,9 @@ The complete set of :py:class:`ReferencedValue`\ s in this code base, in no
 particular order.
 """
 
+# The filename of this module (not its .pyc file)
+_metadata_module_filename = inspect.getsourcefile(sys.modules[__name__])
+
 
 def ref_value(value, section=None, document=None,
               deviation=None, name="auto",
@@ -235,7 +238,7 @@ def ref_value(value, section=None, document=None,
             # 'ref_value' (crudely extracted)
             for frame_summary in inspect.stack():
                 code = "\n".join(frame_summary[4])
-                if frame_summary[1] != __file__:
+                if frame_summary[1] != _metadata_module_filename:
                     match = re.match(r"\s*([^\s]+)\s*=\s*((vc2_conformance\.)?metadata\.)?ref_value", code)
                     if match:
                         name = match.group(1)
@@ -256,7 +259,7 @@ def ref_value(value, section=None, document=None,
             auto_filename = None
             auto_lineno = None
             for frame_summary in reversed(list(inspect.stack())):
-                if frame_summary[1] != __file__:
+                if frame_summary[1] != _metadata_module_filename:
                     auto_filename = frame_summary[1]
                     auto_lineno = frame_summary[2]
     

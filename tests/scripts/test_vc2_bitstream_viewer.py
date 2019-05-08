@@ -538,7 +538,7 @@ class TestBitstreamViewer(object):
     def test_from_to_display(self, capsys, minimal_sequence_bitstream_fname, kwargs):
         v = BitstreamViewer(
             minimal_sequence_bitstream_fname,
-            **kwargs,
+            **kwargs
         )
         assert v.run() == 0
         

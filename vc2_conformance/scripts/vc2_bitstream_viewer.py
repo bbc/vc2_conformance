@@ -118,6 +118,7 @@ time.
 import os
 import sys
 import time
+import inspect
 import traceback
 
 from bitarray import bitarray
@@ -180,6 +181,9 @@ def relative_to_abs_index(num, length):
     else:
         return length + num
 
+# The filename of this module and the bitstream VC2 module (not the .pyc files)
+_this_script_filename = inspect.getsourcefile(sys.modules[__name__])
+_bitstream_vc2_filename = inspect.getsourcefile(bitstream.vc2)
 
 def is_internal_error(tb):
     """
@@ -193,9 +197,9 @@ def is_internal_error(tb):
     for frame_summary in stack_summary:
         filename = frame_summary[0]
         
-        if filename == __file__:
+        if filename == _this_script_filename:
             is_internal = True
-        elif filename == bitstream.vc2.__file__:
+        elif filename == _bitstream_vc2_filename:
             is_internal = False
     
     return is_internal

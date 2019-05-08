@@ -1,5 +1,8 @@
 import pytest
 
+import sys
+import inspect
+
 # These tests check that the VC-2 pseudocode implementations in vc2_conformance
 # are equivalent to the published VC-2 pseudocode.
 #
@@ -20,6 +23,14 @@ from verification import reference_pseudocode
 import vc2_conformance
 from vc2_conformance.metadata import referenced_values
 
+# The directory the test scripts reside in
+test_dir = os.path.normcase(os.path.normpath(
+    os.path.join(
+        inspect.getsourcefile(sys.modules[__name__]),
+        "..",
+        "..",
+    )
+))
 
 def is_function_with_deviation(referenced_value, deviation):
     """
@@ -33,7 +44,6 @@ def is_function_with_deviation(referenced_value, deviation):
         return False
     
     # Also filter out any functions defined within this test suite.
-    test_dir = os.path.normcase(os.path.normpath(os.path.join(__file__, "..", "..")))
     ref_filename = os.path.normcase(referenced_value.filename)
     if ref_filename.startswith(test_dir):
         return False
