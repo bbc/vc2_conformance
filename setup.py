@@ -26,7 +26,7 @@ setup(
         "Programming Language :: Python :: 3",
     ],
     keywords="smpte-RP-2042-3 vc2 dirac dirac-pro conformance",
-    install_requires=["attrs", "imageio", "enum34", "sentinels", "bitarray"],
+    install_requires=["enum34", "bitarray", "imageio"],
     entry_points = {
         'console_scripts': [
             'vc2-bitstream-viewer=vc2_conformance.scripts.vc2_bitstream_viewer:main',
