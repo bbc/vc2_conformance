@@ -22,6 +22,25 @@ implementations *must* be kept consistent with the VC-2 specification.
 
 
 ################################################################################
+# 5: VC-2 Conventions
+################################################################################
+
+# Errata: Expressed as if/else sequence rather than postfixed 'if' conditions
+def sign(a):
+    """(5.5.3)"""
+    if a>0:
+        return 1
+    elif a==0:  # Errata: '=' in spec
+        return 0
+    elif a<0:
+        return -1
+
+def clip(a, b, t):
+    """(5.5.3)"""
+    return min(max(a,b),t)
+
+
+################################################################################
 # 10: VC-2 Stream
 ################################################################################
 
@@ -86,17 +105,20 @@ def is_padding_data(state):
     """(Table 10.2)"""
     return (state["parse_code"] == 0x30)
 
+# Errata: is_picture also returns True for fragments in the spec.
 def is_picture(state):
     """(Table 10.2)"""
-    return ((state["parse_code"]&0x88) == 0x88)
+    return ((state["parse_code"]&0x8C) == 0x88)
 
+# Errata: is_ld_picture also returns True for LD fragments in the spec.
 def is_ld_picture(state):
     """(Table 10.2)"""
-    return ((state["parse_code"]&0xF8) == 0xC8)
+    return ((state["parse_code"]&0xFC) == 0xC8)
 
+# Errata: is_hq_picture also returns True for HQ fragments in the spec.
 def is_hq_picture(state):
     """(Table 10.2)"""
-    return ((state["parse_code"]&0xF8) == 0xE8)
+    return ((state["parse_code"]&0xFC) == 0xE8)
 
 def is_fragment(state):
     """(Table 10.2)"""
