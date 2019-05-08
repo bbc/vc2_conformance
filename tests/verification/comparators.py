@@ -33,7 +33,7 @@ class Identical(NodeComparator):
     2. A :py:func:`vc2_conformance.metadata.ref_pseudocode` decorator may be
        present in the second function.
     3. Constants from  the :py:mod:`vc2_conformance.tables` module may be
-       used in place of literals in the second function.
+       used in place of numerical literals.
     """
     
     

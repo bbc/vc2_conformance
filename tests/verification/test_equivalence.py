@@ -2,6 +2,9 @@ import pytest
 
 # These tests check that the VC-2 pseudocode implementations in vc2_conformance
 # are equivalent to the published VC-2 pseudocode.
+#
+# See the introductory documentation in tests/verification/__init__.py for a
+# complete introduction.
 
 import os
 from types import FunctionType

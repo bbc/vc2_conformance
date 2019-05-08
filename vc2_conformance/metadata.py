@@ -1,8 +1,79 @@
 """
-Metadata about the code and values in this library.
+:py:mod:`vc2_conformance` library implementation metadata
+=========================================================
 
-This metadata is used to help produce more helpful error messages and also as
-part of the module's own test suite.
+This module is used to record the relationship between the code in the
+:py:mod:`vc2_conformance` software and the VC-2 specification documents. This
+metadata has two important uses:
+
+1. To produce more helpful error messages which include cross-references to
+   published specifications.
+2. To enable automatic verification that the behaviour of this software exactly
+   matches the published specifications (see :py:mod:`verification`).
+
+
+Referencing the spec
+--------------------
+
+Functions in the codebase which implement a pseudocode function in the
+specification may be labelled as such using a :py:func:`ref_pseudocode`
+decorator::
+
+    >>> from vc2_conformance.metadata import ref_pseudocode
+    
+    >>> @ref_pseudocode
+    ... def parse_info(state):
+    ...     '''(10.5.1) Read a parse_info header.'''
+    ...     byte_align()
+    ...     read_uint_lit(state, 4)
+    ...     state["parse_code"] = read_uint_lit(state, 1)
+    ...     state["next_parse_offset"] = read_uint_lit(state, 4)
+    ...     state["previous_parse_offset"] = read_uint_lit(state, 4)
+
+By default, the reference to the specification is extracted from the function's
+docstring. The function is also assumed *not* to deviate from the pseudocode --
+an assumption which is automatically verified by the test suite (see
+:py:mod:`verification`). For functions which deviate from the specification in
+some way, the ``deviation`` argument should be passed to the decorator (see
+:py:class:`ReferencedValue`.
+
+Constants in this codebase may be cross-referenced against the spec using
+:py:func:`ref_value`. This takes the value being referenced along with the
+specification reference as minimal arguments. For example::
+
+    >>> from vc2_conformance.metadata import ref_value
+    
+    >>> PARSE_INFO_PREFIX = ref_value(0x42424344, "10.5.1")
+
+:py:func:`ref_value` returns the argument passed to it unchanged but
+automatically logs the name it was assigned to and the file and line number it
+was assigned on.
+
+As a convenience, :py:class:`enum.Enum` instances can also be annotated by the
+:py:func:`ref_enum` decorator::
+
+    >>> from enum import Enum
+    >>> from vc2_conformance.metadata import ref_enum
+    
+    >>> @ref_enum
+    ... class PictureCodingModes(IntEnum):
+    ...     '''(11.5) Indices defined in the text. Names are not normative.'''
+    ...     pictures_are_frames = 0
+    ...     pictures_are_fields = 1
+
+
+Accessing the metadata
+----------------------
+
+After all submodules of :py:mod:`vc2_conformance` have been loaded, the
+:py:data:`referenced_values` list will be populated with
+:py:class:`ReferencedValue` instances for everything annotated in the source.
+
+Human-readable citations for :py:class:`ReferencedValue` instances can be
+obtained from :py:func:`format_citation`.
+
+The :py:func:`lookup_by_value` and :py:func:`lookup_by_name` convenience
+functions may be used to search this list.
 """
 
 import re
@@ -50,9 +121,10 @@ document : str
     The name of the document being referenced. Defaults to the main VC-2
     specification.
 deviation : str or None
-    Does the definition of this value deviate from the specification. If None,
-    this value must match the contents of the specification exactly. If a
-    string, it should indicate how it differs. Allowed values are:
+    Does the definition of this value deviate from the specification.
+    
+    If None, this value shoul match the contents of the specification exactly.
+    If a string, it should indicate how it differs. Allowed values are:
     
     * ``"inferred_implementation"``: An implementation inferred from the
       specification where no explicit implementation is provided.
@@ -60,10 +132,11 @@ deviation : str or None
       performance or correctness reasons.
     * ``"serdes"``: This implementation has been modified to perform
       seriallisation and deseriallisation using the
-      :py:mod:`vc2.bitstream.serdes` library. Briefly, it should match the
-      original except "read_*" calls will have been replaced with "serdes.*"
-      calls and non-bitstream related functionality may have been commented
-      out.
+      :py:mod:`vc2.bitstream.serdes` library.
+    
+    Functions whose reported deviation is ``None`` or ``"serdes`` will be
+    automatically checked against the specification by the testsuite (see
+    :py:mod:`verification`).
 name : str or None
     A meaningful identifier for this value.
 filename : str, None or "auto"

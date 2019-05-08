@@ -2,32 +2,93 @@
 Automated Static Code Verification
 ==================================
 
-The 'verification' module (and embedded tests) implement automatic static
-verification that the logic implemented in :py:mod:`vc2_conformance` matches
-the pseudocode definitions in the VC-2 specification.
+This module (and embedded tests) implement automatic checks that the code in
+:py:mod:`vc2_conformance` matches the pseudocode definitions in the VC-2
+specification.
+
+The :py:mod:`verification.test_equivalence` test script (which is part of the
+normal Pytest test suite) automatically finds functions in the
+:py:mod:`vc2_conformance` codebase (using :py:mod:`vc2_conformance.metadata`)
+and checks they match the equivalent function in the VC-2 specification (which
+are copied out verbiatim in :py:mod:`verification.reference_pseudocode`).
+
+In some cases, a limited set of well-defined differences are allowed to exist
+between the specification and the code used in :py:mod:`vc2_conformance`. For
+example, docstrings need not match and in some cases, extra changes may be
+allowed to facillitate, e.g. bitstream deserialisation. The specific comparator
+used depends on the ``deviation`` parameter given in the metadata as follows:
+
+* ``deviation=None``: :py:class:`verification.comparators.Identical`
+* ``deviation="serdes"``: :py:class:`verification.comparators.SerdesChangesOnly`
+
+Functions marked with all other ``deviation`` values will not undergo automatic
+verification.
+
+In some cases it is necessary for an implementation to differ arbitrarily from
+the standard. For example, additional type checks may be added or certain
+actions may be disabled (e.g. picture decoding during bitstream
+deserialisation). Such deviations must be marked by special 'amendment
+comments' which start with two or more ``#`` characters. For example::
+
+    def example_function(a, b):
+        # The following lines are not part of the standard and so must be
+        # ignored when checking for equivalence
+        ## Begin not in spec
+        if b <= 0:
+            raise Exception("'b' cannot be zero or negative!")
+        ## End not in spec
+        
+        # For single-line snippets which are not in the standard you can use
+        # the following end-of-line amendment comment
+        assert b > 0  ## Not in spec
+        
+        # The following code is part of the standard but is disabled in this
+        # example. Even though it is commented out, it will still be checked
+        # against the standard. If the standard changes this check ensures that
+        # the maintainer must revisit the commented-out code and re-evaluate
+        # the suitability of any amendments made.
+        ### if do_something(a):
+        ###     do_something_else(b)
+        
+        return a / b
+
+More details of the amendment comment syntax can be found in
+:py:mod:`verification.amendment_comments`.
+
+
+Internals
+---------
 
 This module does *not* attempt to perform general purpose functional
-equivalence checking. Instead, comparisons are made at the Abstract Syntax Tree
-(AST) level. By performing checks at this level whitespace, comments and other
-semantically irrelevant syntactic differences are ignored. Further, it is
-possible to *allow* certain well-defined transformations (for example
-redefining 'state' as a value which is passed-by-argument rather than a global
-variable) or excuse explicitly flagged modifications (e.g. addition of error
-reporting code).
+equivalence checking -- a known uncomputable problem. Instead, comparisons are
+made at the Abstract Syntax Tree (AST) level. By performing checks at this
+level semantically insignificant differences (e.g. whitespace and comments) are
+ignored while all other changes are robustly identified. The Python built-in
+:py:mod:`ast` module is used to produce ASTs ensuring complete support for all
+Python language features.
 
+To compare ASTs, this module provides the
+:py:class:`verification.node_comparator.NodeComparator`.  Instances of this
+class can be used to compare pairs of ASTs and report differences between them.
 
-Verification Software
----------------------
+The subclasses in :py:mod:`verification.comparators` are similar but allow
+certain well-defined differences to exist between ASTs. As an example,
+:py:class:`verification.comparators.SerdesChangesOnly` will allow calls to the
+``read_*`` functions to be swapped for their equivalent
+:py:class:`vc2_conformance.bitstream.serdes.SerDes` method calls with otherwise
+identical arguments.
 
-The underlying verification tools are split into three components:
+To allow differences between function implementations and the specification,
+functions are pre-processed according to the amendment comment syntax described
+above. This preprocessing step is implemented in
+:py:mod:`verification.amendment_comments` and uses the built-in Python
+:py:mod:`tokenizer` module to ensure correct interoperability with all other
+Python language features.
 
-* :py:mod:`verification.amendment_comments` includes facilities for using
-  special comments to indicate intentional ammendments to a piece of code.
-* :py:mod:`verification.node_comparator`
-  :py:mod:`verification.ast_utils` and :py:mod:`verification.field_filters`
-  form the basis of an AST comparison framework.
-* :py:mod:`verification.comparators` implement the AST comparators used to test
-  the :py:mod:`vc2_conformance` implementation.
-* :py:mod:`verification.compare` provides utility functions which can drive the
-  above and produce human-friendly difference information.
+Finally the :py:mod:`verification.compare` module provides the
+:py:func:`compare_functions` function which ties all of the above components
+together and produces human-readable reports of differences between functions.
+
+All of the above functionality is tested by the other ``test_*.py`` test
+scripts in this module's directory.
 """
