@@ -2,7 +2,7 @@
 Tables of values defined in the VC-2 spec.
 """
 
-from attr import attrs, attrib
+from collections import namedtuple
 
 from fractions import Fraction
 
@@ -44,14 +44,15 @@ __all__ = [
 ]
 
 
-@attrs
-class ProfileParameters(object):
-    """(C.2) Parameters describing a profile specification."""
-    
-    allowed_data_units = attrib()
-    """
+ProfileParameters = namedtuple("ProfileParameters", "allowed_data_units, ")
+"""
+(C.2) Parameters describing a profile specification.
+
+Parameters
+----------
+allowed_data_units
     A list of supported data units. A list of values from the ParseCodes enum.
-    """
+"""
 
 
 PROFILES = ref_value({
@@ -115,24 +116,21 @@ PRESET_PIXEL_ASPECT_RATIOS = ref_value({
 """
 
 
-@attrs(frozen=True)
-class SignalRangeParameters(object):
-    """
-    An entry in (Table 11.5).
-    """
-    
-    luma_offset = attrib()
-    """The luma value corresponding with 0."""
-    
-    luma_excursion = attrib()
-    """The maximum value of an offset luma value."""
-    
-    color_diff_offset = attrib()
-    """The color difference value corresponding with 0."""
-    
-    color_diff_excursion = attrib()
-    """The maximum value of an offset color difference value."""
+SignalRangeParameters = namedtuple("SignalRangeParameters", "luma_offset,luma_excursion,color_diff_offset,color_diff_excursion")
+"""
+An entry in (Table 11.5).
 
+Parameters
+----------
+luma_offset
+    The luma value corresponding with 0.
+luma_excursion
+    The maximum value of an offset luma value.
+color_diff_offset
+    The color difference value corresponding with 0.
+color_diff_excursion
+    The maximum value of an offset color difference value.
+"""
 
 PRESET_SIGNAL_RANGES = ref_value({
     PresetSignalRanges.range_8_bit_full_range: SignalRangeParameters(0, 255, 128, 255),
@@ -163,15 +161,17 @@ indexed by :py:class:`PresetColorPrimaries`.
 """
 
 
-@attrs
-class ColorMatrixParameters(object):
-    """An entry in (Table 11.8)"""
-    
-    specification = attrib()
-    """Normative specification name."""
-    
-    color_matrix = attrib()
-    """Normative color matrix description."""
+ColorMatrixParameters = namedtuple("ColorMatrixParameters", "specification,color_matrix")
+"""
+An entry in (Table 11.8)
+
+Parameters
+----------
+specification
+    Normative specification name.
+color_matrix
+    Normative color matrix description.
+"""
 
 PRESET_COLOR_MATRICES = ref_value({
     PresetColorMatrices.hdtv: ColorMatrixParameters("ITU-R BT.709", "K_R=0:2126,K_B=0:0722"),
@@ -200,18 +200,19 @@ PRESET_TRANSFER_FUNCTIONS = ref_value({
 """
 
 
-@attrs
-class ColorSpecificiation(object):
-    """An entry in (Table 11.6)"""
-    
-    color_primaries_index = attrib()
-    """A :py:class:`PresetColorPrimaries` index."""
-    
-    color_matrix_index = attrib()
-    """A :py:class:`PresetColorMatrices` index."""
-    
-    transfer_function_index = attrib()
-    """A :py:class:`PresetTransferFunctions` index."""
+ColorSpecificiation = namedtuple("ColorSpecificiation", "color_primaries_index,color_matrix_index,transfer_function_index")
+"""
+An entry in (Table 11.6)
+
+Parameters
+----------
+color_primaries_index
+    A :py:class:`PresetColorPrimaries` index.
+color_matrix_index
+    A :py:class:`PresetColorMatrices` index.
+transfer_function_index
+    A :py:class:`PresetTransferFunctions` index.
+"""
 
 
 PRESET_COLOR_SPECS = ref_value({
@@ -253,46 +254,51 @@ PRESET_COLOR_SPECS = ref_value({
 by :py:class:`PresetColorSpecs`.
 """
 
-@attrs
-class BaseVideoFormatParameters(object):
-    """(B) An entry in (Table B.1a, B.1b or B.1c)"""
-    
-    frame_width = attrib()
-    frame_height = attrib()
-    
-    color_diff_format_index = attrib()
-    """
+BaseVideoFormatParameters = namedtuple("BaseVideoFormatParameters",
+    "frame_width,"
+    "frame_height,"
+    "color_diff_format_index,"
+    "source_sampling,"
+    "top_field_first,"
+    "frame_rate_index,"
+    "pixel_aspect_ratio_index,"
+    "clean_width,"
+    "clean_height,"
+    "left_offset,"
+    "top_offset,"
+    "signal_range_index,"
+    "color_spec_index,"
+)
+"""
+(B) An entry in (Table B.1a, B.1b or B.1c)
+
+Parameters
+----------
+frame_width
+frame_height
+color_diff_format_index
     An entry from the enum :py:class:`ColorDifferenceSamplingFormats`. Listed
     as 'color difference sampling' in (Table B.1).
-    """
-    
-    source_sampling = attrib()
-    """
+source_sampling
     An entry from the enum :py:class:`SourceSamplingModes`. Specifies
     progressive or interlaced.
-    """
+top_field_first
+    If True, the top-line of the frame is in the first field.
+frame_rate_index
+    The frame rate, one of the indices of PRESET_FRAME_RATES.
+pixel_aspect_ratio_index
+    The pixel aspect ratio, an entry from the enum :py:class`PresetPixelAspectRatios`.
+clean_width
+clean_height
+left_offset
+top_offset
+    The clean area of the pictures. See (11.4.8) and (E.4.2).
+signal_range_index
+    The signal ranges, an entry from the enum :py:class:`PresetSignalRanges`.
+color_spec_index
+    The color specification, an entry from the enum :py:class:`PresetColorSpecs`.
+"""
     
-    top_field_first = attrib()
-    """If True, the top-line of the frame is in the first field."""
-    
-    frame_rate_index = attrib()
-    """The frame rate, one of the indices of PRESET_FRAME_RATES."""
-    
-    pixel_aspect_ratio_index = attrib()
-    """The pixel aspect ratio, an entry from the enum :py:class`PresetPixelAspectRatios`."""
-    
-    clean_width = attrib()
-    clean_height = attrib()
-    left_offset = attrib()
-    top_offset = attrib()
-    """The clean area of the pictures. See (11.4.8) and (E.4.2)."""
-    
-    signal_range_index = attrib()
-    """The signal ranges, an entry from the enum :py:class:`PresetSignalRanges`."""
-    
-    color_spec_index = attrib()
-    """The color specification, an entry from the enum :py:class:`PresetColorSpecs`."""
-
 
 BASE_VIDEO_FORMAT_PARAMETERS = ref_value({
     BaseVideoFormats.custom_format: BaseVideoFormatParameters(
@@ -624,44 +630,38 @@ BASE_VIDEO_FORMAT_PARAMETERS = ref_value({
 """
 
 
-@attrs
-class LiftingStage(object):
-    """
-    (15.4.4.1) Definition of a lifting stage/operation in a lifting filter.
-    """
-    
-    lift_type = attrib()
-    """
+LiftingStage = namedtuple("LiftingStage", "lift_type,S,L,D,taps")
+"""
+(15.4.4.1) Definition of a lifting stage/operation in a lifting filter.
+
+Parameters
+----------
+lift_type
     Specifies which lifting filtering operation is taking place. One
     of the indices from the LiftingFilterTypes enumeration.
-    """
-    
-    S = attrib()
-    """Scale factor (right-shift applied to weighted sum)"""
-    
-    L = attrib()
-    """Length of filter."""
-    
-    D = attrib()
-    """Offset of filter."""
-    
-    taps = attrib()
-    """An array of integers defining the filter coefficients."""
+S
+    Scale factor (right-shift applied to weighted sum)
+L
+    Length of filter.
+D
+    Offset of filter.
+taps
+    An array of integers defining the filter coefficients.
+"""
 
-@attrs
-class LiftingFilterParameters(object):
-    """
-    (15.4.4.3) The generic container for the details described by (Table 15.1
-    to 15.6).
-    """
-    filter_bit_shift = attrib()
-    """Right-shift to apply after synthesis (or before analysis)."""
-    
-    stages = attrib()
-    """
+LiftingFilterParameters = namedtuple("LiftingFilterParameters", "filter_bit_shift,stages")
+"""
+(15.4.4.3) The generic container for the details described by (Table 15.1
+to 15.6).
+
+Parameters
+----------
+filter_bit_shift
+    Right-shift to apply after synthesis (or before analysis).
+stages
     A list of LiftingStage objects to be used in sequence to perform synthesis
     with this filter.
-    """
+"""
 
 LIFTING_FILTERS = ref_value({
     WaveletFilters.deslauriers_dubuc_9_7: LiftingFilterParameters(
