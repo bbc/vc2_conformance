@@ -857,7 +857,7 @@ def parse_args(*args, **kwargs):
     )
     
     range_group.add_argument(
-        "--to-offset", "-t", metavar="[+]BIT_OFFSET", type=relative_int,
+        "--to-offset", "-t", metavar="BIT_OFFSET", type=relative_int,
         help="""
             Stop reading the bitstream at the specified bit offset. If prefixed
             with '+', the offset will be relative to the offset given to

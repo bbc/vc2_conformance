@@ -778,7 +778,7 @@ class TestParseArgs(object):
     
     @pytest.mark.parametrize("args,message_pattern", [
         # No file
-        ("", r".*bitstream.*"),
+        ("", r".*bitstream.*|.*too few arguments.*"),
         # Invalid bit count
         ("foo -b NOT_AN_INT", r".*int.*"),
         # Invalid 'from'/'to'
