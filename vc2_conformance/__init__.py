@@ -16,6 +16,8 @@ This Python package includes the following key components:
 * Tools for generating reference pictures to test VC-2 encoder implementations.
 """
 
+from vc2_conformance.version import __version__
+
 from vc2_conformance import exceptions
 
 # VC-2 pseudocode functions

@@ -39,3 +39,12 @@ library is designed to run under many different Python versions).
     $ pip install tox
     $ tox
 
+
+Documentation
+-------------
+
+The documentation can be built using [Sphinx](www.sphinx-doc.org/) as follows::
+
+    $ pip install -r requirements-docs.txt
+    $ cd docs
+    $ make html
