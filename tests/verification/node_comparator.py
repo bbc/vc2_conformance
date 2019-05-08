@@ -258,7 +258,10 @@ class NodesDiffer(object):
         self.n2_row_col = n2_row_col
         self.reason = reason
     
-    def __bool__(self):
+    def __bool__(self):  # Py 3.x
+        return False
+    
+    def __nonzero__(self):  # Py 2.x
         return False
     
     def __repr__(self):

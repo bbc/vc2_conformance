@@ -207,7 +207,10 @@ class Difference(object):
     def __str__(self):
         return format_detailed_summary(self)
     
-    def __bool__(self):
+    def __bool__(self):  # Py 3.x
+        return False
+    
+    def __nonzero__(self):  # Py 2.x
         return False
 
 
