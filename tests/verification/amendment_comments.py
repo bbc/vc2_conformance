@@ -180,7 +180,7 @@ def undo_amendments(source):
     
     # Find the amendment comments in the source
     not_in_spec_stack = []  # [srow, ...]
-    readline = partial(next, (line.encode("utf-8") for line in source_lines))
+    readline = partial(next, iter(source_lines))
     for type, string, (srow, scol), (erow, ecol), lineno in tokenize(readline):
         if type == COMMENT:
             comment_only_line = source_lines[srow-1][:scol].strip() == ""
