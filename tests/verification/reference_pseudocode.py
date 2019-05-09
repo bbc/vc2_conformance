@@ -993,7 +993,9 @@ def read_nbits(state, n):
 
 def read_uint_lit(state, n):
     """(A.3.4)"""
-    byte_align(state)
+    # Errata: also performs a byte alignment in spec (now refactored out into
+    # byte_align calls wherever read_uint_lit is used and the stream may be
+    # unaligned)
     return read_nbits(state, 8*n)
 
 

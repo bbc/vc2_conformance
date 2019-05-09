@@ -19,6 +19,13 @@ def init_io(state, f):
         ... a decoder is deemed to maintain a copy of the current byte,
         state[current_byte], and an index to the next bit (in the byte) to be
         read, state[next_bit] ...
+    
+    Parameters
+    ----------
+    state : :py:class:`~vc2_conformance.state.State`
+        The state dictionary to be initialised.
+    f : file-like object
+        The file to read the bitstream from.
     """
     state["_file"] = f
     read_byte(state)
@@ -100,7 +107,6 @@ def read_nbits(state, n):
 @ref_pseudocode
 def read_uint_lit(state, n):
     """(A.3.4)"""
-    byte_align(state)
     return read_nbits(state, 8*n)
 
 
