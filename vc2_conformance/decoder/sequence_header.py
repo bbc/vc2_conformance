@@ -69,7 +69,6 @@ def parse_parameters(state):
     state["level"] = read_uint(state)
 
 
-# Errata: argument is 'video_format' in the spec
 @ref_pseudocode
 def source_parameters(state, base_video_format):
     """(11.4.1)"""
@@ -89,7 +88,6 @@ def source_parameters(state, base_video_format):
 def frame_size(state, video_parameters):
     """(11.4.3)"""
     custom_dimensions_flag = read_bool(state)
-    # Errata: missing ':'
     if(custom_dimensions_flag):
         video_parameters["frame_width"] = read_uint(state)
         video_parameters["frame_height"] = read_uint(state)
@@ -99,7 +97,6 @@ def frame_size(state, video_parameters):
 def color_diff_sampling_format(state, video_parameters):
     """(11.4.4)"""
     custom_color_diff_format_flag = read_bool(state)
-    # Errata: missing ':'
     if(custom_color_diff_format_flag):
         video_parameters["color_diff_format_index"] = read_uint(state)
 
@@ -125,7 +122,6 @@ def frame_rate(state, video_parameters):
             preset_frame_rate(video_parameters, index)
 
 
-# Errata: called 'aspect_ratio' in spec
 @ref_pseudocode
 def pixel_aspect_ratio(state, video_parameters):
     """(11.4.7)"""
@@ -136,7 +132,6 @@ def pixel_aspect_ratio(state, video_parameters):
             video_parameters["pixel_aspect_ratio_numer"] = read_uint(state)
             video_parameters["pixel_aspect_ratio_denom"] = read_uint(state)
         else:
-            # Errata: called 'preset_aspect_ratio' in spec
             preset_pixel_aspect_ratio(video_parameters, index)
 
 
