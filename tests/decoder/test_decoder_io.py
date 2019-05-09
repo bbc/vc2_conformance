@@ -82,3 +82,4 @@ class TestRecordBitstream(object):
         assert decoder.read_nbits(state, 12) == 0xAAF
         assert decoder.record_bitstream_finish(state) == b"\xAA\xF0"
         assert decoder.read_nbits(state, 4) == 0xF
+

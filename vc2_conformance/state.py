@@ -88,6 +88,20 @@ State = fixeddict(
     # will be read by read_byte.
     Entry("_file"),
     
+    # (11.1) sequence_header requires that repeats must be byte-for-byte
+    # identical. To facilitate this, the decode.io.record_bitstream_start and
+    # decode.io.record_bitstream_finish functions are used to make a recording.
+    # When the following variable is absent, read_byte works as usual.  If it
+    # is a bytearray, whenever a byte has been completely read, it will be
+    # placed into this array.
+    Entry("_recorded_bytes"),
+    
+    # (11.1) the bitstream bytes and byte-offset of the data which encoded the
+    # previous sequence_header in the sequence. Not present if no previous
+    # sequence_header has appeared.
+    Entry("_last_sequence_header_bytes"),
+    Entry("_last_sequence_header_offset"),
+    
     # (10.5.1) parse_info related state
     # The byte offset of the previously read parse_info block
     Entry("_last_parse_info_offset"),

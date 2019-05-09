@@ -15,3 +15,6 @@ from vc2_conformance.decoder.io import *
 
 # (10) Stream syntax
 from vc2_conformance.decoder.stream import *
+
+# (11) Sequence Header
+from vc2_conformance.decoder.sequence_header import *

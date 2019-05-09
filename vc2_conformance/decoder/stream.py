@@ -43,6 +43,14 @@ from vc2_conformance.decoder.io import (
 )
 
 
+__all__ = [
+    "parse_sequence",
+    "auxiliary_data",
+    "padding",
+    "parse_info",
+]
+
+
 @ref_pseudocode
 def parse_sequence(state):
     """

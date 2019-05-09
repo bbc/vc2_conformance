@@ -149,3 +149,32 @@ class NonZeroPreviousParseOffsetAtStartOfSequence(ConformanceError):
     def __init__(self, previous_parse_offset):
         self.previous_parse_offset = previous_parse_offset
         super(NonZeroPreviousParseOffsetAtStartOfSequence, self).__init__()
+
+
+class SequenceHeaderChangedMidSequence(ConformanceError):
+    """
+    This exception is thrown when a sequence_header (11.1) appears in the
+    stream which does not match the previous sequence header byte-for-byte.
+    
+    Parameters
+    ==========
+    last_sequence_header_offset : int
+    last_sequence_header_bytes : :py:class:`bytearray`
+        The bitstream byte-offset and raw bytes for the previous
+        sequence_header in the stream.
+    this_sequence_header_offset : int
+    this_sequence_header_bytes : :py:class:`bytearray`
+        The bitstream byte-offset and raw bytes for the offending
+        sequence_header in the stream.
+    """
+    
+    def __init__(self,
+                 last_sequence_header_offset,
+                 last_sequence_header_bytes,
+                 this_sequence_header_offset,
+                 this_sequence_header_bytes):
+        self.last_sequence_header_offset = last_sequence_header_offset
+        self.last_sequence_header_bytes = last_sequence_header_bytes
+        self.this_sequence_header_offset = this_sequence_header_offset
+        self.this_sequence_header_bytes = this_sequence_header_bytes
+        super(SequenceHeaderChangedMidSequence, self).__init__()
