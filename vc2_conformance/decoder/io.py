@@ -7,6 +7,23 @@ from vc2_conformance.metadata import ref_pseudocode
 
 from vc2_conformance.decoder.exceptions import UnexpectedEndOfStream
 
+__all__ = [
+    "init_io",
+    "read_byte",
+    "read_bit",
+    "byte_align",
+    "read_bool",
+    "read_nbits",
+    "read_uint_lit",
+    "read_bitb",
+    "read_boolb",
+    "flush_inputb",
+    "read_uint",
+    "read_uintb",
+    "read_sint",
+    "read_sintb",
+]
+
 
 @ref_pseudocode(deviation="inferred_implementation")
 def init_io(state, f):

@@ -77,6 +77,9 @@ State = fixeddict(
     Entry("next_bit"),
     Entry("current_byte"),
     
+    # (A.4.2) bounded blocks
+    Entry("bits_left"),
+    
     # The following values are not part of the VC-2 spec but are used by
     # vc2_conformance.decoder to interface with the outside world (which is
     # beyond the scope of the VC-2 spec).
@@ -84,6 +87,10 @@ State = fixeddict(
     # (A.2.1) read_byte: The Python file-like object from which the bitstream
     # will be read by read_byte.
     Entry("_file"),
+    
+    # (10.5.1) parse_info related state
+    # The byte offset of the previously read parse_info block
+    Entry("_last_parse_info_offset"),
 )
 """
 The global state variable type.

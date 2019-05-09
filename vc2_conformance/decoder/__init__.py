@@ -12,3 +12,6 @@ from vc2_conformance.decoder.exceptions import *
 
 # (A) Bitstream I/O operations
 from vc2_conformance.decoder.io import *
+
+# (10) Stream syntax
+from vc2_conformance.decoder.stream import *
