@@ -48,3 +48,37 @@ def test_read_past_eof_crashes(func, args):
     
     with pytest.raises(decoder.UnexpectedEndOfStream):
         func(state, *args)
+
+
+
+class TestRecordBitstream(object):
+    
+    def test_empty_recording(self):
+        f = BytesIO()
+        state = State()
+        decoder.init_io(state, f)
+        
+        decoder.record_bitstream_start(state)
+        assert "_recorded_bytes" in state
+        assert decoder.record_bitstream_finish(state) == bytearray()
+        assert "_recorded_bytes" not in state
+    
+    def test_record_whole_number_of_bytes(self):
+        # Also records reading right up to the EOF
+        f = BytesIO(b"\xAA\xBF")
+        state = State()
+        decoder.init_io(state, f)
+        
+        decoder.record_bitstream_start(state)
+        assert decoder.read_nbits(state, 16) == 0xAABF
+        assert decoder.record_bitstream_finish(state) == b"\xAA\xBF"
+    
+    def test_record_partial_bytes(self):
+        f = BytesIO(b"\xAA\xFF")
+        state = State()
+        decoder.init_io(state, f)
+        
+        decoder.record_bitstream_start(state)
+        assert decoder.read_nbits(state, 12) == 0xAAF
+        assert decoder.record_bitstream_finish(state) == b"\xAA\xF0"
+        assert decoder.read_nbits(state, 4) == 0xF

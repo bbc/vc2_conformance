@@ -9,6 +9,8 @@ from vc2_conformance.decoder.exceptions import UnexpectedEndOfStream
 
 __all__ = [
     "init_io",
+    "record_bitstream_start",
+    "record_bitstream_finish",
     "read_byte",
     "read_bit",
     "byte_align",
@@ -48,6 +50,45 @@ def init_io(state, f):
     read_byte(state)
 
 
+def record_bitstream_start(state):
+    """
+    Not part of spec; used for verifying that repeated sequence_headers are
+    byte-for-byte identical (11.1).
+    
+    This function causes all future bytes read from the bitstream to be logged
+    into state["_read_bytes"] until :py:func:`record_bitstream_finish` is
+    called.
+    
+    Because this functionality is only required for recording bytes which are
+    part of sequence_headers, recordings must start byte aligned.
+    """
+    assert state["next_bit"] == 7, "Recordings must always be byte aligned"
+    assert state.get("_recorded_bytes") is None, "Cannot nest recordings"
+    state["_recorded_bytes"] = bytearray()
+
+
+def record_bitstream_finish(state):
+    """
+    See :py:func:`record_bitstream_start`.
+    
+    Returns
+    =======
+    bytearray
+        The bytes read since :py:func:`record_bitstream_start` was called. Any
+        unread bits of the final byte will be set to zero.
+    """
+    recorded_bytes = state["_recorded_bytes"]
+    del state["_recorded_bytes"]
+    
+    # Add whatever has been used of the current byte
+    if state["next_bit"] != 7:
+        recorded_bytes.append(
+            state["current_byte"] & ~((1<<(state["next_bit"] + 1)) - 1)
+        )
+    
+    return recorded_bytes
+
+
 @ref_pseudocode(deviation="inferred_implementation")
 def read_byte(state):
     """
@@ -58,6 +99,10 @@ def read_byte(state):
     is set to ``None``. This condition must be checked before every read
     operation.
     """
+    # Record the now used-up byte (see record_bitstream_start)
+    if "_recorded_bytes" in state:
+        state["_recorded_bytes"].append(state["current_byte"])
+    
     # Step 1.
     state["next_bit"] = 7
     
