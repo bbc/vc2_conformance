@@ -1,8 +1,8 @@
 """
-:py:mod:`vc2_conformance.exceptions`
-====================================
+:py:mod:`vc2_conformance.bitstream.exceptions`
+==============================================
 
-All custom exception types used in this library.
+Custom exception types related to bitstream parsing/seriallisation.
 """
 
 class OutOfRangeError(ValueError):

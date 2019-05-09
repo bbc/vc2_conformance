@@ -4,9 +4,6 @@ Internal Utilities
 The following modules provide utilities used internally throughout the
 :py:mod:`vc2_conformance` implementation.
 
-.. automodule:: vc2_conformance.exceptions
-    :members:
-
 .. automodule:: vc2_conformance._py2k_compat
     :members:
     :undoc-members:
@@ -19,9 +16,6 @@ The following modules provide utilities used internally throughout the
     :members:
 
 .. automodule:: vc2_conformance._string_formatters
-    :members:
-
-.. automodule:: vc2_conformance.exp_golomb
     :members:
 
 .. automodule:: vc2_conformance.metadata

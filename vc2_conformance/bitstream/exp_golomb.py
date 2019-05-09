@@ -1,9 +1,9 @@
 """
-:py:mod:`vc2_conformance.exp_golomb`: Exp-golomb code length calculators
-========================================================================
+:py:mod:`vc2_conformance.bitstream.exp_golomb`: Exp-golomb code length calculators
+==================================================================================
 """
 
-from vc2_conformance.exceptions import OutOfRangeError
+from vc2_conformance.bitstream.exceptions import OutOfRangeError
 
 __all__ = [
     "exp_golomb_length",
@@ -16,7 +16,7 @@ def exp_golomb_length(value):
     Return the length (in bits) of the unsigned exp-golomb representation of
     value.
     
-    An :py:exc:`~vc2_conformance.exceptions.OutOfRangeError` will be raised if
+    An :py:exc:`~.OutOfRangeError` will be raised if
     a negative value is provided.
     """
     if value < 0:

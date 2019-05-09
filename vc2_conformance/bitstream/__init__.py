@@ -95,7 +95,19 @@ versions of the VC-2 pseudo code can be found in the :py:mod:`.vc2` submodule.
 
 .. automodule:: vc2_conformance.bitstream.vc2_fixeddicts
     :members:
+
+.. automodule:: vc2_conformance.bitstream.exceptions
+    :members:
+
+.. automodule:: vc2_conformance.bitstream.exp_golomb
+    :members:
+
 """
+
+from vc2_conformance.bitstream.exceptions import *
+
+# Exp-golomb code length calculators
+from vc2_conformance.bitstream.exp_golomb import *
 
 # Low-level bitwise file reading/writing
 from vc2_conformance.bitstream.io import *

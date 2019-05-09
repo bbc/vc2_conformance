@@ -14,11 +14,11 @@ By contrast with the implementation defined by the VC-2 pseudo code:
 
 from bitarray import bitarray
 
-from vc2_conformance.exceptions import OutOfRangeError
-
 from vc2_conformance._string_formatters import Bytes
 
-from vc2_conformance.exp_golomb import (
+from vc2_conformance.bitstream.exceptions import OutOfRangeError
+
+from vc2_conformance.bitstream.exp_golomb import (
     exp_golomb_length,
     signed_exp_golomb_length,
 )

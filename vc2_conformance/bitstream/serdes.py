@@ -344,7 +344,7 @@ from vc2_conformance._py2k_compat import wraps
 
 from contextlib import contextmanager
 
-from vc2_conformance.exceptions import (
+from vc2_conformance.bitstream.exceptions import (
     UnusedTargetError,
     ReusedTargetError,
     ListTargetExhaustedError,
@@ -843,7 +843,7 @@ class SerDes(object):
         
         Raises
         ======
-        :py:exc:`~vc2_conformance.exceptions.UnusedTargetError`
+        :py:exc:`~.UnusedTargetError`
         """
         for target, value in self.cur_context.items():
             if target not in self._cur_context_indices:
@@ -867,9 +867,9 @@ class SerDes(object):
         
         Raises
         ======
-        :py:exc:`~vc2_conformance.exceptions.UnusedTargetError`
-        :py:exc:`~vc2_conformance.exceptions.UnclosedNestedContextError`
-        :py:exc:`~vc2_conformance.exceptions.UnclosedBoundedBlockError`
+        :py:exc:`~.UnusedTargetError`
+        :py:exc:`~.UnclosedNestedContextError`
+        :py:exc:`~.UnclosedBoundedBlockError`
         """
         self._verify_context_is_complete()
         

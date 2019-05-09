@@ -15,9 +15,9 @@ from vc2_conformance.bitstream import (
     BitstreamWriter,
 )
 
-from vc2_conformance import exceptions
-
 from vc2_conformance.fixeddict import fixeddict, Entry
+
+from vc2_conformance.bitstream import exceptions
 
 from vc2_conformance.bitstream.serdes import (
     SerDes,

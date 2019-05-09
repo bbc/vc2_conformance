@@ -1,8 +1,8 @@
 import pytest
 
-from vc2_conformance.exceptions import OutOfRangeError
+from vc2_conformance.bitstream.exceptions import OutOfRangeError
 
-from vc2_conformance import exp_golomb
+from vc2_conformance.bitstream import exp_golomb
 
 
 @pytest.mark.parametrize("value,length", [

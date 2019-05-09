@@ -4,7 +4,7 @@ from io import BytesIO
 
 from bitarray import bitarray
 
-from vc2_conformance.exceptions import OutOfRangeError
+from vc2_conformance.bitstream.exceptions import OutOfRangeError
 
 from vc2_conformance import bitstream
 
