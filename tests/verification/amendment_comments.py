@@ -1,6 +1,8 @@
 """
-Amendment Comments
-==================
+:py:mod:`verification.amendment_comments`
+=========================================
+
+.. py:currentmodule:: verification.amendment_comments
 
 In  the :py:mod:`vc2_conformance` module it is sometimes necessary to make
 amendments to the pseudocode. For example, validity checks may be added or
@@ -49,6 +51,17 @@ To enable the automated verification that implemented functions match the VC-2
 spec (e.g. using :py:mod:`verification.comparators`), any amendments to the
 code must first be undone. The :py:func:`undo_amendments` function may be used
 to performs this step.
+
+.. autofunction:: undo_amendments
+
+The following exception custom exception types are defined:
+
+.. autoexception:: BadAmendmentCommentError
+
+.. autoexception:: UnmatchedNotInSpecBlockError
+
+.. autoexception:: UnclosedNotInSpecBlockError
+
 """
 
 import re
@@ -145,7 +158,7 @@ def undo_amendments(source):
     
     The following actions will be taken:
     
-    * Disabled code prefixed ``### `` (three hashes and a space) will be
+    * Disabled code prefixed ``### ...`` (three hashes and a space) will be
       uncommented.
     * Lines ending with a ``## Not in spec`` comment will be commented out.
     * Blocks of code starting with a ``## Begin not in spec`` line and ending
@@ -161,7 +174,7 @@ def undo_amendments(source):
     
     Raises
     ======
-    :py:exc:`tokenizer.TokenError`
+    :py:exc:`tokenize.TokenError`
     :py:exc:`BadAmendmentCommentError`
     :py:exc:`UnmatchedNotInSpecBlockError`
     :py:exc:`UnclosedNotInSpecBlockError`

@@ -1,7 +1,19 @@
 """
-A series of :py:class:`validation.node_comparator.NodeComparator` based
+:py:mod:`verification.comparators`
+==================================
+
+.. py:currentmodule:: verification.comparators
+
+A series of :py:class:`verification.node_comparator.NodeComparator` based
 comparators for checking the equivalence of VC-2 pseudocode functions from the
 spec with their implementations in the :py:mod:`vc2_conformance` package.
+
+.. autoclass:: Identical
+    :show-inheritance:
+
+.. autoclass:: SerdesChangesOnly
+    :show-inheritance:
+
 """
 
 import ast

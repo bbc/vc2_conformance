@@ -1,21 +1,23 @@
 """
-Automated Static Code Verification
-==================================
+``tests/``:py:mod:`verification`: Automated Static Code Verification
+====================================================================
+
+.. py:currentmodule:: verification
 
 This module (and embedded tests) implement automatic checks that the code in
 :py:mod:`vc2_conformance` matches the pseudocode definitions in the VC-2
 specification.
 
-The :py:mod:`verification.test_equivalence` test script (which is part of the
-normal Pytest test suite) automatically finds functions in the
+The ``tests/verification/test_equivalence.py`` test script (which is part of
+the normal Pytest test suite) automatically finds functions in the
 :py:mod:`vc2_conformance` codebase (using :py:mod:`vc2_conformance.metadata`)
 and checks they match the equivalent function in the VC-2 specification (which
-are copied out verbiatim in :py:mod:`verification.reference_pseudocode`).
+are copied out verbatim in ``tests/verification/reference_pseudocode.py``).
 
 In some cases, a limited set of well-defined differences are allowed to exist
 between the specification and the code used in :py:mod:`vc2_conformance`. For
 example, docstrings need not match and in some cases, extra changes may be
-allowed to facillitate, e.g. bitstream deserialisation. The specific comparator
+allowed to facilitate, e.g. bitstream deserialisation. The specific comparator
 used depends on the ``deviation`` parameter given in the metadata as follows:
 
 * ``deviation=None``: :py:class:`verification.comparators.Identical`
@@ -82,13 +84,27 @@ To allow differences between function implementations and the specification,
 functions are pre-processed according to the amendment comment syntax described
 above. This preprocessing step is implemented in
 :py:mod:`verification.amendment_comments` and uses the built-in Python
-:py:mod:`tokenizer` module to ensure correct interoperability with all other
+:py:mod:`tokenize` module to ensure correct interoperability with all other
 Python language features.
 
 Finally the :py:mod:`verification.compare` module provides the
-:py:func:`compare_functions` function which ties all of the above components
-together and produces human-readable reports of differences between functions.
+:py:func:`~verification.compare.compare_functions` function which ties all of
+the above components together and produces human-readable reports of
+differences between functions.
 
 All of the above functionality is tested by the other ``test_*.py`` test
 scripts in this module's directory.
+
+
+.. automodule::
+    verification.node_comparator
+
+.. automodule::
+    verification.comparators
+
+.. automodule::
+    verification.amendment_comments
+
+.. automodule::
+    verification.compare
 """

@@ -1,5 +1,6 @@
 """
-Internal minor string formatting utility functions.
+:py:mod:`vc2_conformance._string_utils`: String formatting utilities.
+=====================================================================
 """
 
 from vc2_conformance._py2k_compat import zip_longest

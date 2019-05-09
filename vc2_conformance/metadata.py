@@ -1,6 +1,6 @@
 """
-:py:mod:`vc2_conformance` library implementation metadata
-=========================================================
+:py:mod:`vc2_conformance.metadata` Implementation metadata
+==========================================================
 
 This module is used to record the relationship between the code in the
 :py:mod:`vc2_conformance` software and the VC-2 specification documents. This
@@ -74,6 +74,28 @@ obtained from :py:func:`format_citation`.
 
 The :py:func:`lookup_by_value` and :py:func:`lookup_by_name` convenience
 functions may be used to search this list.
+
+API
+---
+
+.. autoclass:: ReferencedValue
+
+.. autodata:: referenced_values
+    :annotation: = [...]
+
+.. autodata:: DEFAULT_SPECIFICATION
+
+.. autofunction:: ref_value
+
+.. autofunction:: ref_pseudocode
+
+.. autofunction:: ref_enum
+
+.. autofunction:: lookup_by_value
+
+.. autofunction:: lookup_by_name
+
+.. autofunction:: format_citation
 """
 
 import re
@@ -301,7 +323,7 @@ def ref_pseudocode(*args, **kwargs):
             '''Some alternative implementation of parse info.'''
     
     
-    .. info::
+    .. note::
     
         This decorator is syntactic sugar for passing such functions manually
         to :py:func:`ref_value`. It returns the original function, not a

@@ -1,16 +1,15 @@
 r"""
-Functions which produce human-readable string representations of values.
-Convenience functions for passing to the ``formatter`` argument of
-:py:class:`BitstreamValue`\ s.
+:py:mod:`vc2_conformance._string_formatters`: Value to string converters
+========================================================================
+
+Functions which produce human-readable string representations of values of
+various types (e.g. particular hex representations of integers).
 
 A formatter is a callable which takes a value and returns a string
-representation of that value. Various formatter classes are provided in this
-class for displaying numbers. For example::
+representation of that value. Many of the classes in this module construct a
+formatter with some particular kind of behaviour. For example::
 
-    >>> hex_formatter = Hex()
-    >>> hex_formatter(0x1234)
-    '0x1234'
-    
+    >>> # Create a formatter for producing 8-digit hex numbers
     >>> hex32_formatter = Hex(8)
     >>> hex32_formatter(0x1234)
     '0x00001234'
@@ -140,6 +139,22 @@ class Bool(object):
     A formatter for :py:class:`bool` (or bool-castable) objects. For the values
     0, 1, False and True, just shows 'True' or 'False'. For all other values,
     shows also the true value in brackets.
+    
+    For example::
+    
+        >>> bool_formatter = Bool()
+        >>> bool_formatter(False)
+        "False"
+        >>> bool_formatter(True)
+        "True"
+        >>> bool_formatter(0)
+        "False"
+        >>> bool_formatter(1)
+        "True"
+        >>> bool_formatter(123)
+        "True (123)"
+        >>> bool_formatter(None)
+        "True (None)"
     """
     
     def __call__(self, b):
@@ -154,8 +169,9 @@ class Bool(object):
 class Bits(object):
     """
     A formatter for :py:class:`bitarray.bitarray` objects. Shows the value as a
-    string of the form '0b0101', using :py:func:`ellipsise` to shorten very
-    long, values.
+    string of the form '0b0101', using
+    :py:func:`~vc2_conformance._string_utils.ellipsise` to shorten very long,
+    values.
     
     Parameters
     ==========
@@ -163,7 +179,7 @@ class Bits(object):
         A prefix to add to the string
     context : int
     min_length : int
-        See :py:func:`ellipsise`.
+        See :py:func:`~vc2_conformance._string_utils.ellipsise`.
     show_length : int or bool
         If an integer, show the length of the bitarray in brackets if above the
         specified length (in bits). If a bool, force display (or hiding) of the
@@ -190,7 +206,8 @@ class Bits(object):
 class Bytes(object):
     """
     A formatter for :py:class:`bytes` strings. Shows the value as a string of
-    the form '0xAB_CD_EF', using :py:func:`ellipsise` to shorten very long,
+    the form '0xAB_CD_EF', using
+    :py:func:`~vc2_conformance._string_utils.ellipsise` to shorten very long,
     values.
     
     Parameters
@@ -201,7 +218,7 @@ class Bytes(object):
         A string to place between each pair of hex digits.
     context : int
     min_length : int
-        See :py:func:`ellipsise`.
+        See :py:func:`~vc2_conformance._string_utils.ellipsise`.
     show_length : int or bool
         If an integer, show the length of the bitarray in brackets if above the
         specified length (in bytes). If a bool, force display (or hiding) of

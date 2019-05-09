@@ -39,6 +39,7 @@ numpydoc_show_class_members = False
 
 autodoc_member_order = "bysource"
 
+add_module_names = False
 
 # -- Options for intersphinx -------------------------------------------------
 

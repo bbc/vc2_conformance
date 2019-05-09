@@ -1,15 +1,24 @@
 """
-VC-2-specific bitstream serialisation/deserialistion logic.
+:py:mod:`vc2_conformance.bitstream.vc2`: VC-2 bitstream pseudocode
+==================================================================
+
+.. currentmodule:: vc2_conformance.bitstream
 
 This module consists of a set of :py:class:`SerDes`-using (see
-:py:module`serdes`) functions which follow the pseudo-code in the VC-2
+:py:mod:`.serdes`) functions which follow the pseudo-code in the VC-2
 specification as closely as possible. The following deviations from the
 spec pseudo-code are allowed:
 
 * Replacing ``read_*`` calls with :py:class:`SerDes` calls.
 * Addition of :py:class:`SerDes` annotations.
 * Removal of decoding functionality (retaining only the parts required for
-  bitstream deserialisation.
+  bitstream deserialisation).
+
+For parsing complete bitstreams, the :py:func:`parse_sequence` function should
+be used.
+
+.. autofunction:: parse_sequence
+
 """
 
 from collections import defaultdict
@@ -115,8 +124,10 @@ __all__ = [
 def parse_sequence(serdes):
     """
     (10.4.1) Parse a whole VC-2 sequence (i.e. file), discarding the contents.
-    Given as a specification of the data structure, not an actually useful
-    parsing loop.
+
+    Populates a :py:class:`~vc2_conformance.bitstream.vc2_fixeddicts.Sequence`
+    :py:mod:`~vc2_conformance.fixeddict`.  Provides a copy of the computed
+    :py:class:`~vc2_conformance.state.State` in ``"_state"``.
     """
     state = State()
     

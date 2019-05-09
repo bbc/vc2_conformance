@@ -8,6 +8,8 @@ include/
 lib/
 local/
 share/
+build/
+dist/
 pip-selfcheck.json
 
 *.pdf

@@ -1,4 +1,7 @@
 """
+:py:mod:`vc2_conformance.fixeddict`: Fixed-members :py:class:`dict`-like objects
+================================================================================
+
 In the VC-2 specification, dictionary-like objects (e.g. 'state') are widely
 encountered. These dictionaries have all of the usual dictionary semantics
 but the set of allowed entries is fixed by the specification.
@@ -13,7 +16,7 @@ be described like so::
     ...     "frame_height",
     ... )
 
-The produces a 'dict' subclass called ``FrameSize`` with all of the usual
+This produces a 'dict' subclass called ``FrameSize`` with all of the usual
 dictionary behaviour but which only allows fields specified in the above list::
 
     >>> f = FrameSize()
@@ -322,6 +325,18 @@ def fixeddict(name, *entries):
         dict.__init__(self, contents)
     
     __dict__["__init__"] = __init__
+    
+    __dict__["__doc__"] = "{}(...)\n\nA :py:mod:`~vc2_conformance.fixeddict`.\n\nParameters\n==========\n{}\n".format(
+        name,
+        "\n".join(
+            (
+                "{} = {!r}".format(entry.name, entry.get_default())
+                if entry.has_default else
+                entry.name
+            )
+            for entry in entry_objs.values()
+        ),
+    )
     
     def __setitem__(self, key, value):
         if key in entry_objs:

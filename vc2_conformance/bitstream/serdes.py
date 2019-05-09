@@ -1,11 +1,16 @@
 r"""
+:py:mod:`vc2_conformance.bitstream.serdes`: A bitstream seriallisation/deserialisation framework
+================================================================================================
+
+.. currentmodule:: vc2_conformance.bitstream
+
 A module which can be used to transform a set of functions designed to process
 a bitstream (as in VC-2 specification) into general-purpose bitstream
 serialisers, deserialisers and analysers.
 
 
 Underlying idea and motivation
-==============================
+------------------------------
 
 In addition to providing a VC-2 conformance-checking decoder, this library is
 also required to perform the following tasks:
@@ -22,7 +27,7 @@ transforming the VC-2 specification pseudocode into robust, general purpose
 serialisers/deserialisers.
 
 A basic bitstream serialiser
-----------------------------
+````````````````````````````
 
 The VC-2 specification describes the bitstream and decoding process in a series
 of pseudocode functions such as the following::
@@ -66,7 +71,7 @@ is possible to use this function as a general-purpose bitstream serialiser.
 
 
 A basic deserialiser
---------------------
+````````````````````
 
 Unfortunately, the original bitstream reader pseudo code from the VC-2
 specification is not quite usable as a general-purpose bitstream deserialiser:
@@ -98,7 +103,7 @@ whatever data structures the VC-2 pseudocode might otherwise use.
 
 
 An introduction to the :py:class:`SerDes` interface
-===================================================
+---------------------------------------------------
 
 The similarities between the transformations required to turn the VC-2
 pseudocode into general purpose serialisers and deserialisers should be fairly
@@ -154,7 +159,7 @@ integers '1920' and '1080' would be written to the bitstream.
 
 
 Verification
-------------
+````````````
 
 The :py:class:`SerDes` implementations perform various 'sanity checks' during
 serialisation and deserialisation to ensure that the values passed in or
@@ -171,7 +176,7 @@ returned have a 1:1 correspondence with values in the bitstream.
 
 
 Representing hierarchy
-----------------------
+``````````````````````
 
 The VC-2 bitstream does not represent a flat collection of values but rather a
 hierarchy. The :py:class:`SerDes` interface provides a additional facilities to
@@ -212,7 +217,7 @@ This results in a nested dictionary structure::
         # ...
     }
 
-When used with :py:module:`vc2_conformance.fixeddict`, :py:class:`SerDes` also
+When used with :py:mod:`vc2_conformance.fixeddict`, :py:class:`SerDes` also
 makes it possible to define custom dictionary types for each part of the
 hierarchy using the :py:func:`context_type` decorator. Benefits include:
 
@@ -258,7 +263,7 @@ We also benefit from improved string formatting when deserialising values::
       previous_parse_offset: 1234
 
 Representing arrays
--------------------
+```````````````````
 
 The VC-2 bitstream format includes a number of array-like fields, for example
 arrays of transform coefficients within slices. Rather than defining unique
@@ -291,7 +296,7 @@ provided.
 
 
 Computed values
----------------
+```````````````
 
 In some circumstances, when interpreting a deserialised bitstream it may be
 necessary to know information computed by an earlier part of the bitstream. For
@@ -313,6 +318,26 @@ always ignored.
     
     It is recommended that by convention computed value target names are
     prefixed or suffixed with an underscore.
+
+API
+---
+
+.. autoclass:: SerDes
+    :members:
+
+.. autoclass:: Serialiser
+    :show-inheritance:
+
+.. autoclass:: Deserialiser
+    :show-inheritance:
+
+.. autoclass:: MonitoredSerialiser
+    :show-inheritance:
+
+.. autoclass:: MonitoredDeserialiser
+    :show-inheritance:
+
+.. autofunction:: context_type
 """
 
 from vc2_conformance._py2k_compat import wraps
@@ -348,7 +373,7 @@ class SerDes(object):
     
     Attributes
     ==========
-    io : :py:class:`BitstreamReader` or :py:class:`BitstreamWriter`
+    io : :py:class:`~.io.BitstreamReader` or :py:class:`~.io.BitstreamWriter`
         The I/O interface in use.
     context : dict or None
         The (top-level) context dictionary.
@@ -360,7 +385,7 @@ class SerDes(object):
         """
         Parameters
         ==========
-        io : :py:class:`BitstreamReader` or :py:class:`BitstreamWriter`
+        io : :py:class:`~.io.BitstreamReader` or :py:class:`~.io.BitstreamWriter`
             The current I/O interface to use initially.
         context : dict
             The initial context dictionary.
@@ -537,9 +562,9 @@ class SerDes(object):
     def bytes(self, target, num_bytes):
         """
         Reads or writes an fixed-length :py:class:`bytes` string from the
-        bitstream. This is a more convenient alternative to
-        :py:data:`TokenTypes.nbits` or :py:data:`TokenTypes.bitarray` when
-        large blocks of data are to be read but not treated as integers.
+        bitstream. This is a more convenient alternative to :py:meth:`nbits` or
+        :py:meth:`bitarray` when large blocks of data are to be read but not
+        treated as integers.
         
         Parameters
         ==========
@@ -818,7 +843,7 @@ class SerDes(object):
         
         Raises
         ======
-        :py:exc:`UnusedTargetError`
+        :py:exc:`~vc2_conformance.exceptions.UnusedTargetError`
         """
         for target, value in self.cur_context.items():
             if target not in self._cur_context_indices:
@@ -842,9 +867,9 @@ class SerDes(object):
         
         Raises
         ======
-        :py:exc:`UnusedTargetError`
-        :py:exc:`UnclosedNestedContextError`
-        :py:exc:`UnclosedBoundedBlockError`
+        :py:exc:`~vc2_conformance.exceptions.UnusedTargetError`
+        :py:exc:`~vc2_conformance.exceptions.UnclosedNestedContextError`
+        :py:exc:`~vc2_conformance.exceptions.UnclosedBoundedBlockError`
         """
         self._verify_context_is_complete()
         
@@ -954,7 +979,7 @@ class Deserialiser(SerDes):
     
     Parameters
     ==========
-    io : :py:class:`BitstreamReader`
+    io : :py:class:`~.io.BitstreamReader`
     """
     
     def bool(self, target):
@@ -1000,7 +1025,7 @@ class Serialiser(SerDes):
     
     Parameters
     ==========
-    io : :py:class:`BitstreamWriter`
+    io : :py:class:`~.io.BitstreamWriter`
     context : dict
     """
     
@@ -1057,7 +1082,7 @@ class MonitoredMixin(object):
             A function which will be called after every primitive I/O operation
             completes. This function is passed the :py:class:`SerDes` instance
             and the target name and value of the target just used.
-        io : :py:class:`BitstreamReader` or :py:class:`BitstreamWriter`
+        io : :py:class:`~.io.BitstreamReader` or :py:class:`~.io.BitstreamWriter`
         context : dict
         """
         super(MonitoredMixin, self).__init__(io, context)
@@ -1116,7 +1141,7 @@ class MonitoredSerialiser(MonitoredMixin, Serialiser):
         serialisation (e.g. using :py:meth:`SerDes.describe_path` or
         :py:data:`SerDes.io`) or to terminate serialisation early (by throwing
         an exception).
-    io : :py:class:`BitstreamWriter`
+    io : :py:class:`~.io.BitstreamWriter`
     context : dict
     """
 
@@ -1139,7 +1164,7 @@ class MonitoredDeserialiser(MonitoredMixin, Deserialiser):
         deserialisation (e.g. using :py:meth:`SerDes.context`,
         :py:meth:`SerDes.describe_path` or :py:data:`SerDes.io`) or to
         terminate deserialisation early (by throwing an exception).
-    io : :py:class:`BitstreamReader`
+    io : :py:class:`~.io.BitstreamReader`
     """
 
 

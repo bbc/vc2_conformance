@@ -1,6 +1,10 @@
 """
-A :py:module:`fixeddict` for the 'state' object used by the pseudo code in the
+:py:class:`vc2_conformance.state.State`
+=======================================
+
+A :py:mod:`fixeddict` for the 'state' object used by the pseudo code in the
 VC-2 spec.
+
 """
 
 from vc2_conformance._string_formatters import Hex

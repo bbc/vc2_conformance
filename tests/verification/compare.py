@@ -1,10 +1,21 @@
 """
-Compare a reference VC-2 pseudocode with real implementations
-=============================================================
+:py:mod:`verification.compare`: Compare function implementations
+================================================================
 
-This module provides a function, :py:func:`compare`, which uses a specified
-comparator (:py:mod:`verification.comparators`) to determine if a given
-function matches the reference VC-2 pseudocode.
+.. py:currentmodule:: verification.compare
+
+This module provides a function, :py:func:`compare_functions`, which uses a
+specified comparator (:py:mod:`verification.comparators`) to determine if a
+given function matches the reference VC-2 pseudocode.
+
+.. autofunction:: compare_functions
+
+.. autofunction:: compare_sources
+
+.. autoclass:: Difference
+    :members:
+
+.. autoexception:: ComparisonError
 """
 
 import inspect
@@ -137,7 +148,10 @@ class ComparisonError(Exception):
     """
     An error occurred while attempting to compare two function implementations.
     
-    Attribtues
+    Use :py:class:`str` to turn into a human-readable description (including
+    source code snippets).
+    
+    Parameters
     ----------
     message : str
     ref_row, ref_col : int or None
@@ -173,7 +187,10 @@ class Difference(object):
     A description of the difference between a reference function and its
     implementation.
     
-    Attribtues
+    Use :py:class:`str` to turn into a human-readable description (including
+    source code snippets).
+    
+    Parameters
     ----------
     message : str
     ref_row, ref_col : int or None

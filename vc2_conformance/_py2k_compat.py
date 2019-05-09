@@ -1,6 +1,9 @@
 """
-This module contains backported implementations of Python 3.x standard library
-routines which are not available in Python 2.x.
+:py:mod:`vc2_conformance._py2k_compat`: Python 2.x backward compatibility
+=========================================================================
+
+This module contains backported or renamed implementations of Python 3.x
+standard library routines which are not available in Python 2.x.
 """
 
 __all__ = [

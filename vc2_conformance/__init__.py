@@ -1,6 +1,6 @@
 """
-VC-2 Conformance Testing Tools
-==============================
+:py:mod:`vc2_conformance`: VC-2 Conformance Testing Tools
+=========================================================
 
 These tools are intended to be used to verify the conformance of VC-2 encoder
 and decoder designs to the VC-2 specifications. A normative statement of their
@@ -20,6 +20,9 @@ from vc2_conformance.version import __version__
 
 from vc2_conformance import exceptions
 
+# VC-2 constants and tables
+import vc2_conformance.tables
+
 # VC-2 pseudocode functions
 from vc2_conformance import vc2_math
 from vc2_conformance import parse_code_functions
@@ -28,9 +31,6 @@ from vc2_conformance import video_parameters
 
 # VC-2 datastructures
 from vc2_conformance import state
-
-# VC-2 constants and tables
-import vc2_conformance.tables
 
 # Conformance-checking VC-2 decoder implementation
 from vc2_conformance import decoder

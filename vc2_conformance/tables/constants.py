@@ -1,5 +1,8 @@
 """
-Constants defined by the VC-2 specification.
+Constants
+=========
+
+.. currentmodule:: vc2_conformance.tables
 """
 
 from enum import IntEnum
@@ -84,7 +87,7 @@ class BaseVideoFormats(IntEnum):
     (11.3) Base video format indices from (Table 11.1). Names based on the
     normative values in this table.
     
-    See also: :py:data:`BASE_VIDEO_FORMAT_PARAMETERS`.
+    See also: :py:data:`~.tables.BASE_VIDEO_FORMAT_PARAMETERS`.
     """
     custom_format = 0
     qsif525 = 1
@@ -116,7 +119,7 @@ class Profiles(IntEnum):
     """
     (C.2) VC-2 Profiles.
     
-    See also: :py:data:`PROFILES`.
+    See also: :py:data:`~.tables.PROFILES`.
     """
     low_delay = 0
     high_quality = 3
@@ -127,7 +130,7 @@ class PresetFrameRates(IntEnum):
     """
     (11.4.6) Preset framerate indices from (Table 11.1). Names are informative.
     
-    See also: :py:data:`PRESET_FRAME_RATES`.
+    See also: :py:data:`~.tables.PRESET_FRAME_RATES`.
     """
     fps_24_over_1_001 = 1
     fps_24 = 2
@@ -152,7 +155,7 @@ class PresetPixelAspectRatios(IntEnum):
     (11.4.7) Pixel aspect ratio preset indices from (Table 11.4). Names are
     informative.
     
-    See also: :py:data:`PRESET_PIXEL_ASPECT_RATIOS`.
+    See also: :py:data:`~.tables.PRESET_PIXEL_ASPECT_RATIOS`.
     """
     ratio_1_1 = 1
     ratio_4_3_525_line = 2  # 4:3 525 line systems
@@ -168,7 +171,7 @@ class PresetSignalRanges(IntEnum):
     (11.4.9) Signal offsets/ranges preset indices from (Table 11.5). Names are
     informative and based on those in the table.
     
-    See also: :py:data:`PRESET_SIGNAL_RANGES`.
+    See also: :py:data:`~.tables.PRESET_SIGNAL_RANGES`.
     """
     range_8_bit_full_range = 1
     range_8_bit_video = 2
@@ -186,7 +189,7 @@ class PresetColorPrimaries(IntEnum):
     (11.4.10.2) Color primaries from (Table 11.7). Names and comments are
     informative and based on those in the table.
     
-    See also: :py:data:`PRESET_COLOR_PRIMARIES`.
+    See also: :py:data:`~.tables.PRESET_COLOR_PRIMARIES`.
     """
     hdtv = 0  # Also Computer, Web, sRGB
     sdtv_525 = 1  # 525 Primaries
@@ -201,7 +204,7 @@ class PresetColorMatrices(IntEnum):
     (11.4.10.3) Color primaries from (Table 11.8). Names and comments are
     informative and based on those in the table.
     
-    See also: :py:data:`PRESET_COLOR_MATRICES`.
+    See also: :py:data:`~.tables.PRESET_COLOR_MATRICES`.
     """
     hdtv = 0  # Also Computer and Web
     sdtv = 1
@@ -216,7 +219,7 @@ class PresetTransferFunctions(IntEnum):
     (11.4.10.4) Transfer functions from (Table 11.9). Names are informative and
     are based on those in the table.
     
-    See also: :py:data:`PRESET_TRANSFER_FUNCTIONS`.
+    See also: :py:data:`~.tables.PRESET_TRANSFER_FUNCTIONS`.
     """
     tv_gamma = 0
     extended_gamut = 1
@@ -232,7 +235,7 @@ class PresetColorSpecs(IntEnum):
     (11.4.10.1) Preset color specification collections from (Table 11.6). Names
     are informative and based on those in the table.
     
-    See also: :py:data:`PRESET_COLOR_SPECS`.
+    See also: :py:data:`~.tables.PRESET_COLOR_SPECS`.
     """
     custom = 0
     sdtv_525 = 1
@@ -263,7 +266,7 @@ class WaveletFilters(IntEnum):
     normitively specified in  in (Table 12.1). Names are based on the
     informative names in the table.
     
-    See also: :py:data:`LIFTING_FILTERS`.
+    See also: :py:data:`~.tables.LIFTING_FILTERS`.
     """
     
     deslauriers_dubuc_9_7 = 0

@@ -1,6 +1,8 @@
 """
-:py:class:`NodeComparator`: AST Comparison Framework
-====================================================
+:py:mod:`verification.node_comparator`: AST Comparison Framework
+================================================================
+
+.. py:currentmodule:: verification.node_comparator
 
 The :py:class:`NodeComparator` class is intended to form the basis of
 comparison routines which allow controlled differences between two ASTs to be
@@ -10,6 +12,8 @@ For exapmle, the following can be used to compare two ASTs, ignoring docstrings
 at the start of functions::
 
     from itertools import dropwhile
+    
+    from verification.node_comparator import NodeComparator
 
     class SameExceptDocstrings(NodeComparator):
         
@@ -24,13 +28,33 @@ at the start of functions::
 
 This can then be used like so::
 
-    >>> func_1 = "def func(a, b):\n    '''Add a and b'''\n    return a + b"
-    >>> func_2 = "def func(a, b):\n    return a + b"
+    >>> func_1 = "def func(a, b):\\n    '''Add a and b'''\\n    return a + b"
+    >>> func_2 = "def func(a, b):\\n    return a + b"
     
     >>> import ast
     >>> c = SameExceptDocstrings()
     >>> c.compare(ast.parse(func_1), ast.parse(func_2))
     True
+
+:py:class:`NodeComparator` API
+------------------------------
+
+.. autoclass:: NodeComparator
+    :members:
+
+:py:class:`NodesDiffer` types
+-----------------------------
+
+.. autoclass:: NodesDiffer
+
+.. autoclass:: NodeTypesDiffer
+
+.. autoclass:: NodeFieldsDiffer
+
+.. autoclass:: NodeFieldLengthsDiffer
+
+.. autoclass:: NodeListFieldsDiffer
+
 """
 
 import ast
@@ -39,7 +63,7 @@ import ast
 class NodeComparator(object):
     """
     A :py:class:`ast.AST` visitor object (similar to
-    :py:class:`exc.NodeVisitor` which simultaneously walks two ASTs, testing
+    :py:class:`ast.NodeVisitor` which simultaneously walks two ASTs, testing
     them for equivalence.
     
     The :py:meth:`compare` method of instances of this class may be used to
@@ -93,7 +117,7 @@ class NodeComparator(object):
         
         Parameters
         ==========
-        n1, n2 : ast.AST
+        n1, n2 : :py:class:`ast.AST`
             The nodes to compare
         
         Returns
@@ -142,7 +166,7 @@ class NodeComparator(object):
         
         Parameters
         ==========
-        n1, n2 : ast.AST
+        n1, n2 : :py:class:`ast.AST`
             The nodes to compare
         ignore_fields : [str, ...]
             A list of field names to ignore while comparign the AST nodes.
@@ -153,6 +177,7 @@ class NodeComparator(object):
             docstrings from function bodies.
             
             Entries in this dictionary may be either:
+            
             * Functions which are passed the list contained by the field and
               should return a new list which should be compared (not modifying
               the one provided).

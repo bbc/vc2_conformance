@@ -1,11 +1,6 @@
 """
-Utility functions relating to the unsigned and signed interleaved Exponential-Golomb
-variable length codes used by VC-2.
-
-.. note::
-
-    For functions for actually encoding and decoding values see either
-    :py:module:`vc2_conformance.bitstream.io` or the reference decoder.
+:py:mod:`vc2_conformance.exp_golomb`: Exp-golomb code length calculators
+========================================================================
 """
 
 from vc2_conformance.exceptions import OutOfRangeError
@@ -21,8 +16,8 @@ def exp_golomb_length(value):
     Return the length (in bits) of the unsigned exp-golomb representation of
     value.
     
-    An :py:exc:`OutOfRangeError` will be raised if a negative value is
-    provided.
+    An :py:exc:`~vc2_conformance.exceptions.OutOfRangeError` will be raised if
+    a negative value is provided.
     """
     if value < 0:
         raise OutOfRangeError(value)

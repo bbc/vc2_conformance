@@ -1,4 +1,7 @@
 """
+:py:mod:`vc2_conformance.bitstream.io`:: Low-level bitstream IO
+===============================================================
+
 Low-level wrappers for file-like objects which facilitate bitwise read and
 write operations of the kinds used by VC-2's bitstream format.
 
@@ -253,7 +256,7 @@ class BitstreamReader(object):
     
     def read_sint(self):
         """
-        Signed version of :py:meth:`read_uint`` (like read_sint (A.4.4)).
+        Signed version of :py:meth:`read_uint` (like read_sint (A.4.4)).
         """
         value = self.read_uint()
         
@@ -531,7 +534,7 @@ class BitstreamWriter(object):
     
     def write_sint(self, value):
         """
-        Signed version of :py:meth:`write_uint``.
+        Signed version of :py:meth:`write_uint`.
         """
         self.write_uint(abs(value))
         

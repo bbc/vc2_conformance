@@ -1,5 +1,8 @@
 """
-Tables of values defined in the VC-2 spec.
+Tables-of-Values
+================
+
+.. currentmodule:: vc2_conformance.tables
 """
 
 from collections import namedtuple
@@ -74,7 +77,7 @@ PROFILES = ref_value({
     ]),
 }, "C.2")
 """
-The list of supported profiles from (C.2) indexed by :py:class:`Profiles`.
+The list of supported profiles from (C.2) indexed by :py:class:`~.constants.Profiles`.
 """
 
 
@@ -98,7 +101,7 @@ PRESET_FRAME_RATES = ref_value({
 }, "Table 11.3")
 """
 (11.4.6) Frame-rate presets from (Table 11.3) indexed by
-:py:class:`PresetFrameRates`.
+:py:class:`~.constants.PresetFrameRates`.
 """
 
 
@@ -112,7 +115,7 @@ PRESET_PIXEL_ASPECT_RATIOS = ref_value({
 }, "Table 11.4")
 """
 (11.4.7) Pixel aspect ratio presets from (Table 11.4) indexed by
-:py:class:`PresetPixelAspectRatios`
+:py:class:`~.constants.PresetPixelAspectRatios`
 """
 
 
@@ -144,7 +147,7 @@ PRESET_SIGNAL_RANGES = ref_value({
 }, "Table 11.5")
 """
 (11.4.9) Signal offsets/ranges presets from (Table 11.5) indexed by
-:py:class:`PresetSignalRanges`.
+:py:class:`~.constants.PresetSignalRanges`.
 """
 
 
@@ -157,7 +160,7 @@ PRESET_COLOR_PRIMARIES = ref_value({
 }, "Table 11.7")
 """
 (11.4.10.2) Normative specification names for color primaries from (Table 11.7)
-indexed by :py:class:`PresetColorPrimaries`.
+indexed by :py:class:`~.constants.PresetColorPrimaries`.
 """
 
 
@@ -182,7 +185,7 @@ PRESET_COLOR_MATRICES = ref_value({
 }, "Table 11.8")
 """
 (11.4.10.3) Color matrices from (Table 11.8) indexed by
-:py:class:`PresetColorMatrices`.
+:py:class:`~.constants.PresetColorMatrices`.
 """
 
 
@@ -196,7 +199,7 @@ PRESET_TRANSFER_FUNCTIONS = ref_value({
 }, "Table 11.9")
 """
 (11.4.10.4) Normative specification names for transfer functions from (Table
-11.9) indexed by :py:class:`PresetTransferFunctions`.
+11.9) indexed by :py:class:`~.constants.PresetTransferFunctions`.
 """
 
 
@@ -207,11 +210,11 @@ An entry in (Table 11.6)
 Parameters
 ----------
 color_primaries_index
-    A :py:class:`PresetColorPrimaries` index.
+    A :py:class:`~.constants.PresetColorPrimaries` index.
 color_matrix_index
-    A :py:class:`PresetColorMatrices` index.
+    A :py:class:`~.constants.PresetColorMatrices` index.
 transfer_function_index
-    A :py:class:`PresetTransferFunctions` index.
+    A :py:class:`~.constants.PresetTransferFunctions` index.
 """
 
 
@@ -251,7 +254,7 @@ PRESET_COLOR_SPECS = ref_value({
 }, "Table 11.6")
 """
 (11.4.10.1) Preset color specification collections from (Table 11.6), indexed
-by :py:class:`PresetColorSpecs`.
+by :py:class:`~.constants.PresetColorSpecs`.
 """
 
 BaseVideoFormatParameters = namedtuple("BaseVideoFormatParameters",
@@ -277,26 +280,26 @@ Parameters
 frame_width
 frame_height
 color_diff_format_index
-    An entry from the enum :py:class:`ColorDifferenceSamplingFormats`. Listed
+    An entry from the enum :py:class:`~.constants.ColorDifferenceSamplingFormats`. Listed
     as 'color difference sampling' in (Table B.1).
 source_sampling
-    An entry from the enum :py:class:`SourceSamplingModes`. Specifies
+    An entry from the enum :py:class:`~.constants.SourceSamplingModes`. Specifies
     progressive or interlaced.
 top_field_first
     If True, the top-line of the frame is in the first field.
 frame_rate_index
     The frame rate, one of the indices of PRESET_FRAME_RATES.
 pixel_aspect_ratio_index
-    The pixel aspect ratio, an entry from the enum :py:class`PresetPixelAspectRatios`.
+    The pixel aspect ratio, an entry from the enum :py:class`~.constants.PresetPixelAspectRatios`.
 clean_width
 clean_height
 left_offset
 top_offset
     The clean area of the pictures. See (11.4.8) and (E.4.2).
 signal_range_index
-    The signal ranges, an entry from the enum :py:class:`PresetSignalRanges`.
+    The signal ranges, an entry from the enum :py:class:`~.constants.PresetSignalRanges`.
 color_spec_index
-    The color specification, an entry from the enum :py:class:`PresetColorSpecs`.
+    The color specification, an entry from the enum :py:class:`~.constants.PresetColorSpecs`.
 """
     
 
@@ -626,7 +629,7 @@ BASE_VIDEO_FORMAT_PARAMETERS = ref_value({
 }, "Table B.1a, B.1b, B.1c")
 """
 (B) Base video format specifications from (Table B.1a, B.1b, B.1c), indexed by
-:py:class:`BaseVideoFormats`.
+:py:class:`~.constants.BaseVideoFormats`.
 """
 
 
@@ -717,5 +720,5 @@ LIFTING_FILTERS = ref_value({
     ),
 }, "Table 15.1 to 15.6")
 """
-(15.4.4.3) Filter definitions taken from (Table 15.1 to 15.6) indexed by :py:class:`WaveletFilters`.
+(15.4.4.3) Filter definitions taken from (Table 15.1 to 15.6) indexed by :py:class:`~.constants.WaveletFilters`.
 """

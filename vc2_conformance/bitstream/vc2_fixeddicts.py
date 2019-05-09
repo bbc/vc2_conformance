@@ -1,6 +1,9 @@
 r"""
-:py:mod:`fixeddict` definitions for holding VC-2 bitstream values in a
-hierarchy which strongly mimics the bitstream structure.
+:py:mod:`vc2_conformance.bitstream.vc2_fixeddicts`: VC-2 Bitstream Structures
+=============================================================================
+
+:py:mod:`~vc2_conformance.fixeddict` definitions for holding VC-2 bitstream
+values in a hierarchy which strongly mimics the bitstream structure.
 
 .. note::
 

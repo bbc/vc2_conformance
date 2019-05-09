@@ -1,5 +1,8 @@
 """
-Video parameter computation functions defined by VC-2 in (11).
+:py:mod:`vc2_conformance.video_parameters`: Video parameter computation functions
+=================================================================================
+
+Defined by VC-2 in (11).
 
 The functions in this module make up the purely functional (i.e. non
 bitstream-reading) logic for computing video parameters. This predomenantly
