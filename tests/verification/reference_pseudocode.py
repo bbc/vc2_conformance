@@ -44,9 +44,11 @@ def clip(a, b, t):
 # 10: VC-2 Stream
 ################################################################################
 
-def parse_sequence():
+# Errata: 'state' is created internally as an empty dict in the spec, not
+# passed in as an argument
+def parse_sequence(state):
     """(10.4.1)"""
-    state = {}
+    # state = {}  # Errata: see above
     parse_info(state)
     while(not is_end_of_sequence(state)):
         if (is_seq_header(state)):

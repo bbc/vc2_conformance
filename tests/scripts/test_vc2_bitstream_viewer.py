@@ -222,7 +222,7 @@ def minimal_sequence_bitstream_fname(tmpdir):
         ])
         w = bitstream.BitstreamWriter(f)
         with bitstream.Serialiser(w, context) as ser:
-            bitstream.parse_sequence(ser)
+            bitstream.parse_sequence(ser, State())
     
     return fname
 
@@ -245,7 +245,7 @@ def padding_sequence_bitstream_fname(tmpdir):
         ])
         w = bitstream.BitstreamWriter(f)
         with bitstream.Serialiser(w, context) as ser:
-            bitstream.parse_sequence(ser)
+            bitstream.parse_sequence(ser, State())
     
     return fname
 
@@ -264,7 +264,7 @@ def bad_parse_info_prefix_bitstream_fname(tmpdir):
         ])
         w = bitstream.BitstreamWriter(f)
         with bitstream.Serialiser(w, context) as ser:
-            bitstream.parse_sequence(ser)
+            bitstream.parse_sequence(ser, State())
     
     return fname
 
@@ -479,8 +479,7 @@ class TestBitstreamViewer(object):
     def test_print_internal_state(self, capsys):
         v = BitstreamViewer(None)
         
-        v._serdes = Mock()
-        v._serdes.context = {"_state": State(major_version=3, minor_version=0)}
+        v._state = State(major_version=3, minor_version=0)
         
         v._print_internal_state()
         assert capsys.readouterr().out == (

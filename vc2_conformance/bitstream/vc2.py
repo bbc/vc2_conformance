@@ -121,16 +121,14 @@ __all__ = [
 
 @context_type(Sequence)
 @ref_pseudocode(deviation="serdes")
-def parse_sequence(serdes):
+def parse_sequence(serdes, state):
     """
     (10.4.1) Parse a whole VC-2 sequence (i.e. file), discarding the contents.
 
     Populates a :py:class:`~vc2_conformance.bitstream.vc2_fixeddicts.Sequence`
-    :py:mod:`~vc2_conformance.fixeddict`.  Provides a copy of the computed
+    :py:mod:`~vc2_conformance.fixeddict`.  Provides a copy of the
     :py:class:`~vc2_conformance.state.State` in ``"_state"``.
     """
-    state = State()
-    
     serdes.computed_value("_state", state)
     
     serdes.declare_list("data_units")

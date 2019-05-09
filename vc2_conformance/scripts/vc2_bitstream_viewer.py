@@ -131,6 +131,8 @@ from vc2_conformance import metadata
 
 from vc2_conformance import bitstream
 
+from vc2_conformance.state import State
+
 from vc2_conformance.tables import PARSE_INFO_PREFIX
 
 from vc2_conformance._string_utils import ellipsise_lossy
@@ -390,6 +392,9 @@ class BitstreamViewer(object):
         # The MonitoredDeserialiser in use
         self._serdes = None
         
+        # The internal State variable used by VC-2 pseudocode
+        self._state = State()
+        
         # Is the status line currently visible
         self._status_line_visible = False
         
@@ -571,10 +576,9 @@ class BitstreamViewer(object):
         """
         Display the current internal state of the VC-2 pseudocode functions.
         """
-        state = self._serdes.context["_state"]
-        if state:
+        if self._state:
             print("-"*(OFFSET_DIGITS + 2 + RAW_BITS_PER_LINE))
-            print(str(state))
+            print(str(self._state))
             print("-"*(OFFSET_DIGITS + 2 + RAW_BITS_PER_LINE))
     
     def _print_omitted_bits(self, tell):
@@ -702,7 +706,7 @@ class BitstreamViewer(object):
                 io=self._reader,
                 monitor=self,
             )
-            bitstream.parse_sequence(self._serdes)
+            bitstream.parse_sequence(self._serdes, self._state)
         except BitstreamViewer._TerminateSuccess:
             return_code = 0
             error_message = None

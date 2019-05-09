@@ -50,7 +50,7 @@ def test_parse_sequence(w):
         ),
     ])
     with Serialiser(w, seq_in) as serdes:
-        vc2.parse_sequence(serdes)
+        vc2.parse_sequence(serdes, State())
     seq = serdes.context
     assert str(seq) == (
         "Sequence:\n"

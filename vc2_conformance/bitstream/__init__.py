@@ -25,12 +25,13 @@ Quick-start/teaser example
 The following minimal example can be used to deserialise a complete VC-2
 bitstream sequence::
 
+    >>> from vc2_conformance.state import State
     >>> from vc2_conformance.bitstream import Deserialiser, BitstreamReader, parse_sequence
     
     >>> with open("/path/to/bitstream.vc2", "rb") as f:
     ...     reader = BitstreamReader(f)
     ...     with Deserialiser(reader) as des:
-    ...         parse_sequence(des)
+    ...         parse_sequence(des, State())
     
     >>> # Display in pretty-printed human-readable form
     >>> str(des.context)
