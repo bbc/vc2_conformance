@@ -178,3 +178,79 @@ class SequenceHeaderChangedMidSequence(ConformanceError):
         self.this_sequence_header_offset = this_sequence_header_offset
         self.this_sequence_header_bytes = this_sequence_header_bytes
         super(SequenceHeaderChangedMidSequence, self).__init__()
+
+
+class ProfileChanged(ConformanceError):
+    """
+    This exception is thrown when a parse_parameters (11.2) appears in the
+    stream which contains a profile which differs from a previous
+    parse_parameters header in the stream.
+    
+    Parameters
+    ==========
+    last_parse_parameters_offset : int
+    last_profile : int
+    this_parse_parameters_offset : int
+    this_profile : int
+    """
+    
+    def __init__(self,
+                 last_parse_parameters_offset,
+                 last_profile,
+                 this_parse_parameters_offset,
+                 this_profile):
+        self.last_parse_parameters_offset = last_parse_parameters_offset
+        self.last_profile = last_profile
+        self.this_parse_parameters_offset = this_parse_parameters_offset
+        self.this_profile = this_profile
+        super(ProfileChanged, self).__init__()
+
+
+class LevelChanged(ConformanceError):
+    """
+    This exception is thrown when a parse_parameters (11.2) appears in the
+    stream which contains a level which differs from a previous
+    parse_parameters header in the stream.
+    
+    Parameters
+    ==========
+    last_parse_parameters_offset : int
+    last_level : int
+    this_parse_parameters_offset : int
+    this_level : int
+    """
+    
+    def __init__(self,
+                 last_parse_parameters_offset,
+                 last_level,
+                 this_parse_parameters_offset,
+                 this_level):
+        self.last_parse_parameters_offset = last_parse_parameters_offset
+        self.last_level = last_level
+        self.this_parse_parameters_offset = this_parse_parameters_offset
+        self.this_level = this_level
+        super(LevelChanged, self).__init__()
+
+
+class BadProfile(ConformanceError):
+    """
+    parse_parameters (11.2.1) has been given an unrecognised profile number.
+    
+    The exception argument will contain the received profile number.
+    """
+    
+    def __init__(self, profile):
+        self.profile = profile
+        super(BadProfile, self).__init__()
+
+
+class BadLevel(ConformanceError):
+    """
+    parse_parameters (11.2.1) has been given an unrecognised level number.
+    
+    The exception argument will contain the received level number.
+    """
+    
+    def __init__(self, level):
+        self.level = level
+        super(BadLevel, self).__init__()

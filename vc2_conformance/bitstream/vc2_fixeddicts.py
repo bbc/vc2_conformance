@@ -38,6 +38,7 @@ from vc2_conformance.tables import (
     PictureCodingModes,
     BaseVideoFormats,
     Profiles,
+    Levels,
     ColorDifferenceSamplingFormats,
     SourceSamplingModes,
     PresetFrameRates,
@@ -129,7 +130,7 @@ ParseParameters = fixeddict(
     Entry("major_version", default=3),
     Entry("minor_version", default=0),
     Entry("profile", default=Profiles.high_quality, enum=Profiles),
-    Entry("level", default=0),
+    Entry("level", default=Levels.unconstrained, enum=Levels),
 )
 """
 (11.2.1) Sequence header defined by ``parse_parameters()``.

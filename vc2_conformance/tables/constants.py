@@ -18,6 +18,7 @@ __all__ = [
     "SourceSamplingModes",
     "BaseVideoFormats",
     "Profiles",
+    "Levels",
     "PresetFrameRates",
     "PresetPixelAspectRatios",
     "PresetSignalRanges",
@@ -123,6 +124,38 @@ class Profiles(IntEnum):
     """
     low_delay = 0
     high_quality = 3
+
+
+@ref_enum
+class Levels(IntEnum):
+    """
+    (C.3) VC-2 Levels.
+    
+    Levels listed below are defined in:
+    
+    * (SMPTE ST 2042-2:2017) VC-2 Level Definitions
+    * (SMPTE RP 2047-1) VC-2 Mezzanine Compression of 1080P High Definition Video Sources
+    * (SMPTE RP 2047-3) VC-2 Level 65 Compression of High Definition Video Sources for Use with a Standard Definition Infrastructure
+    * (SMPTE RP 2047-5) VC-2 Level 66 Compression of Ultra High Definition Video Sources for use with a High Definition Infrastructure
+    
+    Names are informative and inferred from the requirements of the levels
+    document.
+    """
+    unconstrained = 0
+    
+    # Generalized levels (ST 2402-2)
+    sub_sd = 1
+    sd = 2
+    hd = 3
+    digital_cinema_2k = 4
+    digital_cinema_4k = 5
+    uhdtv_4k = 6
+    uhdtv_8k = 7
+    
+    # Specialized levels
+    p60_hd_over_single_link_sdi = 64  # (ST 2047-1)
+    hd_over_sd_sdi = 65  # (ST 2047-3)
+    uhd_over_hd_sdi = 66  # (ST 2047-5)
 
 
 @ref_enum

@@ -15,6 +15,7 @@ from vc2_conformance.fixeddict import fixeddict, Entry
 
 __all__ = [
     "State",
+    "reset_state",
 ]
 
 State = fixeddict(
@@ -84,9 +85,9 @@ State = fixeddict(
     # vc2_conformance.decoder to interface with the outside world (which is
     # beyond the scope of the VC-2 spec).
     
-    # (A.2.1) read_byte: The Python file-like object from which the bitstream
-    # will be read by read_byte.
-    Entry("_file"),
+    # (10.5.1) parse_info related state
+    # The byte offset of the previously read parse_info block
+    Entry("_last_parse_info_offset"),  # int (bytes)
     
     # (11.1) sequence_header requires that repeats must be byte-for-byte
     # identical. To facilitate this, the decode.io.record_bitstream_start and
@@ -100,12 +101,49 @@ State = fixeddict(
     # previous sequence_header in the sequence. Not present if no previous
     # sequence_header has appeared.
     Entry("_last_sequence_header_bytes"),
-    Entry("_last_sequence_header_offset"),
+    Entry("_last_sequence_header_offset"),  # int (bytes)
     
-    # (10.5.1) parse_info related state
-    # The byte offset of the previously read parse_info block
-    Entry("_last_parse_info_offset"),
+    # (11.2.1) parse_parameters: It is specified that the profile and level
+    # should remain the same for all sequences in a stream. The values below
+    # hold byte-offset of the parse_parameters field which last set them and
+    # any previously assigned profile and level.
+    Entry("_last_parse_parameters_offset"),  # (int, int) tuple (byte offset, next bit)
+    Entry("_last_profile"),
+    Entry("_last_level"),
+    
+    # (A.2.1) read_byte: The Python file-like object from which the bitstream
+    # will be read by read_byte.
+    Entry("_file"),
 )
 """
 The global state variable type.
 """
+
+
+retained_state_fields = [
+    # I/O state must be preserved to allow continuing to read the current file
+    "next_bit",
+    "current_byte",
+    "_file",
+    "_recorded_bytes",  # Not required in practice.
+    
+    # (11.2.1) parse_parameters: Must retain due to constraint on profile/level
+    # not changing between sequences in a stream
+    "_last_parse_parameters_offset",
+    "_last_profile",
+    "_last_level",
+]
+"""
+The list of fields in the :py:class:`State` dictionary which should be retained
+between sequences in a stream.
+"""
+
+
+def reset_state(state):
+    """
+    Reset a :py:class:`~vc2_conformance.state.State` dictionary to only include
+    values retained between sequences in a VC-2 stream. Modifies the dictionary
+    in place.
+    """
+    for key in set(state.keys()) - set(retained_state_fields):
+        del state[key]

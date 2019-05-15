@@ -141,7 +141,7 @@ def test_sequence_header(w, sh_before, string):
         "    major_version: 3\n"
         "    minor_version: 0\n"
         "    profile: high_quality (3)\n"
-        "    level: 0\n"
+        "    level: unconstrained (0)\n"
         "  base_video_format: {}\n"
         "  video_parameters: SourceParameters:\n"
         "    frame_size: FrameSize:\n"
@@ -174,7 +174,7 @@ def test_parse_parameters(w):
         "  major_version: 3\n"
         "  minor_version: 0\n"
         "  profile: high_quality (3)\n"
-        "  level: 0"
+        "  level: unconstrained (0)"
     )
 
 

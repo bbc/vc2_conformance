@@ -7,12 +7,20 @@ from vc2_conformance.metadata import ref_pseudocode
 
 from vc2_conformance.vc2_math import intlog2
 
+from vc2_conformance.tables import Profiles, Levels
+
 from vc2_conformance.video_parameters import (
     set_source_defaults,
 )
 
+from vc2_conformance.decoder.assertions import assert_in_enum
+
 from vc2_conformance.decoder.exceptions import (
     SequenceHeaderChangedMidSequence,
+    ProfileChanged,
+    LevelChanged,
+    BadProfile,
+    BadLevel,
 )
 
 from vc2_conformance.decoder.io import (
@@ -64,10 +72,47 @@ def sequence_header(state):
 @ref_pseudocode
 def parse_parameters(state):
     """(11.2.1)"""
+    this_parse_parameters_offset = tell(state)  ## Not in spec
+    
     state["major_version"] = read_uint(state)
     state["minor_version"] = read_uint(state)
+    
     state["profile"] = read_uint(state)
+    assert_in_enum(state["profile"], Profiles, BadProfile) ## Not in spec
+    
+    # Ensure profile doesn't change (even between sequences)
+    ## Begin not in spec
+    if state.get("_last_profile", state["profile"]) != state["profile"]:
+        raise ProfileChanged(
+            state["_last_parse_parameters_offset"],
+            state["_last_profile"],
+            this_parse_parameters_offset,
+            state["profile"],
+        )
+    ## End not in spec
+    
     state["level"] = read_uint(state)
+    assert_in_enum(state["level"], Levels, BadLevel) ## Not in spec
+    
+    # Ensure level doesn't change (even between sequences)
+    ## Begin not in spec
+    if state.get("_last_level", state["level"]) != state["level"]:
+        raise LevelChanged(
+            state["_last_parse_parameters_offset"],
+            state["_last_level"],
+            this_parse_parameters_offset,
+            state["level"],
+        )
+    ## End not in spec
+    
+    ## Begin not in spec
+    state["_last_parse_parameters_offset"] = this_parse_parameters_offset
+    state["_last_profile"] = state["profile"]
+    state["_last_level"] = state["level"]
+    ## End not in spec
+    
+    # Included to ensure comment above is included
+    pass  ## Not in spec
 
 
 @ref_pseudocode
