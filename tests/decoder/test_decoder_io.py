@@ -83,3 +83,23 @@ class TestRecordBitstream(object):
         assert decoder.record_bitstream_finish(state) == b"\xAA\xF0"
         assert decoder.read_nbits(state, 4) == 0xF
 
+
+def test_tell():
+    f = BytesIO(b"\xAA\xFF")
+    state = State()
+    decoder.init_io(state, f)
+    
+    # At start of stream
+    assert decoder.tell(state) == (0, 7)
+    
+    # Part-way through byte
+    decoder.read_nbits(state, 4)
+    assert decoder.tell(state) == (0, 3)
+    
+    # In next byte
+    decoder.read_nbits(state, 8)
+    assert decoder.tell(state) == (1, 3)
+    
+    # At EOF
+    decoder.read_nbits(state, 4)
+    assert decoder.tell(state) == (2, 7)

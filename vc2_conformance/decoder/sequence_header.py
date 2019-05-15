@@ -16,9 +16,10 @@ from vc2_conformance.decoder.exceptions import (
 )
 
 from vc2_conformance.decoder.io import (
-    byte_align,
     record_bitstream_start,
     record_bitstream_finish,
+    tell,
+    byte_align,
     read_bool,
     read_uint,
 )
@@ -31,7 +32,7 @@ def sequence_header(state):
     
     # Record this sequence_header as it appears in the bitstream
     ## Begin not in spec
-    this_sequence_header_offset = state["_file"].tell() - 1
+    this_sequence_header_offset = tell(state)[0]
     record_bitstream_start(state)
     ## End not in spec
     

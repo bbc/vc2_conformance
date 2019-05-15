@@ -38,6 +38,7 @@ from vc2_conformance.decoder.assertions import assert_in_enum
 
 from vc2_conformance.decoder.io import (
     init_io,
+    tell,
     byte_align,
     read_uint_lit,
 )
@@ -107,7 +108,7 @@ def parse_info(state):
     # Check that the previous parse_info's next_parse_offset was calculated
     # correctly
     ## Begin not in spec
-    this_parse_info_offset = state["_file"].tell() - 1  # Will be about to read *next* byte
+    this_parse_info_offset = tell(state)[0]
     last_parse_info_offset = state.get("_last_parse_info_offset", None)
     
     if state.get("next_parse_offset"):

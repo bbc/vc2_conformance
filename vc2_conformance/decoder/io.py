@@ -11,6 +11,7 @@ __all__ = [
     "init_io",
     "record_bitstream_start",
     "record_bitstream_finish",
+    "tell",
     "read_byte",
     "read_bit",
     "byte_align",
@@ -87,6 +88,19 @@ def record_bitstream_finish(state):
         )
     
     return recorded_bytes
+
+
+def tell(state):
+    """
+    Not part of spec; used to log bit offsets in the bitstream.
+    
+    Return a (byte, bit) tuple giving the offset of the next bit to be read in
+    the stream.
+    """
+    return (
+        state["_file"].tell() - (1 if state["current_byte"] is not None else 0),
+        state["next_bit"],
+    )
 
 
 @ref_pseudocode(deviation="inferred_implementation")
