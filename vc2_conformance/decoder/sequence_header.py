@@ -113,10 +113,6 @@ def parse_parameters(state):
     state["_last_profile"] = state["profile"]
     state["_last_level"] = state["level"]
     ## End not in spec
-    
-    # Included to ensure comment above is included
-    pass  ## Not in spec
-
 
 @ref_pseudocode
 def source_parameters(state, base_video_format):

@@ -28,7 +28,7 @@ f1 = f
 def f(a, b):
     """Same as f above"""
     a += 1  ## Not in spec
-    return a + b
+    ### return a + b
 f2 = f
 
 def f(a, b):

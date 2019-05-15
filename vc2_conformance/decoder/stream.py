@@ -86,9 +86,6 @@ def parse_sequence(state):
     if state["current_byte"] is not None:
         raise TrailingBytesAfterEndOfSequence()
     ## End not in spec
-    
-    # Required to ensure comment line above is part of the function
-    pass  ## Not in spec
 
 
 @ref_pseudocode

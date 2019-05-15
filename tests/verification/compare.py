@@ -18,13 +18,13 @@ given function matches the reference VC-2 pseudocode.
 .. autoexception:: ComparisonError
 """
 
-import inspect
-
 from vc2_conformance._py2k_compat import unwrap
 
 import ast
 
 from tokenize import TokenError
+
+from verification.get_full_source import get_full_source
 
 from verification.amendment_comments import (
     undo_amendments,
@@ -57,15 +57,15 @@ def format_summary(comparison_error_or_difference):
     
     ref_filename = None
     if ref_func is not None:
-        ref_filename = inspect.getsourcefile(unwrap(ref_func))
+        ref_filename, ref_lineno, ref_source = get_full_source(unwrap(ref_func))
         if ref_row is not None:
-            ref_row += inspect.getsourcelines(unwrap(ref_func))[1]
+            ref_row += ref_lineno
     
     imp_filename = None
     if imp_func is not None:
-        imp_filename = inspect.getsourcefile(unwrap(imp_func))
+        imp_filename, imp_lineno, imp_source = get_full_source(unwrap(imp_func))
         if imp_row is not None:
-            imp_row += inspect.getsourcelines(unwrap(imp_func))[1]
+            imp_row += imp_lineno
     
     if ref_row is None and imp_row is None:
         return message
@@ -107,11 +107,8 @@ def format_detailed_summary(comparison_error_or_difference):
     imp_row = comparison_error_or_difference.imp_row
     imp_col = comparison_error_or_difference.imp_col
     
-    ref_filename = inspect.getsourcefile(unwrap(ref_func))
-    imp_filename = inspect.getsourcefile(unwrap(imp_func))
-    
-    ref_source_lines, ref_first_lineno = inspect.getsourcelines(unwrap(ref_func))
-    imp_source_lines, imp_first_lineno = inspect.getsourcelines(unwrap(imp_func))
+    ref_filename, ref_first_lineno, ref_source_lines = get_full_source(unwrap(ref_func))
+    imp_filename, imp_first_lineno, imp_source_lines = get_full_source(unwrap(imp_func))
     
     func_names = [ref_func.__name__]
     if ref_func.__name__ != imp_func.__name__:
@@ -382,8 +379,8 @@ def compare_functions(ref_func, imp_func, comparator):
     =======
     :py:exc:`ComparisonError`
     """
-    ref_source = inspect.getsource(unwrap(ref_func))
-    imp_source = inspect.getsource(unwrap(imp_func))
+    ref_source = "".join(get_full_source(unwrap(ref_func))[2])
+    imp_source = "".join(get_full_source(unwrap(imp_func))[2])
     
     try:
         match = compare_sources(ref_source, imp_source, comparator)
