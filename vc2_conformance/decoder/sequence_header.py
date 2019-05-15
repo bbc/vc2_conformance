@@ -50,8 +50,8 @@ def sequence_header(state):
     picture_coding_mode = read_uint(state)
     set_coding_parameters(state, video_parameters, picture_coding_mode)
     
-    # Check that the this sequence_header is byte-for-byte identical with the
-    # previous sequence_header in the sequence
+    # (11.1) Check that the this sequence_header is byte-for-byte identical
+    # with the previous sequence_header in the sequence
     ## Begin not in spec
     this_sequence_header_bytes = record_bitstream_finish(state)
     if "_last_sequence_header_bytes" in state:
@@ -78,9 +78,10 @@ def parse_parameters(state):
     state["minor_version"] = read_uint(state)
     
     state["profile"] = read_uint(state)
+    # (C.2) Profile must be a supported value
     assert_in_enum(state["profile"], Profiles, BadProfile) ## Not in spec
     
-    # Ensure profile doesn't change (even between sequences)
+    # (11.2.1) Ensure profile doesn't change (even between sequences)
     ## Begin not in spec
     if state.get("_last_profile", state["profile"]) != state["profile"]:
         raise ProfileChanged(
@@ -92,9 +93,11 @@ def parse_parameters(state):
     ## End not in spec
     
     state["level"] = read_uint(state)
+    
+    # (C.3) Level must be a supported value
     assert_in_enum(state["level"], Levels, BadLevel) ## Not in spec
     
-    # Ensure level doesn't change (even between sequences)
+    # (11.2.1)  Ensure level doesn't change (even between sequences)
     ## Begin not in spec
     if state.get("_last_level", state["level"]) != state["level"]:
         raise LevelChanged(

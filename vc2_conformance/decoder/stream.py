@@ -82,7 +82,7 @@ def parse_sequence(state):
         parse_info(state)
     
     ## Begin not in spec
-    # Check for any unused data in the stream
+    # (10.3) Check for any unused data in the stream
     if state["current_byte"] is not None:
         raise TrailingBytesAfterEndOfSequence()
     ## End not in spec
@@ -112,8 +112,8 @@ def parse_info(state):
     """(10.5.1)"""
     byte_align(state)
     
-    # Check that the previous parse_info's next_parse_offset was calculated
-    # correctly
+    # (10.5.1) Check that the previous parse_info's next_parse_offset was
+    # calculated correctly
     ## Begin not in spec
     this_parse_info_offset = tell(state)[0]
     last_parse_info_offset = state.get("_last_parse_info_offset", None)
@@ -129,7 +129,7 @@ def parse_info(state):
             )
     ## End not in spec
     
-    # Capture and check the parse_info prefix
+    # (10.5.1) Capture and check the parse_info prefix
     ### read_uint_lit(state, 4)
     ## Begin not in spec
     prefix = read_uint_lit(state, 4)
@@ -137,35 +137,36 @@ def parse_info(state):
         raise BadParseInfoPrefix(prefix)
     ## End not in spec
     
-    # Check the parse_code is a supported value
+    # (10.5.1) Check the parse_code is a supported value
     state["parse_code"] = read_uint_lit(state, 1)
     assert_in_enum(state["parse_code"], ParseCodes, BadParseCode) ## Not in spec
     
-    # Check that the next_parse_offset holds a plausible value
+    # (10.5.1) Check that the next_parse_offset holds a plausible value
     state["next_parse_offset"] = read_uint_lit(state, 4)
     ## Begin not in spec
     if state["parse_code"] == ParseCodes.end_of_sequence:
-        # End of stream must have '0' as next offset
+        # (10.5.1) End of stream must have '0' as next offset
         if state["next_parse_offset"] != 0:
             raise NonZeroNextParseOffsetAtEndOfSequence(state["next_parse_offset"])
     elif not (is_picture(state) or is_fragment(state)):
-        # Non-picture containing blocks *must* have a non-zero offset
+        # (10.5.1) Non-picture containing blocks *must* have a non-zero offset
         if state["next_parse_offset"] == 0:
             raise MissingNextParseOffset()
     
-    # Offsets pointing inside this parse_info bock are always invalid
+    # (10.5.1) Offsets pointing inside this parse_info bock are always invalid
     if 1 <= state["next_parse_offset"] < PARSE_INFO_HEADER_BYTES:
         raise InvalidNextParseOffset(state["next_parse_offset"])
     ## End not in spec
     
-    # Check that the previous parse offset was calculated correctly
+    # (10.5.1) Check that the previous parse offset was calculated correctly
     state["previous_parse_offset"] = read_uint_lit(state, 4)
     ## Begin not in spec
     if last_parse_info_offset is None:
-        # This is the first parse_info encountered, must be zero
+        # (10.5.1) This is the first parse_info encountered, must be zero
         if state["previous_parse_offset"] != 0:
             raise NonZeroPreviousParseOffsetAtStartOfSequence(state["previous_parse_offset"])
     else:
+        # (10.5.1) Previous offset must be present and calculated correctly otherwise
         true_previous_parse_offset = this_parse_info_offset - last_parse_info_offset
         if state["previous_parse_offset"] != true_previous_parse_offset:
             raise InconsistentPreviousParseOffset(
