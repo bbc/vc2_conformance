@@ -14,13 +14,66 @@ def parse_info_to_bytes(**kwargs):
     return seriallise_to_bytes(bitstream.ParseInfo(**kwargs), bitstream.parse_info)
 
 
-def test_trailing_bytes_after_end_of_sequence():
-    state = bytes_to_state(
-        parse_info_to_bytes(parse_code=tables.ParseCodes.end_of_sequence) +
-        b"\x00"
-    )
-    with pytest.raises(decoder.TrailingBytesAfterEndOfSequence):
-        decoder.parse_sequence(state)
+class TestParseSequence(object):
+    
+    @pytest.fixture
+    def sh_bytes(self):
+        # A sequence header
+        return seriallise_to_bytes(bitstream.SequenceHeader(), bitstream.sequence_header)
+    
+    @pytest.fixture
+    def sh_parse_offset(self, sh_bytes):
+        # Offset for parse_infoa values
+        return tables.PARSE_INFO_HEADER_BYTES + len(sh_bytes)
+
+    @pytest.fixture
+    def sh_data_unit_bytes(self, sh_bytes, sh_parse_offset):
+        # parse_info + sequence header
+        return parse_info_to_bytes(
+            parse_code=tables.ParseCodes.sequence_header,
+            next_parse_offset=sh_parse_offset,
+        ) + sh_bytes
+
+    def test_trailing_bytes_after_end_of_sequence(self, sh_data_unit_bytes, sh_parse_offset):
+        state = bytes_to_state(
+            sh_data_unit_bytes +
+            parse_info_to_bytes(
+                parse_code=tables.ParseCodes.end_of_sequence,
+                previous_parse_offset=sh_parse_offset,
+            ) +
+            b"\x00"
+        )
+        with pytest.raises(decoder.TrailingBytesAfterEndOfSequence):
+            decoder.parse_sequence(state)
+    
+    def test_immediate_end_of_sequence(self, sh_data_unit_bytes):
+        state = bytes_to_state(
+            parse_info_to_bytes(parse_code=tables.ParseCodes.end_of_sequence)
+        )
+        with pytest.raises(decoder.GenericInvalidSequence) as exc_info:
+            decoder.parse_sequence(state)
+        
+        assert exc_info.value.parse_code is tables.ParseCodes.end_of_sequence
+        assert exc_info.value.expected_parse_codes == [tables.ParseCodes.sequence_header]
+        assert exc_info.value.expected_end is False
+    
+    def test_no_sequence_header(self, sh_data_unit_bytes):
+        state = bytes_to_state(
+            parse_info_to_bytes(
+                parse_code=tables.ParseCodes.padding_data,
+                next_parse_offset=tables.PARSE_INFO_HEADER_BYTES,
+            ) +
+            parse_info_to_bytes(
+                parse_code=tables.ParseCodes.end_of_sequence,
+                previous_parse_offset=tables.PARSE_INFO_HEADER_BYTES,
+            )
+        )
+        with pytest.raises(decoder.GenericInvalidSequence) as exc_info:
+            decoder.parse_sequence(state)
+        
+        assert exc_info.value.parse_code is tables.ParseCodes.padding_data
+        assert exc_info.value.expected_parse_codes == [tables.ParseCodes.sequence_header]
+        assert exc_info.value.expected_end is False
 
 
 class TestParseInfo(object):

@@ -32,9 +32,16 @@ from vc2_conformance.decoder.exceptions import (
     NonZeroNextParseOffsetAtEndOfSequence,
     InconsistentPreviousParseOffset,
     NonZeroPreviousParseOffsetAtStartOfSequence,
+    GenericInvalidSequence,
 )
 
-from vc2_conformance.decoder.assertions import assert_in_enum
+from vc2_conformance._symbol_re import Matcher
+
+from vc2_conformance.decoder.assertions import (
+    assert_in_enum,
+    assert_parse_code_in_sequence,
+    assert_parse_code_sequence_ended,
+)
 
 from vc2_conformance.decoder.io import (
     init_io,
@@ -42,6 +49,8 @@ from vc2_conformance.decoder.io import (
     byte_align,
     read_uint_lit,
 )
+
+from vc2_conformance.decoder.sequence_header import sequence_header
 
 
 __all__ = [
@@ -67,8 +76,18 @@ def parse_sequence(state):
     This version of the function has been modified to accept a state dictionary
     as an argument since the spec 
     """
+    # (10.4.1) Check that the sequence starts with a sequence_header and ends
+    # with and end_of_sequence.
+    ## Begin not in spec
+    valid_sequence_matcher = Matcher("sequence_header .* end_of_sequence")
+    ## End not in spec
+    
     parse_info(state)
-    while(not is_end_of_sequence(state)):
+    while not is_end_of_sequence(state):
+        ## Begin not in spec
+        assert_parse_code_in_sequence(state["parse_code"], valid_sequence_matcher, GenericInvalidSequence)
+        ## End not in spec
+        
         if (is_seq_header(state)):
             sequence_header(state)
         elif (is_picture(state)):
@@ -80,6 +99,11 @@ def parse_sequence(state):
         elif (is_padding_data(state)):
             padding(state)
         parse_info(state)
+    
+    ## Begin not in spec
+    assert_parse_code_in_sequence(state["parse_code"], valid_sequence_matcher, GenericInvalidSequence)
+    assert_parse_code_sequence_ended(valid_sequence_matcher, GenericInvalidSequence)
+    ## End not in spec
     
     ## Begin not in spec
     # (10.3) Check for any unused data in the stream

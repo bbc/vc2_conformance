@@ -254,3 +254,26 @@ class BadLevel(ConformanceError):
     def __init__(self, level):
         self.level = level
         super(BadLevel, self).__init__()
+
+
+class GenericInvalidSequence(ConformanceError):
+    """
+    The sequence of data units in the VC-2 sequence does not match the generic
+    sequence structure specified in (10.4.1) 
+    
+    The offending parse code will be given in :py:attr:`parse_code` if it does
+    not match the expected sequence structure. If the sequence ends prematurely
+    ``None`` will be passed instead.
+    
+    :py:attr:`expected_parse_codes` enumerates the parse codes which would have
+    been allowed.  This may be ``None`` if any parse code would be permitted.
+    
+    :py:attr:`expected_end` is True if it would have been acceptable for the
+    sequence to have ended at this point.
+    """
+    
+    def __init__(self, parse_code, expected_parse_codes, expected_end):
+        self.parse_code = parse_code
+        self.expected_parse_codes = expected_parse_codes
+        self.expected_end = expected_end
+        super(GenericInvalidSequence, self).__init__()
