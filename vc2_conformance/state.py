@@ -85,6 +85,12 @@ State = fixeddict(
     # vc2_conformance.decoder to interface with the outside world (which is
     # beyond the scope of the VC-2 spec).
     
+    # (10.4.1) parse_sequence related state
+    # A vc2_conformance._symbol_re.Matcher which checks that the sequence
+    # follows the specified general pattern of data units (other matchers will
+    # test for, e.g. level-defined patterns).
+    Entry("_generic_sequence_matcher"),
+    
     # (10.5.1) parse_info related state
     # The byte offset of the previously read parse_info block
     Entry("_last_parse_info_offset"),  # int (bytes)

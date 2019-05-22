@@ -277,3 +277,17 @@ class GenericInvalidSequence(ConformanceError):
         self.expected_parse_codes = expected_parse_codes
         self.expected_end = expected_end
         super(GenericInvalidSequence, self).__init__()
+
+
+class ParseCodeNotAllowedInProfile(ConformanceError):
+    """
+    The parse code encountered is not allowed in the current profile (C).
+    
+    The offending parse_code and profile combination will be provided in
+    :py:attr:`parse_code` and :py;attr:`profile`.
+    """
+    
+    def __init__(self, parse_code, profile):
+        self.parse_code = parse_code
+        self.profile = profile
+        super(ParseCodeNotAllowedInProfile, self).__init__()

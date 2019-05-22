@@ -20,6 +20,7 @@ from vc2_conformance.tables import (
     PARSE_INFO_PREFIX,
     PARSE_INFO_HEADER_BYTES,
     ParseCodes,
+    PROFILES,
 )
 
 from vc2_conformance.decoder.exceptions import (
@@ -33,6 +34,7 @@ from vc2_conformance.decoder.exceptions import (
     InconsistentPreviousParseOffset,
     NonZeroPreviousParseOffsetAtStartOfSequence,
     GenericInvalidSequence,
+    ParseCodeNotAllowedInProfile,
 )
 
 from vc2_conformance._symbol_re import Matcher
@@ -79,15 +81,11 @@ def parse_sequence(state):
     # (10.4.1) Check that the sequence starts with a sequence_header and ends
     # with and end_of_sequence.
     ## Begin not in spec
-    valid_sequence_matcher = Matcher("sequence_header .* end_of_sequence")
+    state["_generic_sequence_matcher"] = Matcher("sequence_header .* end_of_sequence")
     ## End not in spec
     
     parse_info(state)
     while not is_end_of_sequence(state):
-        ## Begin not in spec
-        assert_parse_code_in_sequence(state["parse_code"], valid_sequence_matcher, GenericInvalidSequence)
-        ## End not in spec
-        
         if (is_seq_header(state)):
             sequence_header(state)
         elif (is_picture(state)):
@@ -101,8 +99,7 @@ def parse_sequence(state):
         parse_info(state)
     
     ## Begin not in spec
-    assert_parse_code_in_sequence(state["parse_code"], valid_sequence_matcher, GenericInvalidSequence)
-    assert_parse_code_sequence_ended(valid_sequence_matcher, GenericInvalidSequence)
+    assert_parse_code_sequence_ended(state["_generic_sequence_matcher"], GenericInvalidSequence)
     ## End not in spec
     
     ## Begin not in spec
@@ -161,6 +158,24 @@ def parse_info(state):
     # (10.5.1) Check the parse_code is a supported value
     state["parse_code"] = read_uint_lit(state, 1)
     assert_in_enum(state["parse_code"], ParseCodes, BadParseCode) ## Not in spec
+    
+    # (10.4.1) Check that the sequence starts with a sequence_header and ends
+    # with and end_of_sequence.
+    ## Begin not in spec
+    assert_parse_code_in_sequence(
+        state["parse_code"],
+        state["_generic_sequence_matcher"],
+        GenericInvalidSequence,
+    )
+    ## End not in spec
+    
+    # (C.2.2) Ensure that only the profile-permitted parse codes are used
+    ## Begin not in spec
+    if "profile" in state:
+        profile_params = PROFILES[state["profile"]]
+        if state["parse_code"] not in profile_params.allowed_parse_codes:
+            raise ParseCodeNotAllowedInProfile(state["parse_code"], state["profile"])
+    ## End not in spec
     
     # (10.5.1) Check that the next_parse_offset holds a plausible value
     state["next_parse_offset"] = read_uint_lit(state, 4)

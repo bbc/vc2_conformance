@@ -6,6 +6,8 @@ from vc2_conformance import bitstream
 from vc2_conformance import tables
 from vc2_conformance import decoder
 
+from vc2_conformance._symbol_re import Matcher
+
 
 def parse_info_to_bytes(**kwargs):
     """
@@ -62,10 +64,6 @@ class TestParseSequence(object):
             parse_info_to_bytes(
                 parse_code=tables.ParseCodes.padding_data,
                 next_parse_offset=tables.PARSE_INFO_HEADER_BYTES,
-            ) +
-            parse_info_to_bytes(
-                parse_code=tables.ParseCodes.end_of_sequence,
-                previous_parse_offset=tables.PARSE_INFO_HEADER_BYTES,
             )
         )
         with pytest.raises(decoder.GenericInvalidSequence) as exc_info:
@@ -82,6 +80,7 @@ class TestParseInfo(object):
         state = bytes_to_state(parse_info_to_bytes(
             parse_info_prefix=0xDEADBEEF,
         ))
+        state["_generic_sequence_matcher"] = Matcher(".*")
         with pytest.raises(decoder.BadParseInfoPrefix) as exc_info:
             decoder.parse_info(state)
         assert exc_info.value.parse_info_prefix == 0xDEADBEEF
@@ -90,6 +89,7 @@ class TestParseInfo(object):
         state = bytes_to_state(parse_info_to_bytes(
             parse_code=0x11
         ))
+        state["_generic_sequence_matcher"] = Matcher(".*")
         with pytest.raises(decoder.BadParseCode) as exc_info:
             decoder.parse_info(state)
         assert exc_info.value.parse_code == 0x11
@@ -106,6 +106,7 @@ class TestParseInfo(object):
                 previous_parse_offset=tables.PARSE_INFO_HEADER_BYTES + 9,
             )
         )
+        state["_generic_sequence_matcher"] = Matcher(".*")
         
         decoder.parse_info(state)
         decoder.read_uint_lit(state, 9)
@@ -127,6 +128,7 @@ class TestParseInfo(object):
             parse_code=parse_code,
             next_parse_offset=0,
         ))
+        state["_generic_sequence_matcher"] = Matcher(".*")
         decoder.parse_info(state)
     
     @pytest.mark.parametrize("parse_code", [
@@ -139,6 +141,7 @@ class TestParseInfo(object):
             parse_code=parse_code,
             next_parse_offset=0,
         ))
+        state["_generic_sequence_matcher"] = Matcher(".*")
         with pytest.raises(decoder.MissingNextParseOffset):
             decoder.parse_info(state)
     
@@ -153,6 +156,7 @@ class TestParseInfo(object):
             parse_code=parse_code,
             next_parse_offset=next_parse_offset,
         ))
+        state["_generic_sequence_matcher"] = Matcher(".*")
         with pytest.raises(decoder.InvalidNextParseOffset) as exc_info:
             decoder.parse_info(state)
         assert exc_info.value.next_parse_offset == next_parse_offset
@@ -162,6 +166,7 @@ class TestParseInfo(object):
             parse_code=tables.ParseCodes.end_of_sequence,
             next_parse_offset=1,
         ))
+        state["_generic_sequence_matcher"] = Matcher(".*")
         with pytest.raises(decoder.NonZeroNextParseOffsetAtEndOfSequence) as exc_info:
             decoder.parse_info(state)
         assert exc_info.value.next_parse_offset == 1
@@ -171,6 +176,7 @@ class TestParseInfo(object):
             parse_code=tables.ParseCodes.end_of_sequence,
             previous_parse_offset=1,
         ))
+        state["_generic_sequence_matcher"] = Matcher(".*")
         with pytest.raises(decoder.NonZeroPreviousParseOffsetAtStartOfSequence) as exc_info:
             decoder.parse_info(state)
         assert exc_info.value.previous_parse_offset == 1
@@ -187,6 +193,7 @@ class TestParseInfo(object):
                 previous_parse_offset=tables.PARSE_INFO_HEADER_BYTES + 9,
             )
         )
+        state["_generic_sequence_matcher"] = Matcher(".*")
         
         decoder.parse_info(state)
         decoder.read_uint_lit(state, 10)
@@ -196,3 +203,36 @@ class TestParseInfo(object):
         assert exc_info.value.last_parse_info_offset == 0
         assert exc_info.value.previous_parse_offset == tables.PARSE_INFO_HEADER_BYTES + 9
         assert exc_info.value.true_parse_offset == tables.PARSE_INFO_HEADER_BYTES + 10
+    
+    def test_invalid_generic_sequence(self):
+        state = bytes_to_state(parse_info_to_bytes(
+            parse_code=tables.ParseCodes.end_of_sequence,
+        ))
+        state["_generic_sequence_matcher"] = Matcher("sequence_header")
+        
+        with pytest.raises(decoder.GenericInvalidSequence) as exc_info:
+            decoder.parse_info(state)
+        
+        assert exc_info.value.parse_code is tables.ParseCodes.end_of_sequence
+        assert exc_info.value.expected_parse_codes == [tables.ParseCodes.sequence_header]
+        assert exc_info.value.expected_end is False
+    
+    @pytest.mark.parametrize("parse_code,allowed", [
+        (tables.ParseCodes.padding_data, True),
+        (tables.ParseCodes.low_delay_picture, False),
+    ])
+    def test_profile_restricts_allowed_parse_codes(self, parse_code, allowed):
+        state = bytes_to_state(parse_info_to_bytes(
+                parse_code=parse_code,
+                next_parse_offset=tables.PARSE_INFO_HEADER_BYTES,
+        ))
+        state["_generic_sequence_matcher"] = Matcher(".*")
+        state["profile"] = tables.Profiles.high_quality
+        
+        if allowed:
+            decoder.parse_info(state)
+        else:
+            with pytest.raises(decoder.ParseCodeNotAllowedInProfile) as exc_info:
+                decoder.parse_info(state)
+            assert exc_info.value.parse_code == tables.ParseCodes.low_delay_picture
+            assert exc_info.value.profile == tables.Profiles.high_quality

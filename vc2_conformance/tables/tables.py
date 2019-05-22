@@ -47,33 +47,37 @@ __all__ = [
 ]
 
 
-ProfileParameters = namedtuple("ProfileParameters", "allowed_data_units, ")
+ProfileParameters = namedtuple("ProfileParameters", "allowed_parse_codes, ")
 """
 (C.2) Parameters describing a profile specification.
 
 Parameters
 ----------
-allowed_data_units
+allowed_parse_codes
     A list of supported data units. A list of values from the ParseCodes enum.
 """
 
 
 PROFILES = ref_value({
-    # (C.2.2)
+    # (C.2.2) (Table C.1)
     Profiles.low_delay: ProfileParameters([
         ParseCodes.sequence_header,
         ParseCodes.end_of_sequence,
         ParseCodes.auxiliary_data,
         ParseCodes.padding_data,
         ParseCodes.low_delay_picture,
+        # Errata: Allow fragments
+        ParseCodes.low_delay_picture_fragment,
     ]),
-    # (C.2.3)
+    # (C.2.3) (Table C.4)
     Profiles.high_quality: ProfileParameters([
         ParseCodes.sequence_header,
         ParseCodes.end_of_sequence,
         ParseCodes.auxiliary_data,
         ParseCodes.padding_data,
         ParseCodes.high_quality_picture,
+        # Errata: Allow fragments
+        ParseCodes.high_quality_picture_fragment,
     ]),
 }, "C.2")
 """
