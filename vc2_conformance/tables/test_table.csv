@@ -7,4 +7,4 @@ index,name,value0,value1,value2,value3,,
 2,two,2 (two),200,padding_data,Something,,
 ,,,,,,,
 ,# Comment-only line…,,,,,,# Comment beyond usual columns
-3,three,3 (three),300,end_of_sequence,,,
+3,three,3 (three),300,end_of_sequence,"""",,

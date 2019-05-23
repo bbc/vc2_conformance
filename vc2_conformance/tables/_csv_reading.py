@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 :py:mod:`vc2_conformance.tables._csv_reading`: Internal table reading routines
 ==============================================================================
@@ -23,6 +25,10 @@ __all__ = [
     "to_enum_from_name",
     "to_dict_value",
 ]
+
+
+QUOTE_CHARS = u'"“”\'’’`'
+"""The various unicode quote characters"""
 
 
 def read_csv_without_comments(csv_filename):
@@ -73,7 +79,8 @@ def read_enum_from_csv(csv_filename, enum_name):
     enum_values = OrderedDict()
     for row in rows:
         # Skip rows without names/indices
-        if not row["index"].strip() or not row["name"].strip():
+        if (not row["index"].strip(" " + QUOTE_CHARS) or
+                not row["name"].strip(" " + QUOTE_CHARS)):
             continue
         
         index = int(row["index"].strip())
@@ -129,12 +136,12 @@ def read_lookup_from_csv(
                if key is not None):
             continue
         
-        index = index_enum_type(int(row["index"]))
-        
         # Get values for this row (falling back on previous ones if absent)
-        for field in namedtuple_type._fields:
-            if row[field].strip():
+        for field in namedtuple_type._fields + ("index", ):
+            if row[field].strip(" " + QUOTE_CHARS):
                 column_values[field] = row[field]
+        
+        index = index_enum_type(int(column_values["index"]))
         
         value = namedtuple_type(**{
             field: type_conversions.get(field, str)(column_values[field])
