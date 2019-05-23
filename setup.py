@@ -7,6 +7,7 @@ setup(
     name="vc2_conformance",
     version=__version__,
     packages=find_packages(),
+    include_package_data=True,
     url="https://github.com/bbc/vc2_conformance",
     author="BBC R&D",
     description="Conformance testing utilities for the VC-2 video codec.",

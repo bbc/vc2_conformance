@@ -365,7 +365,7 @@ def signal_range(serdes, state, video_parameters):
             if index != 0:
                 PresetSignalRanges(index)
         except ValueError:
-            index = PresetSignalRanges.range_8_bit_full_range
+            index = PresetSignalRanges.video_8bit_full_range
         ## End not in spec
         
         if index == 0:

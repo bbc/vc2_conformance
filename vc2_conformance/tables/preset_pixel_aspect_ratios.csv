@@ -1,0 +1,9 @@
+# (11.4.7) Pixel aspect ratio presets from (Table 11.4),,,,
+,# Informative but used as enum names,,,
+index,name,numerator,denominator,note
+1,ratio_1_1,1,1,1:1
+2,ratio_4_3_525_line,10,11,4:3 525 line systems
+3,ratio_4_3_625_line,12,11,4:3 625 line systems
+4,ratio_16_9_525_line,40,33,16:9 525 line systems
+5,ratio_16_9_625_line,16,11,16:9 625 line systems
+6,reduced_horizontal_resolution,4,3,reduced horizontal resolution systems

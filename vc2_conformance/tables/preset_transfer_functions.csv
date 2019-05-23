@@ -1,0 +1,9 @@
+# (11.4.10.4) Normative specification names for transfer functions from (Table 11.9),,
+,# Informative (but used for enum names),
+index,name,specification
+0,tv_gamma,ITU-R BT.2020 
+1,extended_gamut,ITU-R BT.1361 (suppressed) 
+2,linear,Linear 
+3,d_cinema,SMPTE ST 428-1 
+4,perceptual_quality,ITU-R BT.2100 
+5,hybrid_log_gamma,ITU-R BT.2100 

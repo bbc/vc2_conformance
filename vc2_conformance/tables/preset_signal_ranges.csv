@@ -1,0 +1,11 @@
+# (11.4.9) Signal offsets/ranges presets from (Table 11.5),,,,,
+,# Informative (but used for enum names),,,,
+index,name,luma_offset,luma_excursion,color_diff_offset,color_diff_excursion
+1,video_8bit_full_range,0,255,128,255
+2,video_8bit,16,219,128,224
+3,video_10bit,64,876,512,896
+4,video_12bit,256,3504,2048,3584
+5,video_10bit_full_range,0,1023,512,1023
+6,video_12bit_full_range,0,4095,2048,4095
+7,video_16bit,4096,56064,32768,57344
+8,video_16bit_full_range,0,65535,32768,65535

@@ -1,0 +1,8 @@
+# (11.4.10.2) Normative specification names for color primaries from (Table 11.7),,,
+,# Informative (but used for enum names),,# Informative
+index,name,specification,comment
+0,hdtv,ITU-R BT.709 ,"Also Computer, Web, sRGB "
+1,sdtv_525,ITU-R BT.601 ,525 Primaries 
+2,sdtv_625,ITU-R BT.601 ,625 Primaries 
+3,d_cinema,SMPTE ST 428-1 ,CIE XYZ 
+4,uhdtv,ITU-R BT.2020 ,Used in UHDTV and HDR 

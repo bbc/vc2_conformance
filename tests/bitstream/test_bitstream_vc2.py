@@ -454,7 +454,7 @@ def test_signal_range(w):
     assert str(cd) == (
         "SignalRange:\n"
         "  custom_signal_range_flag: True\n"
-        "  index: range_8_bit_full_range (1)"
+        "  index: video_8bit_full_range (1)"
     )
     
     # With flag set and invalid value

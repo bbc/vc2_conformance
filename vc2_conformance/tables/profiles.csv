@@ -1,0 +1,5 @@
+# VC-2 profile definitions from (C) tables (C.1) and (C.4),,,
+,# Informative but used for enum names,# Errata: ‘Fragment’ types are missing in standard,
+index,name,allowed_parse_codes,
+0,low_delay,"sequence_header, end_of_sequence, auxiliary_data, padding_data, low_delay_picture, low_delay_picture_fragment",# (Table C.1)
+3,high_quality,"sequence_header, end_of_sequence, auxiliary_data, padding_data, high_quality_picture, high_quality_picture_fragment",# (Table C.4)

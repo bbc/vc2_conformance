@@ -1,0 +1,19 @@
+# VC-2 Levels (SMPTE ST 2042-2 and others),
+,
+index,name
+# Unrestricted level (ST 2042-2: 5.2.1),
+0,unconstrained
+# Generalised levels (ST 2042-2: 5.2.1),
+1,sub_hd
+2,sd
+3,hd
+4,d_cinema_2k
+5,d_cinema_4k
+6,uhdtv_4k
+7,uhdtv_8k
+# Specialized level 64 (RP 2047-1),
+64,progressive_hd_over_sdi
+# Specialized level 65 (RP 2047-3),
+65,hd_over_sd_sdi
+# Specialized level 66 (RP 2047-5),
+66,uhd_over_hd_sdi
