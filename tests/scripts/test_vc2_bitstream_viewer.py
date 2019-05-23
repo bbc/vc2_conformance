@@ -361,7 +361,7 @@ class TestBitstreamViewer(object):
         # even when nothing is opened and no traceback has ocurred
         v = BitstreamViewer(None, verbose=verbosity)
         v._print_error("foobar")
-        assert capsys.readouterr().err == "py.test: error: foobar\n"
+        assert capsys.readouterr().err.endswith(": error: foobar\n")
     
     def print_error_with_mock_state(self, verbosity, message):
         v = BitstreamViewer(None, verbose=verbosity)
@@ -380,19 +380,20 @@ class TestBitstreamViewer(object):
     
     def test_print_error_with_context_verbose_0(self, capsys):
         self.print_error_with_mock_state(0, "foobar")
-        assert capsys.readouterr().err == "py.test: error: foobar\n"
+        assert capsys.readouterr().err.endswith(": error: foobar\n")
     
     def test_print_error_with_context_verbose_1(self, capsys):
         self.print_error_with_mock_state(1, "foobar")
-        assert capsys.readouterr().err == (
+        assert re.match(
             "000000000008: 10101010101010101010101010101010    <next 128 bits>\n"
             "              10101010101010101010101010101010    \n"
             "              10101010101010101010101010101010    \n"
             "              10101010101010101010101010101010    \n"
-            "py.test: offset: 12\n"
-            "py.test: target: foo: bar\n"
-            "py.test: error: foobar\n"
-        )
+            ".*: offset: 12\n"
+            ".*: target: foo: bar\n"
+            ".*: error: foobar\n",
+            capsys.readouterr().err,
+        ) is not None
     
     def test_print_error_with_context_verbose_2(self, capsys):
         self.print_error_with_mock_state(2, "foobar")
@@ -406,12 +407,13 @@ class TestBitstreamViewer(object):
             "Traceback"
         )
         
-        assert err.endswith(
+        assert re.match(
             "KeyError: 'missing'\n"
-            "py.test: offset: 12\n"
-            "py.test: target: foo: bar\n"
-            "py.test: error: foobar\n"
-        )
+            ".*: offset: 12\n"
+            ".*: target: foo: bar\n"
+            ".*: error: foobar",
+            "\n".join(err.splitlines()[-4:]),
+        ) is not None
     
     def test_print_value(self, capsys):
         v = BitstreamViewer(None)
@@ -651,8 +653,8 @@ class TestBitstreamViewer(object):
             "000000000000:                                     | | | +- padding: 0b\n"
             "000000000000: 11011110101011011011111011101111    | | | +- parse_info_prefix: INCORRECT (0xDEADBEEF)\n"
         )
-        assert err == (
-            "py.test: error: invalid parse_info prefix (0xDEADBEEF)\n"
+        assert err.endswith(
+            ": error: invalid parse_info prefix (0xDEADBEEF)\n"
         )
         
         # Disable checking should result in non-crashing run
@@ -687,12 +689,13 @@ class TestBitstreamViewer(object):
             "000000000000: 01000010010000100100001101000100    | | | +- parse_info_prefix: Correct (0x42424344)\n"
             "000000000032: 00010000                            | | | +- parse_code: end_of_sequence (0x10)\n"
         )
-        assert err == (
-            "000000000040: 0000000000000000                    <next 16 bits>\n"
-            "py.test: offset: 56\n"
-            "py.test: target: data_units: 0: parse_info\n"
-            "py.test: error: reached the end of the file while parsing parse_info (10.5.1)\n"
-        )
+        assert re.match(
+            r"000000000040: 0000000000000000                    <next 16 bits>\n"
+            r".*: offset: 56\n"
+            r".*: target: data_units: 0: parse_info\n"
+            r".*: error: reached the end of the file while parsing parse_info \(10.5.1\)\n",
+            err,
+        ) is not None
     
     def test_report_parse_errors(self, capsys, missing_sequence_header_bitstream_fname):
         v = BitstreamViewer(
@@ -701,8 +704,8 @@ class TestBitstreamViewer(object):
         assert v.run() == 4
         
         out, err = capsys.readouterr()
-        assert err == (
-            "py.test: error: transform_parameters (12.4.1) failed to parse bitstream (KeyError: 'major_version') (missing sequence_header, fragment or earlier out of range value?)\n"
+        assert err.endswith(
+            ": error: transform_parameters (12.4.1) failed to parse bitstream (KeyError: 'major_version') (missing sequence_header, fragment or earlier out of range value?)\n"
         )
 
 
