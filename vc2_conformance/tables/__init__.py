@@ -687,7 +687,7 @@ headers and transform parameters headers and are enumerated below:
     * ``major_version``: int
     * ``minor_version``: int
 * (11.1)
-    * ``base_video_formats``: int (from the :py:class:`BaseVideoFormats` enum)
+    * ``base_video_format``: int (from the :py:class:`BaseVideoFormats` enum)
 * (11.4.3)
     * ``custom_dimensions_flag``: bool
     * ``frame_width``: int
