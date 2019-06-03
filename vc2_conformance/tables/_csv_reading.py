@@ -16,10 +16,16 @@ from enum import IntEnum
 
 from collections import OrderedDict, defaultdict
 
+from vc2_conformance._constraint_table import (
+    ValueSet,
+    AnyValue,
+)
+
 
 __all__ = [
     "read_enum_from_csv",
     "read_lookup_from_csv",
+    "read_constraints_from_csv",
     "to_list",
     "to_enum_from_index",
     "to_enum_from_name",
@@ -31,13 +37,21 @@ QUOTE_CHARS = u'"“”\'’’`'
 """The various unicode quote characters"""
 
 
+def csv_path(csv_filename):
+    """
+    Given a CSV filename in the ``vc2_conformance/tables/`` directory, returns
+    a complete path to that file.
+    """
+    return os.path.join(os.path.dirname(__file__), csv_filename)
+
+
 def read_csv_without_comments(csv_filename):
     """
     Given a CSV filename in the ``vc2_conformance/tables/`` directory, returns
     a list of dictionaries, one per row, containing the values in the CSV (as
     read by :py:class:`csv.DictReader`).
     """
-    csv_filename = os.path.join(os.path.dirname(__file__), csv_filename)
+    csv_filename = csv_path(csv_filename)
     
     # Find the first non-empty/comment row in the CSV
     with open(csv_filename) as f:
@@ -151,6 +165,79 @@ def read_lookup_from_csv(
         lookup[index] = value
     
     return lookup
+
+
+def read_constraints_from_csv(csv_filename):
+    """
+    Reads a table of constraints (see
+    :py:mod:`vc2_conformance._constraint_table`) from a CSV file.
+    
+    The CSV file should be arranged with each row describing a particular value
+    to be constrained and each column defining an allowed combination of
+    values.
+    
+    Empty rows and rows containing only '#' prefixed values will be skipped.
+    
+    The first column will be treated as the keys being constrained, remaining
+    columns should contain allowed combinations of values. Each of these values
+    will be converted into a
+    :py:class:`~vc2_conformance._constraint_table.ValueSet` as follows::
+    
+    * Values which contain integers will be converted to ``int``
+    * Values which contain 'TRUE' or 'FALSE' will be converted to ``bool``
+    * Values containing a pair of integers separated by a ``-`` will be treated
+      as an incusive range.
+    * Several comma-separated instances of the above will be combined into a
+      single ValueSet.
+    * The value 'any' will be substituted for
+      :py:class:`~vc2_conformance._constraint_table.AnyValue`.
+    * Empty cells will be converted into empty ValueSets.
+    * Cells which contain only a pair of quotes (e.g. ``"``, i.e. ditto) will
+      be assigned the same value as the column to their left.
+    
+    The read constraint table will be returned as a list of dictionaries (one
+    per column) as expected by the functions in
+    :py:mod:`vc2_conformance._constraint_table`.
+    """
+    out = []
+    
+    with open(csv_path(csv_filename)) as f:
+        for row in csv.reader(f):
+            # Skip empty lines
+            if all(not cell.strip() or cell.strip().startswith("#")
+                   for cell in row):
+                continue
+            
+            # Add extra constraint sets as required
+            for _ in range(len(out), len(row) - 1):
+                out.append({})
+            
+            # Populate this row's values
+            key = row[0]
+            last_value = ValueSet()
+            for i, column in enumerate(row[1:]):
+                value = ValueSet()
+                if column.strip() in tuple(QUOTE_CHARS):
+                    value += last_value
+                elif column.strip().lower() == "any":
+                    value = AnyValue()
+                else:
+                    for value_string in column.split(","):
+                        values = [
+                            True if s.strip().lower() == "true" else
+                            False if s.strip().lower() == "false" else
+                            int(s)
+                            for s in value_string.partition("-")[::2]
+                            if s
+                        ]
+                        if len(values) == 1:
+                            value.add_value(values[0])
+                        elif len(values) == 2:
+                            value.add_range(values[0], values[1])
+                out[i][key] = value
+                last_value = value
+    
+    return out
 
 
 def to_list(type_conversion):

@@ -1,0 +1,90 @@
+# Constraints on bitstream values from levels. Each column of this table enumerates a combination of parameter values] which may be used simultaneously in a VC-2 stream,,,,,,,,,,,,,,,,,,,,,,
+# See vc2_conformance.tables/__init__.py for meanings of the values in the table,,,,,,,,,,,,,,,,,,,,,,
+# See vc2_conformance.tables._csv_reading.read_constraints_from_csv for details of table formatting rules,,,,,,,,,,,,,,,,,,,,,,
+# See vc2_conformance._constraint_table for details of how constraint tables are enforced,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,
+# (11.2.1),# Unconcstrained,# Sub-SD,# SD480i-60,# SD480p-30,# SD Interlaced,# SD Progressive,# HD Progressive,# HD Interlaced,# HD Interlaced as progressive,# D-Cinema 2K,# D-Cinema 4K,# UHDTV 4K,# UHDTV 8K,# 1080p60 over SDI,# 1080p50 over SDI,# 720p60 over SD SDI,# 720p50 over SD SDI,# 1080p60 over SD SDI,# 1080p50 over SD SDI,# 1440x1080p60 over SD SDI,# 1440x1080p50 over SD SDI,# UHD over HD
+level,0,1,2,"""","""","""",3,"""","""",4,5,6,7,64,"""",65,"""","""","""","""","""",66
+profile,any,any,any,"""","""","""",any,"""","""",any,any,any,any,0,"""",0,"""","""","""","""","""",3
+major_version,any,any,any,"""","""","""",any,"""","""",any,any,any,any,2,"""",2,"""","""","""","""","""",any
+minor_version,any,any,any,"""","""","""",any,"""","""",any,any,any,any,any,"""",any,"""","""","""","""","""",any
+,,,,,,,,,,,,,,,,,,,,,,
+# (11.1),,,,,,,,,,,,,,,,,,,,,,
+base_video_formats,any,"1,2,3,4,5,6",7,"""","8,22","""","9,10,13,14,21","11,12","11,12",15,16,"17,18","19,20",13,14,9,10,11,12,11,12,"17,18"
+,,,,,,,,,,,,,,,,,,,,,,
+# (11.4.3),,,,,,,,,,,,,,,,,,,,,,
+custom_dimensions_flag,any,FALSE,any,"""",FALSE,"""",FALSE,"""","""",FALSE,FALSE,FALSE,FALSE,FALSE,"""",FALSE,"""","""","""",TRUE,"""",FALSE
+frame_width,any,,720,"""",,,,,,,,,,,,,,,,1440,"""",
+frame_height,any,,480-486,"""",,,,,,,,,,,,,,,,1080,"""",
+,,,,,,,,,,,,,,,,,,,,,,
+# (11.4.4),,,,,,,,,,,,,,,,,,,,,,
+custom_color_diff_format_flag,any,FALSE,FALSE,"""","""","""",FALSE,"""","""",FALSE,FALSE,FALSE,FALSE,FALSE,"""",FALSE,"""","""","""","""","""",FALSE
+color_diff_format_index,any,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,
+# (11.4.5),,,,,,,,,,,,,,,,,,,,,,
+custom_scan_format_flag,any,FALSE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,"""",FALSE,"""","""","""","""","""",FALSE
+source_sampling,any,,,0,,0,,,0,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,
+# (11.4.6),,,,,,,,,,,,,,,,,,,,,,
+custom_frame_rate_flag,any,FALSE,FALSE,"""","""","""",FALSE,"""","""",any,FALSE,“,“,any,FALSE,FALSE,"""","""","""","""","""",FALSE
+frame_rate_index,any,,,,,,,,,11,,,,8,,,,,,,,
+frame_rate_numer,any,,,,,,,,,,,,,,,,,,,,,
+frame_rate_denom,any,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,
+# (11.4.7),,,,,,,,,,,,,,,,,,,,,,
+custom_pixel_aspect_ratio_flag,any,FALSE,FALSE,"""","""","""",FALSE,"""","""",FALSE,FALSE,FALSE,FALSE,FALSE,"""",FALSE,"""","""","""",TRUE,"""",FALSE
+pixel_aspect_ratio_index,any,,,,,,,,,,,,,,,,"""","""","""",6,"""",
+pixel_aspect_ratio_numer,any,,,,,,,,,,,,,,,,,,,,,
+pixel_aspect_ratio_denom,any,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,
+# (11.4.8),,,,,,,,,,,,,,,,,,,,,,
+custom_clean_area_flag,any,FALSE,FALSE,"""","""","""",FALSE,"""","""",FALSE,FALSE,FALSE,FALSE,FALSE,"""",FALSE,"""","""","""",TRUE,"""",FALSE
+clean_width,any,,,,,,,,,,,,,,,,,,,1440,"""",
+clean_height,any,,,,,,,,,,,,,,,,,,,1080,"""",
+left_offset,any,,,,,,,,,,,,,,,,,,,0,"""",
+top_offset,any,,,,,,,,,,,,,,,,,,,0,"""",
+,,,,,,,,,,,,,,,,,,,,,,
+# (11.4.9),,,,,,,,,,,,,,,,,,,,,,
+custom_signal_range_flag,any,FALSE,FALSE,"""","""","""",FALSE,"""","""",FALSE,FALSE,FALSE,FALSE,FALSE,"""",FALSE,"""","""","""","""","""",FALSE
+custom_signal_range_index,any,,,,,,,,,,,,,,,,,,,,,
+luma_offset,any,,,,,,,,,,,,,,,,,,,,,
+luma_excursion,any,,,,,,,,,,,,,,,,,,,,,
+color_diff_offset,any,,,,,,,,,,,,,,,,,,,,,
+color_diff_excursion,any,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,
+# (11.4.10),,,,,,,,,,,,,,,,,,,,,,
+custom_color_spec_flag,any,FALSE,FALSE,"""","""","""",FALSE,"""","""",FALSE,FALSE,FALSE,FALSE,FALSE,"""",FALSE,"""","""","""","""","""",FALSE
+custom_color_spec_index,any,,,,,,,,,,,,,,,,,,,,,
+custom_color_primaries_flag,any,,,,,,,,,,,,,,,,,,,,,FALSE
+custom_color_primaries_index,any,,,,,,,,,,,,,,,,,,,,,
+custom_color_matrix_flag,any,,,,,,,,,,,,,,,,,,,,,FALSE
+custom_color_matrix_index,any,,,,,,,,,,,,,,,,,,,,,
+custom_transfer_function_flag,any,,,,,,,,,,,,,,,,,,,,,FALSE
+custom_transfer_function_index,any,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,
+# (11.1),,,,,,,,,,,,,,,,,,,,,,
+picture_coding_mode,any,0,1,0,1,0,0,1,0,0,0,0,0,0,"""",0,"""",1,"""","""","""",0
+,,,,,,,,,,,,,,,,,,,,,,
+# (12.4.1),,,,,,,,,,,,,,,,,,,,,,
+wavelet_index,any,"0,1,2,3,4","0,1,2,3,4","""","""","""","0,1,2,3,4","""","""","0,1,2,3,4","0,1,2,3,4","0,1,2,3,4","0,1,2,3,4",4,"""",1,"""","""","""","""","""",1
+dwt_depth,any,0-4,0-4,"""","""","""",0-4,"""","""",0-4,0-4,0-4,0-4,2,"""",3,"""","""","""","""","""",3
+,,,,,,,,,,,,,,,,,,,,,,
+# (12.4.4.1),,,,,,,,,,,,,,,,,,,,,,
+asym_transform_index_flag,any,FALSE,FALSE,"""","""","""",FALSE,"""","""",FALSE,FALSE,FALSE,FALSE,,,,,,,,,FALSE
+wavelet_index_ho,any,,,,,,,,,,,,,,,,,,,,,
+asym_transform_flag,any,FALSE,FALSE,"""","""","""",FALSE,"""","""",FALSE,FALSE,FALSE,FALSE,,,,,,,,,FALSE
+dwt_depth_ho,any,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,
+# (12.4.5.3),,,,,,,,,,,,,,,,,,,,,,
+custom_quant_matrix,any,any,any,“,“,“,any,“,“,any,any,any,any,FALSE,“,FALSE,“,“,“,“,“,FALSE
+quant_matrix_values,any,0-127,0-127,"""","""","""",0-127,"""","""",0-127,0-127,0-127,0-127,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,
+# (12.4.5.2),,,,,,,,,,,,,,,,,,,,,,
+slices_x,any,any,any,"""","""","""",any,"""","""",any,any,any,any,120,"""",80,"""",120,"""",90,"""",120
+slices_y,any,any,any,"""","""","""",any,"""","""",any,any,any,any,270,"""",90,"""",68,"""",68,"""",270
+slices_have_same_dimensions,any,TRUE,TRUE,“,“,“,TRUE,“,“,TRUE,TRUE,TRUE,TRUE,any,“,any,“,any,“,any,“,any
+slice_bytes_numerator,any,any,any,"""","""","""",any,"""","""",any,any,any,any,64,"""",243,288,729,864,972,1152,
+slice_bytes_denomenator,any,any,any,"""","""","""",any,"""","""",any,any,any,any,1,"""",5,5,17,17,17,17,
+slice_prefix_bytes,any,any,any,"""","""","""",any,"""","""",any,any,any,any,,,,,,,,,0
+slice_size_scaler,any,any,any,"""","""","""",any,"""","""",any,any,any,any,,,,,,,,,1
+total_slice_bytes,any,any,any,"""","""","""",any,"""","""",any,any,any,any,,,,,,,,,128

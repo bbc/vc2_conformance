@@ -4,10 +4,13 @@ from collections import namedtuple
 
 from enum import IntEnum
 
+from vc2_conformance._constraint_table import allowed_values_for, ValueSet, AnyValue
+
 from vc2_conformance.tables._csv_reading import (
     read_csv_without_comments,
     read_enum_from_csv,
     read_lookup_from_csv,
+    read_constraints_from_csv,
     to_list,
     to_enum_from_index,
     to_enum_from_name,
@@ -73,6 +76,47 @@ class TestReadLookupFromCSV(object):
             Test.two: TestTuple("Something"),
             Test.three: TestTuple("Something"),
         }
+
+
+def test_read_constraints_from_csv():
+    constraints = read_constraints_from_csv("test_constraints.csv")
+    
+    # Every column included (incl. empty column!)
+    assert len(constraints) == 4
+    
+    # All columns should have all row names
+    assert all(set(c) == set(["foo", "bar", "baz", "quo", "qux"])
+               for c in constraints)
+    
+    # Plain integers in 'foo'
+    assert constraints[0]["foo"] == ValueSet(1)
+    assert constraints[1]["foo"] == ValueSet(2)
+    assert constraints[2]["foo"] == ValueSet()  # Empty
+    assert constraints[3]["foo"] == ValueSet(3)
+    
+    # Multiple integers in 'bar'
+    assert constraints[0]["bar"] == ValueSet(10, 100)
+    assert constraints[1]["bar"] == ValueSet(20, 200)
+    assert constraints[2]["bar"] == ValueSet()  # Empty
+    assert constraints[3]["bar"] == ValueSet(30, 300)
+    
+    # 'Ditto' used in 'baz'
+    assert constraints[0]["baz"] == ValueSet(12)
+    assert constraints[1]["baz"] == ValueSet(12)  # Ditto'd
+    assert constraints[2]["baz"] == ValueSet()  # Empty
+    assert constraints[3]["baz"] == ValueSet(3)
+    
+    # 'any', ranges and empty values used in 'quo'
+    assert constraints[0]["quo"] == AnyValue()
+    assert constraints[1]["quo"] == ValueSet((2, 200), (300, 3000))
+    assert constraints[2]["quo"] == ValueSet()  # Empty
+    assert constraints[3]["quo"] == ValueSet()
+    
+    # Booleans in 'qux'
+    assert constraints[0]["qux"] == ValueSet(False)
+    assert constraints[1]["qux"] == ValueSet(True)
+    assert constraints[2]["qux"] == ValueSet()  # Empty
+    assert constraints[3]["qux"] == ValueSet(True, False)
 
 
 @pytest.mark.parametrize("string,exp_list", [

@@ -1,0 +1,9 @@
+# This CSV file is used by the vc2_conformance test suite to check CSV-loading routines within the conformance software,,,,
+,,,# Empty column,
+foo,1,2,,3
+bar,"10,100","20, 200",,"30,300"
+baz,12,“,,3
+# A row with only comments,,,,
+,,,,
+quo,any,"2-200, 300-3000",,
+qux,FALSE,TRUE,,"TRUE, FALSE"
