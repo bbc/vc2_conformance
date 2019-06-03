@@ -3,9 +3,13 @@
 =========================================================================================
 """
 
-from vc2_conformance.tables import ParseCodes
+from vc2_conformance.tables import ParseCodes, LEVEL_CONSTRAINTS
 
 from vc2_conformance._symbol_re import WILDCARD, END_OF_SEQUENCE
+
+from vc2_conformance._constraint_table import allowed_values_for
+
+from vc2_conformance.decoder.exceptions import ValueNotAllowedInLevel
 
 
 def assert_in_enum(value, enum, exception_type):
@@ -78,3 +82,30 @@ def assert_parse_code_sequence_ended(matcher, exception_type):
                 expected_parse_codes.append(getattr(ParseCodes, parse_code_name))
         
         raise exception_type(None, expected_parse_codes, False)
+
+
+def assert_level_constraint(state, key, value):
+    """
+    Check that the given key and value is allowed according to the
+    :py:data:`vc2_conformance.tables.LEVEL_CONSTRAINTS`. Throws a
+    :py;exc:`vc2_conformance.decoder.exceptions.ValueNotAllowedInLevel`
+    exception on failure.
+    
+    Takes the current :py:class:`~vc2_conformance.state.State` instance from
+    which the current
+    :py:attr:`~vc2_conformance.state.State._level_constrained_values` will be
+    checked and updated (and created if it does not exist).
+    """
+    state.setdefault("_level_constrained_values", {})
+    
+    allowed_values = allowed_values_for(
+        LEVEL_CONSTRAINTS,
+        key,
+        state["_level_constrained_values"],
+    )
+    
+    if value not in allowed_values:
+        raise ValueNotAllowedInLevel(state["_level_constrained_values"], key, value, allowed_values)
+    else:
+        state["_level_constrained_values"][key] = value
+    

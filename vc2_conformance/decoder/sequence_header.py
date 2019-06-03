@@ -7,18 +7,23 @@ from vc2_conformance.metadata import ref_pseudocode
 
 from vc2_conformance.vc2_math import intlog2
 
-from vc2_conformance.tables import Profiles, Levels, LEVELS
+from vc2_conformance.tables import BaseVideoFormats, PictureCodingModes, Profiles, Levels, LEVELS
 
 from vc2_conformance.video_parameters import (
     set_source_defaults,
 )
 
-from vc2_conformance.decoder.assertions import assert_in_enum
+from vc2_conformance.decoder.assertions import (
+    assert_in_enum,
+    assert_level_constraint,
+)
 
 from vc2_conformance.decoder.exceptions import (
     SequenceHeaderChangedMidSequence,
     ProfileChanged,
     LevelChanged,
+    BadBaseVideoFormat,
+    BadPictureCodingMode,
     BadProfile,
     BadLevel,
 )
@@ -47,9 +52,25 @@ def sequence_header(state):
     ## End not in spec
     
     parse_parameters(state)
+    
     base_video_format = read_uint(state)
+    
+    # (11.4.1) Check base video format is supported
+    assert_in_enum(base_video_format, BaseVideoFormats, BadBaseVideoFormat) ## Not in spec
+    
+    # (C.3) Check level allows this base format
+    assert_level_constraint(state, "base_video_format", base_video_format) ## Not in spec
+    
     video_parameters = source_parameters(state, base_video_format)
+    
     picture_coding_mode = read_uint(state)
+    
+    # (11.5) Ensure picture coding mode is valid
+    assert_in_enum(picture_coding_mode, PictureCodingModes, BadPictureCodingMode) ## Not in spec
+    
+    # (C.3) Check level allows this picture coding mode
+    assert_level_constraint(state, "picture_coding_mode", picture_coding_mode) ## Not in spec
+    
     set_coding_parameters(state, video_parameters, picture_coding_mode)
     
     # (11.1) Check that the this sequence_header is byte-for-byte identical
@@ -108,6 +129,10 @@ def parse_parameters(state):
             this_parse_parameters_offset,
             state["level"],
         )
+    
+    state["_last_parse_parameters_offset"] = this_parse_parameters_offset
+    state["_last_profile"] = state["profile"]
+    state["_last_level"] = state["level"]
     ## End not in spec
     
     # (C.3) Levels may constrain the order and choice of data units in a
@@ -124,10 +149,12 @@ def parse_parameters(state):
         assert state["_level_sequence_matcher"].match_symbol("sequence_header")
     ## End not in spec
     
+    # (C.3) Levels may constrain the allowed profiles and versions
     ## Begin not in spec
-    state["_last_parse_parameters_offset"] = this_parse_parameters_offset
-    state["_last_profile"] = state["profile"]
-    state["_last_level"] = state["level"]
+    assert_level_constraint(state, "level", state["level"])
+    assert_level_constraint(state, "profile", state["profile"])
+    assert_level_constraint(state, "major_version", state["major_version"])
+    assert_level_constraint(state, "minor_version", state["minor_version"])
     ## End not in spec
 
 @ref_pseudocode
@@ -158,6 +185,7 @@ def frame_size(state, video_parameters):
 def color_diff_sampling_format(state, video_parameters):
     """(11.4.4)"""
     custom_color_diff_format_flag = read_bool(state)
+    
     if(custom_color_diff_format_flag):
         video_parameters["color_diff_format_index"] = read_uint(state)
 
@@ -166,6 +194,7 @@ def color_diff_sampling_format(state, video_parameters):
 def scan_format(state, video_parameters):
     """(11.4.5)"""
     custom_scan_format_flag = read_bool(state)
+    
     if(custom_scan_format_flag):
         video_parameters["source_sampling"] = read_uint(state)
 

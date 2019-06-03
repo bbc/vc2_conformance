@@ -127,6 +127,11 @@ State = fixeddict(
     # first (11.2.1) parse_parameters is encountered (and should therefore be
     # ignored until that point).
     Entry("_level_sequence_matcher"),
+    # A dictionary which will be incrementally populated with values read or
+    # computed from the bitstream which are constrained by the level
+    # constraints table (see vc2_conformance.tables.LEVEL_CONSTRAINTS and
+    # vc2_conformance.decoder.assertions.assert_level_constraint).
+    Entry("_level_constrained_values"),
 )
 """
 The global state variable type.

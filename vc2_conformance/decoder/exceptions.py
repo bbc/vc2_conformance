@@ -314,3 +314,52 @@ class ParseCodeNotAllowedInProfile(ConformanceError):
         self.parse_code = parse_code
         self.profile = profile
         super(ParseCodeNotAllowedInProfile, self).__init__()
+
+
+class ValueNotAllowedInLevel(ConformanceError):
+    """
+    A value was encountered in the bitstream which was not allowed by the
+    current level. See :py:data:`vc2_conformance.tables.LEVEL_CONSTRAINTS` for
+    details of the constrained keys.
+    
+    :py:attr:`level_constrained_values` will be the previously specified
+    values which were allowed by the level constraints.
+    
+    The offending key and value will be placed in :py:attr:`key` and
+    :py:attr:`value` respectively.
+    
+    The allowed :py:class:`~vc2_conformance._constraint_table.ValueSet` will be
+    placed in :py:attr:`allowed_values`.
+    """
+    
+    def __init__(self, level_constrained_values, key, value, allowed_values):
+        self.level_constrained_values = level_constrained_values
+        self.key = key
+        self.value = value
+        self.allowed_values = allowed_values
+        super(ValueNotAllowedInLevel, self).__init__()
+
+
+class BadBaseVideoFormat(ConformanceError):
+    """
+    sequence_header (11.1) has been given an unrecognised base video format
+    number.
+    
+    The exception argument will contain the received base video format number.
+    """
+    
+    def __init__(self, base_video_format):
+        self.base_video_format = base_video_format
+        super(BadBaseVideoFormat, self).__init__()
+
+
+class BadPictureCodingMode(ConformanceError):
+    """
+    sequence_header (11.1) has been given an unrecognised picture coding mode.
+    
+    The exception argument will contain the received picture coding mode value
+    """
+    
+    def __init__(self, picture_coding_mode):
+        self.picture_coding_mode = picture_coding_mode
+        super(BadPictureCodingMode, self).__init__()
