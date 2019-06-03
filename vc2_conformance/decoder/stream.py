@@ -34,6 +34,7 @@ from vc2_conformance.decoder.exceptions import (
     InconsistentPreviousParseOffset,
     NonZeroPreviousParseOffsetAtStartOfSequence,
     GenericInvalidSequence,
+    LevelInvalidSequence,
     ParseCodeNotAllowedInProfile,
 )
 
@@ -167,6 +168,18 @@ def parse_info(state):
         state["_generic_sequence_matcher"],
         GenericInvalidSequence,
     )
+    ## End not in spec
+    
+    # (C.3) Check that the sequence follows the pattern dictated by the current
+    # level (NB: this matcher is populated later by parse_parameters (11.2.1)
+    # when the level is read for the first time.
+    ## Begin not in spec
+    if "_level_sequence_matcher" in state:
+        assert_parse_code_in_sequence(
+            state["parse_code"],
+            state["_level_sequence_matcher"],
+            LevelInvalidSequence,
+        )
     ## End not in spec
     
     # (C.2.2) Ensure that only the profile-permitted parse codes are used

@@ -236,3 +236,17 @@ class TestParseInfo(object):
                 decoder.parse_info(state)
             assert exc_info.value.parse_code == tables.ParseCodes.low_delay_picture
             assert exc_info.value.profile == tables.Profiles.high_quality
+    
+    def test_level_restricts_sequence(self):
+        state = bytes_to_state(parse_info_to_bytes(
+            parse_code=tables.ParseCodes.end_of_sequence,
+        ))
+        state["_generic_sequence_matcher"] = Matcher(".*")
+        state["_level_sequence_matcher"] = Matcher("sequence_header")
+        
+        with pytest.raises(decoder.LevelInvalidSequence) as exc_info:
+            decoder.parse_info(state)
+        
+        assert exc_info.value.parse_code is tables.ParseCodes.end_of_sequence
+        assert exc_info.value.expected_parse_codes == [tables.ParseCodes.sequence_header]
+        assert exc_info.value.expected_end is False

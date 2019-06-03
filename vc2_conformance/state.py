@@ -120,6 +120,13 @@ State = fixeddict(
     # (A.2.1) read_byte: The Python file-like object from which the bitstream
     # will be read by read_byte.
     Entry("_file"),
+    
+    # (C.3) Level-related state
+    # A vc2_conformance._symbol_re.Matcher which checks that the sequence
+    # follows the pattern dictated by the current level. Populated after the
+    # first (11.2.1) parse_parameters is encountered (and should therefore be
+    # ignored until that point).
+    Entry("_level_sequence_matcher"),
 )
 """
 The global state variable type.
@@ -131,7 +138,7 @@ retained_state_fields = [
     "next_bit",
     "current_byte",
     "_file",
-    "_recorded_bytes",  # Not required in practice.
+    "_recorded_bytes",  # Not required in practice, here for consistency
     
     # (11.2.1) parse_parameters: Must retain due to constraint on profile/level
     # not changing between sequences in a stream

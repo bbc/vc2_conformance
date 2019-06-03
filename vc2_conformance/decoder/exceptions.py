@@ -279,9 +279,32 @@ class GenericInvalidSequence(ConformanceError):
         super(GenericInvalidSequence, self).__init__()
 
 
+class LevelInvalidSequence(ConformanceError):
+    """
+    The sequence of data units in the VC-2 sequence does not match the
+    sequence structure specified for the current level (C.3).
+    
+    The offending parse code will be given in :py:attr:`parse_code` if it does
+    not match the expected sequence structure. If the sequence ends prematurely
+    ``None`` will be passed instead.
+    
+    :py:attr:`expected_parse_codes` enumerates the parse codes which would have
+    been allowed.  This may be ``None`` if any parse code would be permitted.
+    
+    :py:attr:`expected_end` is True if it would have been acceptable for the
+    sequence to have ended at this point.
+    """
+    
+    def __init__(self, parse_code, expected_parse_codes, expected_end):
+        self.parse_code = parse_code
+        self.expected_parse_codes = expected_parse_codes
+        self.expected_end = expected_end
+        super(LevelInvalidSequence, self).__init__()
+
+
 class ParseCodeNotAllowedInProfile(ConformanceError):
     """
-    The parse code encountered is not allowed in the current profile (C).
+    The parse code encountered is not allowed in the current profile (C.2).
     
     The offending parse_code and profile combination will be provided in
     :py:attr:`parse_code` and :py;attr:`profile`.

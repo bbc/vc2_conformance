@@ -7,7 +7,7 @@ from vc2_conformance.metadata import ref_pseudocode
 
 from vc2_conformance.vc2_math import intlog2
 
-from vc2_conformance.tables import Profiles, Levels
+from vc2_conformance.tables import Profiles, Levels, LEVELS
 
 from vc2_conformance.video_parameters import (
     set_source_defaults,
@@ -22,6 +22,8 @@ from vc2_conformance.decoder.exceptions import (
     BadProfile,
     BadLevel,
 )
+
+from vc2_conformance._symbol_re import Matcher
 
 from vc2_conformance.decoder.io import (
     record_bitstream_start,
@@ -106,6 +108,20 @@ def parse_parameters(state):
             this_parse_parameters_offset,
             state["level"],
         )
+    ## End not in spec
+    
+    # (C.3) Levels may constrain the order and choice of data units in a
+    # sequence. See the various level standards documents (e.g. ST 2042-2) for
+    # details.
+    ## Begin not in spec
+    if "_level_sequence_matcher" not in state:
+        state["_level_sequence_matcher"] = Matcher(
+            LEVELS[state["level"]].sequence_restriction_regex
+        )
+        # If we're at this point we're currently reading the first sequence
+        # header (in the first data unit) of a sequence. Advance the state
+        # machine accordingly.
+        assert state["_level_sequence_matcher"].match_symbol("sequence_header")
     ## End not in spec
     
     ## Begin not in spec
