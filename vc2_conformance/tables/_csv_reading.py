@@ -23,6 +23,7 @@ from vc2_conformance._constraint_table import (
 
 
 __all__ = [
+    "is_ditto",
     "read_enum_from_csv",
     "read_lookup_from_csv",
     "read_constraints_from_csv",
@@ -33,9 +34,40 @@ __all__ = [
 ]
 
 
-QUOTE_CHARS = u'"“”\'’’`'
-"""The various unicode quote characters"""
+QUOTE_CHARS = [
+    '"',  # ASCII double quote
+    "“",  # Unicode double opening quote
+    "”",  # Unicode double closing quote
+    "'",  # ASCII single quote
+    "’",  # Unicode single opening quote
+    "’",  # Unicode single closing quote
+    "`",  # ASCII tick
+]
+"""
+The various unicode characters which spreadsheet programs (unhelpfully) replace
+quotes with.
 
+NB: Under Python 2, these strings are intentionally non-unicode strings (and so
+will be interpreted as raw bytes) while in Python 3 these will be ordinary
+unicode strings.
+"""
+
+
+def is_ditto(string):
+    """Test if a cell's value string just indicates 'ditto'"""
+    # NB: To enable backward compatibility with Python 2 (and its messy
+    # handling of Unicode), this function works as if the input is a byte
+    # string and avoids text-handling routines.
+    
+    quotes_removed = string
+    for quote_char in QUOTE_CHARS:
+        # This technically isn't a robust way to perform byte-wise unicode
+        # character substitutions but given this simple application of just
+        # detecting unicode quotes inserted by spreadsheet packages this is
+        # excusable
+        quotes_removed = quotes_removed.replace(quote_char, "")
+    
+    return quotes_removed != string and len(quotes_removed.strip()) == 0
 
 def csv_path(csv_filename):
     """
@@ -93,12 +125,12 @@ def read_enum_from_csv(csv_filename, enum_name):
     enum_values = OrderedDict()
     for row in rows:
         # Skip rows without names/indices
-        if (not row["index"].strip(" " + QUOTE_CHARS) or
-                not row["name"].strip(" " + QUOTE_CHARS)):
+        if (not row["index"].strip() or is_ditto(row["index"]) or
+                not row["name"].strip() or is_ditto(row["name"])):
             continue
         
         index = int(row["index"].strip())
-        name = row["name"].strip()
+        name = str(row["name"].strip())
         
         enum_values[name] = index
     
@@ -152,7 +184,7 @@ def read_lookup_from_csv(
         
         # Get values for this row (falling back on previous ones if absent)
         for field in namedtuple_type._fields + ("index", ):
-            if row[field].strip(" " + QUOTE_CHARS):
+            if row[field].strip() and not is_ditto(row[field]):
                 column_values[field] = row[field]
         
         index = index_enum_type(int(column_values["index"]))
@@ -217,7 +249,7 @@ def read_constraints_from_csv(csv_filename):
             last_value = ValueSet()
             for i, column in enumerate(row[1:]):
                 value = ValueSet()
-                if column.strip() in tuple(QUOTE_CHARS):
+                if is_ditto(column):
                     value += last_value
                 elif column.strip().lower() == "any":
                     value = AnyValue()

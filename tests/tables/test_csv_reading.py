@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import pytest
 
 from collections import namedtuple
@@ -7,6 +9,7 @@ from enum import IntEnum
 from vc2_conformance._constraint_table import allowed_values_for, ValueSet, AnyValue
 
 from vc2_conformance.tables._csv_reading import (
+    is_ditto,
     read_csv_without_comments,
     read_enum_from_csv,
     read_lookup_from_csv,
@@ -16,6 +19,17 @@ from vc2_conformance.tables._csv_reading import (
     to_enum_from_name,
     to_dict_value,
 )
+
+
+def test_is_ditto():
+    # NB: This is intentionally not marked as a unicode string so in Python 2.7
+    # this will be interpreted as bytes -- as these characters will be if read
+    # from a CSV file.
+    quote_characters_and_spaces = ' " “ ” \' ’ ’ ` '
+    assert is_ditto(quote_characters_and_spaces) is True
+    assert is_ditto("") is False
+    assert is_ditto(" ") is False
+    assert is_ditto(" foo ") is False
 
 
 def test_read_csv_without_comments():
