@@ -209,6 +209,28 @@ class TestParseParameters(object):
         }
 
 
+@pytest.mark.parametrize("frame_width,frame_height", [
+    (0, 1000),
+    (1000, 0),
+    (0, 0),
+])
+def test_frame_size_must_not_be_zero(frame_width, frame_height):
+    state = bytes_to_state(seriallise_to_bytes(
+        bitstream.FrameSize(
+            custom_dimensions_flag=True,
+            frame_width=frame_width,
+            frame_height=frame_height,
+        ),
+        lambda serdes, state: bitstream.frame_size(serdes, state, {}),
+    ))
+    
+    with pytest.raises(decoder.ZeroPixelFrameSize) as exc_info:
+        decoder.frame_size(state, {})
+    
+    assert exc_info.value.frame_width == frame_width
+    assert exc_info.value.frame_height == frame_height
+
+
 def test_color_diff_sampling_format_index_must_be_valid():
     state = bytes_to_state(seriallise_to_bytes(
         bitstream.ColorDiffSamplingFormat(

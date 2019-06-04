@@ -60,6 +60,7 @@ from vc2_conformance.decoder.exceptions import (
     BadPresetColorMatrix,
     BadPresetTransferFunction,
     PictureDimensionsNotMultipleOfFrameDimensions,
+    ZeroPixelFrameSize,
 )
 
 from vc2_conformance._symbol_re import Matcher
@@ -250,6 +251,20 @@ def frame_size(state, video_parameters):
         video_parameters["frame_height"] = read_uint(state)
         # (C.3) Check level allows this value
         assert_level_constraint(state, "frame_height", video_parameters["frame_height"]) ## Not in spec
+        
+        # Errata: spec doesn't prevent zero-pixel pictures
+        #
+        # (11.4.3) Frames must be at least one pixel wide and tall
+        ## Begin not in spec
+        if (
+            video_parameters["frame_width"] == 0 or
+            video_parameters["frame_height"] == 0
+        ):
+            raise ZeroPixelFrameSize(
+                video_parameters["frame_width"],
+                video_parameters["frame_height"],
+            )
+        ## End not in spec
 
 
 @ref_pseudocode

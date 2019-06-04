@@ -365,6 +365,19 @@ class BadPictureCodingMode(ConformanceError):
         super(BadPictureCodingMode, self).__init__()
 
 
+class ZeroPixelFrameSize(ConformanceError):
+    """
+    (11.4.3) A custom frame size with a zero width or height was specified.
+    
+    The actual dimensions are specified as arguments.
+    """
+    
+    def __init__(self, frame_width, frame_height):
+        self.frame_width = frame_width
+        self.frame_height = frame_height
+        super(ZeroPixelFrameSize, self).__init__()
+
+
 class BadColorDifferenceSamplingFormat(ConformanceError):
     """
     color_diff_sampling_format (11.4.4) has been given an unrecognised color
