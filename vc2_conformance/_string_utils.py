@@ -3,7 +3,7 @@
 =====================================================================
 """
 
-from vc2_conformance._py2k_compat import zip_longest
+from vc2_conformance._py2x_compat import zip_longest
 
 
 def indent(text, prefix="  "):

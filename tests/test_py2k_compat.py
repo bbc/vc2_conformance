@@ -1,8 +1,8 @@
-from vc2_conformance._py2k_compat import *
+from vc2_conformance._py2x_compat import *
 
 
 def test_zip_longest():
-    # Sanity check as only renamed in Py2k
+    # Sanity check as only renamed in Py 2.x
     assert list(zip_longest([1, 2, 3], [10, 20, 30, 40])) == [
         (1, 10),
         (2, 20),

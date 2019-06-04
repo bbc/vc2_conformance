@@ -103,7 +103,7 @@ import sys
 import inspect
 import functools
 
-from vc2_conformance._py2k_compat import unwrap
+from vc2_conformance._py2x_compat import unwrap
 
 from collections import namedtuple
 

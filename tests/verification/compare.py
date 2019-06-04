@@ -18,7 +18,7 @@ given function matches the reference VC-2 pseudocode.
 .. autoexception:: ComparisonError
 """
 
-from vc2_conformance._py2k_compat import unwrap
+from vc2_conformance._py2x_compat import unwrap
 
 import ast
 

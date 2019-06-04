@@ -138,7 +138,7 @@ from vc2_conformance.tables import PARSE_INFO_PREFIX
 from vc2_conformance._string_utils import ellipsise_lossy
 from vc2_conformance._string_formatters import Hex
 
-from vc2_conformance._py2k_compat import (
+from vc2_conformance._py2x_compat import (
     zip_longest,
     get_terminal_size,
 )

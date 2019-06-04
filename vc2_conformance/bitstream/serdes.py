@@ -340,7 +340,7 @@ API
 .. autofunction:: context_type
 """
 
-from vc2_conformance._py2k_compat import wraps
+from vc2_conformance._py2x_compat import wraps
 
 from contextlib import contextmanager
 
