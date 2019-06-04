@@ -495,15 +495,21 @@ class BadPresetTransferFunction(ConformanceError):
         super(BadPresetTransferFunction, self).__init__()
 
 
-class ColorDiffHeightNotMultipleOfFrameHeight(ConformanceError):
+class PictureDimensionsNotMultipleOfFrameDimensions(ConformanceError):
     """
-    (11.6.2) specifies that the color_diff_height must be a whole multiple of
-    the frame_height.
+    (11.6.2) specifies that the picture dimensions (luma_width, luma_height,
+    color_diff_width and color_diff_height) must be a whole multiple of the
+    frame dimensions (i.e. frame_width and frame_height).
     
-    The actual color_diff_height and frame_height are provided as arguments.
+    The actual dimensions are specified as arguments.
     """
     
-    def __init__(self, color_diff_height, frame_height):
+    def __init__(self, luma_width, luma_height, color_diff_width, color_diff_height,
+                 frame_width, frame_height):
+        self.luma_width = luma_width
+        self.luma_height = luma_height
+        self.color_diff_width = color_diff_width
         self.color_diff_height = color_diff_height
+        self.frame_width = frame_width
         self.frame_height = frame_height
-        super(ColorDiffHeightNotMultipleOfFrameHeight, self).__init__()
+        super(PictureDimensionsNotMultipleOfFrameDimensions, self).__init__()

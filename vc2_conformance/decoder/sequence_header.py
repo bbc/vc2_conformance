@@ -59,7 +59,7 @@ from vc2_conformance.decoder.exceptions import (
     BadPresetColorPrimaries,
     BadPresetColorMatrix,
     BadPresetTransferFunction,
-    ColorDiffHeightNotMultipleOfFrameHeight,
+    PictureDimensionsNotMultipleOfFrameDimensions,
 )
 
 from vc2_conformance._symbol_re import Matcher
@@ -107,12 +107,34 @@ def sequence_header(state):
     
     set_coding_parameters(state, video_parameters, picture_coding_mode)
     
+    # Errata: The spec only says the frame_height must be an integer multiple
+    # of the color_diff_height but, in addition, the luma_height should be a
+    # multiple and the color_diff_width should be a multiple of
+    # luma_width/frame_width
+    #
     # (11.6.2) Check frame_height is an integer multiple of color_diff_height
-    if video_parameters["frame_height"] % state["color_diff_height"] != 0:
-        raise ColorDiffHeightNotMultipleOfFrameHeight(
+    ## Begin not in spec
+    if (
+        # Prevent divide-by-zero in tests below
+        state["luma_height"] == 0 or
+        state["luma_width"] == 0 or
+        state["color_diff_height"] == 0 or
+        state["color_diff_width"] == 0 or
+        # Actually check multiples
+        video_parameters["frame_height"] % state["luma_height"] != 0 or
+        video_parameters["frame_width"] % state["luma_width"] != 0 or
+        video_parameters["frame_height"] % state["color_diff_height"] != 0 or
+        video_parameters["frame_width"] % state["color_diff_width"] != 0
+    ):
+        raise PictureDimensionsNotMultipleOfFrameDimensions(
+            state["luma_width"],
+            state["luma_height"],
+            state["color_diff_width"],
             state["color_diff_height"],
+            video_parameters["frame_width"],
             video_parameters["frame_height"],
         )
+    ## End not in spec
     
     # (11.1) Check that the this sequence_header is byte-for-byte identical
     # with the previous sequence_header in the sequence

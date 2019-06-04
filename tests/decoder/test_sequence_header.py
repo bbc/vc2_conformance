@@ -55,28 +55,61 @@ class TestSequenceHeader(object):
             decoder.sequence_header(state)
         assert exc_info.value.picture_coding_mode == 2
     
-    def test_color_diff_height_must_be_multiple_of_frame_height(self):
+    @pytest.mark.parametrize("frame_width,frame_height,exp_luma_width,exp_luma_height,exp_color_diff_width,exp_color_diff_height,exp_error", [
+        # Divides both dimensions exactly
+        (1000, 1000, 1000, 500, 500, 250, False),
+        # Doesn't divide color-diff width
+        (1001, 1000, 1001, 500, 500, 250, True),
+        # Doesn't divide color-diff height
+        (1000, 1002, 1000, 501, 500, 250, True),
+        # Doesn't divide luma height
+        (1000, 1001, 1000, 500, 500, 250, True),
+        # Color-diff width evaluates to zero
+        (1, 1000, 1, 500, 0, 250, True),
+        # Color-diff height evaluates to zero
+        (1000, 2, 1000, 1, 500, 0, True),
+        # Luma height evaluates to zero
+        (1000, 1, 1000, 0, 500, 0, True),
+    ])
+    def test_picture_dimensions_must_be_multiple_of_frame_dimensions(
+        self,
+        frame_width,
+        frame_height,
+        exp_luma_width,
+        exp_luma_height,
+        exp_color_diff_width,
+        exp_color_diff_height,
+        exp_error,
+    ):
         state = bytes_to_state(sequence_header_to_bytes(
+            picture_coding_mode=tables.PictureCodingModes.pictures_are_fields,
             video_parameters=bitstream.SourceParameters(
                 frame_size=bitstream.FrameSize(
                     custom_dimensions_flag=True,
-                    frame_width=1000,
-                    frame_height=1001,  # Not divisible by 2
+                    frame_width=frame_width,
+                    frame_height=frame_height,
                 ),
                 color_diff_sampling_format=bitstream.ColorDiffSamplingFormat(
                     custom_color_diff_format_flag=True,
                     color_diff_format_index=tables.ColorDifferenceSamplingFormats.color_4_2_0,
                 ),
-                scan_format=bitstream.ScanFormat(
-                    custom_scan_format_flag=True,
-                    source_sampling=tables.SourceSamplingModes.progressive,
-                ),
             ),
         ))
-        with pytest.raises(decoder.ColorDiffHeightNotMultipleOfFrameHeight) as exc_info:
+        if exp_error:
+            with pytest.raises(decoder.PictureDimensionsNotMultipleOfFrameDimensions) as exc_info:
+                decoder.sequence_header(state)
+            assert exc_info.value.luma_width == exp_luma_width
+            assert exc_info.value.luma_height == exp_luma_height
+            assert exc_info.value.color_diff_width == exp_color_diff_width
+            assert exc_info.value.color_diff_height == exp_color_diff_height
+            assert exc_info.value.frame_width == frame_width
+            assert exc_info.value.frame_height == frame_height
+        else:
             decoder.sequence_header(state)
-        assert exc_info.value.color_diff_height == 500
-        assert exc_info.value.frame_height == 1001
+            assert state["luma_width"] == exp_luma_width
+            assert state["luma_height"] == exp_luma_height
+            assert state["color_diff_width"] == exp_color_diff_width
+            assert state["color_diff_height"] == exp_color_diff_height
 
 
 def parse_parameters_to_bytes(**kwargs):
