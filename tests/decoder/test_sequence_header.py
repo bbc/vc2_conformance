@@ -261,19 +261,53 @@ def test_scan_format_source_sampling_mode_must_be_valid():
     assert exc_info.value.source_sampling == 9999
 
 
-def test_frame_rate_index_must_be_valid():
-    state = bytes_to_state(seriallise_to_bytes(
-        bitstream.FrameRate(
+def frame_rate_to_bytes(**kwargs):
+    """
+    Seriallise a FrameRate block, returning a bytes object.
+    """
+    return seriallise_to_bytes(
+        bitstream.FrameRate(**kwargs),
+        lambda serdes, state: bitstream.frame_rate(serdes, state, {}),
+    )
+
+class TestFrameRate(object):
+    
+    def test_index_must_be_valid(self):
+        state = bytes_to_state(frame_rate_to_bytes(
             custom_frame_rate_flag=True,
             index=9999,
-        ),
-        lambda serdes, state: bitstream.frame_rate(serdes, state, {}),
-    ))
+        ))
+        
+        with pytest.raises(decoder.BadPresetFrameRateIndex) as exc_info:
+            decoder.frame_rate(state, {})
+        
+        assert exc_info.value.index == 9999
     
-    with pytest.raises(decoder.BadPresetFrameRateIndex) as exc_info:
-        decoder.frame_rate(state, {})
+    def test_denominator_must_not_be_zero(self):
+        state = bytes_to_state(frame_rate_to_bytes(
+            custom_frame_rate_flag=True,
+            index=0,
+            frame_rate_numer=1,
+            frame_rate_denom=0,
+        ))
+        
+        with pytest.raises(decoder.FrameRateHasZeroDenominator) as exc_info:
+            decoder.frame_rate(state, {})
+        
+        assert exc_info.value.frame_rate_numer == 1
     
-    assert exc_info.value.index == 9999
+    def test_must_not_be_zero_fps(self):
+        state = bytes_to_state(frame_rate_to_bytes(
+            custom_frame_rate_flag=True,
+            index=0,
+            frame_rate_numer=0,
+            frame_rate_denom=1,
+        ))
+        
+        with pytest.raises(decoder.FrameRateHasZeroNumerator) as exc_info:
+            decoder.frame_rate(state, {})
+        
+        assert exc_info.value.frame_rate_denom == 1
 
 
 def test_pixel_aspect_ratio_index_must_be_valid():

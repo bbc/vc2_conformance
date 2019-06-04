@@ -415,6 +415,32 @@ class BadPresetFrameRateIndex(ConformanceError):
         super(BadPresetFrameRateIndex, self).__init__()
 
 
+class FrameRateHasZeroNumerator(ConformanceError):
+    """
+    (11.4.6) specifies that custom frame rates must not be zero (i.e. have a
+    zero numerator)
+    
+    The denominator is provided as an argument.
+    """
+    
+    def __init__(self, frame_rate_denom):
+        self.frame_rate_denom = frame_rate_denom
+        super(FrameRateHasZeroNumerator, self).__init__()
+
+
+class FrameRateHasZeroDenominator(ConformanceError):
+    """
+    (11.4.6) specifies that custom frame rates must not have zero in the
+    denominator.
+    
+    The numerator is provided as an argument.
+    """
+    
+    def __init__(self, frame_rate_numer):
+        self.frame_rate_numer = frame_rate_numer
+        super(FrameRateHasZeroDenominator, self).__init__()
+
+
 class BadPresetPixelAspectRatio(ConformanceError):
     """
     pixel_aspect_ratio_index (11.4.7) has been given an unrecognised preset
@@ -526,3 +552,5 @@ class PictureDimensionsNotMultipleOfFrameDimensions(ConformanceError):
         self.frame_width = frame_width
         self.frame_height = frame_height
         super(PictureDimensionsNotMultipleOfFrameDimensions, self).__init__()
+
+

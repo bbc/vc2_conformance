@@ -61,6 +61,8 @@ from vc2_conformance.decoder.exceptions import (
     BadPresetTransferFunction,
     PictureDimensionsNotMultipleOfFrameDimensions,
     ZeroPixelFrameSize,
+    FrameRateHasZeroNumerator,
+    FrameRateHasZeroDenominator,
 )
 
 from vc2_conformance._symbol_re import Matcher
@@ -358,6 +360,24 @@ def frame_rate(state, video_parameters):
                 video_parameters["frame_rate_denom"],
             )
             ## End not in spec
+            
+            # Errata: spec doesn't prevent divide-by-zero in custom frame rate
+            # fractions.
+            #
+            # (11.4.6) frame_rate_denom must not be zero (i.e. a divide by zero)
+            ## Begin not in spec
+            if video_parameters["frame_rate_denom"] == 0:
+                raise FrameRateHasZeroDenominator(video_parameters["frame_rate_numer"])
+            ## End not in spec
+            
+            # Errata: spec doesn't prevent 0 fps
+            #
+            # (11.4.6) frame_rate_numer must not be zero (i.e. 0 fps)
+            ## Begin not in spec
+            if video_parameters["frame_rate_numer"] == 0:
+                raise FrameRateHasZeroNumerator(video_parameters["frame_rate_denom"])
+            ## End not in spec
+            
         else:
             # (11.4.6) Frame rate preset must be a known value
             assert_in_enum(index, PresetFrameRates, BadPresetFrameRateIndex) ## Not in spec
