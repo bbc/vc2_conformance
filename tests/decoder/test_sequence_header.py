@@ -47,15 +47,6 @@ class TestSequenceHeader(object):
             decoder.sequence_header(state)
         assert exc_info.value.base_video_format == 9999
     
-    def test_level_restricts_base_video_format(self):
-        state = bytes_to_state(sequence_header_to_bytes(
-            parse_parameters=bitstream.ParseParameters(level=1),
-            base_video_format=10
-        ))
-        with pytest.raises(decoder.ValueNotAllowedInLevel) as exc_info:
-            decoder.sequence_header(state)
-        assert exc_info.value.key == "base_video_format"
-    
     def test_supported_picture_coding_mode(self):
         state = bytes_to_state(sequence_header_to_bytes(
             picture_coding_mode=2
@@ -64,15 +55,28 @@ class TestSequenceHeader(object):
             decoder.sequence_header(state)
         assert exc_info.value.picture_coding_mode == 2
     
-    def test_level_restricts_picture_coding_mode(self):
+    def test_color_diff_height_must_be_multiple_of_frame_height(self):
         state = bytes_to_state(sequence_header_to_bytes(
-            parse_parameters=bitstream.ParseParameters(level=1),
-            base_video_format=1,
-            picture_coding_mode=1,
+            video_parameters=bitstream.SourceParameters(
+                frame_size=bitstream.FrameSize(
+                    custom_dimensions_flag=True,
+                    frame_width=1000,
+                    frame_height=1001,  # Not divisible by 2
+                ),
+                color_diff_sampling_format=bitstream.ColorDiffSamplingFormat(
+                    custom_color_diff_format_flag=True,
+                    color_diff_format_index=tables.ColorDifferenceSamplingFormats.color_4_2_0,
+                ),
+                scan_format=bitstream.ScanFormat(
+                    custom_scan_format_flag=True,
+                    source_sampling=tables.SourceSamplingModes.progressive,
+                ),
+            ),
         ))
-        with pytest.raises(decoder.ValueNotAllowedInLevel) as exc_info:
+        with pytest.raises(decoder.ColorDiffHeightNotMultipleOfFrameHeight) as exc_info:
             decoder.sequence_header(state)
-        assert exc_info.value.key == "picture_coding_mode"
+        assert exc_info.value.color_diff_height == 500
+        assert exc_info.value.frame_height == 1001
 
 
 def parse_parameters_to_bytes(**kwargs):
@@ -170,3 +174,313 @@ class TestParseParameters(object):
             "major_version": 3,
             "minor_version": 0,
         }
+
+
+def test_color_diff_sampling_format_index_must_be_valid():
+    state = bytes_to_state(seriallise_to_bytes(
+        bitstream.ColorDiffSamplingFormat(
+            custom_color_diff_format_flag=True,
+            color_diff_format_index=9999,
+        ),
+        lambda serdes, state: bitstream.color_diff_sampling_format(serdes, state, {}),
+    ))
+    
+    with pytest.raises(decoder.BadColorDifferenceSamplingFormat) as exc_info:
+        decoder.color_diff_sampling_format(state, {})
+    
+    assert exc_info.value.color_diff_format_index == 9999
+
+
+def test_scan_format_source_sampling_mode_must_be_valid():
+    state = bytes_to_state(seriallise_to_bytes(
+        bitstream.ScanFormat(
+            custom_scan_format_flag=True,
+            source_sampling=9999,
+        ),
+        lambda serdes, state: bitstream.scan_format(serdes, state, {}),
+    ))
+    
+    with pytest.raises(decoder.BadSourceSamplingMode) as exc_info:
+        decoder.scan_format(state, {})
+    
+    assert exc_info.value.source_sampling == 9999
+
+
+def test_frame_rate_index_must_be_valid():
+    state = bytes_to_state(seriallise_to_bytes(
+        bitstream.FrameRate(
+            custom_frame_rate_flag=True,
+            index=9999,
+        ),
+        lambda serdes, state: bitstream.frame_rate(serdes, state, {}),
+    ))
+    
+    with pytest.raises(decoder.BadPresetFrameRateIndex) as exc_info:
+        decoder.frame_rate(state, {})
+    
+    assert exc_info.value.index == 9999
+
+
+def test_pixel_aspect_ratio_index_must_be_valid():
+    state = bytes_to_state(seriallise_to_bytes(
+        bitstream.PixelAspectRatio(
+            custom_pixel_aspect_ratio_flag=True,
+            index=9999,
+        ),
+        lambda serdes, state: bitstream.pixel_aspect_ratio(serdes, state, {}),
+    ))
+    
+    with pytest.raises(decoder.BadPresetPixelAspectRatio) as exc_info:
+        decoder.pixel_aspect_ratio(state, {})
+    
+    assert exc_info.value.index == 9999
+
+
+@pytest.mark.parametrize("clean_width,clean_height,left_offset,top_offset,frame_width,frame_height,exp_fail", [
+    # Exactly match picture size
+    (1920, 1080, 0, 0, 1920, 1080, False),
+    # Smaller than picture size, top-left-aligned
+    (1910, 1076, 0, 0, 1920, 1080, False),
+    # Smaller than picture size, center-aligned
+    (1910, 1076, 5, 2, 1920, 1080, False),
+    # Smaller than picture size, bottom-right-aligned
+    (1910, 1076, 10, 4, 1920, 1080, False),
+    # Overlapping right-hand side
+    (1910, 1076, 11, 4, 1920, 1080, True),
+    # Overlapping bottom edge
+    (1910, 1076, 10, 5, 1920, 1080, True),
+])
+def test_clean_area_range_check(clean_width, clean_height, left_offset, top_offset,
+                                frame_width, frame_height, exp_fail):
+    video_parameters = {
+        "frame_width": frame_width,
+        "frame_height": frame_height,
+    }
+    
+    state = bytes_to_state(seriallise_to_bytes(
+        bitstream.CleanArea(
+            custom_clean_area_flag=True,
+            clean_width=clean_width,
+            clean_height=clean_height,
+            left_offset=left_offset,
+            top_offset=top_offset,
+        ),
+        lambda serdes, state: bitstream.clean_area(serdes, state, video_parameters),
+    ))
+    
+    if exp_fail:
+        with pytest.raises(decoder.CleanAreaOutOfRange) as exc_info:
+            decoder.clean_area(state, video_parameters)
+        assert exc_info.value.clean_width == clean_width
+        assert exc_info.value.clean_height == clean_height
+        assert exc_info.value.left_offset == left_offset
+        assert exc_info.value.top_offset == top_offset
+        assert exc_info.value.frame_width == frame_width
+        assert exc_info.value.frame_height == frame_height
+    else:
+        decoder.clean_area(state, video_parameters)
+
+
+def test_signal_range_index_must_be_valid():
+    state = bytes_to_state(seriallise_to_bytes(
+        bitstream.SignalRange(
+            custom_signal_range_flag=True,
+            index=9999,
+        ),
+        lambda serdes, state: bitstream.signal_range(serdes, state, {}),
+    ))
+    
+    with pytest.raises(decoder.BadPresetSignalRange) as exc_info:
+        decoder.signal_range(state, {})
+    
+    assert exc_info.value.index == 9999
+
+
+def test_color_spec_index_must_be_valid():
+    state = bytes_to_state(seriallise_to_bytes(
+        bitstream.ColorSpec(
+            custom_color_spec_flag=True,
+            index=9999,
+        ),
+        lambda serdes, state: bitstream.color_spec(serdes, state, {}),
+    ))
+    
+    with pytest.raises(decoder.BadPresetColorSpec) as exc_info:
+        decoder.color_spec(state, {})
+    
+    assert exc_info.value.index == 9999
+
+
+def test_color_primaries_index_must_be_valid():
+    state = bytes_to_state(seriallise_to_bytes(
+        bitstream.ColorPrimaries(
+            custom_color_primaries_flag=True,
+            index=9999,
+        ),
+        lambda serdes, state: bitstream.color_primaries(serdes, state, {}),
+    ))
+    
+    with pytest.raises(decoder.BadPresetColorPrimaries) as exc_info:
+        decoder.color_primaries(state, {})
+    
+    assert exc_info.value.index == 9999
+
+
+def test_color_matrix_index_must_be_valid():
+    state = bytes_to_state(seriallise_to_bytes(
+        bitstream.ColorMatrix(
+            custom_color_matrix_flag=True,
+            index=9999,
+        ),
+        lambda serdes, state: bitstream.color_matrix(serdes, state, {}),
+    ))
+    
+    with pytest.raises(decoder.BadPresetColorMatrix) as exc_info:
+        decoder.color_matrix(state, {})
+    
+    assert exc_info.value.index == 9999
+
+
+def test_transfer_function_index_must_be_valid():
+    state = bytes_to_state(seriallise_to_bytes(
+        bitstream.TransferFunction(
+            custom_transfer_function_flag=True,
+            index=9999,
+        ),
+        lambda serdes, state: bitstream.transfer_function(serdes, state, {}),
+    ))
+    
+    with pytest.raises(decoder.BadPresetTransferFunction) as exc_info:
+        decoder.transfer_function(state, {})
+    
+    assert exc_info.value.index == 9999
+
+
+def test_level_constraints():
+    # Simply check that all constrainted level values get asserted. We check
+    # this by making sure assert_level_constraint has added the relevant values
+    # to # state["_level_constrained_values"].
+    state = bytes_to_state(sequence_header_to_bytes(
+        base_video_format=tables.BaseVideoFormats.custom_format,
+        picture_coding_mode=tables.PictureCodingModes.pictures_are_frames,
+        parse_parameters=bitstream.ParseParameters(
+            level=tables.Levels.unconstrained,
+            profile=tables.Profiles.high_quality,
+            major_version=3,
+            minor_version=0,
+        ),
+        video_parameters=bitstream.SourceParameters(
+            frame_size=bitstream.FrameSize(
+                custom_dimensions_flag=True,
+                frame_width=1280,
+                frame_height=1080,
+            ),
+            color_diff_sampling_format=bitstream.ColorDiffSamplingFormat(
+                custom_color_diff_format_flag=True,
+                color_diff_format_index=tables.ColorDifferenceSamplingFormats.color_4_4_4,
+            ),
+            scan_format=bitstream.ScanFormat(
+                custom_scan_format_flag=True,
+                source_sampling=tables.SourceSamplingModes.progressive,
+            ),
+            frame_rate=bitstream.FrameRate(
+                custom_frame_rate_flag=True,
+                index=0,
+                frame_rate_numer=25,
+                frame_rate_denom=1,
+            ),
+            pixel_aspect_ratio=bitstream.PixelAspectRatio(
+                custom_pixel_aspect_ratio_flag=True,
+                index=0,
+                pixel_aspect_ratio_numer=1,
+                pixel_aspect_ratio_denom=1,
+            ),
+            clean_area=bitstream.CleanArea(
+                custom_clean_area_flag=True,
+                clean_width=1,
+                clean_height=2,
+                left_offset=3,
+                top_offset=4,
+            ),
+            signal_range=bitstream.SignalRange(
+                custom_signal_range_flag=True,
+                index=0,
+                luma_offset=1,
+                luma_excursion=2,
+                color_diff_offset=3,
+                color_diff_excursion=4,
+            ),
+            color_spec=bitstream.ColorSpec(
+                custom_color_spec_flag=True,
+                index=0,
+                color_primaries=bitstream.ColorPrimaries(
+                    custom_color_primaries_flag=True,
+                    index=tables.PresetColorPrimaries.uhdtv,
+                ),
+                color_matrix=bitstream.ColorMatrix(
+                    custom_color_matrix_flag=True,
+                    index=tables.PresetColorMatrices.uhdtv,
+                ),
+                transfer_function=bitstream.TransferFunction(
+                    custom_transfer_function_flag=True,
+                    index=tables.PresetTransferFunctions.hybrid_log_gamma,
+                ),
+            ),
+        ),
+    ))
+    decoder.sequence_header(state)
+    assert state["_level_constrained_values"] == {
+        # sequence_header
+        "base_video_format": tables.BaseVideoFormats.custom_format,
+        "picture_coding_mode": tables.PictureCodingModes.pictures_are_frames,
+        # parse_parameters
+        "level": tables.Levels.unconstrained,
+        "profile": tables.Profiles.high_quality,
+        "major_version": 3,
+        "minor_version": 0,
+        # frame_size
+        "custom_dimensions_flag": True,
+        "frame_width": 1280,
+        "frame_height": 1080,
+        # color_diff_sampling_format
+        "custom_color_diff_format_flag": True,
+        "color_diff_format_index": tables.ColorDifferenceSamplingFormats.color_4_4_4,
+        # scan_format
+        "custom_scan_format_flag": True,
+        "source_sampling": tables.SourceSamplingModes.progressive,
+        # frame_rate
+        "custom_frame_rate_flag": True,
+        "frame_rate_index": 0,
+        "frame_rate_numer": 25,
+        "frame_rate_denom": 1,
+        # pixel_aspect_ratio
+        "custom_pixel_aspect_ratio_flag": True,
+        "pixel_aspect_ratio_index": 0,
+        "pixel_aspect_ratio_numer": 1,
+        "pixel_aspect_ratio_denom": 1,
+        # clean_area
+        "custom_clean_area_flag": True,
+        "clean_width": 1,
+        "clean_height": 2,
+        "left_offset": 3,
+        "top_offset": 4,
+        # signal_range
+        "custom_signal_range_flag": True,
+        "custom_signal_range_index": 0,
+        "luma_offset": 1,
+        "luma_excursion": 2,
+        "color_diff_offset": 3,
+        "color_diff_excursion": 4,
+        # color_spec
+        "custom_color_spec_flag": True,
+        "custom_color_spec_index": 0,
+        # color_primaries
+        "custom_color_primaries_flag": True,
+        "custom_color_primaries_index": tables.PresetColorPrimaries.uhdtv,
+        # color_matrix
+        "custom_color_matrix_flag": True,
+        "custom_color_matrix_index": tables.PresetColorMatrices.uhdtv,
+        # transfer_function
+        "custom_transfer_function_flag": True,
+        "custom_transfer_function_index": tables.PresetTransferFunctions.hybrid_log_gamma,
+    }

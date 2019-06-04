@@ -363,3 +363,147 @@ class BadPictureCodingMode(ConformanceError):
     def __init__(self, picture_coding_mode):
         self.picture_coding_mode = picture_coding_mode
         super(BadPictureCodingMode, self).__init__()
+
+
+class BadColorDifferenceSamplingFormat(ConformanceError):
+    """
+    color_diff_sampling_format (11.4.4) has been given an unrecognised color
+    difference format index.
+    
+    The exception argument will contain the index.
+    """
+    
+    def __init__(self, color_diff_format_index):
+        self.color_diff_format_index = color_diff_format_index
+        super(BadColorDifferenceSamplingFormat, self).__init__()
+
+
+class BadSourceSamplingMode(ConformanceError):
+    """
+    scan_format (11.4.5) has been given an unrecognised source sampling mode.
+    
+    The exception argument will contain the offending mode.
+    """
+    
+    def __init__(self, source_sampling):
+        self.source_sampling = source_sampling
+        super(BadSourceSamplingMode, self).__init__()
+
+
+class BadPresetFrameRateIndex(ConformanceError):
+    """
+    frame_rate (11.4.6) has been given an unrecognised preset frame rate index
+    
+    The exception argument will contain the offending index.
+    """
+    
+    def __init__(self, index):
+        self.index = index
+        super(BadPresetFrameRateIndex, self).__init__()
+
+
+class BadPresetPixelAspectRatio(ConformanceError):
+    """
+    pixel_aspect_ratio_index (11.4.7) has been given an unrecognised preset
+    index
+    
+    The exception argument will contain the offending index.
+    """
+    
+    def __init__(self, index):
+        self.index = index
+        super(BadPresetPixelAspectRatio, self).__init__()
+
+
+class CleanAreaOutOfRange(ConformanceError):
+    """
+    clean_area (11.4.8) specifies a clean area which goes beyond the boundaries
+    of the picture.
+    
+    The offending clean area width, height, left and top offset will be
+    included as exception arguments, followed by the picture width and height.
+    """
+    
+    def __init__(self, clean_width, clean_height, left_offset, top_offset,
+                 frame_width, frame_height):
+        self.clean_width = clean_width
+        self.clean_height = clean_height
+        self.left_offset = left_offset
+        self.top_offset = top_offset
+        self.frame_width = frame_width
+        self.frame_height = frame_height
+        super(CleanAreaOutOfRange, self).__init__()
+
+
+class BadPresetSignalRange(ConformanceError):
+    """
+    signal_range (11.4.9) has been given an unrecognised preset index
+    
+    The exception argument will contain the offending index.
+    """
+    
+    def __init__(self, index):
+        self.index = index
+        super(BadPresetSignalRange, self).__init__()
+
+
+class BadPresetColorSpec(ConformanceError):
+    """
+    color_spec (11.4.10.1) has been given an unrecognised preset index
+    
+    The exception argument will contain the offending index.
+    """
+    
+    def __init__(self, index):
+        self.index = index
+        super(BadPresetColorSpec, self).__init__()
+
+
+class BadPresetColorPrimaries(ConformanceError):
+    """
+    color_primaries (11.4.10.2) has been given an unrecognised preset index
+    
+    The exception argument will contain the offending index.
+    """
+    
+    def __init__(self, index):
+        self.index = index
+        super(BadPresetColorPrimaries, self).__init__()
+
+
+class BadPresetColorMatrix(ConformanceError):
+    """
+    color_matrix (11.4.10.3) has been given an unrecognised preset index
+    
+    The exception argument will contain the offending index.
+    """
+    
+    def __init__(self, index):
+        self.index = index
+        super(BadPresetColorMatrix, self).__init__()
+
+
+class BadPresetTransferFunction(ConformanceError):
+    """
+    transfer_function (11.4.10.4) has been given an unrecognised preset index
+    
+    The exception argument will contain the offending index.
+    """
+    
+    def __init__(self, index):
+        self.index = index
+        super(BadPresetTransferFunction, self).__init__()
+
+
+class ColorDiffHeightNotMultipleOfFrameHeight(ConformanceError):
+    """
+    (11.6.2) specifies that the color_diff_height must be a whole multiple of
+    the frame_height.
+    
+    The actual color_diff_height and frame_height are provided as arguments.
+    """
+    
+    def __init__(self, color_diff_height, frame_height):
+        self.color_diff_height = color_diff_height
+        self.frame_height = frame_height
+        super(ColorDiffHeightNotMultipleOfFrameHeight, self).__init__()
