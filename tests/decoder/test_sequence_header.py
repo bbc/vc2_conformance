@@ -308,21 +308,63 @@ class TestFrameRate(object):
             decoder.frame_rate(state, {})
         
         assert exc_info.value.frame_rate_denom == 1
+    
+    def test_valid_custom_value(self):
+        state = bytes_to_state(frame_rate_to_bytes(
+            custom_frame_rate_flag=True,
+            index=0,
+            frame_rate_numer=1,
+            frame_rate_denom=2,
+        ))
+        
+        decoder.frame_rate(state, {})
 
 
-def test_pixel_aspect_ratio_index_must_be_valid():
-    state = bytes_to_state(seriallise_to_bytes(
-        bitstream.PixelAspectRatio(
+def pixel_aspect_ratio_to_bytes(**kwargs):
+    """
+    Seriallise a PixelAspectRatio block, returning a bytes object.
+    """
+    return seriallise_to_bytes(
+        bitstream.PixelAspectRatio(**kwargs),
+        lambda serdes, state: bitstream.pixel_aspect_ratio(serdes, state, {}),
+    )
+
+
+class TestPixelAspectRatio(object):
+
+    def test_index_must_be_valid(self):
+        state = bytes_to_state(pixel_aspect_ratio_to_bytes(
             custom_pixel_aspect_ratio_flag=True,
             index=9999,
-        ),
-        lambda serdes, state: bitstream.pixel_aspect_ratio(serdes, state, {}),
-    ))
-    
-    with pytest.raises(decoder.BadPresetPixelAspectRatio) as exc_info:
-        decoder.pixel_aspect_ratio(state, {})
-    
-    assert exc_info.value.index == 9999
+        ))
+        
+        with pytest.raises(decoder.BadPresetPixelAspectRatio) as exc_info:
+            decoder.pixel_aspect_ratio(state, {})
+        
+        assert exc_info.value.index == 9999
+
+    @pytest.mark.parametrize("numer,denom,exp_fail", [
+        (1, 1, False),
+        (0, 1, True),
+        (1, 0, True),
+        (0, 0, True),
+    ])
+    def test_must_not_contain_zeros(self, numer, denom, exp_fail):
+        state = bytes_to_state(pixel_aspect_ratio_to_bytes(
+            custom_pixel_aspect_ratio_flag=True,
+            index=0,
+            pixel_aspect_ratio_numer=numer,
+            pixel_aspect_ratio_denom=denom,
+        ))
+        
+        if exp_fail:
+            with pytest.raises(decoder.PixelAspectRatioContainsZeros) as exc_info:
+                decoder.pixel_aspect_ratio(state, {})
+            
+            assert exc_info.value.pixel_aspect_ratio_numer == numer
+            assert exc_info.value.pixel_aspect_ratio_denom == denom
+        else:
+            decoder.pixel_aspect_ratio(state, {})
 
 
 @pytest.mark.parametrize("clean_width,clean_height,left_offset,top_offset,frame_width,frame_height,exp_fail", [

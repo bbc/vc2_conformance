@@ -63,6 +63,7 @@ from vc2_conformance.decoder.exceptions import (
     ZeroPixelFrameSize,
     FrameRateHasZeroNumerator,
     FrameRateHasZeroDenominator,
+    PixelAspectRatioContainsZeros,
 )
 
 from vc2_conformance._symbol_re import Matcher
@@ -416,6 +417,20 @@ def pixel_aspect_ratio(state, video_parameters):
                 "pixel_aspect_ratio_denom",
                 video_parameters["pixel_aspect_ratio_denom"],
             )
+            ## End not in spec
+            
+            # Errata: spec fails to require ratio to be non-zero on either side
+            #
+            # (11.4.7) ratio must not contain zeros
+            ## Begin not in spec
+            if (
+                video_parameters["pixel_aspect_ratio_numer"] == 0 or
+                video_parameters["pixel_aspect_ratio_denom"] == 0
+            ):
+                raise PixelAspectRatioContainsZeros(
+                    video_parameters["pixel_aspect_ratio_numer"],
+                    video_parameters["pixel_aspect_ratio_denom"],
+                )
             ## End not in spec
         else:
             # (11.4.7) Pixel aspect ratio preset must be a known value

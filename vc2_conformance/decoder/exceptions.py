@@ -453,6 +453,18 @@ class BadPresetPixelAspectRatio(ConformanceError):
         self.index = index
         super(BadPresetPixelAspectRatio, self).__init__()
 
+class PixelAspectRatioContainsZeros(ConformanceError):
+    """
+    (11.4.7) specifies that custom pixel aspect ratios must not have zeros.
+    
+    The ratio numerator/denominator is provided.
+    """
+    
+    def __init__(self, pixel_aspect_ratio_numer, pixel_aspect_ratio_denom):
+        self.pixel_aspect_ratio_numer = pixel_aspect_ratio_numer
+        self.pixel_aspect_ratio_denom = pixel_aspect_ratio_denom
+        super(PixelAspectRatioContainsZeros, self).__init__()
+
 
 class CleanAreaOutOfRange(ConformanceError):
     """
