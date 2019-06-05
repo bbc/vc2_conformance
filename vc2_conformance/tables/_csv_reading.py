@@ -313,3 +313,87 @@ def to_dict_value(dictionary):
     supplied dictionary.
     """
     return dictionary.get
+
+
+def read_quantisation_matrices_from_csv(csv_filename):
+    """
+    Read a table of preset quantisation matrices from a CSV.
+    
+    The CSV format is similar to (Table D.1) - (Table D.8).  The following
+    columns will be present:
+    
+    * ``wavelet_index``: A wavelet transform index.
+    * ``wavelet_index_ho``: A wavelet transform index.
+    * ``dwt_depth_ho``: A horizontal-only transform index
+    * ``level``: A transform level
+    * ``orientations``: A comma-separated list of orientations (i.e. L, H, LL,
+      HL, LH, HH)
+    * Several columns named ``dwt_depth=n`` where ``n`` is an integer giving
+      the dwt_depth the values in that column correspond to. The values in this
+      column should be a comma-separated list of quantisation matrix values
+      corresponding to the ``orientations`` specified for that row.
+    
+    Empty rows and rows containing only "#" prefixed cells are ignored. A cell
+    which contains a ditto symbol (i.e. ``"``) will inherit the value of the
+    cell above it.
+    
+    Parameters
+    ==========
+    csv_filename : str
+        Filename of the CSV file to read (relative to the
+        vc2_conformance/tables directory).
+    
+    Returns
+    =======
+    quantisation_matrices : {(wavelet_index, wavelet_index_ho, dwt_depth, dwt_depth_ho): {level: {orientation: value, ...}, ...}, ...}
+        Where:
+        
+        * ``wavelet_index`` and ``wavelet_index_ho`` are :py:class:`WaveletFilters`
+          values
+        * ``dwt_depth`` and ``dwt_depth_ho`` are transform depths (integers)
+        * ``level`` is the transform level (integer)
+        * ``orientation`` is one of `"L"`, `"H"`, `"LL"``, `"HL"``, `"LH"`` or `"HH"``
+    """
+    rows = read_csv_without_comments(csv_filename)
+    last_row = defaultdict(str)
+    quantisation_matrices = defaultdict(lambda: defaultdict(dict))
+    for row in rows:
+        # Skip completely empty/comment-only rows
+        if all(not cell.strip() or cell.strip().startswith("#")
+               for key, cell in row.items()
+               if key is not None):
+            continue
+        
+        # Back-fill row values with dittos
+        for field in row:
+            if is_ditto(row[field]):
+                row[field] = last_row[field]
+        last_row = row
+        
+        wavelet_index = int(row["wavelet_index"].strip())
+        wavelet_index_ho = int(row["wavelet_index_ho"].strip())
+        dwt_depth_ho = int(row["dwt_depth_ho"].strip())
+        level = int(row["level"].strip())
+        orientations = row["orientations"].split(",")
+        
+        for column_name in filter(
+            lambda col: re.match(r"\s*dwt_depth\s*=\s*[0-9]+\s*", col),
+            row,
+        ):
+            dwt_depth = int(column_name.partition("=")[2].strip())
+            values = row[column_name].split(",")
+            
+            for orientation, value in zip(orientations, values):
+                if value.strip():
+                    quantisation_matrices[(
+                        wavelet_index,
+                        wavelet_index_ho,
+                        dwt_depth,
+                        dwt_depth_ho,
+                    )][
+                        level
+                    ][
+                        orientation.strip()
+                    ] = int(value.strip())
+    
+    return quantisation_matrices

@@ -14,6 +14,7 @@ from vc2_conformance.tables._csv_reading import (
     read_enum_from_csv,
     read_lookup_from_csv,
     read_constraints_from_csv,
+    read_quantisation_matrices_from_csv,
     to_list,
     to_enum_from_index,
     to_enum_from_name,
@@ -167,3 +168,24 @@ def test_to_enum_from_name(string, exp_value):
 ])
 def test_to_dict_value(string, exp_value):
     assert to_dict_value({"foo": 123, "bar": 321})(string) == exp_value
+
+
+def test_read_qauntisation_matrices_from_csv():
+    qm = read_quantisation_matrices_from_csv("test_quantisation_matrices.csv")
+    
+    assert qm == {
+        (1, 2, 1, 3): {
+            0: {"LL": 11},
+            1: {"HL": 211, "LH": 212, "HH": 213},
+        },
+        (1, 2, 2, 3): {
+            0: {"LL": 12},
+            1: {"HL": 221, "LH": 222, "HH": 223},
+        },
+        (3, 4, 1, 5): {
+            0: {"L": 3},
+        },
+        (3, 4, 2, 5): {
+            1: {"H": 4},
+        },
+    }

@@ -1,0 +1,9 @@
+# This CSV file is used by the vc2_conformance test suite to check Quantisation Matrix-loading routines within the conformance software,,,,,,,
+,,,,,,,
+wavelet_index,wavelet_index_ho,dwt_depth_ho,level,orientations,dwt_depth=1,dwt_depth=2,
+,# Comment mid table (followed by an empty line),,,,,,
+,,,,,,,
+1,2,3,0,LL ,11,12,# Single values
+“,“,“,1,"HL, LH , HH ","211, 212, 213","221, 222, 223",# Multiple values
+3,4,5,0,L,3,,# Missing values
+“,“,“,1,H,,4,# Missing values

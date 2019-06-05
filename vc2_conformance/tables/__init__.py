@@ -19,6 +19,7 @@ from vc2_conformance.tables._csv_reading import (
     read_enum_from_csv,
     read_lookup_from_csv,
     read_constraints_from_csv,
+    read_quantisation_matrices_from_csv,
     to_list,
     to_enum_from_index,
     to_enum_from_name,
@@ -636,6 +637,28 @@ The list of supported profiles from (C.2) indexed by :py:class:`~.Profiles`.
 """
 
 ################################################################################
+# (D) Quantisation matrices
+################################################################################
+
+QUANTISATION_MATRICES = read_quantisation_matrices_from_csv("quantisation_matrices.csv")
+"""
+The preset quantisation matrices from (Table D.1) to (Table D.8)
+
+The loaded matrices are stored in a nested dictionary with the following
+layout::
+
+    QUANTISATION_MATRICES[(wavelet_index, wavelet_index_ho, dwt_depth, dwt_depth_ho)][level][orientation]
+
+Where:
+
+* ``wavelet_index`` and ``wavelet_index_ho`` are :py:class:`WaveletFilters`
+  values
+* ``dwt_depth`` and ``dwt_depth_ho`` are transform depths (integers)
+* ``level`` is the transform level (integer)
+* ``orientation`` is one of `"L"`, `"H"`, `"LL"``, `"HL"``, `"LH"`` or `"HH"``
+"""
+
+################################################################################
 # (ST 2042-2) Levels
 ################################################################################
 
@@ -740,10 +763,6 @@ headers and transform parameters headers and are enumerated below:
     * ``wavelet_index_ho``: int (from the :py:class:`WaveletFilters` enum)
     * ``asym_transform_flag``: bool
     * ``dwt_depth_ho``: int
-* (12.4.5.3)
-    * ``custom_quant_matrix``: bool
-    * ``quant_matrix_values``: int (giving the allowed values within a custom
-      quantisation matrix).
 * (12.4.5.2)
     * ``slices_x``: int (giving the allowed number of slices in the x dimension)
     * ``slices_y``: int (giving the allowed number of slices in the y dimension)
@@ -753,6 +772,11 @@ headers and transform parameters headers and are enumerated below:
     * ``slice_bytes_denomenator``: int
     * ``slice_prefix_bytes``: int
     * ``slice_size_scaler``: int
+* (12.4.5.3)
+    * ``custom_quant_matrix``: bool
+    * ``quant_matrix_values``: int (giving the allowed values within a custom
+      quantisation matrix).
+* (13.5.4)
     * ``total_slice_bytes``: int (total number of bytes allowed in a high quality
       picture slice, including all prefix bytes and slice size fields.
 """
