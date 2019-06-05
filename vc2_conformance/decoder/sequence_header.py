@@ -78,6 +78,24 @@ from vc2_conformance.decoder.io import (
 )
 
 
+__all__ = [
+    "sequence_header",
+    "parse_parameters",
+    "source_parameters",
+    "frame_size",
+    "color_diff_sampling_format",
+    "scan_format",
+    "frame_rate",
+    "pixel_aspect_ratio",
+    "clean_area",
+    "signal_range",
+    "color_spec",
+    "color_primaries",
+    "color_matrix",
+    "transfer_function",
+]
+
+
 @ref_pseudocode
 def sequence_header(state):
     """(11.1)"""
