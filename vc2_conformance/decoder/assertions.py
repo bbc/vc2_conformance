@@ -12,6 +12,16 @@ from vc2_conformance._constraint_table import allowed_values_for
 from vc2_conformance.decoder.exceptions import ValueNotAllowedInLevel
 
 
+def assert_in(value, collection, exception_type):
+    """
+    Check to see if a value is a member of the provided collection using
+    ``in``. If it is not, throws an exception of the given type with the value
+    and collections passed as as arguments.
+    """
+    if value not in collection:
+        raise exception_type(value, collection)
+
+
 def assert_in_enum(value, enum, exception_type):
     """
     Check to see if a value is a member of the provided assertion type. If it

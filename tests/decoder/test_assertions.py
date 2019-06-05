@@ -11,11 +11,26 @@ from vc2_conformance._constraint_table import ValueSet
 from vc2_conformance.decoder.exceptions import ValueNotAllowedInLevel
 
 from vc2_conformance.decoder.assertions import (
+    assert_in,
     assert_in_enum,
     assert_parse_code_in_sequence,
     assert_parse_code_sequence_ended,
     assert_level_constraint,
 )
+
+def test_assert_in():
+    class CustomException(Exception):
+        pass
+    
+    lst = [1, 2, 3]
+    
+    assert_in(1, lst, CustomException)
+    assert_in(2, lst, CustomException)
+    assert_in(3, lst, CustomException)
+    
+    with pytest.raises(CustomException) as exc_info:
+        assert_in(0, lst, CustomException)
+    assert exc_info.value.args == (0, lst)
 
 def test_assert_in_enum():
     class CustomException(Exception):
