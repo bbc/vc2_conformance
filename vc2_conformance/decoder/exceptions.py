@@ -566,3 +566,54 @@ class PictureDimensionsNotMultipleOfFrameDimensions(ConformanceError):
         super(PictureDimensionsNotMultipleOfFrameDimensions, self).__init__()
 
 
+class NonConsecutivePictureNumbers(ConformanceError):
+    """
+    (12.2) Picture headers must contain consecutive picture numbers (wrapping
+    at 2**32).
+    
+    :py:attr:`last_picture_header_offset` contains the (byte_offset, next_bit)
+    offset of the previous picture header in the sequence.
+    
+    :py:attr:`last_picture_number` contains the picture number of the previous
+    picture header in the sequence.
+    
+    :py:attr:`picture_header_offset` contains the (byte_offset, next_bit)
+    offset of the offending picture header in the sequence.
+    
+    :py:attr:`picture_number` contains the picture number of the offending
+    picture header in the sequence.
+    """
+    
+    def __init__(self, last_picture_header_offset, last_picture_number,
+                 picture_header_offset, picture_number):
+        self.last_picture_header_offset = last_picture_header_offset
+        self.last_picture_number = last_picture_number
+        self.picture_header_offset = picture_header_offset
+        self.picture_number = picture_number
+        super(NonConsecutivePictureNumbers, self).__init__()
+
+
+class OddNumberOfFieldsInSequence(ConformanceError):
+    """
+    (10.4.3) When pictures are fields, a sequence must have a whole number of
+    frames (i.e. an even number of fields).
+    
+    The actual number of fields/pictures in the offending sequence will be
+    included as an argument.
+    """
+    
+    def __init__(self, num_fields_in_sequence):
+        self.num_fields_in_sequence = num_fields_in_sequence
+        super(OddNumberOfFieldsInSequence, self).__init__()
+
+
+class EarliestFieldHasOddPictureNumber(ConformanceError):
+    """
+    (12.2) The earliest field of each frame must have an even picture number.
+    
+    The offending picture number will be included as an argument.
+    """
+    
+    def __init__(self, picture_number):
+        self.picture_number = picture_number
+        super(EarliestFieldHasOddPictureNumber, self).__init__()

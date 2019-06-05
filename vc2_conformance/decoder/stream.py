@@ -21,6 +21,7 @@ from vc2_conformance.tables import (
     PARSE_INFO_HEADER_BYTES,
     ParseCodes,
     PROFILES,
+    PictureCodingModes,
 )
 
 from vc2_conformance.decoder.exceptions import (
@@ -36,6 +37,7 @@ from vc2_conformance.decoder.exceptions import (
     GenericInvalidSequence,
     LevelInvalidSequence,
     ParseCodeNotAllowedInProfile,
+    OddNumberOfFieldsInSequence,
 )
 
 from vc2_conformance._symbol_re import Matcher
@@ -85,6 +87,8 @@ def parse_sequence(state):
     state["_generic_sequence_matcher"] = Matcher("sequence_header .* end_of_sequence")
     ## End not in spec
     
+    state["_num_pictures_in_sequence"] = 0  ## Not in spec
+    
     parse_info(state)
     while not is_end_of_sequence(state):
         if (is_seq_header(state)):
@@ -99,14 +103,23 @@ def parse_sequence(state):
             padding(state)
         parse_info(state)
     
+    # (10.4.1) and (C.3) Check sequence structure allowed to end at this point
     ## Begin not in spec
     assert_parse_code_sequence_ended(state["_generic_sequence_matcher"], GenericInvalidSequence)
     if "_level_sequence_matcher" in state:
         assert_parse_code_sequence_ended(state["_level_sequence_matcher"], LevelInvalidSequence)
     ## End not in spec
     
+    # (10.4.3) When pictures are fields, a sequence should contain a whole
+    # number of frames
     ## Begin not in spec
+    if state["_picture_coding_mode"] == PictureCodingModes.pictures_are_fields:
+        if state["_num_pictures_in_sequence"] % 2 != 0:
+            raise OddNumberOfFieldsInSequence(state["_num_pictures_in_sequence"])
+    ## End not in spec
+    
     # (10.3) Check for any unused data in the stream
+    ## Begin not in spec
     if state["current_byte"] is not None:
         raise TrailingBytesAfterEndOfSequence()
     ## End not in spec

@@ -91,6 +91,14 @@ State = fixeddict(
     # test for, e.g. level-defined patterns).
     Entry("_generic_sequence_matcher"),
     
+    # (10.4.3) and (12.2): A counter of how many pictures have been encountered
+    # in the current sequence. Used to determine if all fields have been
+    # received (when pictures are fields) and that the earliest fields have an
+    # even picture number. Initialised in parse_sequence (10.4.1) and
+    # incremented in picture_header (12.2).
+    Entry("_picture_coding_mode"),
+    Entry("_num_pictures_in_sequence"),
+    
     # (10.5.1) parse_info related state
     # The byte offset of the previously read parse_info block
     Entry("_last_parse_info_offset"),  # int (bytes)
@@ -116,6 +124,11 @@ State = fixeddict(
     Entry("_last_parse_parameters_offset"),  # (int, int) tuple (byte offset, next bit)
     Entry("_last_profile"),
     Entry("_last_level"),
+    
+    # (12.2) picture_header: The last picture number encountered in the
+    # sequence (or absent if no pictures have yet been encountered).
+    Entry("_last_picture_header_offset"),  # (int, int) tuple (byte offset, next bit)
+    Entry("_last_picture_number"),
     
     # (A.2.1) read_byte: The Python file-like object from which the bitstream
     # will be read by read_byte.

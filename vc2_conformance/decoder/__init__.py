@@ -18,3 +18,6 @@ from vc2_conformance.decoder.stream import *
 
 # (11) Sequence Header
 from vc2_conformance.decoder.sequence_header import *
+
+# (12) Picture Syntax
+from vc2_conformance.decoder.picture_syntax import *

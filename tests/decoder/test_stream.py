@@ -72,6 +72,51 @@ class TestParseSequence(object):
         assert exc_info.value.parse_code is tables.ParseCodes.padding_data
         assert exc_info.value.expected_parse_codes == [tables.ParseCodes.sequence_header]
         assert exc_info.value.expected_end is False
+    
+    @pytest.mark.xfail
+    @pytest.mark.parametrize("picture_coding_mode,num_pictures,exp_fail", [
+        (tables.PictureCodingModes.pictures_are_frames, 0, False),
+        (tables.PictureCodingModes.pictures_are_frames, 1, False),
+        (tables.PictureCodingModes.pictures_are_frames, 2, False),
+        (tables.PictureCodingModes.pictures_are_frames, 3, False),
+        (tables.PictureCodingModes.pictures_are_frames, 4, False),
+        (tables.PictureCodingModes.pictures_are_fields, 0, False),
+        (tables.PictureCodingModes.pictures_are_fields, 1, True),
+        (tables.PictureCodingModes.pictures_are_fields, 2, False),
+        (tables.PictureCodingModes.pictures_are_fields, 3, True),
+        (tables.PictureCodingModes.pictures_are_fields, 4, False),
+    ])
+    def test_odd_number_of_fields_disallowed(self, picture_coding_mode,
+                                             num_pictures, exp_fail):
+        sh = seriallise_to_bytes(
+            bitstream.SequenceHeader(
+                picture_coding_mode=picture_coding_mode,
+            ),
+            bitstream.sequence_header,
+        )
+        sh_and_pi = parse_info_to_bytes(
+            parse_code=tables.ParseCodes.sequence_header,
+            next_parse_offset=(
+                tables.PARSE_INFO_HEADER_BYTES +
+                len(sh)
+            ),
+        ) + sh
+        
+        # TODO: Add an odd number of minimal pictures/fields once picture
+        # parsing is supported
+        
+        eos = parse_info_to_bytes(
+            parse_code=tables.ParseCodes.end_of_sequence,
+            previous_parse_offset=len(sh_and_pi),
+        )
+        
+        state = bytes_to_state(sh_and_pi + eos)
+        if exp_fail:
+            with pytest.raises(decoder.OddNumberOfFieldsInSequence) as exc_info:
+                decoder.parse_sequence(state)
+            assert exc_info.value.num_fields_in_sequence == num_pictures
+        else:
+            decoder.parse_sequence(state)
 
 
 class TestParseInfo(object):

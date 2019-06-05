@@ -121,6 +121,10 @@ def sequence_header(state):
     
     picture_coding_mode = read_uint(state)
     
+    # The picture coding mode is used in various assertions about other parts
+    # of the bitstream and so is captured here.
+    state["_picture_coding_mode"] = picture_coding_mode  ## Not in spec
+    
     # (11.5) Ensure picture coding mode is valid
     assert_in_enum(picture_coding_mode, PictureCodingModes, BadPictureCodingMode) ## Not in spec
     
