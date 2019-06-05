@@ -101,6 +101,8 @@ def parse_sequence(state):
     
     ## Begin not in spec
     assert_parse_code_sequence_ended(state["_generic_sequence_matcher"], GenericInvalidSequence)
+    if "_level_sequence_matcher" in state:
+        assert_parse_code_sequence_ended(state["_level_sequence_matcher"], LevelInvalidSequence)
     ## End not in spec
     
     ## Begin not in spec
