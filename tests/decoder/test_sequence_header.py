@@ -41,6 +41,12 @@ class TestSequenceHeader(object):
     
     def test_supported_base_video_format(self):
         state = bytes_to_state(sequence_header_to_bytes(
+            base_video_format=tables.BaseVideoFormats.custom_format
+        ))
+        decoder.sequence_header(state)
+    
+    def test_unsupported_base_video_format(self):
+        state = bytes_to_state(sequence_header_to_bytes(
             base_video_format=9999
         ))
         with pytest.raises(decoder.BadBaseVideoFormat) as exc_info:
@@ -48,6 +54,12 @@ class TestSequenceHeader(object):
         assert exc_info.value.base_video_format == 9999
     
     def test_supported_picture_coding_mode(self):
+        state = bytes_to_state(sequence_header_to_bytes(
+            picture_coding_mode=tables.PictureCodingModes.pictures_are_frames
+        ))
+        decoder.sequence_header(state)
+    
+    def test_unsupported_picture_coding_mode(self):
         state = bytes_to_state(sequence_header_to_bytes(
             picture_coding_mode=2
         ))
@@ -160,22 +172,26 @@ class TestParseParameters(object):
         assert getattr(exc_info.value, "this_" + change_type) == change_value2
     
     def test_profile_must_be_valid(self):
-        pp = parse_parameters_to_bytes(profile=1234567890)
-        state = bytes_to_state(pp)
+        state = bytes_to_state(parse_parameters_to_bytes(
+            profile=tables.Profiles.high_quality
+        ))
+        decoder.parse_parameters(state)
         
+        state = bytes_to_state(parse_parameters_to_bytes(profile=9999))
         with pytest.raises(decoder.BadProfile) as exc_info:
             decoder.parse_parameters(state)
-        
-        assert exc_info.value.profile == 1234567890
+        assert exc_info.value.profile == 9999
     
     def test_level_must_be_valid(self):
-        pp = parse_parameters_to_bytes(level=1234567890)
-        state = bytes_to_state(pp)
+        state = bytes_to_state(parse_parameters_to_bytes(
+            level=tables.Levels.unconstrained
+        ))
+        decoder.parse_parameters(state)
         
+        state = bytes_to_state(parse_parameters_to_bytes(level=9999))
         with pytest.raises(decoder.BadLevel) as exc_info:
             decoder.parse_parameters(state)
-        
-        assert exc_info.value.level == 1234567890
+        assert exc_info.value.level == 9999
     
     def test_level_sequence_matcher(self):
         # This level requires alternating HQ pictures and sequence headers.
@@ -235,14 +251,21 @@ def test_color_diff_sampling_format_index_must_be_valid():
     state = bytes_to_state(seriallise_to_bytes(
         bitstream.ColorDiffSamplingFormat(
             custom_color_diff_format_flag=True,
+            color_diff_format_index=tables.ColorDifferenceSamplingFormats.color_4_4_4,
+        ),
+        lambda serdes, state: bitstream.color_diff_sampling_format(serdes, state, {}),
+    ))
+    decoder.color_diff_sampling_format(state, {})
+    
+    state = bytes_to_state(seriallise_to_bytes(
+        bitstream.ColorDiffSamplingFormat(
+            custom_color_diff_format_flag=True,
             color_diff_format_index=9999,
         ),
         lambda serdes, state: bitstream.color_diff_sampling_format(serdes, state, {}),
     ))
-    
     with pytest.raises(decoder.BadColorDifferenceSamplingFormat) as exc_info:
         decoder.color_diff_sampling_format(state, {})
-    
     assert exc_info.value.color_diff_format_index == 9999
 
 
@@ -250,14 +273,21 @@ def test_scan_format_source_sampling_mode_must_be_valid():
     state = bytes_to_state(seriallise_to_bytes(
         bitstream.ScanFormat(
             custom_scan_format_flag=True,
+            source_sampling=tables.SourceSamplingModes.progressive,
+        ),
+        lambda serdes, state: bitstream.scan_format(serdes, state, {}),
+    ))
+    decoder.scan_format(state, {})
+    
+    state = bytes_to_state(seriallise_to_bytes(
+        bitstream.ScanFormat(
+            custom_scan_format_flag=True,
             source_sampling=9999,
         ),
         lambda serdes, state: bitstream.scan_format(serdes, state, {}),
     ))
-    
     with pytest.raises(decoder.BadSourceSamplingMode) as exc_info:
         decoder.scan_format(state, {})
-    
     assert exc_info.value.source_sampling == 9999
 
 
@@ -275,12 +305,16 @@ class TestFrameRate(object):
     def test_index_must_be_valid(self):
         state = bytes_to_state(frame_rate_to_bytes(
             custom_frame_rate_flag=True,
+            index=tables.PresetFrameRates.fps_25,
+        ))
+        decoder.frame_rate(state, {})
+        
+        state = bytes_to_state(frame_rate_to_bytes(
+            custom_frame_rate_flag=True,
             index=9999,
         ))
-        
         with pytest.raises(decoder.BadPresetFrameRateIndex) as exc_info:
             decoder.frame_rate(state, {})
-        
         assert exc_info.value.index == 9999
     
     def test_denominator_must_not_be_zero(self):
@@ -335,12 +369,16 @@ class TestPixelAspectRatio(object):
     def test_index_must_be_valid(self):
         state = bytes_to_state(pixel_aspect_ratio_to_bytes(
             custom_pixel_aspect_ratio_flag=True,
+            index=tables.PresetPixelAspectRatios.ratio_1_1,
+        ))
+        decoder.pixel_aspect_ratio(state, {})
+        
+        state = bytes_to_state(pixel_aspect_ratio_to_bytes(
+            custom_pixel_aspect_ratio_flag=True,
             index=9999,
         ))
-        
         with pytest.raises(decoder.BadPresetPixelAspectRatio) as exc_info:
             decoder.pixel_aspect_ratio(state, {})
-        
         assert exc_info.value.index == 9999
 
     @pytest.mark.parametrize("numer,denom,exp_fail", [
@@ -416,14 +454,21 @@ def test_signal_range_index_must_be_valid():
     state = bytes_to_state(seriallise_to_bytes(
         bitstream.SignalRange(
             custom_signal_range_flag=True,
+            index=tables.PresetSignalRanges.video_8bit,
+        ),
+        lambda serdes, state: bitstream.signal_range(serdes, state, {}),
+    ))
+    decoder.signal_range(state, {})
+    
+    state = bytes_to_state(seriallise_to_bytes(
+        bitstream.SignalRange(
+            custom_signal_range_flag=True,
             index=9999,
         ),
         lambda serdes, state: bitstream.signal_range(serdes, state, {}),
     ))
-    
     with pytest.raises(decoder.BadPresetSignalRange) as exc_info:
         decoder.signal_range(state, {})
-    
     assert exc_info.value.index == 9999
 
 
@@ -431,14 +476,21 @@ def test_color_spec_index_must_be_valid():
     state = bytes_to_state(seriallise_to_bytes(
         bitstream.ColorSpec(
             custom_color_spec_flag=True,
+            index=tables.PresetColorSpecs.uhdtv,
+        ),
+        lambda serdes, state: bitstream.color_spec(serdes, state, {}),
+    ))
+    decoder.color_spec(state, {})
+    
+    state = bytes_to_state(seriallise_to_bytes(
+        bitstream.ColorSpec(
+            custom_color_spec_flag=True,
             index=9999,
         ),
         lambda serdes, state: bitstream.color_spec(serdes, state, {}),
     ))
-    
     with pytest.raises(decoder.BadPresetColorSpec) as exc_info:
         decoder.color_spec(state, {})
-    
     assert exc_info.value.index == 9999
 
 
@@ -446,14 +498,21 @@ def test_color_primaries_index_must_be_valid():
     state = bytes_to_state(seriallise_to_bytes(
         bitstream.ColorPrimaries(
             custom_color_primaries_flag=True,
+            index=tables.PresetColorPrimaries.hdtv,
+        ),
+        lambda serdes, state: bitstream.color_primaries(serdes, state, {}),
+    ))
+    decoder.color_primaries(state, {})
+    
+    state = bytes_to_state(seriallise_to_bytes(
+        bitstream.ColorPrimaries(
+            custom_color_primaries_flag=True,
             index=9999,
         ),
         lambda serdes, state: bitstream.color_primaries(serdes, state, {}),
     ))
-    
     with pytest.raises(decoder.BadPresetColorPrimaries) as exc_info:
         decoder.color_primaries(state, {})
-    
     assert exc_info.value.index == 9999
 
 
@@ -461,14 +520,21 @@ def test_color_matrix_index_must_be_valid():
     state = bytes_to_state(seriallise_to_bytes(
         bitstream.ColorMatrix(
             custom_color_matrix_flag=True,
+            index=tables.PresetColorMatrices.hdtv,
+        ),
+        lambda serdes, state: bitstream.color_matrix(serdes, state, {}),
+    ))
+    decoder.color_matrix(state, {})
+    
+    state = bytes_to_state(seriallise_to_bytes(
+        bitstream.ColorMatrix(
+            custom_color_matrix_flag=True,
             index=9999,
         ),
         lambda serdes, state: bitstream.color_matrix(serdes, state, {}),
     ))
-    
     with pytest.raises(decoder.BadPresetColorMatrix) as exc_info:
         decoder.color_matrix(state, {})
-    
     assert exc_info.value.index == 9999
 
 
@@ -476,14 +542,21 @@ def test_transfer_function_index_must_be_valid():
     state = bytes_to_state(seriallise_to_bytes(
         bitstream.TransferFunction(
             custom_transfer_function_flag=True,
+            index=tables.PresetTransferFunctions.hybrid_log_gamma,
+        ),
+        lambda serdes, state: bitstream.transfer_function(serdes, state, {}),
+    ))
+    decoder.transfer_function(state, {})
+    
+    state = bytes_to_state(seriallise_to_bytes(
+        bitstream.TransferFunction(
+            custom_transfer_function_flag=True,
             index=9999,
         ),
         lambda serdes, state: bitstream.transfer_function(serdes, state, {}),
     ))
-    
     with pytest.raises(decoder.BadPresetTransferFunction) as exc_info:
         decoder.transfer_function(state, {})
-    
     assert exc_info.value.index == 9999
 
 
