@@ -218,6 +218,34 @@ class TestSliceParameters(object):
             decoder.slice_parameters(state)
         assert exc_info.value.slice_bytes_numerator == 1
     
+    @pytest.mark.parametrize("numer,denom,exp_fail", [
+        (1, 1, False),
+        (9, 9, False),
+        (10, 9, False),
+        (0, 1, True),
+        (0, 9, True),
+        (8, 9, True),
+    ])
+    def test_slice_bytes_less_than_one(self, numer, denom, exp_fail):
+        state = minimal_slice_parameters_state.copy()
+        state["parse_code"] = tables.ParseCodes.low_delay_picture
+        state.update(bytes_to_state(seriallise_to_bytes(
+            bitstream.SliceParameters(
+                slices_x=1,
+                slices_y=1,
+                slice_bytes_numerator=numer,
+                slice_bytes_denominator=denom,
+            ),
+            lambda serdes, _: bitstream.slice_parameters(serdes, state),
+        )))
+        if exp_fail:
+            with pytest.raises(decoder.SliceBytesIsLessThanOne) as exc_info:
+                decoder.slice_parameters(state)
+            assert exc_info.value.slice_bytes_numerator == numer
+            assert exc_info.value.slice_bytes_denominator == denom
+        else:
+            decoder.slice_parameters(state)
+    
     def test_zero_slice_size_scaler(self):
         state = minimal_slice_parameters_state.copy()
         state.update(bytes_to_state(seriallise_to_bytes(
@@ -364,12 +392,12 @@ class TestQuantisationMatrix(object):
     (
         tables.ParseCodes.low_delay_picture,
         {
-            "slice_bytes_numerator": 1,
-            "slice_bytes_denominator": 2,
+            "slice_bytes_numerator": 2,
+            "slice_bytes_denominator": 1,
         },
         {
-            "slice_bytes_numerator": 1,
-            "slice_bytes_denominator": 2,
+            "slice_bytes_numerator": 2,
+            "slice_bytes_denominator": 1,
         },
     ),
 ])

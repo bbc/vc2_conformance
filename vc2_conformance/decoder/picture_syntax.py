@@ -44,6 +44,7 @@ from vc2_conformance.decoder.exceptions import (
     EarliestFieldHasOddPictureNumber,
     ZeroSlicesInCodedPicture,
     SliceBytesHasZeroDenominator,
+    SliceBytesIsLessThanOne,
     NoQuantisationMatrixAvailable,
     BadWaveletIndex,
     BadHOWaveletIndex,
@@ -215,10 +216,25 @@ def slice_parameters(state):
         
         # Errata: spec doesn't disallow a slice_bytes_denominator of zero
         #
-        # (12.4.5.2) Must have non-zero slice_bytes denominator
+        # (12.4.5.2) Must have non-zero slice_bytes denominator (i.e. no divide
+        # by zero)
         ## Begin not in spec
         if state["slice_bytes_denominator"] == 0:
             raise SliceBytesHasZeroDenominator(state["slice_bytes_numerator"])
+        ## End not in spec
+        
+        # Errata: spec doesn't disallow slice_bytes_* values which evaluate to
+        # less than one byte.
+        #
+        # (12.4.5.2) slice_bytes_numerator/slice_bytes_denominator must be
+        # greater than or equal to one byte to avoid zero-byte slices in the
+        # bitstream.
+        ## Begin not in spec
+        if state["slice_bytes_numerator"] < state["slice_bytes_denominator"]:
+            raise SliceBytesIsLessThanOne(
+                state["slice_bytes_numerator"],
+                state["slice_bytes_denominator"],
+            )
         ## End not in spec
     
     if is_hq_picture(state) or is_hq_fragment(state):

@@ -658,7 +658,7 @@ class ZeroSlicesInCodedPicture(ConformanceError):
 
 class SliceBytesHasZeroDenominator(ConformanceError):
     """
-    (12.4.5.2) specifies that slice_bytes_denomenator must not be zero (to
+    (12.4.5.2) specifies that slice_bytes_denominator must not be zero (to
     avoid division by zero)
     
     The numerator is provided as an argument.
@@ -667,6 +667,20 @@ class SliceBytesHasZeroDenominator(ConformanceError):
     def __init__(self, slice_bytes_numerator):
         self.slice_bytes_numerator = slice_bytes_numerator
         super(SliceBytesHasZeroDenominator, self).__init__()
+
+
+class SliceBytesIsLessThanOne(ConformanceError):
+    """
+    (12.4.5.2) specifies that slice_bytes_numerator/slice_bytes_denominator
+    must be greater or equal to one byte.
+    
+    The offending numerator and denominator is provided as an argument.
+    """
+    
+    def __init__(self, slice_bytes_numerator, slice_bytes_denominator):
+        self.slice_bytes_numerator = slice_bytes_numerator
+        self.slice_bytes_denominator = slice_bytes_denominator
+        super(SliceBytesIsLessThanOne, self).__init__()
 
 
 class NoQuantisationMatrixAvailable(ConformanceError):
