@@ -445,9 +445,9 @@ def subband_width(state, level, comp):
 def subband_height(state, level, comp):
     """(13.2.3)"""
     if comp == "Y":
-        w = state["luma_height"]
+        h = state["luma_height"]
     else:
-        w = state["color_diff_height"]
+        h = state["color_diff_height"]
     
     scale_h = 2**(state["dwt_depth"])
     
