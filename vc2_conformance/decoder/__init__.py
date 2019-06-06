@@ -21,3 +21,6 @@ from vc2_conformance.decoder.sequence_header import *
 
 # (12) Picture Syntax
 from vc2_conformance.decoder.picture_syntax import *
+
+# (13) Transform Data Syntax
+from vc2_conformance.decoder.transform_data_syntax import *

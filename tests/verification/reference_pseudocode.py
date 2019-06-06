@@ -627,19 +627,31 @@ def hq_slice(state, sx, sy):
 
 def slice_quantizers(state, qindex):
     """(13.5.5)"""
+    # Errata: not initialised in spec
+    state["quantizer"] = {}
     if (state["dwt_depth_ho"] == 0) :
+        # Errata: not initialised in spec
+        state["quantizer"][0] = {}
         state["quantizer"][0]["LL"] = max(qindex - state["quant_matrix"][0]["LL"], 0)
         for level in range(1, state["dwt_depth"] + 1):
+            # Errata: not initialised in spec
+            state["quantizer"][level] = {}
             for orient in ["HL", "LH", "HH"]:
                 qval = max(qindex - state["quant_matrix"][level][orient], 0)
                 state["quantizer"][level][orient] = qval
     else :
+        # Errata: not initialised in spec
+        state["quantizer"][0] = {}
         state["quantizer"][0]["L"] = max(qindex - state["quant_matrix"][0]["L"], 0)
         for level in range(1, state["dwt_depth_ho"] + 1):
+            # Errata: not initialised in spec
+            state["quantizer"][level] = {}
             qval = max(qindex - state["quant_matrix"][level]["H"], 0)
             state["quantizer"][level]["H"] = qval
         for level in range(state["dwt_depth_ho"] + 1,
                            state["dwt_depth_ho"] + state["dwt_depth"] + 1):
+            # Errata: not initialised in spec
+            state["quantizer"][level] = {}
             for orient in ["HL", "LH", "HH"]:
                 qval = max(qindex - state["quant_matrix"][level][orient], 0)
                 state["quantizer"][level][orient] = qval

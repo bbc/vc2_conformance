@@ -769,14 +769,16 @@ headers and transform parameters headers and are enumerated below:
     * ``slices_have_same_dimensions``: bool. True iff all slices contain
       exactly the same number of transform components.
     * ``slice_bytes_numerator``: int
-    * ``slice_bytes_denomenator``: int
+    * ``slice_bytes_denominator``: int
     * ``slice_prefix_bytes``: int
     * ``slice_size_scaler``: int
 * (12.4.5.3)
     * ``custom_quant_matrix``: bool
     * ``quant_matrix_values``: int (giving the allowed values within a custom
       quantisation matrix).
-* (13.5.4)
+* (13.5.3)
+    * ``qindex``: int (the allowed qindex values as defined by individual slices)
+* (13.5.3.2)
     * ``total_slice_bytes``: int (total number of bytes allowed in a high quality
       picture slice, including all prefix bytes and slice size fields.
 """

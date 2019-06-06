@@ -720,3 +720,18 @@ class SliceSizeScalerIsZero(ConformanceError):
     """
     (12.4.5.2) A slice_size_scaler value of zero was given.
     """
+
+
+class InvalidSliceYLength(ConformanceError):
+    """
+    (13.5.3.1) ld_slice must have its slice_y_length value be within the length
+    of the whole slice.
+    
+    The offending slice_y_length and the maximum permitted value are provided
+    as arguments to the exception.
+    """
+    
+    def __init__(self, slice_y_length, max_slice_y_length):
+        self.slice_y_length = slice_y_length
+        self.max_slice_y_length = max_slice_y_length
+        super(InvalidSliceYLength, self).__init__()
