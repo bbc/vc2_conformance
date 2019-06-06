@@ -73,16 +73,18 @@ wavelet_index_ho,any,,,,,,,,,,,,,,,,,,,,,
 asym_transform_flag,any,FALSE,FALSE,"""","""","""",FALSE,"""","""",FALSE,FALSE,FALSE,FALSE,,,,,,,,,FALSE
 dwt_depth_ho,any,,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,
-# (12.4.5.3),,,,,,,,,,,,,,,,,,,,,,
-custom_quant_matrix,any,any,any,“,“,“,any,“,“,any,any,any,any,FALSE,“,FALSE,“,“,“,“,“,FALSE
-quant_matrix_values,any,0-127,0-127,"""","""","""",0-127,"""","""",0-127,0-127,0-127,0-127,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,
 # (12.4.5.2),,,,,,,,,,,,,,,,,,,,,,
 slices_x,any,any,any,"""","""","""",any,"""","""",any,any,any,any,120,"""",80,"""",120,"""",90,"""",120
 slices_y,any,any,any,"""","""","""",any,"""","""",any,any,any,any,270,"""",90,"""",68,"""",68,"""",270
 slices_have_same_dimensions,any,TRUE,TRUE,“,“,“,TRUE,“,“,TRUE,TRUE,TRUE,TRUE,any,“,any,“,any,“,any,“,any
 slice_bytes_numerator,any,any,any,"""","""","""",any,"""","""",any,any,any,any,64,"""",243,288,729,864,972,1152,
-slice_bytes_denomenator,any,any,any,"""","""","""",any,"""","""",any,any,any,any,1,"""",5,5,17,17,17,17,
+slice_bytes_denominator,any,any,any,"""","""","""",any,"""","""",any,any,any,any,1,"""",5,5,17,17,17,17,
 slice_prefix_bytes,any,any,any,"""","""","""",any,"""","""",any,any,any,any,,,,,,,,,0
 slice_size_scaler,any,any,any,"""","""","""",any,"""","""",any,any,any,any,,,,,,,,,1
+,,,,,,,,,,,,,,,,,,,,,,
+# (12.4.5.3),,,,,,,,,,,,,,,,,,,,,,
+custom_quant_matrix,any,any,any,“,“,“,any,“,“,any,any,any,any,FALSE,“,FALSE,“,“,“,“,“,FALSE
+quant_matrix_values,any,0-127,0-127,"""","""","""",0-127,"""","""",0-127,0-127,0-127,0-127,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,
+# (13.5.4),,,,,,,,,,,,,,,,,,,,,,
 total_slice_bytes,any,any,any,"""","""","""",any,"""","""",any,any,any,any,,,,,,,,,128

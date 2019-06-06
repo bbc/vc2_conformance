@@ -617,3 +617,92 @@ class EarliestFieldHasOddPictureNumber(ConformanceError):
     def __init__(self, picture_number):
         self.picture_number = picture_number
         super(EarliestFieldHasOddPictureNumber, self).__init__()
+
+
+class BadWaveletIndex(ConformanceError):
+    """
+    transform_parameters (12.4.1) has been given an unrecognised wavelet index.
+    
+    The exception argument will contain the offending wavelet index
+    """
+    
+    def __init__(self, wavelet_index):
+        self.wavelet_index = wavelet_index
+        super(BadWaveletIndex, self).__init__()
+
+class BadHOWaveletIndex(ConformanceError):
+    """
+    extended_transform_parameters (12.4.4.2) has been given an unrecognised
+    wavelet index.
+    
+    The exception argument will contain the offending wavelet index
+    """
+    
+    def __init__(self, wavelet_index_ho):
+        self.wavelet_index_ho = wavelet_index_ho
+        super(BadHOWaveletIndex, self).__init__()
+
+
+class ZeroSlicesInCodedPicture(ConformanceError):
+    """
+    (12.4.5.2) slice_parameters must not allow either slice count to be zero.
+    
+    The exception argument will contain the offending slice counts
+    """
+    
+    def __init__(self, slices_x, slices_y):
+        self.slices_x = slices_x
+        self.slices_y = slices_y
+        super(ZeroSlicesInCodedPicture, self).__init__()
+
+
+class SliceBytesHasZeroDenominator(ConformanceError):
+    """
+    (12.4.5.2) specifies that slice_bytes_denomenator must not be zero (to
+    avoid division by zero)
+    
+    The numerator is provided as an argument.
+    """
+    
+    def __init__(self, slice_bytes_numerator):
+        self.slice_bytes_numerator = slice_bytes_numerator
+        super(SliceBytesHasZeroDenominator, self).__init__()
+
+
+class NoQuantisationMatrixAvailable(ConformanceError):
+    """
+    (12.4.5.3) specifies that custom quantisation matrices must be used in
+    cases where a default is not defined by the standard.
+    
+    The offending combination of wavelet_index, wavelet_index_ho, dwt_depth,
+    and dwt_depth_ho are provided as arguments.
+    """
+    
+    def __init__(self, wavelet_index, wavelet_index_ho, dwt_depth, dwt_depth_ho):
+        self.wavelet_index = wavelet_index
+        self.wavelet_index_ho = wavelet_index_ho
+        self.dwt_depth = dwt_depth
+        self.dwt_depth_ho = dwt_depth_ho
+        super(NoQuantisationMatrixAvailable, self).__init__()
+
+
+class QuantisationMatrixValueNotAllowedInLevel(ConformanceError):
+    """
+    (C.3) A custom quantisation matrix value was used which was not allowed by the
+    current level.
+    
+    The value and expected values (as a
+    :py:class:`~vc2_conformance._constraint_table.ValueSet`) will be passed as
+    arguments.
+    """
+    
+    def __init__(self, value, allowed_values):
+        self.value = value
+        self.allowed_values = allowed_values
+        super(QuantisationMatrixValueNotAllowedInLevel, self).__init__()
+
+
+class SliceSizeScalerIsZero(ConformanceError):
+    """
+    (12.4.5.2) A slice_size_scaler value of zero was given.
+    """
