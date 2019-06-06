@@ -571,24 +571,24 @@ class NonConsecutivePictureNumbers(ConformanceError):
     (12.2) Picture headers must contain consecutive picture numbers (wrapping
     at 2**32).
     
-    :py:attr:`last_picture_header_offset` contains the (byte_offset, next_bit)
+    :py:attr:`last_picture_number_offset` contains the (byte_offset, next_bit)
     offset of the previous picture header in the sequence.
     
     :py:attr:`last_picture_number` contains the picture number of the previous
     picture header in the sequence.
     
-    :py:attr:`picture_header_offset` contains the (byte_offset, next_bit)
+    :py:attr:`picture_number_offset` contains the (byte_offset, next_bit)
     offset of the offending picture header in the sequence.
     
     :py:attr:`picture_number` contains the picture number of the offending
     picture header in the sequence.
     """
     
-    def __init__(self, last_picture_header_offset, last_picture_number,
-                 picture_header_offset, picture_number):
-        self.last_picture_header_offset = last_picture_header_offset
+    def __init__(self, last_picture_number_offset, last_picture_number,
+                 picture_number_offset, picture_number):
+        self.last_picture_number_offset = last_picture_number_offset
         self.last_picture_number = last_picture_number
-        self.picture_header_offset = picture_header_offset
+        self.picture_number_offset = picture_number_offset
         self.picture_number = picture_number
         super(NonConsecutivePictureNumbers, self).__init__()
 

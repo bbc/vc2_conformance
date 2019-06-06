@@ -102,7 +102,8 @@ State = fixeddict(
     # in the current sequence. Used to determine if all fields have been
     # received (when pictures are fields) and that the earliest fields have an
     # even picture number. Initialised in parse_sequence (10.4.1) and
-    # incremented in picture_header (12.2).
+    # incremented in assert_picture_number_incremented_as_expected, called in
+    # picture_header (12.2), and fragment_header (14.2).
     Entry("_picture_coding_mode"),
     Entry("_num_pictures_in_sequence"),
     
@@ -132,9 +133,10 @@ State = fixeddict(
     Entry("_last_profile"),
     Entry("_last_level"),
     
-    # (12.2) picture_header: The last picture number encountered in the
-    # sequence (or absent if no pictures have yet been encountered).
-    Entry("_last_picture_header_offset"),  # (int, int) tuple (byte offset, next bit)
+    # (12.2) picture_header and (14.2) fragment_header: The last picture number
+    # encountered in the sequence (or absent if no pictures have yet been
+    # encountered).
+    Entry("_last_picture_number_offset"),  # (int, int) tuple (byte offset, next bit)
     Entry("_last_picture_number"),
     
     # (A.2.1) read_byte: The Python file-like object from which the bitstream

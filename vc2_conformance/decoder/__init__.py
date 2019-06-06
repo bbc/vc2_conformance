@@ -24,3 +24,6 @@ from vc2_conformance.decoder.picture_syntax import *
 
 # (13) Transform Data Syntax
 from vc2_conformance.decoder.transform_data_syntax import *
+
+# (14) Fragment Syntax
+from vc2_conformance.decoder.fragment_syntax import *

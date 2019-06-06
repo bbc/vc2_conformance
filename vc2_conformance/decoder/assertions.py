@@ -3,13 +3,23 @@
 =========================================================================================
 """
 
-from vc2_conformance.tables import ParseCodes, LEVEL_CONSTRAINTS
+from vc2_conformance.tables import (
+    ParseCodes,
+    LEVEL_CONSTRAINTS,
+    PictureCodingModes,
+)
 
 from vc2_conformance._symbol_re import WILDCARD, END_OF_SEQUENCE
 
 from vc2_conformance._constraint_table import allowed_values_for
 
-from vc2_conformance.decoder.exceptions import ValueNotAllowedInLevel
+from vc2_conformance.decoder.io import tell
+
+from vc2_conformance.decoder.exceptions import (
+    ValueNotAllowedInLevel,
+    NonConsecutivePictureNumbers,
+    EarliestFieldHasOddPictureNumber,
+)
 
 
 def assert_in(value, collection, exception_type):
@@ -104,7 +114,7 @@ def assert_level_constraint(state, key, value):
     Takes the current :py:class:`~vc2_conformance.state.State` instance from
     which the current
     :py:attr:`~vc2_conformance.state.State._level_constrained_values` will be
-    checked and updated (and created if it does not exist).
+    created/updated.
     """
     state.setdefault("_level_constrained_values", {})
     
@@ -118,4 +128,54 @@ def assert_level_constraint(state, key, value):
         raise ValueNotAllowedInLevel(state["_level_constrained_values"], key, value, allowed_values)
     else:
         state["_level_constrained_values"][key] = value
+
+
+def assert_picture_number_incremented_as_expected(state):
+    """
+    Check that ``state["picture_number"]`` has been set to an appropriate value
+    by (12.2) picture_header or (14.2) fragment_header.  It should be called
+    immediately after the picture number has been read from the stream.
     
+    This assertion will check that:
+    
+    * (12.2), (14.2) Picture numbers in a sequence must increment by 1 and wrap after
+      2^32-1 back to zero, throwing :py:exc:`NonConsecutivePictureNumbers` if
+      this is not the case.
+    * (12.2), (14.2) When coded as fields, the first field in the sequence must
+      have an even picture number, throwing
+      :py:exc:`EarliestFieldHasOddPictureNumber` if this is not the case.
+    
+    This assertion also has the following side-effects:
+    
+    * Sets ``state["_last_picture_number"]`` to ``state["picture_number"]``
+    * Sets ``state["_last_picture_number_offset"]`` to the current
+      :py:func:`~vc2_conformance.decoder.io.tell`.
+    * Increments ``state["_num_pictures_in_sequence"]``
+    
+    In the case of fragments (14.2), this assertion should be called only for
+    the first fragment in a picture (with fragment_slice_count==0).
+    """
+    this_picture_header_offset = tell(state)
+    
+    # (12.2), (14.4) Picture numbers in a sequence must increment by 1 and wrap
+    # after 2^32-1 back to zero
+    if "_last_picture_number" in state:
+        expected_picture_number = (state["_last_picture_number"] + 1) & 0xFFFFFFFF
+        if state["picture_number"] != expected_picture_number:
+            raise NonConsecutivePictureNumbers(
+                state["_last_picture_number_offset"],
+                state["_last_picture_number"],
+                this_picture_header_offset,
+                state["picture_number"],
+            )
+    state["_last_picture_number"] = state["picture_number"]
+    state["_last_picture_number_offset"] = this_picture_header_offset
+    
+    # (12.2), (14.4) When coded as fields, the first field in the sequence must
+    # have an even picture number.
+    if state["_picture_coding_mode"] == PictureCodingModes.pictures_are_fields:
+        early_field = state["_num_pictures_in_sequence"] % 2 == 0
+        even_number = state["picture_number"] % 2 == 0
+        if early_field and not even_number:
+            raise EarliestFieldHasOddPictureNumber(state["picture_number"])
+    state["_num_pictures_in_sequence"] += 1

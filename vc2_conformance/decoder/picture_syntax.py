@@ -37,11 +37,10 @@ from vc2_conformance.decoder.assertions import (
     assert_in,
     assert_in_enum,
     assert_level_constraint,
+    assert_picture_number_incremented_as_expected,
 )
 
 from vc2_conformance.decoder.exceptions import (
-    NonConsecutivePictureNumbers,
-    EarliestFieldHasOddPictureNumber,
     ZeroSlicesInCodedPicture,
     SliceBytesHasZeroDenominator,
     SliceBytesIsLessThanOne,
@@ -76,36 +75,11 @@ def picture_parse(state):
 @ref_pseudocode
 def picture_header(state):
     """(12.2)"""
-    this_picture_header_offset = tell(state)  ## Not in spec
-    
     state["picture_number"] = read_uint_lit(state, 4)
     
-    # (12.2) Picture numbers in a sequence must increment by 1 and wrap after
-    # (2^32-1) back to zero
-    ## Begin not in spec
-    if "_last_picture_number" in state:
-        expected_picture_number = (state["_last_picture_number"] + 1) & 0xFFFFFFFF
-        if state["picture_number"] != expected_picture_number:
-            raise NonConsecutivePictureNumbers(
-                state["_last_picture_header_offset"],
-                state["_last_picture_number"],
-                this_picture_header_offset,
-                state["picture_number"],
-            )
-    state["_last_picture_number"] = state["picture_number"]
-    state["_last_picture_header_offset"] = this_picture_header_offset
-    ## End not in spec
-    
-    # (12.2) When coded as fields, the first field in the stream must have an
-    # even picture number.
-    ## Begin not in spec
-    if state["_picture_coding_mode"] == PictureCodingModes.pictures_are_fields:
-        early_field = state["_num_pictures_in_sequence"] % 2 == 0
-        even_number = state["picture_number"] % 2 == 0
-        if early_field and not even_number:
-            raise EarliestFieldHasOddPictureNumber(state["picture_number"])
-    state["_num_pictures_in_sequence"] += 1
-    ## End not in spec
+    # (12.2) Checks that the picture incremented by one, wraps correctly and
+    # fields have even-numbered picture numbers first.
+    assert_picture_number_incremented_as_expected(state)  ## Not in spec
 
 
 @ref_pseudocode

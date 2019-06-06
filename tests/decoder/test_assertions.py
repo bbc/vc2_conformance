@@ -1,6 +1,6 @@
 import pytest
 
-from vc2_conformance.tables import ParseCodes
+from vc2_conformance.tables import ParseCodes, PictureCodingModes
 
 from vc2_conformance.state import State
 
@@ -8,7 +8,13 @@ from vc2_conformance._symbol_re import Matcher
 
 from vc2_conformance._constraint_table import ValueSet
 
-from vc2_conformance.decoder.exceptions import ValueNotAllowedInLevel
+from vc2_conformance.decoder.io import read_uint_lit
+
+from vc2_conformance.decoder.exceptions import (
+    ValueNotAllowedInLevel,
+    NonConsecutivePictureNumbers,
+    EarliestFieldHasOddPictureNumber,
+)
 
 from vc2_conformance.decoder.assertions import (
     assert_in,
@@ -16,7 +22,11 @@ from vc2_conformance.decoder.assertions import (
     assert_parse_code_in_sequence,
     assert_parse_code_sequence_ended,
     assert_level_constraint,
+    assert_picture_number_incremented_as_expected,
 )
+
+
+from decoder_test_utils import bytes_to_state
 
 def test_assert_in():
     class CustomException(Exception):
@@ -124,3 +134,88 @@ def test_level_constraints():
     assert exc_info.value.key == "base_video_format"
     assert exc_info.value.value == 0
     assert exc_info.value.allowed_values == ValueSet(1, 2, 3, 4, 5, 6)
+
+
+class TestPictureNumberIncrementedAsExpected(object):
+    
+    def test_picture_numbers_must_be_consecutive(self):
+        state = bytes_to_state(b"\x00\x00\x00")
+        state["_picture_coding_mode"] = PictureCodingModes.pictures_are_frames
+        state["_num_pictures_in_sequence"] = 0
+        
+        read_uint_lit(state, 1)
+        state["picture_number"] = 1000
+        assert_picture_number_incremented_as_expected(state)
+        
+        read_uint_lit(state, 1)
+        state["picture_number"] = 1001
+        assert_picture_number_incremented_as_expected(state)
+        
+        read_uint_lit(state, 1)
+        state["picture_number"] = 1003
+        with pytest.raises(NonConsecutivePictureNumbers) as exc_info:
+            assert_picture_number_incremented_as_expected(state)
+        
+        assert exc_info.value.last_picture_number_offset == (2, 7)
+        assert exc_info.value.picture_number_offset == (3, 7)
+        assert exc_info.value.last_picture_number == 1001
+        assert exc_info.value.picture_number == 1003
+    
+    def test_picture_numbers_wrap_around_correctly(self):
+        state = bytes_to_state(b"\x00\x00")
+        state["_picture_coding_mode"] = PictureCodingModes.pictures_are_frames
+        state["_num_pictures_in_sequence"] = 0
+        
+        read_uint_lit(state, 1)
+        state["picture_number"] = (2**32) - 1
+        assert_picture_number_incremented_as_expected(state)
+        
+        read_uint_lit(state, 1)
+        state["picture_number"] = 0
+        assert_picture_number_incremented_as_expected(state)
+
+    def test_picture_numbers_dont_wrap_around_correctly(self):
+        state = bytes_to_state(b"\x00\x00")
+        state["_picture_coding_mode"] = PictureCodingModes.pictures_are_frames
+        state["_num_pictures_in_sequence"] = 0
+        
+        read_uint_lit(state, 1)
+        state["picture_number"] = (2**32) - 1
+        assert_picture_number_incremented_as_expected(state)
+        
+        read_uint_lit(state, 1)
+        state["picture_number"] = 1
+        with pytest.raises(NonConsecutivePictureNumbers) as exc_info:
+            assert_picture_number_incremented_as_expected(state)
+        assert exc_info.value.last_picture_number_offset == (1, 7)
+        assert exc_info.value.picture_number_offset == (2, 7)
+        assert exc_info.value.last_picture_number == (2**32)-1
+        assert exc_info.value.picture_number == 1
+    
+    @pytest.mark.parametrize("picture_coding_mode,picture_number,exp_fail", [
+        (PictureCodingModes.pictures_are_frames, 0, False),
+        (PictureCodingModes.pictures_are_frames, 1, False),
+        (PictureCodingModes.pictures_are_frames, 2, False),
+        (PictureCodingModes.pictures_are_frames, 3, False),
+        (PictureCodingModes.pictures_are_frames, 4, False),
+        (PictureCodingModes.pictures_are_fields, 0, False),
+        (PictureCodingModes.pictures_are_fields, 1, True),
+        (PictureCodingModes.pictures_are_fields, 2, False),
+        (PictureCodingModes.pictures_are_fields, 3, True),
+        (PictureCodingModes.pictures_are_fields, 4, False),
+    ])
+    def test_early_fields_must_have_even_numbers(self, picture_coding_mode, picture_number, exp_fail):
+        state = bytes_to_state(b"\x00")
+        state["_picture_coding_mode"] = picture_coding_mode
+        state["_num_pictures_in_sequence"] = 100
+        state["picture_number"] = picture_number
+        
+        if exp_fail:
+            with pytest.raises(EarliestFieldHasOddPictureNumber) as exc_info:
+                assert_picture_number_incremented_as_expected(state)
+            assert exc_info.value.picture_number == picture_number
+        else:
+            assert_picture_number_incremented_as_expected(state)
+            
+            # Also check that the pictures in sequence count is incremented
+            assert state["_num_pictures_in_sequence"] == 101
