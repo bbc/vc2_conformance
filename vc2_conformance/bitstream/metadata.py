@@ -12,6 +12,7 @@ from vc2_conformance.bitstream.vc2_fixeddicts import HQSlice, LDSlice
 __all__ = [
     "pseudocode_function_to_fixeddicts",
     "pseudocode_function_to_fixeddicts_recursive",
+    "fixeddict_to_pseudocode_function",
 ]
 
 
@@ -44,6 +45,19 @@ pseudocode_function_to_fixeddicts["slice"].append(LDSlice)
 # listing to avoid being misleading
 assert pseudocode_function_to_fixeddicts.pop("slice_band") == []
 assert pseudocode_function_to_fixeddicts.pop("color_diff_slice_band") == []
+
+
+fixeddict_to_pseudocode_function = {
+    fixeddicts[0]: function_name
+    for function_name, fixeddicts in pseudocode_function_to_fixeddicts.items()
+    # Special case: prefer the type-specific variants of 'slice'
+    if function_name != "slice"
+}
+"""
+Provides a mapping from :py:mod:`vc2_fixeddicts` types to the name of the
+corresponding pseudocode function which may be used to seriallise/deseriallise
+from/to it.
+"""
 
 
 pseudocode_function_to_fixeddicts_recursive = {}

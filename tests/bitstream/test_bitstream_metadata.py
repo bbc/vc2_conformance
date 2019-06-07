@@ -19,7 +19,23 @@ def test_no_functions_without_types():
     # the metadata module.
     assert all(
         len(types) > 0
-        for types in bitstream.pseudocode_function_to_fixeddicts.values())
+        for types in bitstream.pseudocode_function_to_fixeddicts.values()
+    )
+
+
+def test_every_fixeddict_maps_to_one_function():
+    # Sanity check: for every type only one function actually implements that
+    # type (with the exception of the special case of the 'slice' functions).
+    # If this is not the case, we may have arbitrarily chosen one of several
+    # possible functions.
+    for fixeddict, function_name in bitstream.fixeddict_to_pseudocode_function.items():
+        functions_supporting_this_type = [
+            function_name
+            for function_name, fixeddicts in bitstream.pseudocode_function_to_fixeddicts.items()
+            if fixeddict in fixeddicts and function_name != "slice"
+        ]
+        assert function_name != "slice"
+        assert functions_supporting_this_type == [function_name]
 
 
 def test_recursive():
