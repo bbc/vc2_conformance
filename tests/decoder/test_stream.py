@@ -117,6 +117,85 @@ class TestParseSequence(object):
             assert exc_info.value.num_fields_in_sequence == num_pictures
         else:
             decoder.parse_sequence(state)
+    
+    @pytest.mark.xfail
+    @pytest.mark.parametrize("num_slices_to_send,exp_fail", [
+        (0, False),
+        (1, True),
+        (2, True),
+        (3, True),
+        (4, False),
+    ])
+    def test_incomplete_picture_fragments_at_eos_fails(self, num_slices_to_send, exp_fail):
+        sh = seriallise_to_bytes(
+            bitstream.SequenceHeader(),
+            bitstream.sequence_header,
+        )
+        sh_and_pi = parse_info_to_bytes(
+            parse_code=tables.ParseCodes.sequence_header,
+            next_parse_offset=(
+                tables.PARSE_INFO_HEADER_BYTES +
+                len(sh)
+            ),
+        ) + sh
+        
+        # TODO: Create a 4-slice picture and send num_slices_to_send worth of
+        # fragments before ending the stream.
+        
+        eos = parse_info_to_bytes(
+            parse_code=tables.ParseCodes.end_of_sequence,
+            previous_parse_offset=len(sh_and_pi),
+        )
+        
+        state = bytes_to_state(sh_and_pi + eos)
+        if exp_fail:
+            with pytest.raises(decoder.SequenceContainsIncompleteFragmentedPicture) as exc_info:
+                decoder.parse_sequence(state)
+            assert exc_info.value.initial_fragment_offset == (len(sh_and_pi), 7)
+            assert exc_info.value.fragment_slices_received == num_slices_to_send
+            assert exc_info.value.fragment_slices_remaining == 4 - num_slices_to_send
+        else:
+            decoder.parse_sequence(state)
+    
+    @pytest.mark.xfail
+    @pytest.mark.parametrize("num_slices_to_send,exp_fail", [
+        (0, False),
+        (1, True),
+        (2, True),
+        (3, True),
+        (4, False),
+    ])
+    def test_picture_and_incomplete_fragment_interleaving_disallowed(self, num_slices_to_send, exp_fail):
+        sh = seriallise_to_bytes(
+            bitstream.SequenceHeader(),
+            bitstream.sequence_header,
+        )
+        sh_and_pi = parse_info_to_bytes(
+            parse_code=tables.ParseCodes.sequence_header,
+            next_parse_offset=(
+                tables.PARSE_INFO_HEADER_BYTES +
+                len(sh)
+            ),
+        ) + sh
+        
+        # TODO: Create a 4-slice picture and send num_slices_to_send worth of
+        # fragments before sending a picture and then the remaining slcies.
+        
+        eos = parse_info_to_bytes(
+            parse_code=tables.ParseCodes.end_of_sequence,
+            previous_parse_offset=len(sh_and_pi),
+        )
+        
+        state = bytes_to_state(sh_and_pi + eos)
+        if exp_fail:
+            with pytest.raises(decoder.PictureInterleavedWithFragmentedPicture) as exc_info:
+                decoder.parse_sequence(state)
+            assert exc_info.value.initial_fragment_offset == (len(sh_and_pi), 7)
+            assert exc_info.value.this_offset == None  # TODO
+            assert exc_info.value.fragment_slices_received == num_slices_to_send
+            assert exc_info.value.fragment_slices_remaining == 4 - num_slices_to_send
+        else:
+            decoder.parse_sequence(state)
 
 
 class TestParseInfo(object):

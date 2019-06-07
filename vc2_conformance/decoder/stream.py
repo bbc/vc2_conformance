@@ -38,6 +38,8 @@ from vc2_conformance.decoder.exceptions import (
     LevelInvalidSequence,
     ParseCodeNotAllowedInProfile,
     OddNumberOfFieldsInSequence,
+    SequenceContainsIncompleteFragmentedPicture,
+    PictureInterleavedWithFragmentedPicture,
 )
 
 from vc2_conformance._symbol_re import Matcher
@@ -88,12 +90,27 @@ def parse_sequence(state):
     ## End not in spec
     
     state["_num_pictures_in_sequence"] = 0  ## Not in spec
+    state["_fragment_slices_remaining"] = 0  ## Not in spec
     
     parse_info(state)
     while not is_end_of_sequence(state):
         if (is_seq_header(state)):
             sequence_header(state)
         elif (is_picture(state)):
+            # Errata: fragments under-specified in spec
+            #
+            # (14.2) Picture data units may not be interleaved with in-progress
+            # fragmented pictures.
+            ## Begin not in spec
+            if state["_fragment_slices_remaining"] != 0:
+                raise PictureInterleavedWithFragmentedPicture(
+                    state["_picture_initial_fragment_offset"],
+                    tell(state),
+                    state["fragment_slices_received"],
+                    state["_fragment_slices_remaining"],
+                )
+            ## End not in spec
+            
             picture_parse(state)
         elif (is_fragment(state)):
             fragment_parse(state)
@@ -108,6 +125,19 @@ def parse_sequence(state):
     assert_parse_code_sequence_ended(state["_generic_sequence_matcher"], GenericInvalidSequence)
     if "_level_sequence_matcher" in state:
         assert_parse_code_sequence_ended(state["_level_sequence_matcher"], LevelInvalidSequence)
+    ## End not in spec
+    
+    # Errata: fragments under-specified in spec
+    #
+    # (14.2) Ensure that any fragmented picture has been received completely by
+    # the end of the stream.
+    ## Begin not in spec
+    if state["_fragment_slices_remaining"] != 0:
+        raise SequenceContainsIncompleteFragmentedPicture(
+            state["_picture_initial_fragment_offset"],
+            state["fragment_slices_received"],
+            state["_fragment_slices_remaining"],
+        )
     ## End not in spec
     
     # (10.4.3) When pictures are fields, a sequence should contain a whole

@@ -78,6 +78,8 @@ State = fixeddict(
     Entry("fragment_y_offset"),
     
     # (14.4) fragment_data
+    Entry("fragment_slices_receieved"),
+    Entry("fragment_picture_done"),
     Entry("slice_x"),
     Entry("slice_y"),
     
@@ -138,6 +140,16 @@ State = fixeddict(
     # encountered).
     Entry("_last_picture_number_offset"),  # (int, int) tuple (byte offset, next bit)
     Entry("_last_picture_number"),
+    
+    # (14) The offset in the bitstream of the last fragment with
+    # fragment_slice_count==0.
+    Entry("_picture_initial_fragment_offset"),  # (int, int) tuple (byte offset, next bit)
+    
+    # (14) The number of fragment slices which remain to be received in the
+    # current picture. Initialised to zero by parse_sequence (10.4.1), reset to
+    # the number of slices per picture by initialize_fragment_state (14.3) and
+    # decremented whenever a slice is receieved by fragment_data (14.4).
+    Entry("_fragment_slices_remaining"),
     
     # (A.2.1) read_byte: The Python file-like object from which the bitstream
     # will be read by read_byte.

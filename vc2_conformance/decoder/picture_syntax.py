@@ -79,7 +79,7 @@ def picture_header(state):
     
     # (12.2) Checks that the picture incremented by one, wraps correctly and
     # fields have even-numbered picture numbers first.
-    assert_picture_number_incremented_as_expected(state)  ## Not in spec
+    assert_picture_number_incremented_as_expected(state, tell(state))  ## Not in spec
 
 
 @ref_pseudocode

@@ -13,8 +13,6 @@ from vc2_conformance._symbol_re import WILDCARD, END_OF_SEQUENCE
 
 from vc2_conformance._constraint_table import allowed_values_for
 
-from vc2_conformance.decoder.io import tell
-
 from vc2_conformance.decoder.exceptions import (
     ValueNotAllowedInLevel,
     NonConsecutivePictureNumbers,
@@ -130,11 +128,14 @@ def assert_level_constraint(state, key, value):
         state["_level_constrained_values"][key] = value
 
 
-def assert_picture_number_incremented_as_expected(state):
+def assert_picture_number_incremented_as_expected(state, picture_number_offset):
     """
     Check that ``state["picture_number"]`` has been set to an appropriate value
     by (12.2) picture_header or (14.2) fragment_header.  It should be called
-    immediately after the picture number has been read from the stream.
+    after the picture number has been read from the stream into
+    ``state["picture_number"]`` and with the
+    :py:func:`~vc2_conformance.decoder.io.tell` value just after the value was
+    read.
     
     This assertion will check that:
     
@@ -148,15 +149,13 @@ def assert_picture_number_incremented_as_expected(state):
     This assertion also has the following side-effects:
     
     * Sets ``state["_last_picture_number"]`` to ``state["picture_number"]``
-    * Sets ``state["_last_picture_number_offset"]`` to the current
-      :py:func:`~vc2_conformance.decoder.io.tell`.
+    * Sets ``state["_last_picture_number_offset"]`` to the value passed in the
+      picture_number_offset argument.
     * Increments ``state["_num_pictures_in_sequence"]``
     
     In the case of fragments (14.2), this assertion should be called only for
     the first fragment in a picture (with fragment_slice_count==0).
     """
-    this_picture_header_offset = tell(state)
-    
     # (12.2), (14.4) Picture numbers in a sequence must increment by 1 and wrap
     # after 2^32-1 back to zero
     if "_last_picture_number" in state:
@@ -165,11 +164,11 @@ def assert_picture_number_incremented_as_expected(state):
             raise NonConsecutivePictureNumbers(
                 state["_last_picture_number_offset"],
                 state["_last_picture_number"],
-                this_picture_header_offset,
+                picture_number_offset,
                 state["picture_number"],
             )
     state["_last_picture_number"] = state["picture_number"]
-    state["_last_picture_number_offset"] = this_picture_header_offset
+    state["_last_picture_number_offset"] = picture_number_offset
     
     # (12.2), (14.4) When coded as fields, the first field in the sequence must
     # have an even picture number.

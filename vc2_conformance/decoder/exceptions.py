@@ -568,20 +568,20 @@ class PictureDimensionsNotMultipleOfFrameDimensions(ConformanceError):
 
 class NonConsecutivePictureNumbers(ConformanceError):
     """
-    (12.2) Picture headers must contain consecutive picture numbers (wrapping
-    at 2**32).
+    (12.2) and (14.2) Picture numbers for each picture must contain consecutive
+    picture numbers (wrapping at 2**32).
     
     :py:attr:`last_picture_number_offset` contains the (byte_offset, next_bit)
-    offset of the previous picture header in the sequence.
+    offset of the previous picture number in the sequence.
     
     :py:attr:`last_picture_number` contains the picture number of the previous
-    picture header in the sequence.
+    picture in the sequence.
     
     :py:attr:`picture_number_offset` contains the (byte_offset, next_bit)
-    offset of the offending picture header in the sequence.
+    offset of the offending picture number in the sequence.
     
     :py:attr:`picture_number` contains the picture number of the offending
-    picture header in the sequence.
+    picture in the sequence.
     """
     
     def __init__(self, last_picture_number_offset, last_picture_number,
@@ -735,3 +735,142 @@ class InvalidSliceYLength(ConformanceError):
         self.slice_y_length = slice_y_length
         self.max_slice_y_length = max_slice_y_length
         super(InvalidSliceYLength, self).__init__()
+
+
+class FragmentedPictureRestarted(ConformanceError):
+    """
+    (14.2) Not all of the slices in a fragmented picture arrived before a new
+    fragment with fragment_slice_count==0 arrived.
+    
+    The (byte_offset, next_bit_offset) offset of the first fragment header in
+    the incomplete picture and of this fragment header are included as
+    arguments along with the number of slices received and remaining.
+    """
+    
+    def __init__(self, initial_fragment_offset, this_fragment_offset,
+                 fragment_slices_receieved, fragment_slices_remaining):
+        self.initial_fragment_offset = initial_fragment_offset
+        self.this_fragment_offset = this_fragment_offset
+        self.fragment_slices_receieved = fragment_slices_receieved
+        self.fragment_slices_remaining = fragment_slices_remaining
+        super(FragmentedPictureRestarted, self).__init__()
+
+
+class SequenceContainsIncompleteFragmentedPicture(ConformanceError):
+    """
+    (14.2) Sequences must not terminate mid-fragmented picture.
+    
+    The (byte_offset, next_bit_offset) offset of the first fragment header in
+    the incomplete picture is included an argument along with the number of
+    slices received and remaining.
+    """
+    
+    def __init__(self, initial_fragment_offset,
+                 fragment_slices_receieved, fragment_slices_remaining):
+        self.initial_fragment_offset = initial_fragment_offset
+        self.fragment_slices_receieved = fragment_slices_receieved
+        self.fragment_slices_remaining = fragment_slices_remaining
+        super(SequenceContainsIncompleteFragmentedPicture, self).__init__()
+
+
+class PictureInterleavedWithFragmentedPicture(ConformanceError):
+    """
+    (14.2) Picture data units may not be interleaved with in-progress
+    fragmented pictures.
+    
+    The (byte_offset, next_bit_offset) offset of the first fragment header in
+    the incomplete picture and the offending picture data unit's header is
+    included an argument along with the number of slices received and remaining
+    for the fragmented picture.
+    """
+    
+    def __init__(self, initial_fragment_offset, this_offset,
+                 fragment_slices_receieved, fragment_slices_remaining):
+        self.initial_fragment_offset = initial_fragment_offset
+        self.this_offset = this_offset
+        self.fragment_slices_receieved = fragment_slices_receieved
+        self.fragment_slices_remaining = fragment_slices_remaining
+        super(PictureInterleavedWithFragmentedPicture, self).__init__()
+
+
+class InitialFragmentSliceCountNotZero(ConformanceError):
+    """
+    (14.2) Fragmented pictures must begin with a fragment with
+    fragment_slice_count == 0.
+    
+    The offending fragment_slice_count will be passed as argument.
+    """
+    
+    def __init__(self, fragment_slice_count):
+        self.fragment_slice_count = fragment_slice_count
+        super(InitialFragmentSliceCountNotZero, self).__init__()
+
+
+class PictureNumberChangedMidFragmentedPicture(ConformanceError):
+    """
+    (14.2) Picture numbers in fragment_headers which are part of the same
+    fragmented picture must be identical.
+    
+    :py:attr:`last_picture_number_offset` contains the (byte_offset, next_bit)
+    offset of the previous picture number in the sequence.
+    
+    :py:attr:`last_picture_number` contains the picture number of the previous
+    fragment in the sequence.
+    
+    :py:attr:`picture_number_offset` contains the (byte_offset, next_bit)
+    offset of the offending picture number in the sequence.
+    
+    :py:attr:`picture_number` contains the picture number of the offending
+    fragment in the sequence.
+    """
+    
+    def __init__(self, last_picture_number_offset, last_picture_number,
+                 picture_number_offset, picture_number):
+        self.last_picture_number_offset = last_picture_number_offset
+        self.last_picture_number = last_picture_number
+        self.picture_number_offset = picture_number_offset
+        self.picture_number = picture_number
+        super(PictureNumberChangedMidFragmentedPicture, self).__init__()
+
+
+class TooManySlicesInFragmentedPicture(ConformanceError):
+    """
+    (14.2) A fragmented picture must not contain more slices than necessary.
+    
+    The (byte_offset, next_bit_offset) offset of the first fragment header in
+    the picture and the offending fragment's header is
+    included an argument along with the number of slices received, remaining
+    and included in the offending fragment.
+    """
+    
+    def __init__(self, initial_fragment_offset, fragment_offset,
+                 fragment_slices_receieved, fragment_slices_remaining,
+                 fragment_slice_count):
+        self.initial_fragment_offset = initial_fragment_offset
+        self.fragment_offset = fragment_offset
+        self.fragment_slices_receieved = fragment_slices_receieved
+        self.fragment_slices_remaining = fragment_slices_remaining
+        self.fragment_slice_count = fragment_slice_count
+        super(TooManySlicesInFragmentedPicture, self).__init__()
+
+
+class FragmentSlicesNotContiguous(ConformanceError):
+    """
+    (14.2) A fragmented picture must contain every slice in the picture exactly
+    once, provided in raster-scan order and starting at (sx=0, sy=0).
+    
+    The (byte_offset, next_bit_offset) offset of the first fragment header in
+    the picture and the offending fragment's header is included an argument
+    along with the offending slice coordinates and expected slice coordinates.
+    """
+    
+    def __init__(self, initial_fragment_offset, fragment_offset,
+                 fragment_x_offset, fragment_y_offset,
+                 expected_fragment_x_offset, expected_fragment_y_offset):
+        self.initial_fragment_offset = initial_fragment_offset
+        self.fragment_offset = fragment_offset
+        self.fragment_x_offset = fragment_x_offset
+        self.fragment_y_offset = fragment_y_offset
+        self.expected_fragment_x_offset = expected_fragment_x_offset
+        self.expected_fragment_y_offset = expected_fragment_y_offset
+        super(FragmentSlicesNotContiguous, self).__init__()
