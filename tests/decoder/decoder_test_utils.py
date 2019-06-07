@@ -6,15 +6,19 @@ from vc2_conformance import decoder
 from vc2_conformance.state import State
 
 
-def seriallise_to_bytes(context, func, state=None):
+def seriallise_to_bytes(context, state=None, *args):
     """
-    Seriallise the specified context with the given vc2 bitstream pseudocode
-    function. Returns the seriallised bytes.
+    Seriallise the specified context dictionary. Returns the seriallised bytes.
     """
+    # Auto-determine the serialisation function to use based on the context
+    # type
+    func_name = bitstream.fixeddict_to_pseudocode_function[type(context)]
+    func = getattr(bitstream, func_name)
+    
     f = BytesIO()
     w = bitstream.BitstreamWriter(f)
     with bitstream.Serialiser(w, context) as ser:
-        func(ser, State() if state is None else state)
+        func(ser, State() if state is None else state, *args)
     w.flush()
     return f.getvalue()
 

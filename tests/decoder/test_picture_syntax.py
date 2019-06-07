@@ -13,10 +13,7 @@ def picture_header_to_bytes(**kwargs):
     """
     Seriallise a PictureHeader block, returning a bytes object.
     """
-    return seriallise_to_bytes(
-        bitstream.PictureHeader(**kwargs),
-        bitstream.picture_header,
-    )
+    return seriallise_to_bytes(bitstream.PictureHeader(**kwargs))
 
 def test_picture_header_picture_numbering_sanity_check():
     # Only a sanity check as assert_picture_number_incremented_as_expected
@@ -47,7 +44,7 @@ def transform_parameters_to_bytes(state, **kwargs):
         bitstream.TransformParameters(
             **kwargs
         ),
-        lambda serdes, _: bitstream.transform_parameters(serdes, state),
+        state,
     )
 
 minimal_transform_parameters_state = {
@@ -95,7 +92,6 @@ def test_extended_transform_parameters_wavelet_index_ho_must_be_valid():
             asym_transform_index_flag=True,
             wavelet_index_ho=tables.WaveletFilters.haar_no_shift,
         ),
-        bitstream.extended_transform_parameters,
     ))
     decoder.extended_transform_parameters(state)
     
@@ -104,7 +100,6 @@ def test_extended_transform_parameters_wavelet_index_ho_must_be_valid():
             asym_transform_index_flag=True,
             wavelet_index_ho=9999,
         ),
-        bitstream.extended_transform_parameters,
     ))
     with pytest.raises(decoder.BadHOWaveletIndex) as exc_info:
         decoder.extended_transform_parameters(state)
@@ -139,7 +134,7 @@ class TestSliceParameters(object):
                 slice_prefix_bytes=0,
                 slice_size_scaler=1,
             ),
-            lambda serdes, _: bitstream.slice_parameters(serdes, state),
+            state,
         )))
         if exp_fail:
             with pytest.raises(decoder.ZeroSlicesInCodedPicture) as exc_info:
@@ -159,7 +154,7 @@ class TestSliceParameters(object):
                 slice_bytes_numerator=1,
                 slice_bytes_denominator=0,
             ),
-            lambda serdes, _: bitstream.slice_parameters(serdes, state),
+            state,
         )))
         with pytest.raises(decoder.SliceBytesHasZeroDenominator) as exc_info:
             decoder.slice_parameters(state)
@@ -183,7 +178,7 @@ class TestSliceParameters(object):
                 slice_bytes_numerator=numer,
                 slice_bytes_denominator=denom,
             ),
-            lambda serdes, _: bitstream.slice_parameters(serdes, state),
+            state,
         )))
         if exp_fail:
             with pytest.raises(decoder.SliceBytesIsLessThanOne) as exc_info:
@@ -202,7 +197,7 @@ class TestSliceParameters(object):
                 slice_prefix_bytes=0,
                 slice_size_scaler=0,
             ),
-            lambda serdes, _: bitstream.slice_parameters(serdes, state),
+            state,
         )))
         with pytest.raises(decoder.SliceSizeScalerIsZero) as exc_info:
             decoder.slice_parameters(state)
@@ -239,7 +234,7 @@ class TestSliceParameters(object):
                 slice_prefix_bytes=0,
                 slice_size_scaler=1,
             ),
-            lambda serdes, _: bitstream.slice_parameters(serdes, state),
+            state,
         )))
         decoder.slice_parameters(state)
         assert state["_level_constrained_values"]["slices_have_same_dimensions"] is exp_same_dimensions
@@ -257,7 +252,7 @@ class TestQuantisationMatrix(object):
             bitstream.QuantMatrix(
                 custom_quant_matrix=False,
             ),
-            lambda serdes, _: bitstream.quant_matrix(serdes, state),
+            state,
         )))
         decoder.quant_matrix(state)
         
@@ -271,7 +266,7 @@ class TestQuantisationMatrix(object):
             bitstream.QuantMatrix(
                 custom_quant_matrix=False,
             ),
-            lambda serdes, _: bitstream.quant_matrix(serdes, state),
+            state,
         )))
         with pytest.raises(decoder.NoQuantisationMatrixAvailable) as exc_info:
             decoder.quant_matrix(state)
@@ -313,7 +308,7 @@ class TestQuantisationMatrix(object):
                 custom_quant_matrix=True,
                 quant_matrix=matrix,
             ),
-            lambda serdes, _: bitstream.quant_matrix(serdes, state),
+            state,
         )))
         if exp_fail_value is not None:
             with pytest.raises(decoder.QuantisationMatrixValueNotAllowedInLevel) as exc_info:

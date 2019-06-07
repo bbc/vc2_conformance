@@ -13,7 +13,7 @@ def parse_info_to_bytes(**kwargs):
     """
     Seriallise a ParseInfo block, returning a bytes object.
     """
-    return seriallise_to_bytes(bitstream.ParseInfo(**kwargs), bitstream.parse_info)
+    return seriallise_to_bytes(bitstream.ParseInfo(**kwargs))
 
 
 class TestParseSequence(object):
@@ -21,7 +21,7 @@ class TestParseSequence(object):
     @pytest.fixture
     def sh_bytes(self):
         # A sequence header
-        return seriallise_to_bytes(bitstream.SequenceHeader(), bitstream.sequence_header)
+        return seriallise_to_bytes(bitstream.SequenceHeader())
     
     @pytest.fixture
     def sh_parse_offset(self, sh_bytes):
@@ -92,7 +92,6 @@ class TestParseSequence(object):
             bitstream.SequenceHeader(
                 picture_coding_mode=picture_coding_mode,
             ),
-            bitstream.sequence_header,
         )
         sh_and_pi = parse_info_to_bytes(
             parse_code=tables.ParseCodes.sequence_header,
@@ -129,7 +128,6 @@ class TestParseSequence(object):
     def test_incomplete_picture_fragments_at_eos_fails(self, num_slices_to_send, exp_fail):
         sh = seriallise_to_bytes(
             bitstream.SequenceHeader(),
-            bitstream.sequence_header,
         )
         sh_and_pi = parse_info_to_bytes(
             parse_code=tables.ParseCodes.sequence_header,
@@ -168,7 +166,6 @@ class TestParseSequence(object):
     def test_picture_and_incomplete_fragment_interleaving_disallowed(self, num_slices_to_send, exp_fail):
         sh = seriallise_to_bytes(
             bitstream.SequenceHeader(),
-            bitstream.sequence_header,
         )
         sh_and_pi = parse_info_to_bytes(
             parse_code=tables.ParseCodes.sequence_header,

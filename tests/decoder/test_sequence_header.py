@@ -12,10 +12,7 @@ def sequence_header_to_bytes(**kwargs):
     """
     Seriallise a SequenceHeader block, returning a bytes object.
     """
-    return seriallise_to_bytes(
-        bitstream.SequenceHeader(**kwargs),
-        bitstream.sequence_header,
-    )
+    return seriallise_to_bytes(bitstream.SequenceHeader(**kwargs))
 
 class TestSequenceHeader(object):
 
@@ -128,10 +125,7 @@ def parse_parameters_to_bytes(**kwargs):
     """
     Seriallise a ParseParameters block, returning a bytes object.
     """
-    return seriallise_to_bytes(
-        bitstream.ParseParameters(**kwargs),
-        bitstream.parse_parameters,
-    )
+    return seriallise_to_bytes(bitstream.ParseParameters(**kwargs))
 
 class TestParseParameters(object):
     
@@ -237,7 +231,7 @@ def test_frame_size_must_not_be_zero(frame_width, frame_height):
             frame_width=frame_width,
             frame_height=frame_height,
         ),
-        lambda serdes, state: bitstream.frame_size(serdes, state, {}),
+        {}, {},
     ))
     
     with pytest.raises(decoder.ZeroPixelFrameSize) as exc_info:
@@ -253,7 +247,7 @@ def test_color_diff_sampling_format_index_must_be_valid():
             custom_color_diff_format_flag=True,
             color_diff_format_index=tables.ColorDifferenceSamplingFormats.color_4_4_4,
         ),
-        lambda serdes, state: bitstream.color_diff_sampling_format(serdes, state, {}),
+        {}, {},
     ))
     decoder.color_diff_sampling_format(state, {})
     
@@ -262,7 +256,7 @@ def test_color_diff_sampling_format_index_must_be_valid():
             custom_color_diff_format_flag=True,
             color_diff_format_index=9999,
         ),
-        lambda serdes, state: bitstream.color_diff_sampling_format(serdes, state, {}),
+        {}, {},
     ))
     with pytest.raises(decoder.BadColorDifferenceSamplingFormat) as exc_info:
         decoder.color_diff_sampling_format(state, {})
@@ -275,7 +269,7 @@ def test_scan_format_source_sampling_mode_must_be_valid():
             custom_scan_format_flag=True,
             source_sampling=tables.SourceSamplingModes.progressive,
         ),
-        lambda serdes, state: bitstream.scan_format(serdes, state, {}),
+        {}, {},
     ))
     decoder.scan_format(state, {})
     
@@ -284,7 +278,7 @@ def test_scan_format_source_sampling_mode_must_be_valid():
             custom_scan_format_flag=True,
             source_sampling=9999,
         ),
-        lambda serdes, state: bitstream.scan_format(serdes, state, {}),
+        {}, {},
     ))
     with pytest.raises(decoder.BadSourceSamplingMode) as exc_info:
         decoder.scan_format(state, {})
@@ -297,7 +291,7 @@ def frame_rate_to_bytes(**kwargs):
     """
     return seriallise_to_bytes(
         bitstream.FrameRate(**kwargs),
-        lambda serdes, state: bitstream.frame_rate(serdes, state, {}),
+        {}, {},
     )
 
 class TestFrameRate(object):
@@ -360,7 +354,7 @@ def pixel_aspect_ratio_to_bytes(**kwargs):
     """
     return seriallise_to_bytes(
         bitstream.PixelAspectRatio(**kwargs),
-        lambda serdes, state: bitstream.pixel_aspect_ratio(serdes, state, {}),
+        {}, {},
     )
 
 
@@ -434,7 +428,7 @@ def test_clean_area_range_check(clean_width, clean_height, left_offset, top_offs
             left_offset=left_offset,
             top_offset=top_offset,
         ),
-        lambda serdes, state: bitstream.clean_area(serdes, state, video_parameters),
+        {}, video_parameters,
     ))
     
     if exp_fail:
@@ -456,7 +450,7 @@ def test_signal_range_index_must_be_valid():
             custom_signal_range_flag=True,
             index=tables.PresetSignalRanges.video_8bit,
         ),
-        lambda serdes, state: bitstream.signal_range(serdes, state, {}),
+        {}, {},
     ))
     decoder.signal_range(state, {})
     
@@ -465,7 +459,7 @@ def test_signal_range_index_must_be_valid():
             custom_signal_range_flag=True,
             index=9999,
         ),
-        lambda serdes, state: bitstream.signal_range(serdes, state, {}),
+        {}, {},
     ))
     with pytest.raises(decoder.BadPresetSignalRange) as exc_info:
         decoder.signal_range(state, {})
@@ -478,7 +472,7 @@ def test_color_spec_index_must_be_valid():
             custom_color_spec_flag=True,
             index=tables.PresetColorSpecs.uhdtv,
         ),
-        lambda serdes, state: bitstream.color_spec(serdes, state, {}),
+        {}, {},
     ))
     decoder.color_spec(state, {})
     
@@ -487,7 +481,7 @@ def test_color_spec_index_must_be_valid():
             custom_color_spec_flag=True,
             index=9999,
         ),
-        lambda serdes, state: bitstream.color_spec(serdes, state, {}),
+        {}, {},
     ))
     with pytest.raises(decoder.BadPresetColorSpec) as exc_info:
         decoder.color_spec(state, {})
@@ -500,7 +494,7 @@ def test_color_primaries_index_must_be_valid():
             custom_color_primaries_flag=True,
             index=tables.PresetColorPrimaries.hdtv,
         ),
-        lambda serdes, state: bitstream.color_primaries(serdes, state, {}),
+        {}, {},
     ))
     decoder.color_primaries(state, {})
     
@@ -509,7 +503,7 @@ def test_color_primaries_index_must_be_valid():
             custom_color_primaries_flag=True,
             index=9999,
         ),
-        lambda serdes, state: bitstream.color_primaries(serdes, state, {}),
+        {}, {},
     ))
     with pytest.raises(decoder.BadPresetColorPrimaries) as exc_info:
         decoder.color_primaries(state, {})
@@ -522,7 +516,7 @@ def test_color_matrix_index_must_be_valid():
             custom_color_matrix_flag=True,
             index=tables.PresetColorMatrices.hdtv,
         ),
-        lambda serdes, state: bitstream.color_matrix(serdes, state, {}),
+        {}, {},
     ))
     decoder.color_matrix(state, {})
     
@@ -531,7 +525,7 @@ def test_color_matrix_index_must_be_valid():
             custom_color_matrix_flag=True,
             index=9999,
         ),
-        lambda serdes, state: bitstream.color_matrix(serdes, state, {}),
+        {}, {},
     ))
     with pytest.raises(decoder.BadPresetColorMatrix) as exc_info:
         decoder.color_matrix(state, {})
@@ -544,7 +538,7 @@ def test_transfer_function_index_must_be_valid():
             custom_transfer_function_flag=True,
             index=tables.PresetTransferFunctions.hybrid_log_gamma,
         ),
-        lambda serdes, state: bitstream.transfer_function(serdes, state, {}),
+        {}, {},
     ))
     decoder.transfer_function(state, {})
     
@@ -553,7 +547,7 @@ def test_transfer_function_index_must_be_valid():
             custom_transfer_function_flag=True,
             index=9999,
         ),
-        lambda serdes, state: bitstream.transfer_function(serdes, state, {}),
+        {}, {},
     ))
     with pytest.raises(decoder.BadPresetTransferFunction) as exc_info:
         decoder.transfer_function(state, {})

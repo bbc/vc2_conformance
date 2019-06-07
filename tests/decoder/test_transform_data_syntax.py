@@ -68,7 +68,7 @@ class TestLDSlice(object):
                     - 2,  # c1 and c2 transform data
                 ))),
             ),
-            lambda serdes, _: bitstream.ld_slice(serdes, state, 0, 0),
+            state, 0, 0,
         )
         state.update(bytes_to_state(ld_slice_bytes))
         
@@ -95,7 +95,7 @@ class TestLDSlice(object):
                 y_block_padding=bitarray(0),
                 c_block_padding=bitarray(0),
             ),
-            lambda serdes, _: bitstream.ld_slice(serdes, state, 0, 0),
+            state, 0, 0,
         )))
         
         decoder.ld_slice(state, 0, 0)
@@ -127,7 +127,7 @@ class TestHQSlice(object):
                 c1_block_padding=bitarray((8*20*2) - 1),
                 c2_block_padding=bitarray((8*20*3) - 1),
             ),
-            lambda serdes, _: bitstream.hq_slice(serdes, state, 0, 0),
+            state, 0, 0,
         )
         state.update(bytes_to_state(hq_slice_bytes))
         
@@ -155,7 +155,7 @@ class TestHQSlice(object):
                 c1_block_padding=bitarray(0),
                 c2_block_padding=bitarray(0),
             ),
-            lambda serdes, _: bitstream.hq_slice(serdes, state, 0, 0),
+            state, 0, 0,
         )
         state.update(bytes_to_state(hq_slice_bytes))
         
