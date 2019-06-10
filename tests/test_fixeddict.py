@@ -69,10 +69,6 @@ class TestEntry(object):
         assert v.to_string(MyEnum.b) == "<MyEnum.b: 2> (2)"
         assert v.to_string(MyEnum.c) == "<MyEnum.c: 3> (3)"
     
-    def test_type(self):
-        e = Entry("e", type="hello")
-        assert e.type == "hello"
-    
     def test_get_default(self):
         v = Entry("v", default=123)
         assert v.get_default() == 123

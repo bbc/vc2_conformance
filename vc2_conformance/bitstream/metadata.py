@@ -6,7 +6,11 @@ fixeddict types.
 """
 
 from vc2_conformance.bitstream import vc2
-from vc2_conformance.bitstream.vc2_fixeddicts import HQSlice, LDSlice
+from vc2_conformance.bitstream.vc2_fixeddicts import (
+    fixeddict_nesting,
+    HQSlice,
+    LDSlice,
+)
 
 
 __all__ = [
@@ -69,10 +73,10 @@ recursively includes the fixeddict types of all contained entries.
 # Populate pseudocode_function_to_fixeddicts_recursive
 def iter_fixeddict_types(fixeddict):
     yield fixeddict
-    for entry in fixeddict.entry_objs.values():
-        if entry.type is not None:
-            for subtype in iter_fixeddict_types(entry.type):
-                yield subtype
+    
+    for nested_type in fixeddict_nesting.get(fixeddict, []):
+        for subtype in iter_fixeddict_types(nested_type):
+            yield subtype
 
 for name, base_types in pseudocode_function_to_fixeddicts.items():
     types = []
