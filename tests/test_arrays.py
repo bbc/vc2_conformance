@@ -15,14 +15,14 @@ class TestArray(object):
         assert array(0, 0) == []
     
     def test_singleton(self):
-        assert array(1, 1) == [[0]]
+        assert array(1, 1) == [[None]]
     
     def test_2d(self):
         assert array(3, 4) == [
-            [0, 0, 0],
-            [0, 0, 0],
-            [0, 0, 0],
-            [0, 0, 0],
+            [None, None, None],
+            [None, None, None],
+            [None, None, None],
+            [None, None, None],
         ]
     
     def test_initial_value(self):

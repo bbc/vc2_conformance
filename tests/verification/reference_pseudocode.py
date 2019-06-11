@@ -404,14 +404,24 @@ def quant_matrix(state):
     """(12.4.5.3)"""
     custom_quant_matrix = read_bool(state)
     if(custom_quant_matrix):
+        # Errata: not initialised in spec
+        state["quant_matrix"] = {}
         if (state["dwt_depth_ho"] == 0):
+            # Errata: not initialised in spec
+            state["quant_matrix"][0] = {}
             state["quant_matrix"][0]["LL"] = read_uint(state)
         else:
+            # Errata: not initialised in spec
+            state["quant_matrix"][0] = {}
             state["quant_matrix"][0]["L"] = read_uint(state)
             for level in range(1, state["dwt_depth_ho"] + 1):
+                # Errata: not initialised in spec
+                state["quant_matrix"][level] = {}
                 state["quant_matrix"][level]["H"] = read_uint(state)
         for level in range(state["dwt_depth_ho"] + 1,
                            state["dwt_depth_ho"] + state["dwt_depth"] + 1):
+            # Errata: not initialised in spec
+            state["quant_matrix"][level] = {}
             state["quant_matrix"][level]["HL"] = read_uint(state)
             state["quant_matrix"][level]["LH"] = read_uint(state)
             state["quant_matrix"][level]["HH"] = read_uint(state)
@@ -729,9 +739,9 @@ def fragment_header (state):
 
 def initialize_fragment_state (state):
     """(14.3)"""
-    state["y_transform"] = initialize_wavelet_data("Y")
-    state["c1_transform"] = initialize_wavelet_data("C1")
-    state["c2_transform"] = initialize_wavelet_data("C2")
+    state["y_transform"] = initialize_wavelet_data(state, "Y")
+    state["c1_transform"] = initialize_wavelet_data(state, "C1")
+    state["c2_transform"] = initialize_wavelet_data(state, "C2")
     state["fragment_slices_received"] = 0
     state["fragment_picture_done"] = False
 

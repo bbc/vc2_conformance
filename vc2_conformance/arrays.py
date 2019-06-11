@@ -16,7 +16,7 @@ __all__ = [
 
 
 @ref_pseudocode(deviation="inferred_implementation")
-def array(width, height, initial_value=0):
+def array(width, height, initial_value=None):
     """
     (5.4.2) Makes a 2D array out of nested lists which may be indexed as
     arr[y][x].

@@ -217,7 +217,7 @@ class TestQuantisationMatrix(object):
             bitstream.QuantMatrix(
                 custom_quant_matrix=False,
             ),
-            state,
+            state.copy(),
         )))
         decoder.quant_matrix(state)
         
@@ -231,7 +231,7 @@ class TestQuantisationMatrix(object):
             bitstream.QuantMatrix(
                 custom_quant_matrix=False,
             ),
-            state,
+            state.copy(),
         )))
         with pytest.raises(decoder.NoQuantisationMatrixAvailable) as exc_info:
             decoder.quant_matrix(state)
@@ -273,7 +273,7 @@ class TestQuantisationMatrix(object):
                 custom_quant_matrix=True,
                 quant_matrix=matrix,
             ),
-            state,
+            state.copy(),
         )))
         if exp_fail_value is not None:
             with pytest.raises(decoder.QuantisationMatrixValueNotAllowedInLevel) as exc_info:

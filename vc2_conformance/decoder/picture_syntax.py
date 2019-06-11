@@ -248,17 +248,22 @@ def quant_matrix(state):
         )
         ## End not in spec
         
+        state["quant_matrix"] = {}
         if state["dwt_depth_ho"] == 0:
+            state["quant_matrix"][0] = {}
             state["quant_matrix"][0]["LL"] = read_uint(state)
             assert_in(state["quant_matrix"][0]["LL"], allowed_values, QuantisationMatrixValueNotAllowedInLevel)  ## Not in spec
         else:
+            state["quant_matrix"][0] = {}
             state["quant_matrix"][0]["L"] = read_uint(state)
             assert_in(state["quant_matrix"][0]["L"], allowed_values, QuantisationMatrixValueNotAllowedInLevel)  ## Not in spec
             for level in range(1, state["dwt_depth_ho"] + 1):
+                state["quant_matrix"][level] = {}
                 state["quant_matrix"][level]["H"] = read_uint(state)
                 assert_in(state["quant_matrix"][level]["H"], allowed_values, QuantisationMatrixValueNotAllowedInLevel)  ## Not in spec
         for level in range(state["dwt_depth_ho"] + 1,
                            state["dwt_depth_ho"] + state["dwt_depth"] + 1):
+            state["quant_matrix"][level] = {}
             state["quant_matrix"][level]["HL"] = read_uint(state)
             assert_in(state["quant_matrix"][level]["HL"], allowed_values, QuantisationMatrixValueNotAllowedInLevel)  ## Not in spec
             state["quant_matrix"][level]["LH"] = read_uint(state)

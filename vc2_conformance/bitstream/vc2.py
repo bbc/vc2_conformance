@@ -543,16 +543,20 @@ def quant_matrix(serdes, state):
     if custom_quant_matrix:
         serdes.declare_list("quant_matrix")
         
-        state["quant_matrix"] = defaultdict(dict)  ## Not in spec
+        state["quant_matrix"] = {}
         if state["dwt_depth_ho"] == 0:
+            state["quant_matrix"][0] = {}
             state["quant_matrix"][0]["LL"] = serdes.uint("quant_matrix")
         else:
+            state["quant_matrix"][0] = {}
             state["quant_matrix"][0]["L"] = serdes.uint("quant_matrix")
             for level in range(1, state["dwt_depth_ho"] + 1):
+                state["quant_matrix"][level] = {}
                 state["quant_matrix"][level]["H"] = serdes.uint("quant_matrix")
         
         for level in range(state["dwt_depth_ho"] + 1,
                            state["dwt_depth_ho"] + state["dwt_depth"] + 1):
+            state["quant_matrix"][level] = {}
             state["quant_matrix"][level]["HL"] = serdes.uint("quant_matrix")
             state["quant_matrix"][level]["LH"] = serdes.uint("quant_matrix")
             state["quant_matrix"][level]["HH"] = serdes.uint("quant_matrix")

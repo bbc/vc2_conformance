@@ -27,7 +27,6 @@ single_sample_transform_base_state = {
     "c2_transform": {0: {"LL": [[None]]}},
 }
 
-
 class TestLDSlice(object):
     
     @pytest.mark.parametrize("slice_y_length,exp_fail", [
@@ -122,3 +121,55 @@ class TestHQSlice(object):
         # Just check that assert_level_constraint has added the index to the
         # dictionary.
         assert state["_level_constrained_values"]["qindex"] == 0
+
+
+@pytest.mark.parametrize("dwt_depth,dwt_depth_ho", [
+    (0, 0),
+    (1, 0),
+    (2, 0),
+    (0, 1),
+    (0, 2),
+    (1, 1),
+    (2, 2),
+])
+def test_initialize_wavelet_data(dwt_depth, dwt_depth_ho):
+    # This test attempts to ensure that initialize_wavelet_data produces arrays
+    # of the correct size etc. This is done using an all-zeros hq_slice to zero out these
+    # arrays (which are initialised to 'None'). If all values are zero after
+    # this step (and nothing crashes with an out-of-bounds error) this function
+    # should be correct.
+    
+    state = {
+        "parse_code": tables.ParseCodes.high_quality_picture,
+        "slices_x": 1,
+        "slices_y": 1,
+        "luma_width": 20,
+        "luma_height": 10,
+        "color_diff_width": 10,
+        "color_diff_height": 5,
+        "wavelet_index": tables.WaveletFilters.haar_no_shift,
+        "wavelet_index_ho": tables.WaveletFilters.haar_no_shift,
+        "dwt_depth": dwt_depth,
+        "dwt_depth_ho": dwt_depth_ho,
+        "slice_prefix_bytes": 0,
+        "slice_size_scaler": 1,
+        "quant_matrix": tables.QUANTISATION_MATRICES[(
+            tables.WaveletFilters.haar_no_shift,
+            tables.WaveletFilters.haar_no_shift,
+            dwt_depth,
+            dwt_depth_ho,
+        )],
+    }
+    state.update(bytes_to_state(serialise_to_bytes(
+        bitstream.TransformData(),
+        state.copy(),
+    )))
+    
+    decoder.transform_data(state)
+    
+    for transform in ["y_transform", "c1_transform", "c2_transform"]:
+        for level_data in state[transform].values():
+            for orientation_data in level_data.values():
+                for row in orientation_data:
+                    for value in row:
+                        assert value == 0

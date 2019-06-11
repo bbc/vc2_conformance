@@ -10,12 +10,28 @@ from vc2_conformance.vc2_math import (
     intlog2,
 )
 
+from vc2_conformance.arrays import (
+    array,
+    width,
+    height,
+)
+
 from vc2_conformance.slice_sizes import (
+    subband_width,
+    subband_height,
     slice_bytes,
     slice_left,
     slice_right,
     slice_top,
     slice_bottom,
+)
+
+from vc2_conformance.parse_code_functions import (
+    is_ld_picture,
+    is_hq_picture,
+    is_ld_fragment,
+    is_hq_fragment,
+    using_dc_prediction,
 )
 
 from vc2_conformance.decoder.exceptions import (
@@ -39,6 +55,7 @@ __all__ = [
     "inverse_quant",
     "quant_factor",
     "quant_offset",
+    "initialize_wavelet_data",
     "dc_prediction",
     "transform_data",
     "slice",
@@ -102,6 +119,29 @@ def dc_prediction(band):
             else:
                 prediction = 0
             band[y][x] += prediction
+
+
+@ref_pseudocode(deviation="inferred_implementation")
+def initialize_wavelet_data(state, comp):
+    """(13.2.2) Return a ready-to-fill array of transform data arrays."""
+    out = {}
+    
+    if state["dwt_depth_ho"] == 0:
+        out[0] = {"LL": array(subband_width(state, 0, comp),
+                              subband_height(state, 0, comp))}
+    else:
+        out[0] = {"L": array(subband_width(state, 0, comp),
+                             subband_height(state, 0, comp))}
+        for level in range(1, state["dwt_depth_ho"] + 1):
+            out[level] = {"H": array(subband_width(state, level, comp),
+                                     subband_height(state, level, comp))}
+    
+    for level in range(state["dwt_depth_ho"] + 1,
+                       state["dwt_depth_ho"] + state["dwt_depth"] + 1):
+        out[level] = {orient: array(subband_width(state, level, comp),
+                                    subband_height(state, level, comp))
+                      for orient in ["HL", "LH", "HH"]}
+    return out
 
 
 @ref_pseudocode

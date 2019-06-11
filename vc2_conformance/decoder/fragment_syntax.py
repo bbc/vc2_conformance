@@ -131,9 +131,9 @@ def fragment_header(state):
 @ref_pseudocode
 def initialize_fragment_state(state):
     """(14.3)"""
-    state["y_transform"] = initialize_wavelet_data("Y")
-    state["c1_transform"] = initialize_wavelet_data("C1")
-    state["c2_transform"] = initialize_wavelet_data("C2")
+    state["y_transform"] = initialize_wavelet_data(state, "Y")
+    state["c1_transform"] = initialize_wavelet_data(state, "C1")
+    state["c2_transform"] = initialize_wavelet_data(state, "C2")
     state["fragment_slices_received"] = 0
     state["_fragment_slices_remaining"] = state["slices_x"] * state["slices_y"]  ## Not in spec
     state["fragment_picture_done"] = False
