@@ -1148,7 +1148,7 @@ class MonitoredMixin(object):
     (with an exception).
     """
     
-    def __init__(self, monitor, io, context=None):
+    def __init__(self, monitor, *args, **kwargs):
         """
         Parameters
         ==========
@@ -1156,10 +1156,10 @@ class MonitoredMixin(object):
             A function which will be called after every primitive I/O operation
             completes. This function is passed the :py:class:`SerDes` instance
             and the target name and value of the target just used.
-        io : :py:class:`~.io.BitstreamReader` or :py:class:`~.io.BitstreamWriter`
-        context : dict
+        *args, **kwargs :
+            Passed to base constructor.
         """
-        super(MonitoredMixin, self).__init__(io, context)
+        super(MonitoredMixin, self).__init__(*args, **kwargs)
         self.monitor = monitor
     
     def bool(self, target):
@@ -1215,8 +1215,7 @@ class MonitoredSerialiser(MonitoredMixin, Serialiser):
         serialisation (e.g. using :py:meth:`SerDes.describe_path` or
         :py:data:`SerDes.io`) or to terminate serialisation early (by throwing
         an exception).
-    io : :py:class:`~.io.BitstreamWriter`
-    context : dict
+    *args, **kwargs : see :py:class:`Serialiser`
     """
 
 
@@ -1238,7 +1237,7 @@ class MonitoredDeserialiser(MonitoredMixin, Deserialiser):
         deserialisation (e.g. using :py:meth:`SerDes.context`,
         :py:meth:`SerDes.describe_path` or :py:data:`SerDes.io`) or to
         terminate deserialisation early (by throwing an exception).
-    io : :py:class:`~.io.BitstreamReader`
+    *args, **kwargs : see :py:class:`Serialiser`
     """
 
 
