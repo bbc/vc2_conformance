@@ -5,9 +5,13 @@
 
 from vc2_conformance.metadata import ref_pseudocode
 
+from vc2_conformance.decoder.io import (
+    tell,
+    read_uint_lit,
+)
+
 from vc2_conformance.decoder.exceptions import (
     FragmentedPictureRestarted,
-    InitialFragmentSliceCountNotZero,
     PictureNumberChangedMidFragmentedPicture,
     TooManySlicesInFragmentedPicture,
     FragmentSlicesNotContiguous,
@@ -43,10 +47,10 @@ def fragment_parse(state):
 @ref_pseudocode
 def fragment_header(state):
     """(14.2)"""
-    fragment_offset = tell()  ## Not in spec
+    fragment_offset = tell(state)  ## Not in spec
     
     state["picture_number"] = read_uint_lit(state, 4)
-    picture_number_offset = tell()  ## Not in spec
+    picture_number_offset = tell(state)  ## Not in spec
     
     state["fragment_data_length"] = read_uint_lit(state, 2)
     state["fragment_slice_count"] = read_uint_lit(state, 2)
@@ -74,13 +78,6 @@ def fragment_header(state):
         
         state["_picture_initial_fragment_offset"] = fragment_offset
     else:
-        # Errata: wrapping behaviour not constrained in spec
-        #
-        # (14.2) The first fragment in a fragmented picture must have
-        # fragment_slice_count==0.
-        if state["_fragment_slices_remaining"] == 0:
-            raise InitialFragmentSliceCountNotZero(state["fragment_slice_count"])
-        
         # (14.2) Appart from when fragment_slice_count==0, the picture number
         # must not change
         if state["_last_picture_number"] != state["picture_number"]:
@@ -162,4 +159,3 @@ def fragment_data(state):
                     dc_prediction(state["y_transform"][0]["L"])
                     dc_prediction(state["c1_transform"][0]["L"])
                     dc_prediction(state["c2_transform"][0]["L"])
-

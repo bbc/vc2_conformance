@@ -748,10 +748,10 @@ class FragmentedPictureRestarted(ConformanceError):
     """
     
     def __init__(self, initial_fragment_offset, this_fragment_offset,
-                 fragment_slices_receieved, fragment_slices_remaining):
+                 fragment_slices_received, fragment_slices_remaining):
         self.initial_fragment_offset = initial_fragment_offset
         self.this_fragment_offset = this_fragment_offset
-        self.fragment_slices_receieved = fragment_slices_receieved
+        self.fragment_slices_received = fragment_slices_received
         self.fragment_slices_remaining = fragment_slices_remaining
         super(FragmentedPictureRestarted, self).__init__()
 
@@ -766,9 +766,9 @@ class SequenceContainsIncompleteFragmentedPicture(ConformanceError):
     """
     
     def __init__(self, initial_fragment_offset,
-                 fragment_slices_receieved, fragment_slices_remaining):
+                 fragment_slices_received, fragment_slices_remaining):
         self.initial_fragment_offset = initial_fragment_offset
-        self.fragment_slices_receieved = fragment_slices_receieved
+        self.fragment_slices_received = fragment_slices_received
         self.fragment_slices_remaining = fragment_slices_remaining
         super(SequenceContainsIncompleteFragmentedPicture, self).__init__()
 
@@ -785,25 +785,12 @@ class PictureInterleavedWithFragmentedPicture(ConformanceError):
     """
     
     def __init__(self, initial_fragment_offset, this_offset,
-                 fragment_slices_receieved, fragment_slices_remaining):
+                 fragment_slices_received, fragment_slices_remaining):
         self.initial_fragment_offset = initial_fragment_offset
         self.this_offset = this_offset
-        self.fragment_slices_receieved = fragment_slices_receieved
+        self.fragment_slices_received = fragment_slices_received
         self.fragment_slices_remaining = fragment_slices_remaining
         super(PictureInterleavedWithFragmentedPicture, self).__init__()
-
-
-class InitialFragmentSliceCountNotZero(ConformanceError):
-    """
-    (14.2) Fragmented pictures must begin with a fragment with
-    fragment_slice_count == 0.
-    
-    The offending fragment_slice_count will be passed as argument.
-    """
-    
-    def __init__(self, fragment_slice_count):
-        self.fragment_slice_count = fragment_slice_count
-        super(InitialFragmentSliceCountNotZero, self).__init__()
 
 
 class PictureNumberChangedMidFragmentedPicture(ConformanceError):
@@ -843,12 +830,12 @@ class TooManySlicesInFragmentedPicture(ConformanceError):
     and included in the offending fragment.
     """
     
-    def __init__(self, initial_fragment_offset, fragment_offset,
-                 fragment_slices_receieved, fragment_slices_remaining,
+    def __init__(self, initial_fragment_offset, this_fragment_offset,
+                 fragment_slices_received, fragment_slices_remaining,
                  fragment_slice_count):
         self.initial_fragment_offset = initial_fragment_offset
-        self.fragment_offset = fragment_offset
-        self.fragment_slices_receieved = fragment_slices_receieved
+        self.this_fragment_offset = this_fragment_offset
+        self.fragment_slices_received = fragment_slices_received
         self.fragment_slices_remaining = fragment_slices_remaining
         self.fragment_slice_count = fragment_slice_count
         super(TooManySlicesInFragmentedPicture, self).__init__()
@@ -864,11 +851,11 @@ class FragmentSlicesNotContiguous(ConformanceError):
     along with the offending slice coordinates and expected slice coordinates.
     """
     
-    def __init__(self, initial_fragment_offset, fragment_offset,
+    def __init__(self, initial_fragment_offset, this_fragment_offset,
                  fragment_x_offset, fragment_y_offset,
                  expected_fragment_x_offset, expected_fragment_y_offset):
         self.initial_fragment_offset = initial_fragment_offset
-        self.fragment_offset = fragment_offset
+        self.this_fragment_offset = this_fragment_offset
         self.fragment_x_offset = fragment_x_offset
         self.fragment_y_offset = fragment_y_offset
         self.expected_fragment_x_offset = expected_fragment_x_offset

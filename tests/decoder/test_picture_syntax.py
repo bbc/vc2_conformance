@@ -357,3 +357,9 @@ def test_transform_parameters_et_al_level_constraints(parse_code, extra_slice_pa
     }
     expected_constrained_values.update(extra_constrained_values)
     assert state["_level_constrained_values"] == expected_constrained_values
+
+
+@pytest.mark.xfail
+def test_todo_whole_picture():
+    # TODO: Test decoding of whole picture bitstreams...
+    assert False
