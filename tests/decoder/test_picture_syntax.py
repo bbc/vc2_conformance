@@ -1,6 +1,6 @@
 import pytest
 
-from decoder_test_utils import seriallise_to_bytes, bytes_to_state
+from decoder_test_utils import serialise_to_bytes, bytes_to_state
 
 from vc2_conformance._constraint_table import ValueSet
 
@@ -9,18 +9,12 @@ from vc2_conformance import tables
 from vc2_conformance import decoder
 
 
-def picture_header_to_bytes(**kwargs):
-    """
-    Seriallise a PictureHeader block, returning a bytes object.
-    """
-    return seriallise_to_bytes(bitstream.PictureHeader(**kwargs))
-
 def test_picture_header_picture_numbering_sanity_check():
     # Only a sanity check as assert_picture_number_incremented_as_expected
     # (which performs these checks) is tested fully elsewhere
-    ph1 = picture_header_to_bytes(picture_number=1000)
-    ph2 = picture_header_to_bytes(picture_number=1001)
-    ph3 = picture_header_to_bytes(picture_number=1003)
+    ph1 = serialise_to_bytes(bitstream.PictureHeader(picture_number=1000))
+    ph2 = serialise_to_bytes(bitstream.PictureHeader(picture_number=1001))
+    ph3 = serialise_to_bytes(bitstream.PictureHeader(picture_number=1003))
     
     state = bytes_to_state(ph1 + ph2 + ph3)
     state["_picture_coding_mode"] = tables.PictureCodingModes.pictures_are_frames
@@ -36,17 +30,6 @@ def test_picture_header_picture_numbering_sanity_check():
     assert exc_info.value.picture_number == 1003
 
 
-def transform_parameters_to_bytes(state, **kwargs):
-    """
-    Seriallise a transform_parameters block, returning a bytes object.
-    """
-    return seriallise_to_bytes(
-        bitstream.TransformParameters(
-            **kwargs
-        ),
-        state,
-    )
-
 minimal_transform_parameters_state = {
     "major_version": 3,
     "parse_code": tables.ParseCodes.high_quality_picture,
@@ -58,28 +41,20 @@ minimal_transform_parameters_state = {
 
 def test_transform_parameters_wavelet_index_must_be_valid():
     state = minimal_transform_parameters_state.copy()
-    state.update(bytes_to_state(transform_parameters_to_bytes(
-        state,
-        wavelet_index=tables.WaveletFilters.haar_no_shift,
-        slice_parameters=bitstream.SliceParameters(
-            slices_x=1,
-            slices_y=1,
-            slice_prefix_bytes=0,
-            slice_size_scaler=1,
+    state.update(bytes_to_state(serialise_to_bytes(
+        bitstream.TransformParameters(
+            wavelet_index=tables.WaveletFilters.haar_no_shift,
         ),
+        state,
     )))
     decoder.transform_parameters(state)
     
     state = minimal_transform_parameters_state.copy()
-    state.update(bytes_to_state(transform_parameters_to_bytes(
-        state,
-        wavelet_index=9999,
-        slice_parameters=bitstream.SliceParameters(
-            slices_x=1,
-            slices_y=1,
-            slice_prefix_bytes=0,
-            slice_size_scaler=1,
+    state.update(bytes_to_state(serialise_to_bytes(
+        bitstream.TransformParameters(
+            wavelet_index=9999,
         ),
+        state,
     )))
     with pytest.raises(decoder.BadWaveletIndex) as exc_info:
         decoder.transform_parameters(state)
@@ -87,7 +62,7 @@ def test_transform_parameters_wavelet_index_must_be_valid():
 
 
 def test_extended_transform_parameters_wavelet_index_ho_must_be_valid():
-    state = bytes_to_state(seriallise_to_bytes(
+    state = bytes_to_state(serialise_to_bytes(
         bitstream.ExtendedTransformParameters(
             asym_transform_index_flag=True,
             wavelet_index_ho=tables.WaveletFilters.haar_no_shift,
@@ -95,7 +70,7 @@ def test_extended_transform_parameters_wavelet_index_ho_must_be_valid():
     ))
     decoder.extended_transform_parameters(state)
     
-    state = bytes_to_state(seriallise_to_bytes(
+    state = bytes_to_state(serialise_to_bytes(
         bitstream.ExtendedTransformParameters(
             asym_transform_index_flag=True,
             wavelet_index_ho=9999,
@@ -127,12 +102,10 @@ class TestSliceParameters(object):
     ])
     def test_number_of_slices_must_be_nonzero(self, slices_x, slices_y, exp_fail):
         state = minimal_slice_parameters_state.copy()
-        state.update(bytes_to_state(seriallise_to_bytes(
+        state.update(bytes_to_state(serialise_to_bytes(
             bitstream.SliceParameters(
                 slices_x=slices_x,
                 slices_y=slices_y,
-                slice_prefix_bytes=0,
-                slice_size_scaler=1,
             ),
             state,
         )))
@@ -147,10 +120,8 @@ class TestSliceParameters(object):
     def test_zero_slice_bytes_denominator(self):
         state = minimal_slice_parameters_state.copy()
         state["parse_code"] = tables.ParseCodes.low_delay_picture
-        state.update(bytes_to_state(seriallise_to_bytes(
+        state.update(bytes_to_state(serialise_to_bytes(
             bitstream.SliceParameters(
-                slices_x=1,
-                slices_y=1,
                 slice_bytes_numerator=1,
                 slice_bytes_denominator=0,
             ),
@@ -171,10 +142,8 @@ class TestSliceParameters(object):
     def test_slice_bytes_less_than_one(self, numer, denom, exp_fail):
         state = minimal_slice_parameters_state.copy()
         state["parse_code"] = tables.ParseCodes.low_delay_picture
-        state.update(bytes_to_state(seriallise_to_bytes(
+        state.update(bytes_to_state(serialise_to_bytes(
             bitstream.SliceParameters(
-                slices_x=1,
-                slices_y=1,
                 slice_bytes_numerator=numer,
                 slice_bytes_denominator=denom,
             ),
@@ -190,10 +159,8 @@ class TestSliceParameters(object):
     
     def test_zero_slice_size_scaler(self):
         state = minimal_slice_parameters_state.copy()
-        state.update(bytes_to_state(seriallise_to_bytes(
+        state.update(bytes_to_state(serialise_to_bytes(
             bitstream.SliceParameters(
-                slices_x=1,
-                slices_y=1,
                 slice_prefix_bytes=0,
                 slice_size_scaler=0,
             ),
@@ -227,12 +194,10 @@ class TestSliceParameters(object):
     def test_slices_have_same_dimensions(self, slices_x, slices_y, state_override, exp_same_dimensions):
         state = minimal_slice_parameters_state.copy()
         state.update(state_override)
-        state.update(bytes_to_state(seriallise_to_bytes(
+        state.update(bytes_to_state(serialise_to_bytes(
             bitstream.SliceParameters(
                 slices_x=slices_x,
                 slices_y=slices_y,
-                slice_prefix_bytes=0,
-                slice_size_scaler=1,
             ),
             state,
         )))
@@ -248,7 +213,7 @@ class TestQuantisationMatrix(object):
             "dwt_depth": 1,
             "dwt_depth_ho": 1,
         }
-        state.update(bytes_to_state(seriallise_to_bytes(
+        state.update(bytes_to_state(serialise_to_bytes(
             bitstream.QuantMatrix(
                 custom_quant_matrix=False,
             ),
@@ -262,7 +227,7 @@ class TestQuantisationMatrix(object):
             "dwt_depth": 999,
             "dwt_depth_ho": 9999,
         }
-        state.update(bytes_to_state(seriallise_to_bytes(
+        state.update(bytes_to_state(serialise_to_bytes(
             bitstream.QuantMatrix(
                 custom_quant_matrix=False,
             ),
@@ -303,7 +268,7 @@ class TestQuantisationMatrix(object):
                 "level": tables.Levels.sub_hd,
             },
         }
-        state.update(bytes_to_state(seriallise_to_bytes(
+        state.update(bytes_to_state(serialise_to_bytes(
             bitstream.QuantMatrix(
                 custom_quant_matrix=True,
                 quant_matrix=matrix,
@@ -356,24 +321,26 @@ def test_transform_parameters_et_al_level_constraints(parse_code, extra_slice_pa
     # to # state["_level_constrained_values"].
     state = minimal_transform_parameters_state.copy()
     state["parse_code"] = parse_code
-    state.update(bytes_to_state(transform_parameters_to_bytes(
+    state.update(bytes_to_state(serialise_to_bytes(
+        bitstream.TransformParameters(
+            wavelet_index=tables.WaveletFilters.haar_no_shift,
+            dwt_depth=1,
+            extended_transform_parameters=bitstream.ExtendedTransformParameters(
+                asym_transform_index_flag=True,
+                wavelet_index_ho=tables.WaveletFilters.le_gall_5_3,
+                asym_transform_flag=True,
+                dwt_depth_ho=2,
+            ),
+            slice_parameters=bitstream.SliceParameters(
+                slices_x=1,
+                slices_y=2,
+                **extra_slice_parameters
+            ),
+            quant_matrix=bitstream.QuantMatrix(
+                custom_quant_matrix=False,
+            ),
+        ),
         state,
-        wavelet_index=tables.WaveletFilters.haar_no_shift,
-        dwt_depth=1,
-        extended_transform_parameters=bitstream.ExtendedTransformParameters(
-            asym_transform_index_flag=True,
-            wavelet_index_ho=tables.WaveletFilters.le_gall_5_3,
-            asym_transform_flag=True,
-            dwt_depth_ho=2,
-        ),
-        slice_parameters=bitstream.SliceParameters(
-            slices_x=1,
-            slices_y=2,
-            **extra_slice_parameters
-        ),
-        quant_matrix=bitstream.QuantMatrix(
-            custom_quant_matrix=False,
-        ),
     )))
     decoder.transform_parameters(state)
     expected_constrained_values = {

@@ -6,9 +6,9 @@ from vc2_conformance import decoder
 from vc2_conformance.state import State
 
 
-def seriallise_to_bytes(context, state=None, *args):
+def serialise_to_bytes(context, state=None, *args):
     """
-    Seriallise the specified context dictionary. Returns the seriallised bytes.
+    serialise the specified context dictionary. Returns the serialised bytes.
     """
     # Auto-determine the serialisation function to use based on the context
     # type
@@ -17,7 +17,7 @@ def seriallise_to_bytes(context, state=None, *args):
     
     f = BytesIO()
     w = bitstream.BitstreamWriter(f)
-    with bitstream.Serialiser(w, context) as ser:
+    with bitstream.Serialiser(w, context, bitstream.vc2_default_values) as ser:
         func(ser, State() if state is None else state, *args)
     w.flush()
     return f.getvalue()

@@ -3,8 +3,8 @@
 ================================================================================
 
 In the VC-2 specification, dictionary-like objects (e.g. 'state') are widely
-encountered. These dictionaries have all of the usual dictionary semantics
-but the set of allowed entries is fixed by the specification.
+encountered. These dictionaries have all of the usual dictionary semantics with
+the additional feature that the set of allowed keys is fixed in advance.
 
 Using :py:func:`fixeddict`, dictionary-like types with well defined fields can
 be described like so::
@@ -35,60 +35,53 @@ dictionary behaviour but which only allows fields specified in the above list::
       ...
     KeyError: 'not_in_fixeddict'
 
-When defining VC-2 data structures it is sometimes useful to specify default
-values to make it easier to hand-construct these structures. In the list of
-field names, an :py:class:`Entry` instance can be used to define an entry with
-a default value::
 
+To improve readability when producing string representations of VC-2 data
+structures, the generated dictionary types have a 'pretty' string
+representation.
 
     >>> FrameSize = fixeddict(
     ...     "FrameSize",
-    ...     Entry("custom_dimensiions_flag", default=False),
+    ...     "custom_dimensiions_flag",
     ...     "frame_width",
     ...     "frame_height",
     ... )
 
-    >>> fs = FrameSize()
+    >>> fs = FrameSize(
+    ...     custom_dimensiions_flag=True,
+    ...     frame_width=1920,
+    ...     frame_height=1080,
+    ... )
     
-    >>> fs["custom_dimensiions_flag"]
-    False
-    
-    >>> fs["frame_width"]
-    Traceback (most recent call last):
-      ...
-    KeyError: 'frame_width'
-
-To improve readability when producing string representations of VC-2 data
-structures, the generated dictionary types have a 'pretty' string
-representation:
-
-    >>> f["custom_dimensiions_flag"] = True
-    >>> f["frame_width"] = 1920
-    >>> f["frame_height"] = 1080
     >>> str(fs)
     FrameSize:
       custom_dimensiions_flag: True
       frame_width: 1920
       frame_height: 1080
 
-To further improve this string output, :py:class:`Entry` objects can specify
-advanced formatting options::
+To further improve the readability of this output, custom string formatting
+functions may be provided for each entry in the dictionary. To define these,
+:py:class:`Entry` instances must be used in place of field name strings like
+so::
 
     >>> from vc2_conformance._string_formatters import Hex
     >>> from vc2_conformance.tables import ParseCodes  # An IntEnum
     >>> ParseInfo = fixeddict(
     ...     "ParseInfo",
     ...     Entry("parse_info_prefix",
-                  default=0x42424344,
                   formatter=Hex(8))
     ...     Entry("parse_code",
-                  default=0x10,
     ...           enum=ParseCodes,
     ...           formatter=Hex(2)),
-    ...     Entry("next_parse_offset", default=0)
-    ...     Entry("previous_parse_offset", default=0)
+    ...     Entry("next_parse_offset")
+    ...     Entry("previous_parse_offset")
     
-    >>> pi = ParseInfo()
+    >>> pi = ParseInfo(
+    ...     parse_info_prefix=0x42424344,
+    ...     parse_code=0x10,
+    ...     next_parse_offset=0,
+    ...     previous_parse_offset=0,
+    ... )
     >>> str(pi)
     ParseInfo:
        parse_info_prefix: 0x42424344
@@ -125,14 +118,6 @@ class Entry(object):
         ==========
         name : str
             The name of this entry in the dictionary.
-        default
-            The default value to assign to this entry. If not given, this entry
-            will initially not exist.
-        default_factory : function() -> value
-            A function to call to generate new instances of a default value.
-            Useful if a default value is a list, for example, and a new list
-            should be made for every structured dict instance. Must not be used
-            at the same time as 'default' argument.
         formatter : function(value) -> string
             A function which takes a value and returns a string representation
             to use when printing this value as a string. Defaults to 'str'.
@@ -166,10 +151,6 @@ class Entry(object):
         """
         self.name = name
         
-        self.has_default = "default" in kwargs or "default_factory" in kwargs
-        self.default = kwargs.pop("default", None)
-        self.default_factory = kwargs.pop("default_factory", None)
-        
         if "enum" in kwargs:
             enum_type = kwargs.pop("enum")
             
@@ -195,13 +176,6 @@ class Entry(object):
         if kwargs:
             raise TypeError("unexpected keyword arguments: {} for {}".format(
                 ", ".join(kwargs.keys()), self.__class__.__name__))
-    
-    def get_default(self):
-        """Return the default value of this object."""
-        if self.default_factory:
-            return self.default_factory()
-        else:
-            return self.default
     
     def to_string(self, value):
         """
@@ -250,7 +224,7 @@ def fixeddict(name, *entries):
         >>> ExampleDict = fixeddict(
         ...     "ExampleDict",
         ...     "attr",
-        ...     Entry("attr_with_default", default=123),
+        ...     Entry("attr_with_default"),
         ... )
     
     Instances of the dictionary can be created like an ordinary dictionary::
@@ -260,20 +234,6 @@ def fixeddict(name, *entries):
         10
         >>> d["attr_with_default"]
         20
-    
-    If values with a default value specified are omitted, the default value
-    will automatically be assigned::
-    
-        >>> d = ExampleDict()
-        >>> d
-        ExampleDict({'attr_with_default': 123})
-    
-    To prevent default values being used, a dictionary (or similar iterable)
-    may be used during construction:
-    
-        >>> d = ExampleDict({})
-        >>> d
-        ExampleDict({})
     
     The string format of generated dictionaries includes certain
     pretty-printing behaviour (see :py:class:`Entry`) and will also omit any
@@ -296,40 +256,19 @@ def fixeddict(name, *entries):
     # Create all of the methods which will be added to the class
     __dict__ = {}
     
-    def __init__(self, iterable=None, **kwargs):
-        if iterable is not None:
-            # Convert iterable which may be a dict or may be an iterable of (name,
-            # value) pairs into an iterator of (name, value) pairs.
-            if hasattr(iterable, "items"):
-                iterable = iterable.items()
-        else:
-            # Only populate default values if no iterable is provided
-            iterable = (
-                (name, entry_obj.get_default())
-                for name, entry_obj in entry_objs.items()
-                if entry_obj.has_default and name not in kwargs
-            )
+    def __init__(self, *args, **kwargs):
+        dict.__init__(self, *args, **kwargs)
         
         # Check for invalid names
-        contents = list(chain(iterable, kwargs.items()))
-        for name, value in contents:
+        for name in self.keys():
             if name not in entry_objs:
                 raise FixedDictKeyError(name, self.__class__)
-        
-        dict.__init__(self, contents)
     
     __dict__["__init__"] = __init__
     
     __dict__["__doc__"] = "{}(...)\n\nA :py:mod:`~vc2_conformance.fixeddict`.\n\nParameters\n==========\n{}\n".format(
         name,
-        "\n".join(
-            (
-                "{} = {!r}".format(entry.name, entry.get_default())
-                if entry.has_default else
-                entry.name
-            )
-            for entry in entry_objs.values()
-        ),
+        "\n".join(entry.name for entry in entry_objs.values()),
     )
     
     def __setitem__(self, key, value):

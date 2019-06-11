@@ -222,20 +222,19 @@ makes it possible to define custom dictionary types for each part of the
 hierarchy using the :py:func:`context_type` decorator. Benefits include:
 
 * Improved 'pretty-printed' string representations.
-* Supporting default values when defining bitstreams 'by hand'
 * Additional checks that unexpected values are not used accidentally in the bitstream.
 
 For example, here's how the ``parse_info`` header (10.5.1) might be represented::
 
     from vc2_conformance.fixeddict import fixeddict, Entry
     from vc2_conformance.formatters import Hex
-    from vc2_conformance.tables import ParseCodes
+    from vc2_conformance.tables import ParseCodes, PARSE_INFO_PREFIX
     ParseInfo = fixeddict(
         "ParseInfo",
-        Entry("parse_info_prefix", default=0x42424344, formatter=Hex(8)),
-        Entry("parse_code", default=ParseCodes.end_of_sequence, enum=ParseCodes),
-        Entry("next_parse_offset", default=0),
-        Entry("previous_parse_offset", default=0),
+        Entry("parse_info_prefix", formatter=Hex(8)),
+        Entry("parse_code", enum=ParseCodes),
+        Entry("next_parse_offset"),
+        Entry("previous_parse_offset"),
     )
     
     @context_type(ParseInfo)
@@ -247,7 +246,12 @@ For example, here's how the ``parse_info`` header (10.5.1) might be represented:
 
 Using the above we can quickly create structures ready for serialisation::
 
-    >>> context = ParseInfo(previous_parse_offset=1234)
+    >>> context = ParseInfo(
+    ...     parse_info_prefix=PARSE_INFO_PREFIX,
+    ...     parse_code=ParseCodes.end_of_sequence,
+    ...     next_parse_offset=0,
+    ...     previous_parse_offset=1234,
+    ... )
     >>> with Deserialiser(writer, context) as des:
     ...     parse_info(des, {})
 
@@ -318,6 +322,55 @@ always ignored.
     
     It is recommended that by convention computed value target names are
     prefixed or suffixed with an underscore.
+
+
+Default values during seriallisation
+````````````````````````````````````
+
+As discussed above, the default behaviour of the :py:class:`Serialiser` is to
+require that every value in the bitstream is provided in the context dictionary
+to make it explicit what is being seriallised. In certain cases, however, it
+may be desireable for certain values to be filled in automatically. For
+example:
+
+* For pre-filling constants like the parse_info prefix.
+* For use in unit tests where only certain bitstream fields' values are of
+  importance (and assigning defaults for the remainder makes the code clearer).
+* For providing default (e.g. zero) values for padding fields
+
+To facilitate this, the :py:class:`Serialiser` class may be passed a default
+value lookup like so::
+
+    >>> default_values = {
+    ...     ParseInfo: {
+    ...         "parse_info_prefix": PARSE_INFO_PREFIX,
+    ...         "parse_code": ParseCodes.end_of_sequence,
+    ...         "next_parse_offset": 0,
+    ...         "previous_parse_offset": 0,
+    ...     },
+    ... }
+    
+    >>> writer = BitstreamWriter(open("frame_size_snippet.bin", "wb"))
+    >>> context = ParseInfo(
+    ...     parse_code=ParseCodes.end_of_sequence,
+    ...     previous_parse_offset=123,
+    ... )
+    >>> with Serialiser(writer, context, default_values=default_values) as ser:
+    ...     parse_info(ser, {})
+
+The ``default_values`` lookup should provide a separate set of default values
+for each context dictionary type. See
+:py:data:`vc2_conformance.bitstream.vc2_fixeddicts.fixeddict_default_values`
+for a complete example.
+
+For arrays/lists of values, the default value provided will be usd to populate
+array elements and not to provide a default for the list as a whole.
+
+Where a default value is not found in the lookup, a :py;exc:`KeyError` will be
+thrown as usual. This behaiviour allows a partial set of default values to be
+provided (e.g. providing defaults only for padding values) while still
+validating that the provided input is correct.
+
 
 API
 ---
@@ -1028,6 +1081,27 @@ class Serialiser(SerDes):
     io : :py:class:`~.io.BitstreamWriter`
     context : dict
     """
+    
+    def __init__(self, io, context=None, default_values={}):
+        super(Serialiser, self).__init__(io, context)
+        self.default_values = default_values
+    
+    def _get_context_value(self, target):
+        """
+        Get a value from the context dictionary, checking that the value has not
+        already been accessed and moving on to the next list item for list
+        targets.
+        """
+        try:
+            return super(Serialiser, self)._get_context_value(target)
+        except (KeyError, ListTargetExhaustedError):
+            # Fall back on default value if provided
+            context_type = type(self.cur_context)
+            if (context_type in self.default_values and
+                    target in self.default_values[context_type]):
+                return self.default_values[context_type][target]
+            else:
+                raise
     
     def bool(self, target):
         value = self._get_context_value(target)

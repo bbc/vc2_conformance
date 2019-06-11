@@ -1,6 +1,6 @@
 import pytest
 
-from decoder_test_utils import seriallise_to_bytes, bytes_to_state
+from decoder_test_utils import serialise_to_bytes, bytes_to_state
 
 from vc2_conformance import bitstream
 from vc2_conformance import tables
@@ -9,19 +9,12 @@ from vc2_conformance import decoder
 from vc2_conformance._symbol_re import Matcher
 
 
-def parse_info_to_bytes(**kwargs):
-    """
-    Seriallise a ParseInfo block, returning a bytes object.
-    """
-    return seriallise_to_bytes(bitstream.ParseInfo(**kwargs))
-
-
 class TestParseSequence(object):
     
     @pytest.fixture
     def sh_bytes(self):
         # A sequence header
-        return seriallise_to_bytes(bitstream.SequenceHeader())
+        return serialise_to_bytes(bitstream.SequenceHeader())
     
     @pytest.fixture
     def sh_parse_offset(self, sh_bytes):
@@ -31,18 +24,18 @@ class TestParseSequence(object):
     @pytest.fixture
     def sh_data_unit_bytes(self, sh_bytes, sh_parse_offset):
         # parse_info + sequence header
-        return parse_info_to_bytes(
+        return serialise_to_bytes(bitstream.ParseInfo(
             parse_code=tables.ParseCodes.sequence_header,
             next_parse_offset=sh_parse_offset,
-        ) + sh_bytes
+        )) + sh_bytes
 
     def test_trailing_bytes_after_end_of_sequence(self, sh_data_unit_bytes, sh_parse_offset):
         state = bytes_to_state(
             sh_data_unit_bytes +
-            parse_info_to_bytes(
+            serialise_to_bytes(bitstream.ParseInfo(
                 parse_code=tables.ParseCodes.end_of_sequence,
                 previous_parse_offset=sh_parse_offset,
-            ) +
+            )) +
             b"\x00"
         )
         with pytest.raises(decoder.TrailingBytesAfterEndOfSequence):
@@ -50,7 +43,7 @@ class TestParseSequence(object):
     
     def test_immediate_end_of_sequence(self, sh_data_unit_bytes):
         state = bytes_to_state(
-            parse_info_to_bytes(parse_code=tables.ParseCodes.end_of_sequence)
+            serialise_to_bytes(bitstream.ParseInfo(parse_code=tables.ParseCodes.end_of_sequence))
         )
         with pytest.raises(decoder.GenericInvalidSequence) as exc_info:
             decoder.parse_sequence(state)
@@ -61,10 +54,10 @@ class TestParseSequence(object):
     
     def test_no_sequence_header(self, sh_data_unit_bytes):
         state = bytes_to_state(
-            parse_info_to_bytes(
+            serialise_to_bytes(bitstream.ParseInfo(
                 parse_code=tables.ParseCodes.padding_data,
                 next_parse_offset=tables.PARSE_INFO_HEADER_BYTES,
-            )
+            ))
         )
         with pytest.raises(decoder.GenericInvalidSequence) as exc_info:
             decoder.parse_sequence(state)
@@ -88,26 +81,26 @@ class TestParseSequence(object):
     ])
     def test_odd_number_of_fields_disallowed(self, picture_coding_mode,
                                              num_pictures, exp_fail):
-        sh = seriallise_to_bytes(
+        sh = serialise_to_bytes(
             bitstream.SequenceHeader(
                 picture_coding_mode=picture_coding_mode,
             ),
         )
-        sh_and_pi = parse_info_to_bytes(
+        sh_and_pi = serialise_to_bytes(bitstream.ParseInfo(
             parse_code=tables.ParseCodes.sequence_header,
             next_parse_offset=(
                 tables.PARSE_INFO_HEADER_BYTES +
                 len(sh)
             ),
-        ) + sh
+        )) + sh
         
         # TODO: Add an odd number of minimal pictures/fields once picture
         # parsing is supported
         
-        eos = parse_info_to_bytes(
+        eos = serialise_to_bytes(bitstream.ParseInfo(
             parse_code=tables.ParseCodes.end_of_sequence,
             previous_parse_offset=len(sh_and_pi),
-        )
+        ))
         
         state = bytes_to_state(sh_and_pi + eos)
         if exp_fail:
@@ -126,24 +119,24 @@ class TestParseSequence(object):
         (4, False),
     ])
     def test_incomplete_picture_fragments_at_eos_fails(self, num_slices_to_send, exp_fail):
-        sh = seriallise_to_bytes(
+        sh = serialise_to_bytes(
             bitstream.SequenceHeader(),
         )
-        sh_and_pi = parse_info_to_bytes(
+        sh_and_pi = serialise_to_bytes(bitstream.ParseInfo(
             parse_code=tables.ParseCodes.sequence_header,
             next_parse_offset=(
                 tables.PARSE_INFO_HEADER_BYTES +
                 len(sh)
             ),
-        ) + sh
+        )) + sh
         
         # TODO: Create a 4-slice picture and send num_slices_to_send worth of
         # fragments before ending the stream.
         
-        eos = parse_info_to_bytes(
+        eos = serialise_to_bytes(bitstream.ParseInfo(
             parse_code=tables.ParseCodes.end_of_sequence,
             previous_parse_offset=len(sh_and_pi),
-        )
+        ))
         
         state = bytes_to_state(sh_and_pi + eos)
         if exp_fail:
@@ -164,24 +157,24 @@ class TestParseSequence(object):
         (4, False),
     ])
     def test_picture_and_incomplete_fragment_interleaving_disallowed(self, num_slices_to_send, exp_fail):
-        sh = seriallise_to_bytes(
+        sh = serialise_to_bytes(
             bitstream.SequenceHeader(),
         )
-        sh_and_pi = parse_info_to_bytes(
+        sh_and_pi = serialise_to_bytes(bitstream.ParseInfo(
             parse_code=tables.ParseCodes.sequence_header,
             next_parse_offset=(
                 tables.PARSE_INFO_HEADER_BYTES +
                 len(sh)
             ),
-        ) + sh
+        )) + sh
         
         # TODO: Create a 4-slice picture and send num_slices_to_send worth of
         # fragments before sending a picture and then the remaining slcies.
         
-        eos = parse_info_to_bytes(
+        eos = serialise_to_bytes(bitstream.ParseInfo(
             parse_code=tables.ParseCodes.end_of_sequence,
             previous_parse_offset=len(sh_and_pi),
-        )
+        ))
         
         state = bytes_to_state(sh_and_pi + eos)
         if exp_fail:
@@ -198,18 +191,18 @@ class TestParseSequence(object):
 class TestParseInfo(object):
     
     def test_bad_parse_info_prefix(self):
-        state = bytes_to_state(parse_info_to_bytes(
+        state = bytes_to_state(serialise_to_bytes(bitstream.ParseInfo(
             parse_info_prefix=0xDEADBEEF,
-        ))
+        )))
         state["_generic_sequence_matcher"] = Matcher(".*")
         with pytest.raises(decoder.BadParseInfoPrefix) as exc_info:
             decoder.parse_info(state)
         assert exc_info.value.parse_info_prefix == 0xDEADBEEF
     
     def test_bad_parse_code(self):
-        state = bytes_to_state(parse_info_to_bytes(
+        state = bytes_to_state(serialise_to_bytes(bitstream.ParseInfo(
             parse_code=0x11
-        ))
+        )))
         state["_generic_sequence_matcher"] = Matcher(".*")
         with pytest.raises(decoder.BadParseCode) as exc_info:
             decoder.parse_info(state)
@@ -217,15 +210,15 @@ class TestParseInfo(object):
     
     def test_inconsistent_next_parse_offset(self):
         state = bytes_to_state(
-            parse_info_to_bytes(
+            serialise_to_bytes(bitstream.ParseInfo(
                 parse_code=tables.ParseCodes.padding_data,
                 next_parse_offset=tables.PARSE_INFO_HEADER_BYTES + 10,
-            ) +
+            )) +
             b"\x00"*9 +
-            parse_info_to_bytes(
+            serialise_to_bytes(bitstream.ParseInfo(
                 parse_code=tables.ParseCodes.end_of_sequence,
                 previous_parse_offset=tables.PARSE_INFO_HEADER_BYTES + 9,
-            )
+            ))
         )
         state["_generic_sequence_matcher"] = Matcher(".*")
         
@@ -245,10 +238,10 @@ class TestParseInfo(object):
         tables.ParseCodes.high_quality_picture_fragment,
     ])
     def test_allowed_zero_next_parse_offset_for_pictures(self, parse_code):
-        state = bytes_to_state(parse_info_to_bytes(
+        state = bytes_to_state(serialise_to_bytes(bitstream.ParseInfo(
             parse_code=parse_code,
             next_parse_offset=0,
-        ))
+        )))
         state["_generic_sequence_matcher"] = Matcher(".*")
         decoder.parse_info(state)
     
@@ -258,10 +251,10 @@ class TestParseInfo(object):
         tables.ParseCodes.padding_data,
     ])
     def test_not_allowed_zero_next_parse_offset_for_non_pictures(self, parse_code):
-        state = bytes_to_state(parse_info_to_bytes(
+        state = bytes_to_state(serialise_to_bytes(bitstream.ParseInfo(
             parse_code=parse_code,
             next_parse_offset=0,
-        ))
+        )))
         state["_generic_sequence_matcher"] = Matcher(".*")
         with pytest.raises(decoder.MissingNextParseOffset):
             decoder.parse_info(state)
@@ -273,30 +266,30 @@ class TestParseInfo(object):
     ])
     @pytest.mark.parametrize("next_parse_offset", [1, tables.PARSE_INFO_HEADER_BYTES-1])
     def test_never_allowed_invalid_offset(self, parse_code, next_parse_offset):
-        state = bytes_to_state(parse_info_to_bytes(
+        state = bytes_to_state(serialise_to_bytes(bitstream.ParseInfo(
             parse_code=parse_code,
             next_parse_offset=next_parse_offset,
-        ))
+        )))
         state["_generic_sequence_matcher"] = Matcher(".*")
         with pytest.raises(decoder.InvalidNextParseOffset) as exc_info:
             decoder.parse_info(state)
         assert exc_info.value.next_parse_offset == next_parse_offset
     
     def test_non_zero_next_parse_offset_for_end_of_sequence(self):
-        state = bytes_to_state(parse_info_to_bytes(
+        state = bytes_to_state(serialise_to_bytes(bitstream.ParseInfo(
             parse_code=tables.ParseCodes.end_of_sequence,
             next_parse_offset=1,
-        ))
+        )))
         state["_generic_sequence_matcher"] = Matcher(".*")
         with pytest.raises(decoder.NonZeroNextParseOffsetAtEndOfSequence) as exc_info:
             decoder.parse_info(state)
         assert exc_info.value.next_parse_offset == 1
     
     def test_non_zero_previous_parse_offset_for_start_of_sequence(self):
-        state = bytes_to_state(parse_info_to_bytes(
+        state = bytes_to_state(serialise_to_bytes(bitstream.ParseInfo(
             parse_code=tables.ParseCodes.end_of_sequence,
             previous_parse_offset=1,
-        ))
+        )))
         state["_generic_sequence_matcher"] = Matcher(".*")
         with pytest.raises(decoder.NonZeroPreviousParseOffsetAtStartOfSequence) as exc_info:
             decoder.parse_info(state)
@@ -304,15 +297,15 @@ class TestParseInfo(object):
     
     def test_inconsistent_previous_parse_offset(self):
         state = bytes_to_state(
-            parse_info_to_bytes(
+            serialise_to_bytes(bitstream.ParseInfo(
                 parse_code=tables.ParseCodes.padding_data,
                 next_parse_offset=tables.PARSE_INFO_HEADER_BYTES + 10,
-            ) +
+            )) +
             b"\x00"*10 +
-            parse_info_to_bytes(
+            serialise_to_bytes(bitstream.ParseInfo(
                 parse_code=tables.ParseCodes.end_of_sequence,
                 previous_parse_offset=tables.PARSE_INFO_HEADER_BYTES + 9,
-            )
+            ))
         )
         state["_generic_sequence_matcher"] = Matcher(".*")
         
@@ -326,9 +319,9 @@ class TestParseInfo(object):
         assert exc_info.value.true_parse_offset == tables.PARSE_INFO_HEADER_BYTES + 10
     
     def test_invalid_generic_sequence(self):
-        state = bytes_to_state(parse_info_to_bytes(
+        state = bytes_to_state(serialise_to_bytes(bitstream.ParseInfo(
             parse_code=tables.ParseCodes.end_of_sequence,
-        ))
+        )))
         state["_generic_sequence_matcher"] = Matcher("sequence_header")
         
         with pytest.raises(decoder.GenericInvalidSequence) as exc_info:
@@ -343,10 +336,10 @@ class TestParseInfo(object):
         (tables.ParseCodes.low_delay_picture, False),
     ])
     def test_profile_restricts_allowed_parse_codes(self, parse_code, allowed):
-        state = bytes_to_state(parse_info_to_bytes(
+        state = bytes_to_state(serialise_to_bytes(bitstream.ParseInfo(
                 parse_code=parse_code,
                 next_parse_offset=tables.PARSE_INFO_HEADER_BYTES,
-        ))
+        )))
         state["_generic_sequence_matcher"] = Matcher(".*")
         state["profile"] = tables.Profiles.high_quality
         
@@ -359,9 +352,9 @@ class TestParseInfo(object):
             assert exc_info.value.profile == tables.Profiles.high_quality
     
     def test_level_restricts_sequence(self):
-        state = bytes_to_state(parse_info_to_bytes(
+        state = bytes_to_state(serialise_to_bytes(bitstream.ParseInfo(
             parse_code=tables.ParseCodes.end_of_sequence,
-        ))
+        )))
         state["_generic_sequence_matcher"] = Matcher(".*")
         state["_level_sequence_matcher"] = Matcher("sequence_header")
         

@@ -494,19 +494,19 @@ class TestWriteBitArray(object):
         w.write_bitarray(0, bitarray())
         assert w.tell() == (0, 7)
     
-    def test_fails_on_wrong_length(self, f, w):
-        # Too long
+    def test_fails_if_too_long(self, f, w):
         with pytest.raises(OutOfRangeError, match=r"0b10 is 2 bits, not 1"):
             w.write_bitarray(1, bitarray("10"))
-        
-        # Too short
-        with pytest.raises(OutOfRangeError, match=r"0b10 is 2 bits, not 3"):
-            w.write_bitarray(3, bitarray("10"))
     
     def test_write(self, f, w):
         w.write_bitarray(8, bitarray([1, 0, 1, 0, 0, 0, 0, 0]))
         assert w.tell() == (1, 7)
         assert f.getvalue() == b"\xA0"
+    
+    def test_zero_pads_if_too_short(self, f, w):
+        w.write_bitarray(8, bitarray([1, 1, 1, 1]))
+        assert w.tell() == (1, 7)
+        assert f.getvalue() == b"\xF0"
 
 
 class TestReadBytes(object):
@@ -542,14 +542,9 @@ class TestWriteBytes(object):
         w.write_bytes(0, b"")
         assert w.tell() == (0, 7)
     
-    def test_fails_on_wrong_length(self, f, w):
-        # Too long
+    def test_fails_if_too_long(self, f, w):
         with pytest.raises(OutOfRangeError, match=r"0xAB_CD is 2 bytes, not 1"):
             w.write_bytes(1, b"\xAB\xCD")
-        
-        # Too short
-        with pytest.raises(OutOfRangeError, match=r"0xAB_CD is 2 bytes, not 3"):
-            w.write_bytes(3, b"\xAB\xCD")
     
     def test_write_aligned(self, f, w):
         w.write_bytes(2, b"\xAB\xCD")
@@ -562,6 +557,11 @@ class TestWriteBytes(object):
         assert w.tell() == (2, 3)
         w.flush()
         assert f.getvalue() == b"\x0A\xBC\xD0"
+    
+    def test_zero_pads_if_too_short(self, f, w):
+        w.write_bytes(2, b"\xFF")
+        assert w.tell() == (2, 7)
+        assert f.getvalue() == b"\xFF\x00"
 
 
 class TestReadUint(object):

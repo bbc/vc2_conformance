@@ -7,7 +7,7 @@ fixeddict types.
 
 from vc2_conformance.bitstream import vc2
 from vc2_conformance.bitstream.vc2_fixeddicts import (
-    fixeddict_nesting,
+    vc2_fixeddict_nesting,
     HQSlice,
     LDSlice,
 )
@@ -74,7 +74,7 @@ recursively includes the fixeddict types of all contained entries.
 def iter_fixeddict_types(fixeddict):
     yield fixeddict
     
-    for nested_type in fixeddict_nesting.get(fixeddict, []):
+    for nested_type in vc2_fixeddict_nesting.get(fixeddict, []):
         for subtype in iter_fixeddict_types(nested_type):
             yield subtype
 

@@ -374,8 +374,8 @@ class TestSerDes(object):
     def test_set_context_type(self):
         FixedDict = fixeddict(
             "FixedDict",
-            Entry("a", default=123),
-            Entry("child", default=123),
+            Entry("a"),
+            Entry("child"),
         )
         
         serdes = SerDes(None)
@@ -550,7 +550,7 @@ class TestSerDes(object):
     
     def test_describe_path_custom_type(self):
         # With different types, prefix should be different
-        FixedDict = fixeddict("FixedDict", Entry("child", default=321))
+        FixedDict = fixeddict("FixedDict", Entry("child"))
         serdes = SerDes(None)
         
         serdes.set_context_type(FixedDict)
@@ -605,31 +605,118 @@ def test_deserialiser(method, arguments, bitstream, exp_value, exp_tell):
     assert r.tell() == exp_tell
 
 
-@pytest.mark.parametrize("method,arguments,value,exp_bitstream,exp_tell", [
-    # bool
-    ("bool", tuple(), False, b"\x00", (0, 6)),
-    ("bool", tuple(), True, b"\x80", (0, 6)),
-    # nbits
-    ("nbits", (8, ), 0xAB, b"\xAB", (1, 7)),
-    # uint_lit
-    ("uint_lit", (1, ), 0xAB, b"\xAB", (1, 7)),
-    # bitarray
-    ("bitarray", (8, ), bitarray("10100000"), b"\xA0", (1, 7)),
-    # bytes
-    ("bytes", (2, ), b"\xA0\xCD", b"\xA0\xCD", (2, 7)),
-    # uint
-    ("uint", tuple(), 1, b"\x20", (0, 4)),
-    # sint
-    ("sint", tuple(), -1, b"\x30", (0, 3)),
-])
-def test_serialiser(method, arguments, value, exp_bitstream, exp_tell, w, f):
-    with Serialiser(w, {"target": value}) as serdes:
-        assert getattr(serdes, method)("target", *arguments) == value
+class TestSerialiser(object):
+
+    @pytest.mark.parametrize("method,arguments,value,exp_bitstream,exp_tell", [
+        # bool
+        ("bool", tuple(), False, b"\x00", (0, 6)),
+        ("bool", tuple(), True, b"\x80", (0, 6)),
+        # nbits
+        ("nbits", (8, ), 0xAB, b"\xAB", (1, 7)),
+        # uint_lit
+        ("uint_lit", (1, ), 0xAB, b"\xAB", (1, 7)),
+        # bitarray
+        ("bitarray", (8, ), bitarray("10100000"), b"\xA0", (1, 7)),
+        # bitarray (zero padding required)
+        ("bitarray", (8, ), bitarray("1010"), b"\xA0", (1, 7)),
+        # bytes
+        ("bytes", (2, ), b"\xA0\xCD", b"\xA0\xCD", (2, 7)),
+        # bytes (zero padding required)
+        ("bytes", (2, ), b"\xA0", b"\xA0\x00", (2, 7)),
+        # uint
+        ("uint", tuple(), 1, b"\x20", (0, 4)),
+        # sint
+        ("sint", tuple(), -1, b"\x30", (0, 3)),
+    ])
+    def test_output_types(self, method, arguments, value, exp_bitstream, exp_tell, w, f):
+        with Serialiser(w, {"target": value}) as serdes:
+            assert getattr(serdes, method)("target", *arguments) == value
+        
+        w.flush()
+        assert f.getvalue() == exp_bitstream
+        assert w.tell() == exp_tell
+        assert serdes.context == {"target": value}
     
-    w.flush()
-    assert f.getvalue() == exp_bitstream
-    assert w.tell() == exp_tell
-    assert serdes.context == {"target": value}
+    def test_default_values(self, w, f):
+        DictA = fixeddict("DictA", "a1", "a2", "a3")
+        DictB = fixeddict("DictB", "b1", "b2")
+        DictC = fixeddict("DictC", "c1")
+        
+        default_values = {
+            DictA: {"a1": b"\xA1", "a2": b"\xA2"},
+            DictB: {"b1": b"\xB1", "b2": b"\xB2"},
+        }
+        
+        context = {
+            "a": {"a1": b"\xAA", "a2": [b"\xA0"], "a3": b"\xA3"},
+            "c": {"c1": b"\xCC"},
+        }
+        with Serialiser(w, context, default_values) as serdes:
+            with serdes.subcontext("a"):
+                serdes.set_context_type(DictA)
+                serdes.bytes("a1", 1)
+                serdes.declare_list("a2")
+                serdes.bytes("a2", 1)
+                serdes.bytes("a2", 1)
+                serdes.bytes("a3", 1)
+            with serdes.subcontext("b"):
+                serdes.set_context_type(DictB)
+                serdes.bytes("b1", 1)
+                serdes.declare_list("b2")
+                serdes.bytes("b2", 1)
+                serdes.bytes("b2", 1)
+            with serdes.subcontext("c"):
+                serdes.set_context_type(DictC)
+                serdes.bytes("c1", 1)
+        
+        assert f.getvalue() == (
+            # A partially defaulted subcontext
+            b"\xAA" # An overridden non-list value
+            b"\xA0" # An overridden list value
+            b"\xA2" # A default value beyond the end of a partially defined list
+            b"\xA3" # A value with no default
+            # A completely default-valued subcontext
+            b"\xB1" # A non list value
+            b"\xB2" # A list of default values
+            b"\xB2" # A list of default values
+            # A dictionary whose type does not appear in the default values
+            # list
+            b"\xCC"
+        )
+    
+    @pytest.mark.parametrize("context,exp_exception", [
+        # Missing values
+        ({"b": [b"\xB1", b"\xB2"]}, KeyError),
+        # Missing list items
+        ({"a": b"\xAA"}, exceptions.ListTargetExhaustedError),
+        ({"a": b"\xAA", "b": []}, exceptions.ListTargetExhaustedError),
+        ({"a": b"\xAA", "b": [b"\xB1"]}, exceptions.ListTargetExhaustedError),
+    ])
+    def test_still_fails_when_no_default_value(self, w, f, context, exp_exception):
+        with pytest.raises(exp_exception):
+            with Serialiser(w, context) as serdes:
+                serdes.bytes("a", 1)
+                serdes.declare_list("b")
+                serdes.bytes("b", 1)
+                serdes.bytes("b", 1)
+    
+    @pytest.mark.parametrize("context", [
+        # Extra non-list value
+        {"a": [b"\xA1", b"\xA2"], "b": [b"\xB1"], "c": b"\x00"},
+        # Extra value in list
+        {"a": [b"\xA1", b"\xA2"], "b": [b"\xB1"]},
+        # Extra value in list with default value defined
+        {"a": [b"\xA1"], "b": [b"\xB1", b"\xB2"]},
+    ])
+    def test_still_fails_when_excess_values(self, w, f, context):
+        default_values = {dict: {"b": b"\x00"}}
+        with pytest.raises(exceptions.UnusedTargetError):
+            with Serialiser(w, context) as serdes:
+                serdes.declare_list("a")
+                serdes.bytes("a", 1)
+                serdes.declare_list("b")
+                serdes.bytes("b", 1)
+
 
 @pytest.mark.parametrize("T,make_io", [
     (MonitoredSerialiser, lambda: BitstreamWriter(BytesIO())),

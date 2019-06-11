@@ -43,10 +43,7 @@ def test_recursive():
     # encompass every possible structure. If this test fails, it is likely one
     # or more fixeddicts do not correctly declare thier children using the
     # 'type' annotation.
-    all_types = set([
-        getattr(bitstream.vc2_fixeddicts, name)
-        for name in bitstream.vc2_fixeddicts.__all__
-    ])
+    all_types = set(bitstream.vc2_default_values.keys())
     assert (
         set(bitstream.pseudocode_function_to_fixeddicts_recursive["parse_sequence"]) ==
         all_types

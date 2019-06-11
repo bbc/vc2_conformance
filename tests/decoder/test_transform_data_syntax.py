@@ -2,7 +2,7 @@ import pytest
 
 from bitarray import bitarray
 
-from decoder_test_utils import seriallise_to_bytes, bytes_to_state
+from decoder_test_utils import serialise_to_bytes, bytes_to_state
 
 from vc2_conformance.vc2_math import intlog2
 
@@ -42,32 +42,15 @@ class TestLDSlice(object):
     def test_slice_y_length_must_be_valid(self, slice_y_length, exp_fail):
         slice_bits = 8 * 10
         length_bits = intlog2(slice_bits-7)
-        
         max_y_block_length = slice_bits - 7  - length_bits
-        restricted_slice_y_length = min(max_y_block_length, slice_y_length)
-        
-        max_c_block_length = max(0, max_y_block_length - restricted_slice_y_length)
         
         state = single_sample_transform_base_state.copy()
         state.update({
             "slice_bytes_numerator": 10,
             "slice_bytes_denominator": 1,
         })
-        ld_slice_bytes = seriallise_to_bytes(
-            bitstream.LDSlice(
-                qindex=0,
-                slice_y_length=slice_y_length,
-                y_transform=[0],
-                c_transform=[0, 0],
-                y_block_padding=bitarray(max(0, restricted_slice_y_length - 1)),
-                c_block_padding=bitarray(max(0, min(max_c_block_length,
-                    slice_bits
-                    - 7  # qindex
-                    - length_bits  # length field
-                    - slice_y_length  # y_transform
-                    - 2,  # c1 and c2 transform data
-                ))),
-            ),
+        ld_slice_bytes = serialise_to_bytes(
+            bitstream.LDSlice(slice_y_length=slice_y_length),
             state, 0, 0,
         )
         state.update(bytes_to_state(ld_slice_bytes))
@@ -86,14 +69,9 @@ class TestLDSlice(object):
             "slice_bytes_numerator": 1,
             "slice_bytes_denominator": 1,
         })
-        state.update(bytes_to_state(seriallise_to_bytes(
+        state.update(bytes_to_state(serialise_to_bytes(
             bitstream.LDSlice(
                 qindex=0,
-                slice_y_length=0,
-                y_transform=[0],
-                c_transform=[0, 0],
-                y_block_padding=bitarray(0),
-                c_block_padding=bitarray(0),
             ),
             state, 0, 0,
         )))
@@ -113,19 +91,11 @@ class TestHQSlice(object):
             "slice_prefix_bytes": 10,
             "slice_size_scaler": 20,
         })
-        hq_slice_bytes = seriallise_to_bytes(
+        hq_slice_bytes = serialise_to_bytes(
             bitstream.HQSlice(
-                prefix_bytes=b"\xFF"*10,
-                qindex=0,
                 slice_y_length=1,
                 slice_c1_length=2,
                 slice_c2_length=3,
-                y_transform=[0],
-                c1_transform=[0],
-                c2_transform=[0],
-                y_block_padding=bitarray((8*20*1) - 1),
-                c1_block_padding=bitarray((8*20*2) - 1),
-                c2_block_padding=bitarray((8*20*3) - 1),
             ),
             state, 0, 0,
         )
@@ -141,20 +111,8 @@ class TestHQSlice(object):
             "slice_prefix_bytes": 0,
             "slice_size_scaler": 1,
         })
-        hq_slice_bytes = seriallise_to_bytes(
-            bitstream.HQSlice(
-                prefix_bytes=b"",
-                qindex=0,
-                slice_y_length=0,
-                slice_c1_length=0,
-                slice_c2_length=0,
-                y_transform=[0],
-                c1_transform=[0],
-                c2_transform=[0],
-                y_block_padding=bitarray(0),
-                c1_block_padding=bitarray(0),
-                c2_block_padding=bitarray(0),
-            ),
+        hq_slice_bytes = serialise_to_bytes(
+            bitstream.HQSlice(qindex=0),
             state, 0, 0,
         )
         state.update(bytes_to_state(hq_slice_bytes))

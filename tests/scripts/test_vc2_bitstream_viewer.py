@@ -221,7 +221,7 @@ def minimal_sequence_bitstream_fname(tmpdir):
             )),
         ])
         w = bitstream.BitstreamWriter(f)
-        with bitstream.Serialiser(w, context) as ser:
+        with bitstream.Serialiser(w, context, bitstream.vc2_default_values) as ser:
             bitstream.parse_sequence(ser, State())
     
     return fname
@@ -244,7 +244,7 @@ def padding_sequence_bitstream_fname(tmpdir):
             )),
         ])
         w = bitstream.BitstreamWriter(f)
-        with bitstream.Serialiser(w, context) as ser:
+        with bitstream.Serialiser(w, context, bitstream.vc2_default_values) as ser:
             bitstream.parse_sequence(ser, State())
     
     return fname
@@ -263,7 +263,7 @@ def bad_parse_info_prefix_bitstream_fname(tmpdir):
             ),
         ])
         w = bitstream.BitstreamWriter(f)
-        with bitstream.Serialiser(w, context) as ser:
+        with bitstream.Serialiser(w, context, bitstream.vc2_default_values) as ser:
             bitstream.parse_sequence(ser, State())
     
     return fname
@@ -284,17 +284,22 @@ def missing_sequence_header_bitstream_fname(tmpdir):
         state = State(major_version=3)
         
         context = bitstream.ParseInfo(
-            parse_code=tables.ParseCodes.high_quality_picture)
-        with bitstream.Serialiser(w, context) as ser:
+            parse_code=tables.ParseCodes.high_quality_picture
+        )
+        with bitstream.Serialiser(w, context, bitstream.vc2_default_values) as ser:
             bitstream.parse_info(ser, state)
         
-        context = bitstream.PictureParse()
-        context["wavelet_transform"]["transform_parameters"]["slice_parameters"].update(
-            slice_prefix_bytes=0,
-            slice_size_scaler=0,
+        context = bitstream.PictureParse(
+            wavelet_transform=bitstream.WaveletTransform(
+                transform_parameters=bitstream.TransformParameters(
+                    slice_parameters=bitstream.SliceParameters(
+                        slices_x=0,
+                        slices_y=0,
+                    ),
+                ),
+            ),
         )
-        context["wavelet_transform"]["padding"] = bitarray("0"*7)
-        with bitstream.Serialiser(w, context) as ser:
+        with bitstream.Serialiser(w, context, bitstream.vc2_default_values) as ser:
             bitstream.picture_parse(ser, state)
     
     return fname
@@ -423,7 +428,12 @@ class TestBitstreamViewer(object):
         
         v._serdes = Mock()
         v._serdes.path.return_value = ["foo", "parse_info", "parse_code"]
-        v._serdes.cur_context = bitstream.ParseInfo(parse_code=0x10)
+        v._serdes.cur_context = bitstream.ParseInfo(
+            parse_info_prefix=tables.PARSE_INFO_PREFIX,
+            parse_code=0x10,
+            next_parse_offset=123,
+            previous_parse_offset=0,
+        )
         
         # Test that:
         # * First time, the whole path should be printed

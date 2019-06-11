@@ -484,9 +484,10 @@ class BitstreamWriter(object):
         """
         Write the 'bits' from the :py;class:`bitarray.bitarray` 'value'.
         
-        Throws an :py:exc:`OutOfRangeError` if the value has the wrong length.
+        Throws an :py:exc:`OutOfRangeError` if the value is longer than 'bits'.
+        The value will be right-hand zero-padded to the required length.
         """
-        if len(value) != bits:
+        if len(value) > bits:
             raise OutOfRangeError("0b{} is {} bits, not {}".format(
                 value.to01(),
                 len(value),
@@ -495,16 +496,20 @@ class BitstreamWriter(object):
         
         for bit in value:
             self.write_bit(bit)
+        
+        # Zero-pad
+        for _ in range(len(value), bits):
+            self.write_bit(0)
     
     def write_bytes(self, num_bytes, value):
         """
         Write the provided :py:class:`bytes` or :py:class:`bytearray` in a python
         bytestring.
         
-        If the provided byte string is the wrong length an
-        :py:exc:`OutOfRangeError` will be raised.
+        If the provided byte string is too long an :py:exc:`OutOfRangeError`
+        will be raised. If it is too short, it will be right-hand zero-padded.
         """
-        if len(value) != num_bytes:
+        if len(value) > num_bytes:
             raise OutOfRangeError("{} is {} bytes, not {}".format(
                 Bytes()(value),
                 len(value),
@@ -513,6 +518,10 @@ class BitstreamWriter(object):
         
         for byte in bytearray(value):
             self.write_nbits(8, byte)
+        
+        # Zero-pad
+        for _ in range(len(value), num_bytes):
+            self.write_nbits(8, 0)
     
     def write_uint(self, value):
         """
