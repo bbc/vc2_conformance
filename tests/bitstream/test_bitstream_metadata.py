@@ -30,9 +30,9 @@ def test_every_fixeddict_maps_to_one_function():
     # possible functions.
     for fixeddict, function_name in bitstream.fixeddict_to_pseudocode_function.items():
         functions_supporting_this_type = [
-            function_name
-            for function_name, fixeddicts in bitstream.pseudocode_function_to_fixeddicts.items()
-            if fixeddict in fixeddicts and function_name != "slice"
+            function_name_
+            for function_name_, fixeddicts in bitstream.pseudocode_function_to_fixeddicts.items()
+            if fixeddict in fixeddicts and function_name_ != "slice"
         ]
         assert function_name != "slice"
         assert functions_supporting_this_type == [function_name]
