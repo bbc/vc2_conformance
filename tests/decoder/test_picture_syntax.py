@@ -4,6 +4,8 @@ from decoder_test_utils import serialise_to_bytes, bytes_to_state
 
 from vc2_conformance._constraint_table import ValueSet
 
+from vc2_conformance.state import State
+
 from vc2_conformance import bitstream
 from vc2_conformance import tables
 from vc2_conformance import decoder
@@ -359,7 +361,33 @@ def test_transform_parameters_et_al_level_constraints(parse_code, extra_slice_pa
     assert state["_level_constrained_values"] == expected_constrained_values
 
 
-@pytest.mark.xfail
-def test_todo_whole_picture():
-    # TODO: Test decoding of whole picture bitstreams...
-    assert False
+@pytest.mark.parametrize("parse_code", [
+    tables.ParseCodes.low_delay_picture,
+    tables.ParseCodes.high_quality_picture,
+])
+def test_whole_picture(parse_code):
+    # A sanity check which runs picture decoding for whole pictures and makes
+    # sure nothing crashes
+    
+    # Serialise a sample stream
+    sh = bitstream.SequenceHeader(
+        video_parameters=bitstream.SourceParameters(
+            frame_size=bitstream.FrameSize(
+                # Don't waste time on full-sized frames
+                custom_dimensions_flag=True,
+                frame_width=4,
+                frame_height=4,
+            ),
+        ),
+    )
+    serialisation_state = State()
+    sh_bytes = serialise_to_bytes(sh, serialisation_state)
+    serialisation_state["parse_code"] = parse_code
+    pic_bytes = serialise_to_bytes(bitstream.PictureParse(), serialisation_state)
+    
+    # Check it is parsed without failiures
+    state = bytes_to_state(sh_bytes + pic_bytes)
+    state["_num_pictures_in_sequence"] = 0
+    decoder.sequence_header(state)
+    state["parse_code"] = parse_code
+    decoder.picture_parse(state)

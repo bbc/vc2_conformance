@@ -8,6 +8,7 @@ from vc2_conformance.metadata import ref_pseudocode
 from vc2_conformance.vc2_math import (
     sign,
     intlog2,
+    mean,
 )
 
 from vc2_conformance.arrays import (
@@ -111,7 +112,7 @@ def dc_prediction(band):
     for y in range(0, height(band)):
         for x in range(0, width(band)):
             if x > 0 and y > 0:
-                prediction = mean(band[y][x-1], band[y-1][x-1], band[y-1][x])
+                prediction = mean([band[y][x-1], band[y-1][x-1], band[y-1][x]])
             elif x > 0 and y == 0:
                 prediction = band[0][x - 1]
             elif x == 0 and y > 0:
