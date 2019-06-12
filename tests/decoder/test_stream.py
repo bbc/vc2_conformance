@@ -1,5 +1,7 @@
 import pytest
 
+from mock import Mock
+
 from decoder_test_utils import (
     serialise_to_bytes,
     bytes_to_state,
@@ -310,6 +312,137 @@ class TestParseSequence(object):
             assert exc_info.value.fragment_slices_remaining == 6 - num_slices_to_send
         else:
             decoder.parse_sequence(state)
+    
+    def test_output_picture(self):
+        # This test adds a callback for output_picture and makes sure that both
+        # fragments and pictures call it correctly (and that sanity-checks very
+        # loosely that decoding etc. is happening).
+        
+        # A sequence with a HQ picture followed by a HQ fragment (both all
+        # zeros)
+        seq = bitstream.Sequence(data_units=[
+            bitstream.DataUnit(
+                parse_info=bitstream.ParseInfo(
+                    parse_code=tables.ParseCodes.sequence_header,
+                ),
+                sequence_header=bitstream.SequenceHeader(
+                    video_parameters=bitstream.SourceParameters(
+                        frame_size=bitstream.FrameSize(
+                            # Don't waste time on full-sized frames
+                            custom_dimensions_flag=True,
+                            frame_width=4,
+                            frame_height=2,
+                        ),
+                        color_diff_sampling_format=bitstream.ColorDiffSamplingFormat(
+                            custom_color_diff_format_flag=True,
+                            color_diff_format_index=tables.ColorDifferenceSamplingFormats.color_4_2_2,
+                        ),
+                        # Output values will be treated as 8-bit (and thus all
+                        # decode to 128)
+                        signal_range=bitstream.SignalRange(
+                            custom_signal_range_flag=True,
+                            index=tables.PresetSignalRanges.video_8bit_full_range,
+                        ),
+                    ),
+                    picture_coding_mode=tables.PictureCodingModes.pictures_are_frames,
+                ),
+            ),
+            # A HQ picture
+            bitstream.DataUnit(
+                parse_info=bitstream.ParseInfo(
+                    parse_code=tables.ParseCodes.high_quality_picture,
+                ),
+                picture_parse=bitstream.PictureParse(
+                    picture_header=bitstream.PictureHeader(
+                        picture_number=10,
+                    ),
+                ),
+            ),
+            # A fragmented HQ picture (sent over two fragments to ensure the
+            # callback only fires after a whole picture arrives)
+            bitstream.DataUnit(
+                parse_info=bitstream.ParseInfo(
+                    parse_code=tables.ParseCodes.high_quality_picture_fragment,
+                ),
+                fragment_parse=bitstream.FragmentParse(
+                    fragment_header=bitstream.FragmentHeader(
+                        picture_number=11,
+                        fragment_slice_count=0,
+                    ),
+                    transform_parameters=bitstream.TransformParameters(
+                        slice_parameters=bitstream.SliceParameters(
+                            slices_x=2,
+                            slices_y=1,
+                        ),
+                    ),
+                ),
+            ),
+            bitstream.DataUnit(
+                parse_info=bitstream.ParseInfo(
+                    parse_code=tables.ParseCodes.high_quality_picture_fragment,
+                ),
+                fragment_parse=bitstream.FragmentParse(
+                    fragment_header=bitstream.FragmentHeader(
+                        picture_number=11,
+                        fragment_slice_count=1,
+                        fragment_x_offset=0,
+                        fragment_y_offset=0,
+                    ),
+                ),
+            ),
+            bitstream.DataUnit(
+                parse_info=bitstream.ParseInfo(
+                    parse_code=tables.ParseCodes.high_quality_picture_fragment,
+                ),
+                fragment_parse=bitstream.FragmentParse(
+                    fragment_header=bitstream.FragmentHeader(
+                        picture_number=11,
+                        fragment_slice_count=1,
+                        fragment_x_offset=1,
+                        fragment_y_offset=0,
+                    ),
+                ),
+            ),
+            bitstream.DataUnit(
+                parse_info=bitstream.ParseInfo(
+                    parse_code=tables.ParseCodes.end_of_sequence,
+                ),
+            ),
+        ])
+        populate_parse_offsets(seq)
+        
+        state = bytes_to_state(serialise_to_bytes(seq))
+        state["_output_picture_callback"] = Mock()
+        decoder.parse_sequence(state)
+        
+        assert state["_output_picture_callback"].call_count == 2
+        
+        for i, (args, kwargs) in enumerate(state["_output_picture_callback"].call_args_list):
+            assert kwargs == {}
+            # Should get a 4x2 mid-grey frame with 4:2:2 colour difference sampling
+            assert args[0] == {
+                "pic_num": 10 + i,
+                "Y": [
+                    [128, 128, 128, 128],
+                    [128, 128, 128, 128],
+                ],
+                "C1": [
+                    [128, 128],
+                    [128, 128],
+                ],
+                "C2": [
+                    [128, 128],
+                    [128, 128],
+                ],
+            }
+            # Just sanity check the second argument looks like a set of video parameters
+            assert args[1]["frame_width"] == 4
+            assert args[1]["frame_height"] == 2
+            assert args[1]["luma_offset"] == 0
+            assert args[1]["luma_offset"] == 0
+            assert args[1]["luma_excursion"] == 255
+            assert args[1]["color_diff_offset"] == 128
+            assert args[1]["color_diff_excursion"] == 255
 
 
 class TestParseInfo(object):

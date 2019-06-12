@@ -140,13 +140,20 @@ def parse_sequence(serdes, state):
     while not is_end_of_sequence(state):
         if is_seq_header(state):
             with serdes.subcontext("sequence_header"):
-                sequence_header(serdes, state)
+                state["video_parameters"] = sequence_header(serdes, state)
         elif is_picture(state):
             with serdes.subcontext("picture_parse"):
                 picture_parse(serdes, state)
+            # No need to perform the IDWT
+            ### picture_decode(state)
+            ### output_picture(state, state["current_picture"], state["video_parameters"])
         elif is_fragment(state):
             with serdes.subcontext("fragment_parse"):
                 fragment_parse(serdes, state)
+            # No need to perform the IDWT
+            ### if state["fragmented_picture_done"]:
+            ###     picture_decode(state)
+            ###     output_picture(state, state["current_picture"], state["video_parameters"])
         elif is_auxiliary_data(state):
             with serdes.subcontext("auxiliary_data"):
                 auxiliary_data(serdes, state)

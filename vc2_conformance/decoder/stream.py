@@ -44,6 +44,8 @@ from vc2_conformance.decoder.exceptions import (
 
 from vc2_conformance._symbol_re import Matcher
 
+from vc2_conformance.picture_decoding import picture_decode
+
 from vc2_conformance.decoder.assertions import (
     assert_in_enum,
     assert_parse_code_in_sequence,
@@ -64,6 +66,7 @@ from vc2_conformance.decoder.fragment_syntax import fragment_parse
 
 __all__ = [
     "parse_sequence",
+    "output_picture",
     "auxiliary_data",
     "padding",
     "parse_info",
@@ -97,7 +100,7 @@ def parse_sequence(state):
     parse_info(state)
     while not is_end_of_sequence(state):
         if (is_seq_header(state)):
-            sequence_header(state)
+            state["video_parameters"] = sequence_header(state)
         elif (is_picture(state)):
             # Errata: fragments under-specified in spec
             #
@@ -114,8 +117,13 @@ def parse_sequence(state):
             ## End not in spec
             
             picture_parse(state)
+            picture_decode(state)
+            output_picture(state, state["current_picture"], state["video_parameters"])
         elif (is_fragment(state)):
             fragment_parse(state)
+            if state["fragmented_picture_done"]:
+                picture_decode(state)
+                output_picture(state, state["current_picture"], state["video_parameters"])
         elif (is_auxiliary_data(state)):
             auxiliary_data(state)
         elif (is_padding_data(state)):
@@ -155,6 +163,19 @@ def parse_sequence(state):
     if state["current_byte"] is not None:
         raise TrailingBytesAfterEndOfSequence()
     ## End not in spec
+
+
+def output_picture(state, picture, video_parameters):
+    """
+    (10.4.999) Output a completely decoded picture.
+    
+    This function's existance is defined by the specification but its behaviour
+    is left undefined. In this implementation,
+    ``state["_output_picture_callback"]`` is called with the picture and video
+    parameters as arguments.
+    """
+    if "_output_picture_callback" in state:
+        state["_output_picture_callback"](picture, video_parameters)
 
 
 @ref_pseudocode

@@ -52,12 +52,20 @@ def parse_sequence(state):
     parse_info(state)
     while(not is_end_of_sequence(state)):
         if (is_seq_header(state)):
-            sequence_header(state)
+            # Errata: video parameters are discarded in spec
+            state["video_parameters"] = sequence_header(state)
         elif (is_picture(state)):
             picture_parse(state)
+            # Errata: picture decoding/output not shown in spec
+            picture_decode(state)
+            output_picture(state, state["current_picture"], state["video_parameters"])
         elif (is_fragment(state)):
             # Errata: is 'fragment' in the spec
             fragment_parse(state)
+            # Errata: picture decoding/output not shown in spec
+            if state["fragmented_picture_done"]:
+                picture_decode(state)
+                output_picture(state, state["current_picture"], state["video_parameters"])
         elif (is_auxiliary_data(state)):
             auxiliary_data(state)
         elif (is_padding_data(state)):  # Errata: is 'is_padding' in the spec

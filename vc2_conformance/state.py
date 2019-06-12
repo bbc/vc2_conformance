@@ -26,6 +26,9 @@ __all__ = [
 State = fixeddict(
     "State",
     
+    # (10.4.1) parse_sequence
+    Entry("video_parameters"),
+    
     # (10.5.1) parse_info
     Entry("parse_code", enum=ParseCodes, formatter=Hex(2)),
     Entry("next_parse_offset"),
@@ -111,6 +114,12 @@ State = fixeddict(
     # test for, e.g. level-defined patterns).
     Entry("_generic_sequence_matcher"),
     
+    # (10.4.999) output_picture related state
+    # A callback function to call when output_picture is called. This callback
+    # (if defined) will be passed the picture and video parameters as
+    # arguments.
+    Entry("_output_picture_callback"),
+    
     # (10.4.3) and (12.2): A counter of how many pictures have been encountered
     # in the current sequence. Used to determine if all fields have been
     # received (when pictures are fields) and that the earliest fields have an
@@ -184,6 +193,10 @@ The global state variable type.
 
 
 retained_state_fields = [
+    # The output_picture callback should remain so that subsequent sequences
+    # trigger the same callback.
+    "_output_picture_callback",
+    
     # I/O state must be preserved to allow continuing to read the current file
     "next_bit",
     "current_byte",
