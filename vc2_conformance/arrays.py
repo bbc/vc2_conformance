@@ -7,7 +7,7 @@ from vc2_conformance.metadata import ref_pseudocode
 
 
 __all__ = [
-    "array",
+    "new_array",
     "width",
     "height",
     "row",
@@ -16,7 +16,7 @@ __all__ = [
 
 
 @ref_pseudocode(deviation="inferred_implementation")
-def array(width, height, initial_value=None):
+def new_array(width, height, initial_value=None):
     """
     (5.4.2) Makes a 2D array out of nested lists which may be indexed as
     arr[y][x].
@@ -48,7 +48,7 @@ def height(a):
 def row(a, k):
     """
     (15.4.1) A 1D-array-like view into a row of a (2D) nested list as returned
-    by 'array()'.
+    by :py:func:`new_array()`.
     """
     return a[k]
 
@@ -57,7 +57,7 @@ def row(a, k):
 class column(object):
     """
     (15.4.1) A 1D-array-like view into a column of a (2D) nested list as
-    returned by 'array()'.
+    returned by :py:func:`new_array()`.
     """
     
     def __init__(self, a, k):

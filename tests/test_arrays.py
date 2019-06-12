@@ -1,7 +1,7 @@
 import pytest
 
 from vc2_conformance.arrays import (
-    array,
+    new_array,
     width,
     height,
     row,
@@ -12,13 +12,13 @@ from vc2_conformance.arrays import (
 class TestArray(object):
     
     def test_empty(self):
-        assert array(0, 0) == []
+        assert new_array(0, 0) == []
     
     def test_singleton(self):
-        assert array(1, 1) == [[None]]
+        assert new_array(1, 1) == [[None]]
     
     def test_2d(self):
-        assert array(3, 4) == [
+        assert new_array(3, 4) == [
             [None, None, None],
             [None, None, None],
             [None, None, None],
@@ -26,25 +26,25 @@ class TestArray(object):
         ]
     
     def test_initial_value(self):
-        assert array(2, 2, 123) == [
+        assert new_array(2, 2, 123) == [
             [123, 123],
             [123, 123],
         ]
 
 
 def test_width():
-    assert width(array(0, 0)) == 0
-    assert width(array(10, 20)) == 10
+    assert width(new_array(0, 0)) == 0
+    assert width(new_array(10, 20)) == 10
 
 
 def test_height():
-    assert height(array(0, 0)) == 0
-    assert height(array(10, 20)) == 20
+    assert height(new_array(0, 0)) == 0
+    assert height(new_array(10, 20)) == 20
 
 
 @pytest.fixture
 def num_array():
-    a = array(5, 3)
+    a = new_array(5, 3)
     for x in range(width(a)):
         for y in range(height(a)):
             a[y][x] = x + (y*10)
