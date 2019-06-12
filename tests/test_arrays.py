@@ -6,6 +6,8 @@ from vc2_conformance.arrays import (
     height,
     row,
     column,
+    delete_rows_after,
+    delete_columns_after,
 )
 
 
@@ -76,3 +78,18 @@ def test_coloumn(num_array):
     # Set
     column(num_array, 2)[1] = 999
     assert num_array[1][2] == 999
+
+def test_delete_rows_after(num_array):
+    delete_rows_after(num_array, 2)
+    assert num_array == [
+        [0, 1, 2, 3, 4],
+        [10, 11, 12, 13, 14],
+    ]
+
+def test_delete_columns_after(num_array):
+    delete_columns_after(num_array, 2)
+    assert num_array == [
+        [0, 1],
+        [10, 11],
+        [20, 21],
+    ]

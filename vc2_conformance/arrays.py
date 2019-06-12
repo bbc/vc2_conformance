@@ -12,6 +12,8 @@ __all__ = [
     "height",
     "row",
     "column",
+    "delete_rows_after",
+    "delete_columns_after",
 ]
 
 
@@ -74,3 +76,18 @@ class column(object):
     
     def __len__(self):
         return len(self._a)
+
+
+def delete_rows_after(a, k):
+    """
+    (15.4.5) Delete rows 'k' and after in 'a'.
+    """
+    del a[k:]
+
+
+def delete_columns_after(a, k):
+    """
+    (15.4.5) Delete columns 'k' and after in 'a'.
+    """
+    for row in a:
+        del row[k:]
