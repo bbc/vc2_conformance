@@ -745,7 +745,8 @@ def initialize_fragment_state (state):
     state["c1_transform"] = initialize_wavelet_data(state, "C1")
     state["c2_transform"] = initialize_wavelet_data(state, "C2")
     state["fragment_slices_received"] = 0
-    state["fragment_picture_done"] = False
+    # Errata: called 'fragment_picture_done' in spec
+    state["fragmented_picture_done"] = False
 
 
 def fragment_data(state):
@@ -757,7 +758,7 @@ def fragment_data(state):
         state["slice_y"] = (state["fragment_y_offset"]*state["slices_x"] + state["fragment_x_offset"] + s)//state["slices_x"]
         slice(state, state["slice_x"], state["slice_y"])
         state["fragment_slices_received"] += 1
-        if (state["fragment_slices_received"] == state["slice_x"]*state["slice_y"]):
+        if (state["fragment_slices_received"] == state["slices_x"]*state["slices_y"]):
             state["fragmented_picture_done"] = True
             if (using_dc_prediction(state)):
                 if (state["dwt_depth_ho"] == 0):

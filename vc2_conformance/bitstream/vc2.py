@@ -844,7 +844,7 @@ def fragment_data(serdes, state):
         # Not required for bitstream unpacking
         ### state["fragment_slices_received"] += 1
         ### 
-        ### if state["fragment_slices_received"] == (state["slice_x"] * state["slice_y"]):
+        ### if state["fragment_slices_received"] == (state["slices_x"] * state["slices_y"]):
         ###     state["fragmented_picture_done"] = True
         ###     if using_dc_prediction(state):
         ###         if state["dwt_depth_ho"] == 0:

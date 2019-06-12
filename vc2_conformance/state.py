@@ -82,7 +82,7 @@ State = fixeddict(
     
     # (14.4) fragment_data
     Entry("fragment_slices_received"),
-    Entry("fragment_picture_done"),
+    Entry("fragmented_picture_done"),
     Entry("slice_x"),
     Entry("slice_y"),
     

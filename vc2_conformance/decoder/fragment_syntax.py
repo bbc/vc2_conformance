@@ -5,6 +5,10 @@
 
 from vc2_conformance.metadata import ref_pseudocode
 
+from vc2_conformance.parse_code_functions import (
+    using_dc_prediction,
+)
+
 from vc2_conformance.decoder.io import (
     tell,
     byte_align,
@@ -29,6 +33,7 @@ from vc2_conformance.decoder.picture_syntax import (
 from vc2_conformance.decoder.transform_data_syntax import (
     initialize_wavelet_data,
     slice,
+    dc_prediction,
 )
 
 
@@ -146,7 +151,7 @@ def initialize_fragment_state(state):
     state["c2_transform"] = initialize_wavelet_data(state, "C2")
     state["fragment_slices_received"] = 0
     state["_fragment_slices_remaining"] = state["slices_x"] * state["slices_y"]  ## Not in spec
-    state["fragment_picture_done"] = False
+    state["fragmented_picture_done"] = False
 
 
 @ref_pseudocode
@@ -158,7 +163,7 @@ def fragment_data(state):
         slice(state, state["slice_x"], state["slice_y"])
         state["fragment_slices_received"] += 1
         state["_fragment_slices_remaining"] -= 1  ## Not in spec
-        if state["fragment_slices_received"] == state["slice_x"]*state["slice_y"]:
+        if state["fragment_slices_received"] == state["slices_x"]*state["slices_y"]:
             state["fragmented_picture_done"] = True
             if using_dc_prediction(state):
                 if state["dwt_depth_ho"] == 0:

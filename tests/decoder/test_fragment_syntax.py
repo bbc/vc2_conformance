@@ -2,6 +2,8 @@ import pytest
 
 from decoder_test_utils import serialise_to_bytes, bytes_to_state
 
+from vc2_conformance.state import State
+
 from vc2_conformance import bitstream
 from vc2_conformance import tables
 from vc2_conformance import decoder
@@ -178,8 +180,86 @@ class TestFragmentHeader(object):
             decoder.fragment_header(state)
 
 
-@pytest.mark.xfail
-def test_todo_whole_picture():
-    # TODO: Test decoding of whole pictures worth of fragment bitstreams
-    # including testing _fragment_slices_remaining
-    assert False
+@pytest.mark.parametrize("parse_code", [
+    tables.ParseCodes.low_delay_picture_fragment,
+    tables.ParseCodes.high_quality_picture_fragment,
+])
+@pytest.mark.parametrize("fragment_slice_counts", [
+    # NB: Whole picture is set to 3x2 = 6 slices long
+    # Picture sent all in one fragment
+    [6],
+    # Sent in several fragments of varying sizes (including wrapping row
+    # boundary)
+    [1, 3, 2],
+])
+def test_whole_picture(parse_code, fragment_slice_counts):
+    # A sanity check which runs fragmented picture decoding for whole pictures
+    # and makes sure nothing crashes
+    
+    # Serialise a sample stream
+    sh = bitstream.SequenceHeader(
+        video_parameters=bitstream.SourceParameters(
+            frame_size=bitstream.FrameSize(
+                # Don't waste time on full-sized frames
+                custom_dimensions_flag=True,
+                frame_width=8,
+                frame_height=8,
+            ),
+        ),
+    )
+    serialisation_state = State()
+    sh_bytes = serialise_to_bytes(sh, serialisation_state)
+    serialisation_state["parse_code"] = parse_code
+    frag_bytes = b""
+    
+    # Add the first (header) fragment in the picture
+    frag_bytes += serialise_to_bytes(bitstream.FragmentParse(
+        fragment_header=bitstream.FragmentHeader(
+            fragment_slice_count=0,
+        ),
+        transform_parameters=bitstream.TransformParameters(
+            slice_parameters=bitstream.SliceParameters(
+                slices_x=3,
+                slices_y=2,
+            )
+        ),
+    ), serialisation_state)
+    
+    # Add the slice-containing fragments
+    num_slices = 0
+    for fragment_slice_count in fragment_slice_counts:
+        x = num_slices % 3
+        y = num_slices // 3
+        num_slices += fragment_slice_count
+        
+        frag_bytes += serialise_to_bytes(bitstream.FragmentParse(
+            fragment_header=bitstream.FragmentHeader(
+                fragment_slice_count=fragment_slice_count,
+                fragment_x_offset=x,
+                fragment_y_offset=y,
+            ),
+        ), serialisation_state)
+    
+    # Check it is parsed without failiures
+    state = bytes_to_state(sh_bytes + frag_bytes)
+    state["_num_pictures_in_sequence"] = 0
+    state["_fragment_slices_remaining"] = 0
+    decoder.sequence_header(state)
+    
+    # Parse header fragment
+    state["parse_code"] = parse_code
+    decoder.fragment_parse(state)
+    
+    # Parse slice-containing fragments
+    num_slices = 0
+    for fragment_slice_count in fragment_slice_counts:
+        assert state["fragmented_picture_done"] is False
+        
+        state["parse_code"] = parse_code
+        decoder.fragment_parse(state)
+        
+        num_slices += fragment_slice_count
+        assert state["fragment_slices_received"] == num_slices
+        assert state["_fragment_slices_remaining"] == 6 - num_slices
+    
+    assert state["fragmented_picture_done"] is True
