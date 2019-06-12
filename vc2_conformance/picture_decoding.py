@@ -1,15 +1,18 @@
 """
-:py:mod:`vc2_conformance.wavelet_filtering`: (15) Generic Wavelet-filtering routines
-====================================================================================
+:py:mod:`vc2_conformance.picture_decoding`: (15) Picture Decoding
+=================================================================
 
-This module collects the wavelet synthesis filters from (15) and augments these
-with complementary analysis filters (inferred from, but not defined by the
-standard).
+This module contains the wavelet synthesis filters and associated functions
+defined in the pseudocode of the VC-2 standard.
+
+See also :py:mod:`vc2_conformance.picture_encoding`.
 """
 
 from vc2_conformance.metadata import ref_pseudocode
 
 from vc2_conformance.tables import LIFTING_FILTERS, LiftingFilterTypes
+
+from vc2_conformance.vc2_math import clip
 
 from vc2_conformance.arrays import (
     new_array,
@@ -17,25 +20,58 @@ from vc2_conformance.arrays import (
     height,
     row,
     column,
+    delete_rows_after,
+    delete_columns_after,
 )
 
 __all__ = [
+    "picture_decode",
+    "inverse_wavelet_transform",
+    
     "idwt",
-    "dwt",
     "h_synthesis",
-    "h_analysis",
     "vh_synthesis",
-    "vh_analysis",
     "oned_synthesis",
-    "oned_analysis",
+    "filter_bit_shift",
     "lift1",
     "lift2",
     "lift3",
     "lift4",
     "SYNTHESIS_LIFTING_FUNCTION_TYPES",
-    "ANALYSIS_LIFTING_FUNCTION_TYPES",
+    
+    "idwt_pad_removal",
+    
+    "offset_picture",
+    "offset_component",
+    "clip_picture",
+    "clip_component",
 ]
 
+
+@ref_pseudocode
+def picture_decode(state):
+    """(15.2)"""
+    state["current_picture"] = {}
+    state["current_picture"]["pic_num"] = state["picture_number"]
+    inverse_wavelet_transform(state)
+    clip_picture(state, state["current_picture"])
+    offset_picture(state, state["current_picture"])
+    return state["current_picture"]
+
+
+@ref_pseudocode
+def inverse_wavelet_transform(state):
+    """(15.3)"""
+    state["current_picture"]["Y"] = idwt(state, state["y_transform"])
+    state["current_picture"]["C1"] = idwt(state, state["c1_transform"])
+    state["current_picture"]["C2"] = idwt(state, state["c2_transform"])
+    for c in ["Y", "C1", "C2"]:
+        idwt_pad_removal(state, state["current_picture"][c], c )
+
+
+################################################################################
+# Inverse (Synthesis) Discrete Wavelet Transform
+################################################################################
 
 @ref_pseudocode
 def idwt(state, coeff_data):
@@ -77,53 +113,6 @@ def idwt(state, coeff_data):
     return DC_band
 
 
-def dwt(state, picture):
-    """
-    Discrete Wavelet Transform, inverse of idwt (15.4.1)
-    
-    Parameters
-    ==========
-    state : :py:class:`~vc2_conformance.state.State`
-        A state dictionary containing at least the following:
-        
-        * ``wavelet_index``
-        * ``wavelet_index_ho``
-        * ``dwt_depth``
-        * ``dwt_depth_ho``
-    
-    picture : [[pixel_value, ...], ...]
-        The synthesized picture.
-    
-    Returns
-    =======
-    coeff_data : {level: {orientation: [[coeff, ...], ...], ...}, ...}
-        The complete (power-of-two dimensioned) transform coefficient data.
-    """
-    coeff_data = {}
-    
-    DC_band = picture
-    for n in reversed(range(state["dwt_depth_ho"] + 1,
-                            state["dwt_depth_ho"] + state["dwt_depth"] + 1)):
-        (LL_data, HL_data, LH_data, HH_data) = vh_analysis(state, DC_band)
-        DC_band = LL_data
-        coeff_data[n] = {}
-        coeff_data[n]["HL"] = HL_data
-        coeff_data[n]["LH"] = LH_data
-        coeff_data[n]["HH"] = HH_data
-    for n in reversed(range(1, state["dwt_depth_ho"] + 1)):
-        (L_data, H_data) = h_analysis(state, DC_band)
-        DC_band = L_data
-        coeff_data[n] = {}
-        coeff_data[n]["H"] = H_data
-    coeff_data[0] = {}
-    if (state["dwt_depth_ho"] == 0):
-        coeff_data[0]["LL"] = DC_band
-    else:
-        coeff_data[0]["L"] = DC_band
-    
-    return coeff_data
-
-
 @ref_pseudocode
 def h_synthesis(state, L_data, H_data):
     """(15.4.2) Horizontal-only synthesis."""
@@ -147,35 +136,6 @@ def h_synthesis(state, L_data, H_data):
                 synth[y][x] = (synth[y][x] + (1 << (shift - 1))) >> shift
     
     return synth
-
-
-def h_analysis(state, data):
-    """
-    Horizontal-only analysis, inverse of h_synthesis (15.4.2).
-    
-    Returns a tuple (L_data, H_data)
-    """
-    # Bit shift, if required
-    shift = filter_bit_shift(state)
-    if shift > 0:
-        for y in range(0, height(data)):
-            for x in range(0, width(data)):
-                data[y][x] = data[y][x] << shift
-    
-    # Analysis
-    for y in range(0, height(data)):
-        oned_analysis(row(data, y), state["wavelet_index_ho"])
-    
-    # De-interleave the transform data
-    L_data = new_array(width(data) // 2, height(data))
-    H_data = new_array(width(data) // 2, height(data))
-    for y in range(0, (height(data))):
-        for x in range(0, (width(data) // 2)):
-            L_data[y][x] = data[y][2*x]
-            H_data[y][x] = data[y][(2*x) + 1]
-    
-    return (L_data, H_data)
-
 
 @ref_pseudocode
 def vh_synthesis(state, LL_data, HL_data, LH_data, HH_data):
@@ -206,40 +166,6 @@ def vh_synthesis(state, LL_data, HL_data, LH_data, HH_data):
     return synth
 
 
-def vh_analysis(state, data):
-    """
-    Interleaved vertical and horizontal analysis, inverse of vh_synthesis (15.4.3).
-    
-    Returns a tuple (LL_data, HL_data, LH_data, HH_data)
-    """
-    # Bit shift, if required
-    shift = filter_bit_shift(state)
-    if shift > 0:
-        for y in range(0, height(data)):
-            for x in range(0, width(data)):
-                data[y][x] = data[y][x] << shift
-    
-    # Analysis
-    for y in range(0, height(data)):
-        oned_analysis(row(data, y), state["wavelet_index_ho"])
-    for x in range(0, width(data)):
-        oned_analysis(column(data, x), state["wavelet_index"])
-    
-    # De-interleave the transform data
-    LL_data = new_array(width(data) // 2, height(data) // 2)
-    HL_data = new_array(width(data) // 2, height(data) // 2)
-    LH_data = new_array(width(data) // 2, height(data) // 2)
-    HH_data = new_array(width(data) // 2, height(data) // 2)
-    for y in range(0, (height(data) // 2)):
-        for x in range(0, (width(data) // 2)):
-            LL_data[y][x] = data[2*y][2*x]
-            HL_data[y][x] = data[2*y][2*x + 1]
-            LH_data[y][x] = data[2*y + 1][2*x]
-            HH_data[y][x] = data[2*y + 1][2*x + 1]
-    
-    return (LL_data, HL_data, LH_data, HH_data)
-
-
 @ref_pseudocode(deviation="inferred_implementation")
 def oned_synthesis(A, filter_index):
     """(15.4.4.1) and (15.4.4.3). Acts in-place on 'A'"""
@@ -248,18 +174,6 @@ def oned_synthesis(A, filter_index):
     for stage in filter_params.stages:
         lift_fn = SYNTHESIS_LIFTING_FUNCTION_TYPES[stage.lift_type]
         lift_fn(A, stage.L, stage.D, stage.taps, stage.S)
-
-
-def oned_analysis(A, filter_index):
-    """
-    Inverse of oned_synthesis (15.4.4.1) and (15.4.4.3). Acts in-place on 'A'
-    """
-    filter_params = LIFTING_FILTERS[filter_index]
-    
-    for stage in reversed(filter_params.stages):
-        lift_fn = ANALYSIS_LIFTING_FUNCTION_TYPES[stage.lift_type]
-        lift_fn(A, stage.L, stage.D, stage.taps, stage.S)
-
 
 
 @ref_pseudocode(deviation="inferred_implementation")
@@ -340,13 +254,70 @@ Lookup from lifting function ID to function implementation for implementing
 wavelet synthesis.
 """
 
-ANALYSIS_LIFTING_FUNCTION_TYPES = {
-    LiftingFilterTypes(2): lift1,
-    LiftingFilterTypes(1): lift2,
-    LiftingFilterTypes(4): lift3,
-    LiftingFilterTypes(3): lift4,
-}
-"""
-Lookup from lifting function ID to function implementation for implementing
-wavelet analysis.
-"""
+
+################################################################################
+# Padding removal
+################################################################################
+
+@ref_pseudocode
+def idwt_pad_removal(state, pic, c):
+    """(15.4.5)"""
+    if(c == "Y"):
+        width = state["luma_width"]
+        height = state["luma_height"]
+    elif((c == "C1") or (c == "C2")):
+        width = state["color_diff_width"]
+        height = state["color_diff_height"]
+    
+    delete_rows_after(pic, height)
+    delete_columns_after(pic, width)
+
+
+################################################################################
+# Pixel value offsetting and clipping
+################################################################################
+
+
+@ref_pseudocode
+def offset_picture(state, current_picture):
+    """(15.5) Remove picture value offsets (added during encoding).
+    
+    Parameters
+    ==========
+    state : :py:class:`vc2_conformance.state.State`
+        Where ``luma_depth`` and ``color_diff_depth`` are defined.
+    current_picture : {comp: [[pixel_value, ...], ...], ...}
+        Will be mutated in-place.
+    """
+    for c in ["Y", "C1", "C2"]:
+        offset_component(state, current_picture[c], c)
+
+
+@ref_pseudocode
+def offset_component(state, comp_data, c):
+    """(15.5) Remove picture value offsets from a single component."""
+    for y in range(0, height(comp_data)):
+        for x in range(0, width(comp_data)):
+            if (c=="Y"):
+                comp_data[y][x] += 2**(state["luma_depth"]-1)
+            else:
+                comp_data[y][x] += 2**(state["color_diff_depth"]-1)
+
+
+@ref_pseudocode
+def clip_picture(state, current_picture):
+    """(15.5)"""
+    for c in ["Y", "C1", "C2"]:
+        clip_component(state, current_picture[c], c)
+
+
+@ref_pseudocode
+def clip_component(state, comp_data, c):
+    """(15.5)"""
+    for y in range(0, height(comp_data)):
+        for x in range(0, width(comp_data)):
+            if (c=="Y"):
+                clip(comp_data[y][x], -(2**(state["luma_depth"]-1)), 2**(state["luma_depth"]-1) -1)
+            else:
+                clip(comp_data[y][x], -(2**(state["color_diff_depth"]-1)), 2**(state["color_diff_depth"]-1) -1)
+

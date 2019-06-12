@@ -27,8 +27,8 @@ from vc2_conformance import arrays
 from vc2_conformance import parse_code_functions
 from vc2_conformance import slice_sizes
 from vc2_conformance import video_parameters
-from vc2_conformance import wavelet_filtering
-from vc2_conformance import offsetting
+from vc2_conformance import picture_decoding
+from vc2_conformance import picture_encoding
 
 # VC-2 datastructures
 from vc2_conformance import state

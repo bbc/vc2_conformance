@@ -9,7 +9,12 @@ VC-2 spec.
 
 from vc2_conformance._string_formatters import Hex
 
-from vc2_conformance.tables import ParseCodes, WaveletFilters
+from vc2_conformance.tables import (
+    ParseCodes,
+    WaveletFilters,
+    Profiles,
+    Levels,
+)
 
 from vc2_conformance.fixeddict import fixeddict, Entry
 
@@ -29,8 +34,8 @@ State = fixeddict(
     # (11.2.1) parse_parameters
     Entry("major_version"),
     Entry("minor_version"),
-    Entry("profile"),
-    Entry("level"),
+    Entry("profile", enum=Profiles),
+    Entry("level", enum=Levels),
     
     # (11.6.2) picture_dimensions
     Entry("luma_width"),
@@ -85,6 +90,9 @@ State = fixeddict(
     Entry("fragmented_picture_done"),
     Entry("slice_x"),
     Entry("slice_y"),
+    
+    # (15.2) picture_decode
+    Entry("current_picture"),
     
     # (A.2.1) read_byte etc.
     Entry("next_bit"),
