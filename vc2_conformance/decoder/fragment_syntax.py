@@ -7,6 +7,7 @@ from vc2_conformance.metadata import ref_pseudocode
 
 from vc2_conformance.decoder.io import (
     tell,
+    byte_align,
     read_uint_lit,
 )
 
@@ -19,6 +20,15 @@ from vc2_conformance.decoder.exceptions import (
 
 from vc2_conformance.decoder.assertions import (
     assert_picture_number_incremented_as_expected,
+)
+
+from vc2_conformance.decoder.picture_syntax import (
+    transform_parameters,
+)
+
+from vc2_conformance.decoder.transform_data_syntax import (
+    initialize_wavelet_data,
+    slice,
 )
 
 

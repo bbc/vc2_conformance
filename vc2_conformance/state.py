@@ -64,6 +64,9 @@ State = fixeddict(
     # (12.4.5.3) quant_matrix
     Entry("quant_matrix"),
     
+    # (13.5.5) slice_quantizers
+    Entry("quantizer"),
+    
     # (13.5.6.3) slice_band and (13.5.6.4) color_diff_slice_band: The transform
     # data read from the bitstream. Nested dictionaries of 2D arrays indexed as
     # [level][orient][y][x]

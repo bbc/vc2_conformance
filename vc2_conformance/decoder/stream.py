@@ -58,6 +58,8 @@ from vc2_conformance.decoder.io import (
 )
 
 from vc2_conformance.decoder.sequence_header import sequence_header
+from vc2_conformance.decoder.picture_syntax import picture_parse
+from vc2_conformance.decoder.fragment_syntax import fragment_parse
 
 
 __all__ = [

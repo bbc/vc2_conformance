@@ -1,6 +1,10 @@
 import pytest
 
-from decoder_test_utils import serialise_to_bytes, bytes_to_state
+from decoder_test_utils import (
+    serialise_to_bytes,
+    bytes_to_state,
+    populate_parse_offsets,
+)
 
 from vc2_conformance import bitstream
 from vc2_conformance import tables
@@ -66,7 +70,6 @@ class TestParseSequence(object):
         assert exc_info.value.expected_parse_codes == [tables.ParseCodes.sequence_header]
         assert exc_info.value.expected_end is False
     
-    @pytest.mark.xfail
     @pytest.mark.parametrize("picture_coding_mode,num_pictures,exp_fail", [
         (tables.PictureCodingModes.pictures_are_frames, 0, False),
         (tables.PictureCodingModes.pictures_are_frames, 1, False),
@@ -81,28 +84,46 @@ class TestParseSequence(object):
     ])
     def test_odd_number_of_fields_disallowed(self, picture_coding_mode,
                                              num_pictures, exp_fail):
-        sh = serialise_to_bytes(
-            bitstream.SequenceHeader(
-                picture_coding_mode=picture_coding_mode,
+        # A sequence with num_pictures HQ pictures
+        seq = bitstream.Sequence(data_units=[
+            bitstream.DataUnit(
+                parse_info=bitstream.ParseInfo(
+                    parse_code=tables.ParseCodes.sequence_header,
+                ),
+                sequence_header=bitstream.SequenceHeader(
+                    picture_coding_mode=picture_coding_mode,
+                    video_parameters=bitstream.SourceParameters(
+                        frame_size=bitstream.FrameSize(
+                            # Don't waste time on full-sized frames
+                            custom_dimensions_flag=True,
+                            frame_width=4,
+                            frame_height=4,
+                        ),
+                    ),
+                ),
             ),
-        )
-        sh_and_pi = serialise_to_bytes(bitstream.ParseInfo(
-            parse_code=tables.ParseCodes.sequence_header,
-            next_parse_offset=(
-                tables.PARSE_INFO_HEADER_BYTES +
-                len(sh)
+        ] + [
+            bitstream.DataUnit(
+                parse_info=bitstream.ParseInfo(
+                    parse_code=tables.ParseCodes.high_quality_picture,
+                ),
+                picture_parse=bitstream.PictureParse(
+                    picture_header=bitstream.PictureHeader(
+                        picture_number=n,
+                    ),
+                ),
+            )
+            for n in range(num_pictures)
+        ] + [
+            bitstream.DataUnit(
+                parse_info=bitstream.ParseInfo(
+                    parse_code=tables.ParseCodes.end_of_sequence,
+                ),
             ),
-        )) + sh
+        ])
+        populate_parse_offsets(seq)
         
-        # TODO: Add an odd number of minimal pictures/fields once picture
-        # parsing is supported
-        
-        eos = serialise_to_bytes(bitstream.ParseInfo(
-            parse_code=tables.ParseCodes.end_of_sequence,
-            previous_parse_offset=len(sh_and_pi),
-        ))
-        
-        state = bytes_to_state(sh_and_pi + eos)
+        state = bytes_to_state(serialise_to_bytes(seq))
         if exp_fail:
             with pytest.raises(decoder.OddNumberOfFieldsInSequence) as exc_info:
                 decoder.parse_sequence(state)
@@ -110,80 +131,183 @@ class TestParseSequence(object):
         else:
             decoder.parse_sequence(state)
     
-    @pytest.mark.xfail
     @pytest.mark.parametrize("num_slices_to_send,exp_fail", [
-        (0, False),
+        (0, True),
         (1, True),
         (2, True),
         (3, True),
-        (4, False),
+        (4, True),
+        (5, True),
+        (6, False),
     ])
     def test_incomplete_picture_fragments_at_eos_fails(self, num_slices_to_send, exp_fail):
-        sh = serialise_to_bytes(
-            bitstream.SequenceHeader(),
-        )
-        sh_and_pi = serialise_to_bytes(bitstream.ParseInfo(
-            parse_code=tables.ParseCodes.sequence_header,
-            next_parse_offset=(
-                tables.PARSE_INFO_HEADER_BYTES +
-                len(sh)
+        # A sequence with a 3x2 slice picture fragment with num_slices_to_send slices in
+        # it
+        seq = bitstream.Sequence(data_units=[
+            bitstream.DataUnit(
+                parse_info=bitstream.ParseInfo(
+                    parse_code=tables.ParseCodes.sequence_header,
+                ),
+                sequence_header=bitstream.SequenceHeader(
+                    video_parameters=bitstream.SourceParameters(
+                        frame_size=bitstream.FrameSize(
+                            # Don't waste time on full-sized frames
+                            custom_dimensions_flag=True,
+                            frame_width=8,
+                            frame_height=8,
+                        ),
+                    ),
+                ),
             ),
-        )) + sh
+            bitstream.DataUnit(
+                parse_info=bitstream.ParseInfo(
+                    parse_code=tables.ParseCodes.high_quality_picture_fragment,
+                ),
+                fragment_parse=bitstream.FragmentParse(
+                    fragment_header=bitstream.FragmentHeader(
+                        fragment_slice_count=0,
+                    ),
+                    transform_parameters=bitstream.TransformParameters(
+                        slice_parameters=bitstream.SliceParameters(
+                            slices_x=3,
+                            slices_y=2,
+                        ),
+                    ),
+                ),
+            ),
+            bitstream.DataUnit(
+                parse_info=bitstream.ParseInfo(
+                    parse_code=tables.ParseCodes.high_quality_picture_fragment,
+                ),
+                fragment_parse=bitstream.FragmentParse(
+                    fragment_header=bitstream.FragmentHeader(
+                        fragment_slice_count=num_slices_to_send,
+                    ),
+                ),
+            ),
+            bitstream.DataUnit(
+                parse_info=bitstream.ParseInfo(
+                    parse_code=tables.ParseCodes.end_of_sequence,
+                ),
+            ),
+        ])
+        # Don't include second (non-header) fragment if sending no slices
+        if num_slices_to_send == 0:
+            del seq["data_units"][2]
         
-        # TODO: Create a 4-slice picture and send num_slices_to_send worth of
-        # fragments before ending the stream.
+        populate_parse_offsets(seq)
         
-        eos = serialise_to_bytes(bitstream.ParseInfo(
-            parse_code=tables.ParseCodes.end_of_sequence,
-            previous_parse_offset=len(sh_and_pi),
-        ))
-        
-        state = bytes_to_state(sh_and_pi + eos)
+        state = bytes_to_state(serialise_to_bytes(seq))
         if exp_fail:
             with pytest.raises(decoder.SequenceContainsIncompleteFragmentedPicture) as exc_info:
                 decoder.parse_sequence(state)
-            assert exc_info.value.initial_fragment_offset == (len(sh_and_pi), 7)
+            first_fragment_offset = (
+                seq["data_units"][0]["parse_info"]["next_parse_offset"] +
+                tables.PARSE_INFO_HEADER_BYTES
+            )
+            assert exc_info.value.initial_fragment_offset == (first_fragment_offset, 7)
             assert exc_info.value.fragment_slices_received == num_slices_to_send
-            assert exc_info.value.fragment_slices_remaining == 4 - num_slices_to_send
+            assert exc_info.value.fragment_slices_remaining == 6 - num_slices_to_send
         else:
             decoder.parse_sequence(state)
     
-    @pytest.mark.xfail
     @pytest.mark.parametrize("num_slices_to_send,exp_fail", [
-        (0, False),
+        (0, True),
         (1, True),
         (2, True),
         (3, True),
-        (4, False),
+        (4, True),
+        (5, True),
+        (6, False),
     ])
     def test_picture_and_incomplete_fragment_interleaving_disallowed(self, num_slices_to_send, exp_fail):
-        sh = serialise_to_bytes(
-            bitstream.SequenceHeader(),
-        )
-        sh_and_pi = serialise_to_bytes(bitstream.ParseInfo(
-            parse_code=tables.ParseCodes.sequence_header,
-            next_parse_offset=(
-                tables.PARSE_INFO_HEADER_BYTES +
-                len(sh)
+        # A sequence with a 3x2 slice picture fragment with num_slices_to_send slices in
+        # it followed by an HQ picture
+        seq = bitstream.Sequence(data_units=[
+            bitstream.DataUnit(
+                parse_info=bitstream.ParseInfo(
+                    parse_code=tables.ParseCodes.sequence_header,
+                ),
+                sequence_header=bitstream.SequenceHeader(
+                    video_parameters=bitstream.SourceParameters(
+                        frame_size=bitstream.FrameSize(
+                            # Don't waste time on full-sized pictures
+                            custom_dimensions_flag=True,
+                            frame_width=8,
+                            frame_height=8,
+                        ),
+                    ),
+                ),
             ),
-        )) + sh
+            bitstream.DataUnit(
+                parse_info=bitstream.ParseInfo(
+                    parse_code=tables.ParseCodes.high_quality_picture_fragment,
+                ),
+                fragment_parse=bitstream.FragmentParse(
+                    fragment_header=bitstream.FragmentHeader(
+                        picture_number=0,
+                        fragment_slice_count=0,
+                    ),
+                    transform_parameters=bitstream.TransformParameters(
+                        slice_parameters=bitstream.SliceParameters(
+                            slices_x=3,
+                            slices_y=2,
+                        ),
+                    ),
+                ),
+            ),
+            bitstream.DataUnit(
+                parse_info=bitstream.ParseInfo(
+                    parse_code=tables.ParseCodes.high_quality_picture_fragment,
+                ),
+                fragment_parse=bitstream.FragmentParse(
+                    fragment_header=bitstream.FragmentHeader(
+                        picture_number=0,
+                        fragment_slice_count=num_slices_to_send,
+                    ),
+                ),
+            ),
+            bitstream.DataUnit(
+                parse_info=bitstream.ParseInfo(
+                    parse_code=tables.ParseCodes.high_quality_picture,
+                ),
+                picture_parse=bitstream.PictureParse(
+                    picture_header=bitstream.PictureHeader(
+                        picture_number=1,
+                    ),
+                ),
+            ),
+            bitstream.DataUnit(
+                parse_info=bitstream.ParseInfo(
+                    parse_code=tables.ParseCodes.end_of_sequence,
+                ),
+            ),
+        ])
+        # Don't include second (non-header) fragment if sending no slices
+        if num_slices_to_send == 0:
+            del seq["data_units"][2]
         
-        # TODO: Create a 4-slice picture and send num_slices_to_send worth of
-        # fragments before sending a picture and then the remaining slcies.
+        populate_parse_offsets(seq)
         
-        eos = serialise_to_bytes(bitstream.ParseInfo(
-            parse_code=tables.ParseCodes.end_of_sequence,
-            previous_parse_offset=len(sh_and_pi),
-        ))
-        
-        state = bytes_to_state(sh_and_pi + eos)
+        state = bytes_to_state(serialise_to_bytes(seq))
         if exp_fail:
             with pytest.raises(decoder.PictureInterleavedWithFragmentedPicture) as exc_info:
                 decoder.parse_sequence(state)
-            assert exc_info.value.initial_fragment_offset == (len(sh_and_pi), 7)
-            assert exc_info.value.this_offset == None  # TODO
+            first_fragment_offset = (
+                seq["data_units"][0]["parse_info"]["next_parse_offset"] +
+                tables.PARSE_INFO_HEADER_BYTES
+            )
+            assert exc_info.value.initial_fragment_offset == (first_fragment_offset, 7)
+            picture_offset = (
+                sum(
+                    seq["data_units"][i]["parse_info"]["next_parse_offset"]
+                    for i in range(len(seq["data_units"]) - 2)
+                ) +
+                tables.PARSE_INFO_HEADER_BYTES
+            )
+            assert exc_info.value.this_offset == (picture_offset, 7)
             assert exc_info.value.fragment_slices_received == num_slices_to_send
-            assert exc_info.value.fragment_slices_remaining == 4 - num_slices_to_send
+            assert exc_info.value.fragment_slices_remaining == 6 - num_slices_to_send
         else:
             decoder.parse_sequence(state)
 

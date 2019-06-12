@@ -21,6 +21,7 @@ from vc2_conformance.parse_code_functions import (
 
 from vc2_conformance.decoder.io import (
     tell,
+    byte_align,
     read_uint_lit,
     read_uint,
     read_bool,
@@ -50,6 +51,8 @@ from vc2_conformance.decoder.exceptions import (
     QuantisationMatrixValueNotAllowedInLevel,
     SliceSizeScalerIsZero,
 )
+
+from vc2_conformance.decoder.transform_data_syntax import transform_data
 
 
 __all__ = [
