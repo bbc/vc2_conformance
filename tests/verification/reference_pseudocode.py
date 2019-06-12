@@ -821,7 +821,7 @@ def h_synthesis(state, L_data, H_data):
     #
     # Errata: the 'width(L_data)' etc. parts of the lines below refer to
     # 'LL_data' in the spec.
-    synth = new_array(height(L_data), 2 * width(L_data))
+    synth = new_array(2 * width(L_data), height(L_data))
     
     # Step 2.
     for y in range(0, (height(synth))):
@@ -836,7 +836,7 @@ def h_synthesis(state, L_data, H_data):
     
     # Step 4.
     shift = filter_bit_shift(state)
-    if((shift > 0)):  # Errata: 'If' in spec should be 'if'
+    if shift > 0:  # Errata: 'If' in spec should be 'if'
         for y in range(0, height(synth)):
             for x in range(0, width(synth)):
                 synth[y][x] = (synth[y][x] + (1 << (shift - 1))) >> shift
@@ -851,7 +851,7 @@ def vh_synthesis(state, LL_data, HL_data, LH_data, HH_data):
     #
     # Errata: 'new_array' not part of spec but the need for the function is
     # described in prose.
-    synth = new_array(2 * height(LL_data), 2 * width(LL_data))
+    synth = new_array(2 * width(LL_data), 2 * height(LL_data))
     
     # Step 2.
     for y in range(0, (height(synth)//2)):
@@ -870,7 +870,7 @@ def vh_synthesis(state, LL_data, HL_data, LH_data, HH_data):
     
     # Step 4.
     shift = filter_bit_shift(state)
-    if((shift > 0) == True):  # Errata: 'If' in spec should be 'if'
+    if shift > 0:  # Errata: 'If' in spec should be 'if'
         for y in range(0, height(synth)):
             for x in range(0, width(synth)):
                 synth[y][x] = (synth[y][x] + (1 << (shift - 1))) >> shift
@@ -880,11 +880,11 @@ def vh_synthesis(state, LL_data, HL_data, LH_data, HH_data):
 
 def lift1(A, L, D, taps, S):
     """(15.4.4.1)"""
-    for n in range(0, (length(A)//2)):
+    for n in range(0, (len(A)//2)):
         sum = 0
         for i in range(D, L + D):
             pos = 2*(n + i) - 1
-            pos = min(pos, length(A) - 1)
+            pos = min(pos, len(A) - 1)
             pos = max(pos, 1)
             sum += taps[i-D]* A[pos]
         if((S>0)):  # Errata: 'If' in spec should be 'if'
@@ -894,11 +894,11 @@ def lift1(A, L, D, taps, S):
 
 def lift2(A, L, D, taps, S):
     """(15.4.4.1)"""
-    for n in range(0, (length(A)//2)):
+    for n in range(0, (len(A)//2)):
         sum = 0
         for i in range(D, L + D):
             pos = 2*(n + i) - 1
-            pos = min(pos, length(A) - 1)
+            pos = min(pos, len(A) - 1)
             pos = max(pos, 1)
             sum += taps[i-D] * A[pos]
         if((S>0)) :  # Errata: 'If' in spec should be 'if'
@@ -908,11 +908,11 @@ def lift2(A, L, D, taps, S):
 
 def lift3(A, L, D, taps, S):
     """(15.4.4.1)"""
-    for n in range(0, (length(A)//2)):
+    for n in range(0, (len(A)//2)):
         sum = 0
         for i in range(D, L + D):
             pos = 2*(n + i)
-            pos = min(pos, length(A) - 2)
+            pos = min(pos, len(A) - 2)
             pos = max(pos, 0)
             sum += taps[i-D] * A[pos]
         if (S>0):  # Errata: 'If' in spec should be 'if'
@@ -922,13 +922,14 @@ def lift3(A, L, D, taps, S):
 
 def lift4(A, L, D, taps, S):
     """(15.4.4.1)"""
-    for n in range(0, (length(A)//2)):
+    for n in range(0, (len(A)//2)):
         sum = 0
         for i in range(D, L + D):
             pos = 2*(n + i)
-            pos = min(pos, length(A) - 2)
+            pos = min(pos, len(A) - 2)
             pos = max(pos, 0)
-            sum += t[i-D] * A[pos]
+            # Errata: taps is 't' in the spec
+            sum += taps[i-D] * A[pos]
         if (S>0):  # Errata: 'If' in spec should be 'if'
             sum += (1<<(S - 1))
         A[2*n + 1] -= (sum >> S)
@@ -945,8 +946,8 @@ def idwt_pad_removal(state, pic, c):
         height = state["color_diff_height"]
     
     # Errata: Implementation of the following not given in spec
-    del pic[height:, :]
-    del pic[:, width:]
+    delete_rows_after(pic, height)
+    delete_columns_after(pic, width)
 
 
 def clip_picture(state, current_picture):
