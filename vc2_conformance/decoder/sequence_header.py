@@ -485,27 +485,27 @@ def clean_area(state, video_parameters):
         # (C.3) Check level allows this offset
         assert_level_constraint(state, "top_offset", video_parameters["top_offset"]) ## Not in spec
         
-        # (11.4.8) The clean area is restricted to being within the existing
-        # picture area
-        ## Begin not in spec
-        if not (
-                video_parameters["clean_width"] +
-                video_parameters["left_offset"] <=
-                video_parameters["frame_width"]
-                and
-                video_parameters["clean_height"] +
-                video_parameters["top_offset"] <=
-                video_parameters["frame_height"]
-        ):
-            raise CleanAreaOutOfRange(
-                video_parameters["clean_width"],
-                video_parameters["clean_height"],
-                video_parameters["left_offset"],
-                video_parameters["top_offset"],
-                video_parameters["frame_width"],
-                video_parameters["frame_height"],
-            )
-        ## End not in spec
+    # (11.4.8) The clean area is restricted to being within the existing
+    # picture area
+    ## Begin not in spec
+    if not (
+            video_parameters["clean_width"] +
+            video_parameters["left_offset"] <=
+            video_parameters["frame_width"]
+            and
+            video_parameters["clean_height"] +
+            video_parameters["top_offset"] <=
+            video_parameters["frame_height"]
+    ):
+        raise CleanAreaOutOfRange(
+            video_parameters["clean_width"],
+            video_parameters["clean_height"],
+            video_parameters["left_offset"],
+            video_parameters["top_offset"],
+            video_parameters["frame_width"],
+            video_parameters["frame_height"],
+        )
+    ## End not in spec
 
 
 @ref_pseudocode

@@ -75,13 +75,14 @@ def test_parse_code_in_sequence(regex, expected_parse_codes, expected_end):
     m = Matcher(regex)
     
     class CustomException(Exception):
-        def __init__(self, parse_code, actual_expected_parse_codes, actual_expected_end):
+        def __init__(self, parse_code, actual_expected_parse_codes, actual_expected_end, foo):
             assert parse_code is ParseCodes.auxiliary_data
             assert set(actual_expected_parse_codes) == expected_parse_codes
             assert actual_expected_end == expected_end
+            assert foo == "bar"
     
     with pytest.raises(CustomException):
-        assert_parse_code_in_sequence(ParseCodes.auxiliary_data, m, CustomException)
+        assert_parse_code_in_sequence(ParseCodes.auxiliary_data, m, CustomException, "bar")
 
 @pytest.mark.parametrize("regex,expected_parse_codes", [
     # Only one possibility allowed
@@ -104,16 +105,17 @@ def test_parse_code_sequence_ended(regex, expected_parse_codes):
     m = Matcher(regex)
     
     class CustomException(Exception):
-        def __init__(self, parse_code, actual_expected_parse_codes, actual_expected_end):
+        def __init__(self, parse_code, actual_expected_parse_codes, actual_expected_end, foo):
             assert parse_code is None
             if expected_parse_codes is None:
                 assert actual_expected_parse_codes is None
             else:
                 assert set(actual_expected_parse_codes) == expected_parse_codes
             assert actual_expected_end is False
+            assert foo == "bar"
     
     with pytest.raises(CustomException):
-        assert_parse_code_sequence_ended(m, CustomException)
+        assert_parse_code_sequence_ended(m, CustomException, "bar")
 
 def test_level_constraints():
     state = State()

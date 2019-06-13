@@ -3,6 +3,8 @@
 =========================================================================================
 """
 
+from collections import OrderedDict
+
 from vc2_conformance.tables import (
     ParseCodes,
     LEVEL_CONSTRAINTS,
@@ -41,7 +43,7 @@ def assert_in_enum(value, enum, exception_type):
         raise exception_type(value)
 
 
-def assert_parse_code_in_sequence(parse_code, matcher, exception_type):
+def assert_parse_code_in_sequence(parse_code, matcher, exception_type, *args):
     """
     Check that the specified parse code's name matches the next value in the
     sequence defined by :py:class:`vc2_conformance._symbol_re.Matcher`.
@@ -55,6 +57,7 @@ def assert_parse_code_in_sequence(parse_code, matcher, exception_type):
       valid (or ``None`` if any parse code would be allowed.
     * A boolean which is True if it would have been valid to end the sequence
       at this point.
+    * Any additional arguments passed to this function
     """
     parse_code = ParseCodes(parse_code)
     
@@ -73,10 +76,11 @@ def assert_parse_code_in_sequence(parse_code, matcher, exception_type):
             parse_code,
             expected_parse_codes,
             expected_end,
+            *args,
         )
 
 
-def assert_parse_code_sequence_ended(matcher, exception_type):
+def assert_parse_code_sequence_ended(matcher, exception_type, *args):
     """
     Check that the specified :py:class:`vc2_conformance._symbol_re.Matcher` has
     reached a valid end for the sequence of parse codes specified.
@@ -90,6 +94,7 @@ def assert_parse_code_sequence_ended(matcher, exception_type):
       valid (or ``None`` if any parse code would be allowed.
     * A boolean which is True if it would have been valid to end the sequence
       at this point. (Always False, in this case)
+    * Any additional arguments passed to this function
     """
     if not matcher.is_complete():
         expected_parse_codes = []
@@ -99,7 +104,7 @@ def assert_parse_code_sequence_ended(matcher, exception_type):
             elif expected_parse_codes is not None:
                 expected_parse_codes.append(getattr(ParseCodes, parse_code_name))
         
-        raise exception_type(None, expected_parse_codes, False)
+        raise exception_type(None, expected_parse_codes, False, *args)
 
 
 def assert_level_constraint(state, key, value):
@@ -114,7 +119,7 @@ def assert_level_constraint(state, key, value):
     :py:attr:`~vc2_conformance.state.State._level_constrained_values` will be
     created/updated.
     """
-    state.setdefault("_level_constrained_values", {})
+    state.setdefault("_level_constrained_values", OrderedDict())
     
     allowed_values = allowed_values_for(
         LEVEL_CONSTRAINTS,

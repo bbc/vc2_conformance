@@ -205,6 +205,11 @@ def test_whole_picture(parse_code, fragment_slice_counts):
                 frame_width=8,
                 frame_height=8,
             ),
+            clean_area=bitstream.CleanArea(
+                custom_clean_area_flag=True,
+                clean_width=8,
+                clean_height=8,
+            ),
         ),
     )
     serialisation_state = State()

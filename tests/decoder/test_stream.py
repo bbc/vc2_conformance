@@ -101,6 +101,11 @@ class TestParseSequence(object):
                             frame_width=4,
                             frame_height=4,
                         ),
+                        clean_area=bitstream.CleanArea(
+                            custom_clean_area_flag=True,
+                            clean_width=4,
+                            clean_height=4,
+                        ),
                     ),
                 ),
             ),
@@ -157,6 +162,11 @@ class TestParseSequence(object):
                             custom_dimensions_flag=True,
                             frame_width=8,
                             frame_height=8,
+                        ),
+                        clean_area=bitstream.CleanArea(
+                            custom_clean_area_flag=True,
+                            clean_width=8,
+                            clean_height=8,
                         ),
                     ),
                 ),
@@ -237,6 +247,11 @@ class TestParseSequence(object):
                             custom_dimensions_flag=True,
                             frame_width=8,
                             frame_height=8,
+                        ),
+                        clean_area=bitstream.CleanArea(
+                            custom_clean_area_flag=True,
+                            clean_width=8,
+                            clean_height=8,
                         ),
                     ),
                 ),
@@ -332,6 +347,11 @@ class TestParseSequence(object):
                             custom_dimensions_flag=True,
                             frame_width=4,
                             frame_height=2,
+                        ),
+                        clean_area=bitstream.CleanArea(
+                            custom_clean_area_flag=True,
+                            clean_width=4,
+                            clean_height=2,
                         ),
                         color_diff_sampling_format=bitstream.ColorDiffSamplingFormat(
                             custom_color_diff_format_flag=True,

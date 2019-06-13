@@ -92,6 +92,11 @@ class TestSequenceHeader(object):
                     frame_width=frame_width,
                     frame_height=frame_height,
                 ),
+                clean_area=bitstream.CleanArea(
+                    custom_clean_area_flag=True,
+                    clean_width=frame_width,
+                    clean_height=frame_height,
+                ),
                 color_diff_sampling_format=bitstream.ColorDiffSamplingFormat(
                     custom_color_diff_format_flag=True,
                     color_diff_format_index=tables.ColorDifferenceSamplingFormats.color_4_2_0,
@@ -367,38 +372,56 @@ class TestPixelAspectRatio(object):
         else:
             decoder.pixel_aspect_ratio(state, {})
 
-
-@pytest.mark.parametrize("clean_width,clean_height,left_offset,top_offset,frame_width,frame_height,exp_fail", [
+@pytest.mark.parametrize("via_custom_clean_width", [False, True])
+@pytest.mark.parametrize("clean_width,clean_height,left_offset,top_offset,exp_fail", [
     # Exactly match picture size
-    (1920, 1080, 0, 0, 1920, 1080, False),
+    (1920, 1080, 0, 0, False),
     # Smaller than picture size, top-left-aligned
-    (1910, 1076, 0, 0, 1920, 1080, False),
+    (1910, 1076, 0, 0, False),
     # Smaller than picture size, center-aligned
-    (1910, 1076, 5, 2, 1920, 1080, False),
+    (1910, 1076, 5, 2, False),
     # Smaller than picture size, bottom-right-aligned
-    (1910, 1076, 10, 4, 1920, 1080, False),
+    (1910, 1076, 10, 4, False),
     # Overlapping right-hand side
-    (1910, 1076, 11, 4, 1920, 1080, True),
+    (1910, 1076, 11, 4, True),
     # Overlapping bottom edge
-    (1910, 1076, 10, 5, 1920, 1080, True),
+    (1910, 1076, 10, 5, True),
 ])
-def test_clean_area_range_check(clean_width, clean_height, left_offset, top_offset,
-                                frame_width, frame_height, exp_fail):
-    video_parameters = {
-        "frame_width": frame_width,
-        "frame_height": frame_height,
-    }
+def test_custom_clean_area(via_custom_clean_width,
+                           clean_width, clean_height, left_offset, top_offset, exp_fail):
+    frame_width = 1920
+    frame_height = 1080
     
-    state = bytes_to_state(serialise_to_bytes(
-        bitstream.CleanArea(
-            custom_clean_area_flag=True,
-            clean_width=clean_width,
-            clean_height=clean_height,
-            left_offset=left_offset,
-            top_offset=top_offset,
-        ),
-        {}, video_parameters,
-    ))
+    if via_custom_clean_width:
+        video_parameters = {
+            "frame_width": frame_width,
+            "frame_height": frame_height,
+        }
+        state = bytes_to_state(serialise_to_bytes(
+            bitstream.CleanArea(
+                custom_clean_area_flag=True,
+                clean_width=clean_width,
+                clean_height=clean_height,
+                left_offset=left_offset,
+                top_offset=top_offset,
+            ),
+            {}, video_parameters,
+        ))
+    else:
+        video_parameters = {
+            "frame_width": frame_width,
+            "frame_height": frame_height,
+            "clean_width": clean_width,
+            "clean_height": clean_height,
+            "left_offset": left_offset,
+            "top_offset": top_offset,
+        }
+        state = bytes_to_state(serialise_to_bytes(
+            bitstream.CleanArea(
+                custom_clean_area_flag=False,
+            ),
+            {}, video_parameters,
+        ))
     
     if exp_fail:
         with pytest.raises(decoder.CleanAreaOutOfRange) as exc_info:

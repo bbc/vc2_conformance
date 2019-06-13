@@ -378,6 +378,11 @@ def test_whole_picture(parse_code):
                 frame_width=4,
                 frame_height=4,
             ),
+            clean_area=bitstream.CleanArea(
+                custom_clean_area_flag=True,
+                clean_width=4,
+                clean_height=4,
+            ),
         ),
     )
     serialisation_state = State()
