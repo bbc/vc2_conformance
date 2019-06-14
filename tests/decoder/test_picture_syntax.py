@@ -267,7 +267,7 @@ class TestQuantisationMatrix(object):
             "dwt_depth": dwt_depth,
             "dwt_depth_ho": dwt_depth_ho,
             "_level_constrained_values": {
-                "level": tables.Levels.sub_hd,
+                "level": tables.Levels.sub_sd,
             },
         }
         state.update(bytes_to_state(serialise_to_bytes(
@@ -282,6 +282,10 @@ class TestQuantisationMatrix(object):
                 decoder.quant_matrix(state)
             assert exc_info.value.value == exp_fail_value
             assert exc_info.value.allowed_values == ValueSet((0, 127))
+            assert exc_info.value.level_constrained_values == {
+                "level": tables.Levels.sub_sd,
+                "custom_quant_matrix": True,
+            }
         else:
             decoder.quant_matrix(state)
 

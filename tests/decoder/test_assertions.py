@@ -30,13 +30,13 @@ def test_assert_in():
     
     lst = [1, 2, 3]
     
-    assert_in(1, lst, CustomException)
-    assert_in(2, lst, CustomException)
-    assert_in(3, lst, CustomException)
+    assert_in(1, lst, CustomException, "bar")
+    assert_in(2, lst, CustomException, "bar")
+    assert_in(3, lst, CustomException, "bar")
     
     with pytest.raises(CustomException) as exc_info:
-        assert_in(0, lst, CustomException)
-    assert exc_info.value.args == (0, lst)
+        assert_in(0, lst, CustomException, "bar")
+    assert exc_info.value.args == (0, lst, "bar")
 
 def test_assert_in_enum():
     class CustomException(Exception):

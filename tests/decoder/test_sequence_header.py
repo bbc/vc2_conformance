@@ -122,42 +122,6 @@ class TestSequenceHeader(object):
 
 class TestParseParameters(object):
     
-    @pytest.mark.parametrize("kwargs1,kwargs2,exc_type", [
-        (
-            {"profile": tables.Profiles.high_quality},
-            {"profile": tables.Profiles.low_delay},
-            decoder.ProfileChanged,
-        ),
-        (
-            {"level": tables.Levels.unconstrained},
-            {"level": tables.Levels.hd},
-            decoder.LevelChanged,
-        ),
-    ])
-    def test_profile_and_level_must_not_change_between_sequences(self, kwargs1, kwargs2, exc_type):
-        pp1 = serialise_to_bytes(bitstream.ParseParameters(**kwargs1))
-        pp2 = serialise_to_bytes(bitstream.ParseParameters(**kwargs2))
-        
-        state = bytes_to_state(pp1 + pp1 + pp2)
-        
-        decoder.parse_parameters(state)
-        reset_state(state)
-        last_pp_offset = decoder.tell(state)
-        decoder.parse_parameters(state)
-        reset_state(state)
-        this_pp_offset = decoder.tell(state)
-        with pytest.raises(exc_type) as exc_info:
-            decoder.parse_parameters(state)
-        
-        assert exc_info.value.last_parse_parameters_offset == last_pp_offset
-        assert exc_info.value.this_parse_parameters_offset == this_pp_offset
-        
-        change_type = list(kwargs1.keys())[0]
-        change_value1 = list(kwargs1.values())[0]
-        change_value2 = list(kwargs2.values())[0]
-        assert getattr(exc_info.value, "last_" + change_type) == change_value1
-        assert getattr(exc_info.value, "this_" + change_type) == change_value2
-    
     def test_profile_must_be_valid(self):
         state = bytes_to_state(serialise_to_bytes(bitstream.ParseParameters(
             profile=tables.Profiles.high_quality

@@ -2,8 +2,8 @@
 ,# Used as enum names,# Used in error messages,# Human readable explanation of rule for error messages,# See vc2_conformance._symbol_re
 index,name,standard,sequence_restriction_explanation,sequence_restriction_regex
 # Generalized levels,,,,
-0,unconstrained,ST 2042-2:2017,No restriction,.*
-1,sub_hd,“,Either pictures or picture fragments may be used in a stream but not both.,sequence_header ( (sequence_header | auxiliary_data | padding_data | low_delay_picture | high_quality_picture)* | (sequence_header | auxiliary_data | padding_data | low_delay_picture_fragment | high_quality_picture_fragment)*) end_of_sequence
+0,unconstrained,SMPTE ST 2042-2:2017,No restrictions on sequence ordering is applied.,.*
+1,sub_sd,“,"Either pictures or picture fragments may be used in a stream, but not both.",sequence_header ( (sequence_header | auxiliary_data | padding_data | low_delay_picture | high_quality_picture)* | (sequence_header | auxiliary_data | padding_data | low_delay_picture_fragment | high_quality_picture_fragment)*) end_of_sequence
 2,sd,“,“,“
 3,hd,“,“,“
 4,d_cinema_2k,“,“,“
@@ -11,6 +11,6 @@ index,name,standard,sequence_restriction_explanation,sequence_restriction_regex
 6,uhdtv_4k,“,“,“
 7,uhdtv_8k,“,“,“
 # Specialized levels,,,,
-64,progressive_hd_over_sdi,RP 2047-1:2009,Sequences must consist of alternating sequence headers and low-delay pictures,(sequence_header low_delay_picture)* end_of_sequence
-65,hd_over_sd_sdi,RP 2047-3:2016,Sequences must consist of alternating sequence headers and low-delay pictures,(sequence_header low_delay_picture)* end_of_sequence
-66,uhd_over_hd_sdi,RP 2047-5:2017,Sequences must consist of alternating sequence headers and high-quality pictures,(sequence_header high_quality_picture)* end_of_sequence
+64,progressive_hd_over_sdi,SMPTE RP 2047-1:2009,Sequences must consist of alternating sequence headers and low-delay pictures,(sequence_header low_delay_picture)* end_of_sequence
+65,hd_over_sd_sdi,SMPTE RP 2047-3:2016,Sequences must consist of alternating sequence headers and low-delay pictures,(sequence_header low_delay_picture)* end_of_sequence
+66,uhd_over_hd_sdi,SMPTE RP 2047-5:2017,Sequences must consist of alternating sequence headers and high-quality pictures,(sequence_header high_quality_picture)* end_of_sequence

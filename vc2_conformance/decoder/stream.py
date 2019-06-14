@@ -134,7 +134,11 @@ def parse_sequence(state):
     ## Begin not in spec
     assert_parse_code_sequence_ended(state["_generic_sequence_matcher"], GenericInvalidSequence)
     if "_level_sequence_matcher" in state:
-        assert_parse_code_sequence_ended(state["_level_sequence_matcher"], LevelInvalidSequence)
+        assert_parse_code_sequence_ended(
+            state["_level_sequence_matcher"],
+            LevelInvalidSequence,
+            state["level"],
+        )
     ## End not in spec
     
     # Errata: fragments under-specified in spec
@@ -247,6 +251,7 @@ def parse_info(state):
             state["parse_code"],
             state["_level_sequence_matcher"],
             LevelInvalidSequence,
+            state["level"],
         )
     ## End not in spec
     
@@ -268,7 +273,7 @@ def parse_info(state):
     elif not (is_picture(state) or is_fragment(state)):
         # (10.5.1) Non-picture containing blocks *must* have a non-zero offset
         if state["next_parse_offset"] == 0:
-            raise MissingNextParseOffset()
+            raise MissingNextParseOffset(state["parse_code"])
     
     # (10.5.1) Offsets pointing inside this parse_info bock are always invalid
     if 1 <= state["next_parse_offset"] < PARSE_INFO_HEADER_BYTES:

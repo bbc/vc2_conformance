@@ -147,14 +147,6 @@ State = fixeddict(
     Entry("_last_sequence_header_bytes"),
     Entry("_last_sequence_header_offset"),  # int (bytes)
     
-    # (11.2.1) parse_parameters: It is specified that the profile and level
-    # should remain the same for all sequences in a stream. The values below
-    # hold byte-offset of the parse_parameters field which last set them and
-    # any previously assigned profile and level.
-    Entry("_last_parse_parameters_offset"),  # (int, int) tuple (byte offset, next bit)
-    Entry("_last_profile"),
-    Entry("_last_level"),
-    
     # (12.2) picture_header and (14.2) fragment_header: The last picture number
     # encountered in the sequence (or absent if no pictures have yet been
     # encountered).
@@ -202,12 +194,6 @@ retained_state_fields = [
     "current_byte",
     "_file",
     "_recorded_bytes",  # Not required in practice, here for consistency
-    
-    # (11.2.1) parse_parameters: Must retain due to constraint on profile/level
-    # not changing between sequences in a stream
-    "_last_parse_parameters_offset",
-    "_last_profile",
-    "_last_level",
 ]
 """
 The list of fields in the :py:class:`State` dictionary which should be retained

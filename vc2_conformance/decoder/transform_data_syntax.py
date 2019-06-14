@@ -197,7 +197,12 @@ def ld_slice(state, sx, sy):
     ## Begin not in spec
     # NB: slice_bits_left = 8*slice_bytes(state, sx, sy) - 7 - length_bits
     if slice_y_length > slice_bits_left:
-        raise InvalidSliceYLength(slice_y_length, slice_bits_left)
+        raise InvalidSliceYLength(
+            slice_y_length,
+            slice_bytes(state, sx, sy),
+            sx,
+            sy,
+        )
     ## End not in spec
     
     state["bits_left"] = slice_y_length

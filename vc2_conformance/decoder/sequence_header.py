@@ -43,8 +43,6 @@ from vc2_conformance.decoder.assertions import (
 
 from vc2_conformance.decoder.exceptions import (
     SequenceHeaderChangedMidSequence,
-    ProfileChanged,
-    LevelChanged,
     BadBaseVideoFormat,
     BadPictureCodingMode,
     BadProfile,
@@ -193,36 +191,10 @@ def parse_parameters(state):
     # (C.2) Profile must be a supported value
     assert_in_enum(state["profile"], Profiles, BadProfile) ## Not in spec
     
-    # (11.2.1) Ensure profile doesn't change (even between sequences)
-    ## Begin not in spec
-    if state.get("_last_profile", state["profile"]) != state["profile"]:
-        raise ProfileChanged(
-            state["_last_parse_parameters_offset"],
-            state["_last_profile"],
-            this_parse_parameters_offset,
-            state["profile"],
-        )
-    ## End not in spec
-    
     state["level"] = read_uint(state)
     
     # (C.3) Level must be a supported value
     assert_in_enum(state["level"], Levels, BadLevel) ## Not in spec
-    
-    # (11.2.1)  Ensure level doesn't change (even between sequences)
-    ## Begin not in spec
-    if state.get("_last_level", state["level"]) != state["level"]:
-        raise LevelChanged(
-            state["_last_parse_parameters_offset"],
-            state["_last_level"],
-            this_parse_parameters_offset,
-            state["level"],
-        )
-    
-    state["_last_parse_parameters_offset"] = this_parse_parameters_offset
-    state["_last_profile"] = state["profile"]
-    state["_last_level"] = state["level"]
-    ## End not in spec
     
     # (C.3) Levels may constrain the order and choice of data units in a
     # sequence. See the various level standards documents (e.g. ST 2042-2) for

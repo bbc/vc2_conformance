@@ -22,14 +22,14 @@ from vc2_conformance.decoder.exceptions import (
 )
 
 
-def assert_in(value, collection, exception_type):
+def assert_in(value, collection, exception_type, *args):
     """
     Check to see if a value is a member of the provided collection using
     ``in``. If it is not, throws an exception of the given type with the value
     and collections passed as as arguments.
     """
     if value not in collection:
-        raise exception_type(value, collection)
+        raise exception_type(value, collection, *args)
 
 
 def assert_in_enum(value, enum, exception_type):
@@ -76,7 +76,7 @@ def assert_parse_code_in_sequence(parse_code, matcher, exception_type, *args):
             parse_code,
             expected_parse_codes,
             expected_end,
-            *args,
+            *args
         )
 
 

@@ -533,8 +533,9 @@ class TestParseInfo(object):
             next_parse_offset=0,
         )))
         state["_generic_sequence_matcher"] = Matcher(".*")
-        with pytest.raises(decoder.MissingNextParseOffset):
+        with pytest.raises(decoder.MissingNextParseOffset) as exc_info:
             decoder.parse_info(state)
+        assert exc_info.value.parse_code == parse_code
     
     @pytest.mark.parametrize("parse_code", [
         tables.ParseCodes.sequence_header,
@@ -634,6 +635,7 @@ class TestParseInfo(object):
         )))
         state["_generic_sequence_matcher"] = Matcher(".*")
         state["_level_sequence_matcher"] = Matcher("sequence_header")
+        state["level"] = tables.Levels.unconstrained
         
         with pytest.raises(decoder.LevelInvalidSequence) as exc_info:
             decoder.parse_info(state)
@@ -641,3 +643,4 @@ class TestParseInfo(object):
         assert exc_info.value.parse_code is tables.ParseCodes.end_of_sequence
         assert exc_info.value.expected_parse_codes == [tables.ParseCodes.sequence_header]
         assert exc_info.value.expected_end is False
+        assert exc_info.value.level == tables.Levels.unconstrained

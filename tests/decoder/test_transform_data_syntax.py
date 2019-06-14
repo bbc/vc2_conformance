@@ -58,7 +58,9 @@ class TestLDSlice(object):
             with pytest.raises(decoder.InvalidSliceYLength) as exc_info:
                 decoder.ld_slice(state, 0, 0)
             assert exc_info.value.slice_y_length == slice_y_length
-            assert exc_info.value.max_slice_y_length == max_y_block_length
+            assert exc_info.value.slice_bytes == 10
+            assert exc_info.value.sx == 0
+            assert exc_info.value.sy == 0
         else:
             decoder.ld_slice(state, 0, 0)
     
