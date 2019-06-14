@@ -5,6 +5,9 @@ from vc2_conformance._string_utils import (
     ellipsise,
     ellipsise_lossy,
     table,
+    split_into_line_wrap_blocks,
+    wrap_blocks,
+    wrap_paragraphs,
 )
 
 
@@ -87,3 +90,150 @@ def test_ellipsise_lossy(string, max_length, expected):
 ])
 def test_table(tabular_strings, expected):
     assert table(tabular_strings) == expected
+
+
+class TestSplitIntoLineWrapBlocks(object):
+    
+    def test_empty(self):
+        assert split_into_line_wrap_blocks("") == []
+    
+    def test_simple_string(self):
+        assert split_into_line_wrap_blocks("foo bar") == [("", "", "foo bar")]
+    
+    def test_removes_common_indentation_and_excess_newlines(self):
+        assert split_into_line_wrap_blocks("""
+            
+            Foo, bar.
+            
+            Baz.
+            
+            
+            Qux!
+            
+        """) == [
+            ("", "", "Foo, bar."),
+            ("", "", ""),
+            ("", "", "Baz."),
+            ("", "", ""),
+            ("", "", "Qux!"),
+        ]
+    
+    def test_combines_hard_wrapped_lines(self):
+        assert split_into_line_wrap_blocks("""
+            Foo, bar,
+            baz.
+            
+            Qux,
+            quo,
+            qac!
+        """) == [
+            ("", "", "Foo, bar, baz."),
+            ("", "", ""),
+            ("", "", "Qux, quo, qac!"),
+        ]
+    
+    def test_bullets(self):
+        assert split_into_line_wrap_blocks("""
+            Bullets:
+            
+            * Foo
+            * Bar,
+              baz.
+            * Qux.
+            
+            The end.
+        """) == [
+            ("", "", "Bullets:"),
+            ("", "", ""),
+            ("* ", "  ", "Foo"),
+            ("* ", "  ", "Bar, baz."),
+            ("* ", "  ", "Qux."),
+            ("", "", ""),
+            ("", "", "The end."),
+        ]
+    
+    def test_intented_block(self):
+        assert split_into_line_wrap_blocks("""
+            Indentation time:
+            
+                Indented block.
+                
+                A second
+                one.
+            
+            The end.
+        """) == [
+            ("", "", "Indentation time:"),
+            ("", "", ""),
+            ("    ", "    ", "Indented block."),
+            ("", "", ""),
+            ("    ", "    ", "A second one."),
+            ("", "", ""),
+            ("", "", "The end."),
+        ]
+
+class TestWrapBlocks(object):
+
+    def test_empty(self):
+        assert wrap_blocks([]) == ""
+    
+    def test_no_wrapping(self):
+        assert wrap_blocks([
+            ("", "", "A quick"),
+            ("", "", ""),
+            ("* ", "  ", "Test"),
+        ], 40) == (
+            "A quick\n"
+            "\n"
+            "* Test"
+        )
+
+    def test_wrapping(self):
+        assert wrap_blocks([
+            ("", "", "No need to wrap me."),
+            ("", "", ""),
+            ("", "", ("Wrap me. "*10).strip()),
+            ("", "", ""),
+            ("* ", "  ", "Bullet point me."),
+            ("* ", "  ", ("Wrapped bullet point me. " * 3).strip()),
+        ], 40) == (
+            #| -------------- 40 chars ------------ |
+            "No need to wrap me.\n"
+            "\n"
+            "Wrap me. Wrap me. Wrap me. Wrap me. Wrap\n"
+            "me. Wrap me. Wrap me. Wrap me. Wrap me.\n"
+            "Wrap me.\n"
+            "\n"
+            "* Bullet point me.\n"
+            "* Wrapped bullet point me. Wrapped\n"
+            "  bullet point me. Wrapped bullet point\n"
+            "  me."
+        )
+
+
+def test_wrap_paragraphs():
+    assert wrap_paragraphs("""
+        Hello there, this is some text with some hard line wrapping in it. All
+        of the key functionality is tested elsewhere.
+        
+        This is a:
+        
+        * Sanity check that everything seems to work when put together.
+        * A demo...
+    """, 20) == (
+        #|---- 20 chars ----|
+        "Hello there, this is\n"
+        "some text with some\n"
+        "hard line wrapping\n"
+        "in it. All of the\n"
+        "key functionality is\n"
+        "tested elsewhere.\n"
+        "\n"
+        "This is a:\n"
+        "\n"
+        "* Sanity check that\n"
+        "  everything seems\n"
+        "  to work when put\n"
+        "  together.\n"
+        "* A demo..."
+    )
