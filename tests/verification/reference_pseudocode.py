@@ -969,9 +969,11 @@ def clip_component(state, comp_data, c):
     for y in range(0, height(comp_data)):
         for x in range(0, width(comp_data)):
             if (c=="Y"):
-                clip(comp_data[y][x], -(2**(state["luma_depth"]-1)), 2**(state["luma_depth"]-1) -1)
+                # Errata: not assigned in spec (clip assumed to be mutating)
+                comp_data[y][x] = clip(comp_data[y][x], -(2**(state["luma_depth"]-1)), 2**(state["luma_depth"]-1) -1)
             else:
-                clip(comp_data[y][x], -(2**(state["color_diff_depth"]-1)), 2**(state["color_diff_depth"]-1) -1)
+                # Errata: not assigned in spec (clip assumed to be mutating)
+                comp_data[y][x] = clip(comp_data[y][x], -(2**(state["color_diff_depth"]-1)), 2**(state["color_diff_depth"]-1) -1)
 
 
 def offset_picture(state, current_picture):
