@@ -775,7 +775,7 @@ def parse_args(*args, **kwargs):
     ``args`` object with the following fields:
     
     * bitstream (str): The filename of the bitstream to read
-    * no_status (bool): True if the status line is to be shown.
+    * no_status (bool): True if the status line is to be hidden.
     * verbose (int): Verbosity level
     * show_internal_state (bool): True if the state of the VC-2 pseudo code
       should be shown during parsing.
