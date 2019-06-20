@@ -2,186 +2,276 @@
 :py:mod:`vc2_conformance.file_format`: Image File Format
 ========================================================
 
-This module contains routines for saving, reading and converting raw planar
-pictures (which may be frames or fields) and their metadata.
+This module contains functions for reading and writing pictures and their
+display metadata as files.
+
+Picture and metadata files must come in pairs with the picture data file having
+the extension '.raw' and the metadata file having the extension '.json'.
 
 
-Picture file format
+Picture Data Format
 -------------------
 
-The file format consists of a JSON video parameters object followed by a series
-of planar pictures.
+Pictures are stored as raw planar data, i.e.::
 
-    +------------+------------+------------+------------+------------+------------+
-    | Magic Word | Picture No | Vid. Param | Luminance  |  Chroma 1  |  Chroma 2  |
-    +------------+------------+------------+------------+------------+------------+
+    +---+---+-- --+---+---+---+-- --+---+---+---+-- --+---+
+    | Y | Y | ... | Y | Cb| Cb| ... | Cb| Cr| Cr| ... | Cr|
+    +---+---+-- --+---+---+---+-- --+---+---+---+-- --+---+
 
-All multi-byte values are stored in little-endian order (that is, least
-significant byte first).
+Sample values for each component are stored in raster-scan order.
 
-The first 4 bytes of the file shall be 0x56 0x43 0x32 0x43 ('VC2C' in ASCII).
+Sample values are stored in the smallest possible power-of-two number of bytes.
+For example:
 
-    +------+------+------+------+--
-    | 0x56 | 0x43 | 0x32 | 0x43 | ...
-    +------+------+------+------+--
+* 6 or 8 bit-per-sample values are stored as one byte per sample
+* 10 or 16 bit-per-sample values are stored as two bytes per sample
+* 17, 24 or 32 bit-per-sample values are stored as four bytes per sample
 
-This will be followed by a 32-bit picture number.
+Sample values are MSB aligned and zero padded. For example, 10 bit values will
+be stored left-shifted by 6 places.
 
-      --+------------+--
-    ... | Picture No | ...
-      --+------------+--
+Multi-byte values are stored with big-endian byte ordering (the first byte of a
+value in the file contains the most significant 8 bits).
 
-Next is a 32-bit length field followed by 'length' bytes which must be a valid
-JSON-encoded video parameters object encoded using UTF-8.
+The dimensions and bit depth of each component is not encoded in the picture
+data file and must be obtained from an associated metadata file.
 
-      --+------------+------------------------------+--
-    ... |   length   | video parameters JSON string | ...
-      --+------------+------------------------------+--
 
-This will be followed by each picture component in turn. Each component will
-begin with a 32-bit component number, 32-bit width, 32-bit height and 32-bit
-depth value followed by raster scan order sample data.
+Metadata Format
+---------------
 
-      --+------------+------------+------------+------------+------------+-- --+------------+--
-    ... | component  |   width    |   height   |   depth    |  sample 0  | ... | sample N-1 | ...
-      --+------------+------------+------------+------------+------------+-- --+------------+--
+Picture metadata is stored as an ASCII encoded JSON object. This JSON object
+with the following fields:
 
-The component should be 0 for the first (luma) component, 1 for the second
-(color difference 1) component and 2 for the final (color difference 2)
-component.
+* ``video_parameters``: A
+  :py:class:`vc2_conformance.video_parameters.VideoParameters` object.
+* ``picture_coding_mode``: The picture coding mode (11.5)
+* ``picture_number``: The picture number (12.2) (14.2)
 
-The 'width' and 'height' give the height and width of that picture component in
-samples.
-
-The 'depth' gives the bit depth of the samples in that picture component.
-
-Picture samples are then stored in raster-scan order. All sample
-values are unsigned integers.
-
-The number of bytes per sample depends on the picture depth specified. The
-smallest whole power-of-two number of bytes possible for that bit depth shall
-be used. For example for a depth of 8 bits, samples should occupy one byte, for
-10 bit images, two bytes per sample shall be used, for 20 bit samples four
-bytes shall be used.
-
-Samples shall be left-shifted and right-zero-padded such that the most
-significant bit in each sample becomes the most significant bit in the stored
-sequence of bytes.
+The dimensions and depth of the picture components in an associated picture
+data file can be computed using the procedure defined in set_coding_parameters
+(11.6.1).
 """
 
-import struct
-
 import json
+import os
 
-import numpy as np
+from collections import OrderedDict
 
 from vc2_conformance.vc2_math import intlog2
+from vc2_conformance.arrays import new_array
 
-from vc2_conformance.video_parameters import VideoParameters, video_depth
+from vc2_conformance.state import State
+from vc2_conformance.video_parameters import VideoParameters, set_coding_parameters
 
 
-def write_picture(picture, video_parameters, file):
+def write(picture, video_parameters, picture_coding_mode, filename):
     """
-    Write a picture to a file.
+    Write a picture to a data and metadata file.
+    
+    Convenience wrapper around :py:func:`write_picture` and
+    :py:func:`write_metadata`.
     
     Parameters
     ==========
     picture : {"Y": [[s, ...], ...], "C1": ..., "C2": ..., "pic_num": int}
-        The picture to be saved.
     video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
-        The associated video parameters.
-    file : :py:class:`file`
-        A file open for binary writing.
+    picture_coding_mode : :py:class:`~vc2_conformance.tables.PictureCodingModes`
+    filename : str
+        The filename of either the picture data file (.raw) or metadata file
+        (.json). The name of the other file will be inferred automatically.
     """
-    # Magic Word
-    file.write(b"\x56\x43\x32\x43")
+    base_name = os.path.splitext(filename)[0]
     
-    # Picture number
-    file.write(struct.pack("<I", picture["pic_num"]))
+    with open("{}.json".format(base_name), "w") as f:
+        write_metadata(picture, video_parameters, picture_coding_mode, f)
+    with open("{}.raw".format(base_name), "wb") as f:
+        write_picture(picture, video_parameters, picture_coding_mode, f)
+
+
+def read(filename):
+    """
+    Read a picture from a data and metadata file.
     
-    # Video parameters
-    video_parameters_json = json.dumps(video_parameters).encode("utf-8")
-    file.write(struct.pack("<I", len(video_parameters_json)))
-    file.write(video_parameters_json)
+    Convenience wrapper around :py:func:`read_picture` and
+    :py:func:`read_metadata`.
     
-    # Work out bit depths
-    state = {}
-    video_depth(state, video_parameters)
-    luma_depth = state["luma_depth"]
-    color_diff_depth = state["color_diff_depth"]
-    
-    for comp_num, (comp_name, comp_depth) in enumerate([
-        ("Y", luma_depth),
-        ("C1", color_diff_depth),
-        ("C2", color_diff_depth),
-    ]):
-        depth_min_bytes = (comp_depth + 7) // 8
-        sample_bytes = 1 << intlog2(depth_min_bytes)
-        
-        # NB: Using Numpy here limits the bit depth to at most 64 bits per
-        # sample. In practice this (should) be more than enough for anybody.
-        dtype = np.dtype("<u{}".format(sample_bytes))
-        a = np.array(picture[comp_name], dtype=dtype, copy=False)
-        
-        file.write(struct.pack("<I", comp_num))
-        
-        height, width = a.shape
-        file.write(struct.pack("<I", width))
-        file.write(struct.pack("<I", height))
-        file.write(struct.pack("<I", comp_depth))
-        
-        file.write((a << ((sample_bytes*8) - comp_depth)).tobytes())
-
-
-class InvalidMagicWordError(ValueError):
-    """
-    Thrown when an invalid magic word is found in a picture file.
-    """
-
-class InvalidComponentNumberError(ValueError):
-    """
-    Thrown when a component has the wrong component number in a picture file.
-    """
-
-
-def read_picture(file):
-    """
-    Read a picture from a file written with :py:func:`picture_to_file`.
+    Parameters
+    ==========
+    filename : str
+        The filename of either the picture data file (.raw) or metadata file
+        (.json). The name of the other file will be inferred automatically.
     
     Returns
     =======
     picture : {"Y": [[s, ...], ...], "C1": ..., "C2": ..., "pic_num": int}
     video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+    picture_coding_mode : :py:class:`~vc2_conformance.tables.PictureCodingModes`
     """
-    magic_word = file.read(4)
-    if magic_word != b"\x56\x43\x32\x43":
-        raise InvalidMagicWordError(magic_word)
+    base_name = os.path.splitext(filename)[0]
     
-    picture = {}
+    with open("{}.json".format(base_name), "r") as f:
+        (
+            video_parameters,
+            picture_coding_mode,
+            picture_number,
+        ) = read_metadata(f)
     
-    # Picture number
-    picture["pic_num"] = struct.unpack("<I", file.read(4))[0]
+    with open("{}.raw".format(base_name), "rb") as f:
+        picture = read_picture(
+            video_parameters,
+            picture_coding_mode,
+            picture_number,
+            f,
+        )
     
-    # Video parameters
-    video_parameters_length = struct.unpack("<I", file.read(4))[0]
-    video_parameters = VideoParameters(json.loads(file.read(video_parameters_length).decode("utf-8")))
-    
-    for comp_num, comp_name in enumerate(["Y", "C1", "C2"]):
-        actual_comp_num, width, height, comp_depth = struct.unpack("<IIII", file.read(4*4))
-        
-        if actual_comp_num != comp_num:
-            raise InvalidComponentNumberError(actual_comp_num)
-        
-        depth_min_bytes = (comp_depth + 7) // 8
-        sample_bytes = 1 << intlog2(depth_min_bytes)
-        
-        buf = file.read(width * height * sample_bytes)
-        
-        dtype = np.dtype("<u{}".format(sample_bytes))
-        a = np.frombuffer(buf, dtype=dtype).reshape((height, width))
-        
-        # Shift data back down to native significance
-        picture[comp_name] = a >> ((sample_bytes*8) - comp_depth)
-    
-    return picture, video_parameters
+    return (picture, video_parameters, picture_coding_mode)
 
+
+def compute_dimensions_and_depths(video_parameters, picture_coding_mode):
+    """
+    Compute the dimensions, bit depth and bytes-per-sample of a picture.
+    
+    Parameters
+    ==========
+    video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+    picture_coding_mode : :py:class:`~vc2_conformance.tables.PictureCodingModes`
+    
+    Returns
+    =======
+    OrderedDict
+        An ordered dictionary mapping from component name ("Y", "C1" and "C2")
+        to a (width, height, depth_bits, bytes_per_sample) tuple.
+    """
+    state = State()
+    set_coding_parameters(state, video_parameters, picture_coding_mode)
+    
+    out = OrderedDict()
+    
+    for component in ["Y", "C1", "C2"]:
+        if component == "Y":
+            width = state["luma_width"]
+            height = state["luma_height"]
+            depth_bits = state["luma_depth"]
+        else:
+            width = state["color_diff_width"]
+            height = state["color_diff_height"]
+            depth_bits = state["color_diff_depth"]
+        
+        bytes_per_sample = (depth_bits + 7) // 8  # Round up to whole number of bytes
+        bytes_per_sample = 1 << intlog2(bytes_per_sample)  # Round up to power of two
+        
+        out[component] = (width, height, depth_bits, bytes_per_sample)
+    
+    return out
+
+
+def write_picture(picture, video_parameters, picture_coding_mode, file):
+    """
+    Write a decoded picture to a file as a planar image.
+    
+    Parameters
+    ==========
+    picture : {"Y": [[s, ...], ...], "C1": ..., "C2": ..., "pic_num": int}
+    video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+    picture_coding_mode : :py:class:`~vc2_conformance.tables.PictureCodingModes`
+    file : :py:class:`file`
+        A file open for binary writing.
+    """
+    dims_and_depths = compute_dimensions_and_depths(video_parameters, picture_coding_mode)
+    
+    for component, (width, height, depth_bits, bytes_per_sample) in dims_and_depths.items():
+        shift = (bytes_per_sample*8) - depth_bits
+        
+        for row in picture[component]:
+            for value in row:
+                value <<= shift
+                file.write(bytearray(
+                    (value >> (n*8)) & 0xFF
+                    for n in range(bytes_per_sample - 1, -1, -1)
+                ))
+
+
+def write_metadata(picture, video_parameters, picture_coding_mode, file):
+    """
+    Write the metadata associated with a decoded picture to a file as JSON.
+    
+    Parameters
+    ==========
+    picture : {"Y": [[s, ...], ...], "C1": ..., "C2": ..., "pic_num": int}
+    video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+    picture_coding_mode : :py:class:`~vc2_conformance.tables.PictureCodingModes`
+    file : :py:class:`file`
+        A file open for string (not binary) writing.
+    """
+    json.dump(
+        {
+            "video_parameters": video_parameters,
+            "picture_coding_mode": picture_coding_mode,
+            "picture_number": picture["pic_num"],
+        },
+        file,
+    )
+
+
+def read_metadata(file):
+    """
+    Read a JSON picture etadata file.
+    
+    Parameters
+    ==========
+    file : :py:class:`file`
+        A file open for string (not binary) reading.
+    
+    Returns
+    =======
+    video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+    picture_coding_mode : :py:class:`~vc2_conformance.tables.PictureCodingModes`
+    picture_number : int
+    """
+    metadata = json.load(file)
+    
+    return (
+        metadata["video_parameters"],
+        metadata["picture_coding_mode"],
+        metadata["picture_number"],
+    )
+
+
+def read_picture(video_parameters, picture_coding_mode, picture_number, file):
+    """
+    Read a picture from a file.
+    
+    Parameters
+    ==========
+    video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+    picture_coding_mode : :py:class:`~vc2_conformance.tables.PictureCodingModes`
+    picture_number : int
+    file : :py:class:`file`
+        A file open for binary reading.
+    
+    Returns
+    =======
+    picture : {"Y": [[s, ...], ...], "C1": ..., "C2": ..., "pic_num": int}
+    """
+    picture = {"pic_num": picture_number}
+    
+    dims_and_depths = compute_dimensions_and_depths(video_parameters, picture_coding_mode)
+    for component, (width, height, depth_bits, bytes_per_sample) in dims_and_depths.items():
+        picture[component] = new_array(width, height)
+        
+        shift = (bytes_per_sample*8) - depth_bits
+        
+        for row in range(height):
+            row_values = picture[component][row]
+            
+            for col in range(width):
+                value = 0
+                for b in bytearray(file.read(bytes_per_sample)):
+                    value = (value << 8) | b
+                
+                value >>= shift
+                
+                row_values[col] = value
+    
+    return picture
