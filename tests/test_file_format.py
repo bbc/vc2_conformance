@@ -1,6 +1,6 @@
 import pytest
 
-from io import BytesIO, StringIO
+from io import BytesIO
 
 import os
 
@@ -13,6 +13,7 @@ from vc2_conformance import tables
 from vc2_conformance.video_parameters import VideoParameters
 
 from vc2_conformance.file_format import (
+    get_metadata_and_picture_filenames,
     read_metadata,
     read_picture,
     write_metadata,
@@ -20,6 +21,13 @@ from vc2_conformance.file_format import (
     read,
     write,
 )
+
+
+def test_get_metadata_and_picture_filenames():
+    assert get_metadata_and_picture_filenames("/foo/bar/.baz.xxx") == (
+        "/foo/bar/.baz.json",
+        "/foo/bar/.baz.raw",
+    )
 
 
 @pytest.fixture
@@ -54,7 +62,7 @@ def picture_coding_mode():
 
 def test_write_picture_and_metadata(picture, video_parameters, picture_coding_mode):
     picture_file = BytesIO()
-    metadata_file = StringIO()
+    metadata_file = BytesIO()
     
     write_picture(picture, video_parameters, picture_coding_mode, picture_file)
     write_metadata(picture, video_parameters, picture_coding_mode, metadata_file)
@@ -64,7 +72,7 @@ def test_write_picture_and_metadata(picture, video_parameters, picture_coding_mo
     assert json.load(metadata_file) == {
         "video_parameters": video_parameters,
         "picture_coding_mode": tables.PictureCodingModes.pictures_are_fields,
-        "picture_number": 0xDEADBEEF,
+        "picture_number": str(0xDEADBEEF),
     }
     
     # Check picture data
@@ -94,7 +102,7 @@ def test_write_picture_and_metadata(picture, video_parameters, picture_coding_mo
 
 def test_read_picture_and_metadata(picture, video_parameters, picture_coding_mode):
     picture_file = BytesIO()
-    metadata_file = StringIO()
+    metadata_file = BytesIO()
     
     write_picture(picture, video_parameters, picture_coding_mode, picture_file)
     write_metadata(picture, video_parameters, picture_coding_mode, metadata_file)

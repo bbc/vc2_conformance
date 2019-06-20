@@ -40,13 +40,14 @@ data file and must be obtained from an associated metadata file.
 Metadata Format
 ---------------
 
-Picture metadata is stored as an ASCII encoded JSON object. This JSON object
+Picture metadata is stored as an UTF-8 encoded JSON object. This JSON object
 with the following fields:
 
 * ``video_parameters``: A
   :py:class:`vc2_conformance.video_parameters.VideoParameters` object.
 * ``picture_coding_mode``: The picture coding mode (11.5)
-* ``picture_number``: The picture number (12.2) (14.2)
+* ``picture_number``: The picture number as a string (in base 10) because JSON
+  always uses floats. (12.2) (14.2)
 
 The dimensions and depth of the picture components in an associated picture
 data file can be computed using the procedure defined in set_coding_parameters
@@ -61,8 +62,36 @@ from collections import OrderedDict
 from vc2_conformance.vc2_math import intlog2
 from vc2_conformance.arrays import new_array
 
+from vc2_conformance.tables import (
+    ColorDifferenceSamplingFormats,
+    PictureCodingModes,
+)
+
 from vc2_conformance.state import State
 from vc2_conformance.video_parameters import VideoParameters, set_coding_parameters
+
+
+__all__ = [
+    "read",
+    "write",
+    "compute_dimensions_and_depths",
+    "read_metadata",
+    "read_picture",
+    "write_metadata",
+    "write_picture",
+]
+
+def get_metadata_and_picture_filenames(filename):
+    """
+    Given either the filename of a saved picture (.raw) or metadata file
+    (.json), return a (metadata_filename, picture_filename) tuple with the
+    names of the two corresponding files.
+    """
+    base_name = os.path.splitext(filename)[0]
+    return (
+        "{}.json".format(base_name),
+        "{}.raw".format(base_name),
+    )
 
 
 def write(picture, video_parameters, picture_coding_mode, filename):
@@ -81,11 +110,12 @@ def write(picture, video_parameters, picture_coding_mode, filename):
         The filename of either the picture data file (.raw) or metadata file
         (.json). The name of the other file will be inferred automatically.
     """
-    base_name = os.path.splitext(filename)[0]
+    metadata_filename, picture_filename = get_metadata_and_picture_filenames(filename)
     
-    with open("{}.json".format(base_name), "w") as f:
+    with open(metadata_filename, "wb") as f:
         write_metadata(picture, video_parameters, picture_coding_mode, f)
-    with open("{}.raw".format(base_name), "wb") as f:
+    
+    with open(picture_filename, "wb") as f:
         write_picture(picture, video_parameters, picture_coding_mode, f)
 
 
@@ -108,16 +138,16 @@ def read(filename):
     video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
     picture_coding_mode : :py:class:`~vc2_conformance.tables.PictureCodingModes`
     """
-    base_name = os.path.splitext(filename)[0]
+    metadata_filename, picture_filename = get_metadata_and_picture_filenames(filename)
     
-    with open("{}.json".format(base_name), "r") as f:
+    with open(metadata_filename, "rb") as f:
         (
             video_parameters,
             picture_coding_mode,
             picture_number,
         ) = read_metadata(f)
     
-    with open("{}.raw".format(base_name), "rb") as f:
+    with open(picture_filename, "rb") as f:
         picture = read_picture(
             video_parameters,
             picture_coding_mode,
@@ -202,16 +232,20 @@ def write_metadata(picture, video_parameters, picture_coding_mode, file):
     video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
     picture_coding_mode : :py:class:`~vc2_conformance.tables.PictureCodingModes`
     file : :py:class:`file`
-        A file open for string (not binary) writing.
+        A file open for binary writing.
     """
-    json.dump(
+    # Conversion below is necessary under Python 2.x where IntEnum values are
+    # not correctly serialised as integers but instead into invalid JSON.
+    file.write(json.dumps(
         {
-            "video_parameters": video_parameters,
-            "picture_coding_mode": picture_coding_mode,
-            "picture_number": picture["pic_num"],
-        },
-        file,
-    )
+            "video_parameters": {
+                key: int(value) if isinstance(value, int) else value
+                for key, value in video_parameters.items()
+            },
+            "picture_coding_mode": int(picture_coding_mode),
+            "picture_number": str(picture["pic_num"]),
+        }
+    ).encode("utf-8"))
 
 
 def read_metadata(file):
@@ -221,7 +255,7 @@ def read_metadata(file):
     Parameters
     ==========
     file : :py:class:`file`
-        A file open for string (not binary) reading.
+        A file open for binary reading.
     
     Returns
     =======
@@ -229,12 +263,12 @@ def read_metadata(file):
     picture_coding_mode : :py:class:`~vc2_conformance.tables.PictureCodingModes`
     picture_number : int
     """
-    metadata = json.load(file)
+    metadata = json.loads(file.read().decode("utf-8"))
     
     return (
         metadata["video_parameters"],
         metadata["picture_coding_mode"],
-        metadata["picture_number"],
+        int(metadata["picture_number"]),
     )
 
 
