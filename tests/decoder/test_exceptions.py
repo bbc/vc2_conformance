@@ -152,8 +152,11 @@ def test_inconsistent_next_parse_offset():
     
     assert dedent(e.bitstream_viewer_hint()) == dedent("""
         To view the erroneous parse info block:
+        
             {cmd} {file} --offset 800 --after-context 144
+        
         To view the following parse info block:
+        
             {cmd} {file} --offset {offset} --after-context 144
     """)
     
@@ -229,8 +232,11 @@ def test_inconsistent_previous_parse_offset():
     
     assert dedent(e.bitstream_viewer_hint()) == dedent("""
         To view the erroneous parse info block:
+        
             {cmd} {file} --offset {offset} --after-context 144
+        
         To view the proceeding parse info block:
+        
             {cmd} {file} --offset 800 --after-context 144
     """)
 
@@ -278,8 +284,11 @@ def test_sequence_header_changed_mid_sequence():
     
     assert dedent(e.bitstream_viewer_hint()) == dedent("""
         To view the previous sequence header
+        
             {cmd} {file} --from-offset 800 --to-offset 815
+        
         To view the current sequence header
+        
             {cmd} {file} --from-offset 1600 --to-offset 1615
     """)
     
@@ -750,8 +759,11 @@ def test_non_conseuctive_picture_numbers():
     
     assert dedent(e.bitstream_viewer_hint()) == dedent("""
         To view the erroneous picture number definition:
+        
             {cmd} {file} --offset 161
+        
         To view the previous picture number definition:
+        
             {cmd} {file} --offset 81
     """)
 
@@ -930,7 +942,9 @@ def test_fragmented_picture_restarted():
     """)
     
     assert dedent(e.bitstream_viewer_hint()) == dedent("""
-        {cmd} {file} --from-offset 81 --to_offset {offset} --show fragment_parse --hide slice
+        To view the offending part of the bitstream:
+        
+            {cmd} {file} --from-offset 81 --to_offset {offset} --show fragment_parse --hide slice
     """)
 
 
@@ -953,7 +967,9 @@ def test_sequence_contains_incomplete_fragmented_picture():
     """)
     
     assert dedent(e.bitstream_viewer_hint()) == dedent("""
-        {cmd} {file} --from-offset 81 --to_offset {offset} --show parse_info --show fragment_parse --hide slice
+        To view the offending part of the bitstream:
+        
+            {cmd} {file} --from-offset 81 --to_offset {offset} --show parse_info --show fragment_parse --hide slice
     """)
 
 
@@ -978,7 +994,9 @@ def test_picture_interleaved_with_fragmented_picture():
     """)
     
     assert dedent(e.bitstream_viewer_hint()) == dedent("""
-        {cmd} {file} --from-offset 81 --to_offset {offset} --show parse_info --show fragment_parse --show picture_parse --hide slice
+        To view the offending part of the bitstream:
+        
+            {cmd} {file} --from-offset 81 --to_offset {offset} --show parse_info --show fragment_parse --show picture_parse --hide slice
     """)
 
 
@@ -1003,7 +1021,9 @@ def test_picture_number_changed_mid_fragmented_picture():
     """)
     
     assert dedent(e.bitstream_viewer_hint()) == dedent("""
-        {cmd} {file} --from-offset 81 --to_offset {offset} --show fragment_parse --hide slice
+        To view the offending part of the bitstream:
+        
+            {cmd} {file} --from-offset 81 --to_offset {offset} --show fragment_parse --hide slice
     """)
 
 
@@ -1026,7 +1046,9 @@ def test_too_many_slices_in_fragmented_picture():
     """)
     
     assert dedent(e.bitstream_viewer_hint()) == dedent("""
-        {cmd} {file} --from-offset 81 --to_offset {offset} --show fragment_parse --hide slice
+        To view the offending part of the bitstream:
+        
+            {cmd} {file} --from-offset 81 --to_offset {offset} --show fragment_parse --hide slice
     """)
 
 
@@ -1054,6 +1076,8 @@ def test_fragment_slices_not_contiguous():
     """)
     
     assert dedent(e.bitstream_viewer_hint()) == dedent("""
-        {cmd} {file} --from-offset 81 --to_offset {offset} --show fragment_parse --hide slice
+        To view the offending part of the bitstream:
+        
+            {cmd} {file} --from-offset 81 --to_offset {offset} --show fragment_parse --hide slice
     """)
 

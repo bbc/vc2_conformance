@@ -143,7 +143,11 @@ class ConformanceError(Exception):
         This returned string should *not* be line-wrapped but should be
         de-indented by :py:func:`textwrap.dedent`.
         """
-        return "{cmd} {file} --offset {offset}"
+        return """
+            To view the offending part of the bitstream:
+            
+                {cmd} {file} --offset {offset}
+        """
     
     def offending_offset(self):
         """
@@ -168,10 +172,10 @@ class UnexpectedEndOfStream(ConformanceError):
             
             A VC-2 Stream shall be a concatenation of one or more VC-2
             sequences (10.3). Sequences shall end with a parse info header with
-            an end-of-sequence parse code, 0x10 (10.4.1)
+            an end of sequence parse code (0x10) (10.4.1)
             
-            Did the sequence end with an parse info with the end of sequence
-            (0x10) parse code?
+            Did the sequence omit a terminating parse info with the end of
+            sequence (0x10) parse code?
         """
 
 
@@ -288,8 +292,11 @@ class InconsistentNextParseOffset(ConformanceError):
     def bitstream_viewer_hint(self):
         return """
             To view the erroneous parse info block:
+            
                 {{cmd}} {{file}} --offset {} --after-context 144
+            
             To view the following parse info block:
+            
                 {{cmd}} {{file}} --offset {{offset}} --after-context 144
         """.format(to_bit_offset(self.parse_info_offset))
     
@@ -435,8 +442,11 @@ class InconsistentPreviousParseOffset(ConformanceError):
     def bitstream_viewer_hint(self):
         return """
             To view the erroneous parse info block:
+            
                 {{cmd}} {{file}} --offset {{offset}} --after-context 144
+            
             To view the proceeding parse info block:
+            
                 {{cmd}} {{file}} --offset {} --after-context 144
         """.format(to_bit_offset(self.last_parse_info_offset))
 
@@ -536,8 +546,11 @@ class SequenceHeaderChangedMidSequence(ConformanceError):
     def bitstream_viewer_hint(self):
         return """
             To view the previous sequence header
+            
                 {{cmd}} {{file}} --from-offset {} --to-offset {}
+            
             To view the current sequence header
+            
                 {{cmd}} {{file}} --from-offset {} --to-offset {}
         """.format(
             to_bit_offset(self.last_sequence_header_offset),
@@ -642,7 +655,11 @@ class GenericInvalidSequence(ConformanceError):
         )
     
     def bitstream_viewer_hint(self):
-        return "{cmd} {file} --from-offset 0 --to-offset {offset} --show parse_info"
+        return """
+            To view the offending part of the bitstream:
+            
+                {cmd} {file} --from-offset 0 --to-offset {offset} --show parse_info
+        """
 
 
 class LevelInvalidSequence(ConformanceError):
@@ -690,7 +707,11 @@ class LevelInvalidSequence(ConformanceError):
         )
     
     def bitstream_viewer_hint(self):
-        return "{cmd} {file} --from-offset 0 --to-offset {offset} --show parse_info"
+        return """
+            To view the offending part of the bitstream:
+            
+                {cmd} {file} --from-offset 0 --to-offset {offset} --show parse_info
+        """
 
 
 class ParseCodeNotAllowedInProfile(ConformanceError):
@@ -1229,8 +1250,11 @@ class NonConsecutivePictureNumbers(ConformanceError):
     def bitstream_viewer_hint(self):
         return """
             To view the erroneous picture number definition:
+            
                 {{cmd}} {{file}} --offset {}
+            
             To view the previous picture number definition:
+            
                 {{cmd}} {{file}} --offset {}
         """.format(
             to_bit_offset(*self.picture_number_offset),
@@ -1265,7 +1289,11 @@ class OddNumberOfFieldsInSequence(ConformanceError):
         )
     
     def bitstream_viewer_hint(self):
-        return "{cmd} {file} --from-offset 0 --to-offset {offset} --show picture_parse --show fragment_parse"
+        return """
+            To view the offending part of the bitstream:
+            
+                {cmd} {file} --from-offset 0 --to-offset {offset} --show picture_parse --show fragment_parse
+        """
 
 
 class EarliestFieldHasOddPictureNumber(ConformanceError):
@@ -1587,7 +1615,9 @@ class FragmentedPictureRestarted(ConformanceError):
     
     def bitstream_viewer_hint(self):
         return """
-            {{cmd}} {{file}} --from-offset {} --to_offset {{offset}} --show fragment_parse --hide slice
+            To view the offending part of the bitstream:
+            
+                {{cmd}} {{file}} --from-offset {} --to_offset {{offset}} --show fragment_parse --hide slice
         """.format(to_bit_offset(*self.initial_fragment_offset))
 
 
@@ -1628,7 +1658,9 @@ class SequenceContainsIncompleteFragmentedPicture(ConformanceError):
     
     def bitstream_viewer_hint(self):
         return """
-            {{cmd}} {{file}} --from-offset {} --to_offset {{offset}} --show parse_info --show fragment_parse --hide slice
+            To view the offending part of the bitstream:
+            
+                {{cmd}} {{file}} --from-offset {} --to_offset {{offset}} --show parse_info --show fragment_parse --hide slice
         """.format(to_bit_offset(*self.initial_fragment_offset))
 
 
@@ -1673,7 +1705,9 @@ class PictureInterleavedWithFragmentedPicture(ConformanceError):
     
     def bitstream_viewer_hint(self):
         return """
-            {{cmd}} {{file}} --from-offset {} --to_offset {{offset}} --show parse_info --show fragment_parse --show picture_parse --hide slice
+            To view the offending part of the bitstream:
+            
+                {{cmd}} {{file}} --from-offset {} --to_offset {{offset}} --show parse_info --show fragment_parse --show picture_parse --hide slice
         """.format(to_bit_offset(*self.initial_fragment_offset))
 
 
@@ -1723,7 +1757,9 @@ class PictureNumberChangedMidFragmentedPicture(ConformanceError):
     
     def bitstream_viewer_hint(self):
         return """
-            {{cmd}} {{file}} --from-offset {} --to_offset {{offset}} --show fragment_parse --hide slice
+            To view the offending part of the bitstream:
+            
+                {{cmd}} {{file}} --from-offset {} --to_offset {{offset}} --show fragment_parse --hide slice
         """.format(
             to_bit_offset(*self.last_picture_number_offset),
         )
@@ -1774,7 +1810,9 @@ class TooManySlicesInFragmentedPicture(ConformanceError):
     
     def bitstream_viewer_hint(self):
         return """
-            {{cmd}} {{file}} --from-offset {} --to_offset {{offset}} --show fragment_parse --hide slice
+            To view the offending part of the bitstream:
+            
+                {{cmd}} {{file}} --from-offset {} --to_offset {{offset}} --show fragment_parse --hide slice
         """.format(
             to_bit_offset(*self.initial_fragment_offset),
         )
@@ -1824,7 +1862,9 @@ class FragmentSlicesNotContiguous(ConformanceError):
     
     def bitstream_viewer_hint(self):
         return """
-            {{cmd}} {{file}} --from-offset {} --to_offset {{offset}} --show fragment_parse --hide slice
+            To view the offending part of the bitstream:
+            
+                {{cmd}} {{file}} --from-offset {} --to_offset {{offset}} --show fragment_parse --hide slice
         """.format(
             to_bit_offset(*self.initial_fragment_offset),
         )
