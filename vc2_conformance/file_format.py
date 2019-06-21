@@ -74,6 +74,7 @@ from vc2_conformance.video_parameters import VideoParameters, set_coding_paramet
 __all__ = [
     "read",
     "write",
+    "get_metadata_and_picture_filenames",
     "compute_dimensions_and_depths",
     "read_metadata",
     "read_picture",
