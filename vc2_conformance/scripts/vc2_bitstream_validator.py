@@ -1,6 +1,6 @@
 """
 ``vc2-bitstream-validator``
-========================
+===========================
 
 A command-line utility for validating VC-2 bitstreams' conformance with the
 VC-2 specification.
