@@ -31,6 +31,7 @@ setup(
     entry_points = {
         'console_scripts': [
             'vc2-bitstream-viewer=vc2_conformance.scripts.vc2_bitstream_viewer:main',
+            'vc2-bitstream-validator=vc2_conformance.scripts.vc2_bitstream_validator:main',
         ],
     },
 )
