@@ -11,6 +11,7 @@ __all__ = [
     "get_terminal_size",  # shutil.get_terminal_size
     "wraps",  # functools.wraps
     "unwrap",  # inspect.unwrap
+    "quote", # shlex.quote
 ]
 
 import sys
@@ -59,3 +60,9 @@ except ImportError:
             func = func.__wrapped__
         
         return func
+
+
+try:
+    from shlex import quote
+except ImportError:
+    from pipes import quote
