@@ -503,6 +503,10 @@ class SerDes(object):
         Get a value from the context dictionary, checking that the value has not
         already been accessed and moving on to the next list item for list
         targets.
+        
+        This method may be overridden to modify values fetched from the context
+        dictionary (or to choose default values if a suitable value is
+        missing).
         """
         if target not in self._cur_context_indices:
             # Case: This target is not a list and has not been used before
