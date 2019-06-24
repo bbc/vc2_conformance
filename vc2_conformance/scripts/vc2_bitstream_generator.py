@@ -12,11 +12,15 @@ import json
 
 import traceback
 
+from sentinels import Sentinel
+
 from copy import deepcopy
 
 from argparse import ArgumentParser
 
 from vc2_conformance.state import State
+
+from vc2_conformance._py2x_compat import string_types
 
 from vc2_conformance.bitstream import (
     Serialiser,
@@ -46,7 +50,7 @@ def remove_comments_from_json(obj):
     
     In JSON arrays, a comment is a string value starting with "#".
     
-    Mutates the object in-place.
+    Mutates the object in-place and returns the modified object
     """
     if isinstance(obj, dict):
         for key in list(obj):
@@ -57,11 +61,55 @@ def remove_comments_from_json(obj):
     elif isinstance(obj, list):
         i = 0
         while i < len(obj):
-            if isinstance(obj[i], str) and obj[i].startswith("#"):
+            if isinstance(obj[i], string_types) and obj[i].startswith("#"):
                 del obj[i]
             else:
                 remove_comments_from_json(obj[i])
                 i += 1
+    return obj
+
+
+class JSONEvalError(Exception):
+    """
+    An exception was thrown while executing the embedded Python code in a JSON
+    dictionary.
+    """
+    
+    def __init__(self, expression, path, exception):
+        self.expression = expression
+        self.path = path
+        self.exception = exception
+    
+    def __str__(self):
+        return "Evaluation of {!r} in {} failed: {}: {}".format(
+            self.expression,
+            "Sequence{}".format("".join("[{!r}]".format(key) for key in self.path)),
+            type(self.exception).__name__,
+            self.exception,
+        )
+
+def evaluate_strings_in_json(obj, globals={}, locals={}, path=()):
+    """
+    Evaluate all strings in a JSON deserialised value with the Python
+    interpreter.
+    
+    Mutates values in place (where possible) and returns the evaluated result.
+    
+    Throws a :py:exc:`JSONEvalError` if evaluation fails.
+    """
+    if isinstance(obj, dict):
+        for key in list(obj):
+            obj[key] = evaluate_strings_in_json(obj[key], globals, locals, path + (key, ))
+    elif isinstance(obj, list):
+        for i in range(len(obj)):
+            obj[i] = evaluate_strings_in_json(obj[i], globals, locals, path + (i, ))
+    elif isinstance(obj, string_types):
+        try:
+            obj = eval(obj, globals, locals)
+        except Exception as e:
+            raise JSONEvalError(obj, path, e)
+    return obj
+
 
 class NoAutomaticValueAvailableError(Exception):
     """
@@ -77,17 +125,6 @@ class EmptyParseInfoFound(Exception):
     end-of-sequence)
     """
 
-class JSONEvalError(Exception):
-    """
-    An exception was thrown while executing the embedded Python code in a JSON
-    dictionary.
-    """
-    
-    def __init__(self, target, expression, exception):
-        self.target = target
-        self.expression = expression
-        self.exception = exception
-
 
 class SmartSerialiser(Serialiser):
     """
@@ -99,7 +136,7 @@ class SmartSerialiser(Serialiser):
     
     # A sentinel value indicating some smart 'automatic' value should be
     # chosen.
-    AUTO = object()
+    AUTO = Sentinel("AUTO")
     
     
     def __init__(self, *args, **kwargs):
@@ -108,19 +145,6 @@ class SmartSerialiser(Serialiser):
         # Use a local copy of the default values (since we'll be mutating
         # these)
         self.default_values = deepcopy(self.default_values)
-        
-        # The namespace used to evaluate Python code contained strings in the
-        # context dictionary
-        self._eval_globals = {}
-        
-        # Add the 'AUTO' sentinel
-        self._eval_globals["AUTO"] = SmartSerialiser.AUTO
-        
-        # Add vc2_conformance.tables.* and vc2_conformance.vc2_math.*
-        for name in tables.__all__:
-            self._eval_globals[name] = getattr(tables, name)
-        for name in vc2_math.__all__:
-            self._eval_globals[name] = getattr(vc2_math, name)
         
         # Log of byte offsets of all parse_info blocks in the stream
         self._parse_info_offsets = []
@@ -152,16 +176,6 @@ class SmartSerialiser(Serialiser):
         if context_type not in self.default_values:
             self.default_values[context_type] = {}
         self.default_values[context_type][target] = value
-        
-        if value == "AUTO":
-            # Special case to avoid evaluating the string in this case
-            value = SmartSerialiser.AUTO
-        elif isinstance(value, str):
-            # Evaluate all strings as Python expressions
-            try:
-                value = eval(value, self._eval_globals, {})
-            except Exception as exc:
-                raise JSONEvalError(target, value, exc)
         
         if value is SmartSerialiser.AUTO:
             value = self._get_auto(target)
@@ -272,10 +286,10 @@ Like :py:data:`vc2_conformance.bitstreams.vc2_default_values` but with 'AUTO'
 set as the default value for all fields which support it.
 """
 
-vc2_default_values_with_auto[ParseInfo]["next_parse_offset"] = "AUTO"
-vc2_default_values_with_auto[ParseInfo]["previous_parse_offset"] = "AUTO"
-vc2_default_values_with_auto[PictureHeader]["picture_number"] = "AUTO"
-vc2_default_values_with_auto[FragmentHeader]["picture_number"] = "AUTO"
+vc2_default_values_with_auto[ParseInfo]["next_parse_offset"] = SmartSerialiser.AUTO
+vc2_default_values_with_auto[ParseInfo]["previous_parse_offset"] = SmartSerialiser.AUTO
+vc2_default_values_with_auto[PictureHeader]["picture_number"] = SmartSerialiser.AUTO
+vc2_default_values_with_auto[FragmentHeader]["picture_number"] = SmartSerialiser.AUTO
 
 
 def parse_args(*args, **kwargs):
@@ -320,7 +334,7 @@ def main(*args, **kwargs):
     try:
         with open(args.specification, "r") as f:
             specification = json.load(f)
-    except json.JSONDecodeError as exc:
+    except ValueError as exc:
         sys.stderr.write("Invalid JSON: {}\n".format(exc))
         return 2
     except Exception as exc:
@@ -330,13 +344,24 @@ def main(*args, **kwargs):
         ))
         return 1
     
-    remove_comments_from_json(specification)
+    specification = remove_comments_from_json(specification)
+        
+    eval_globals = {"AUTO": SmartSerialiser.AUTO}
+    for name in tables.__all__:
+        eval_globals[name] = getattr(tables, name)
+    for name in vc2_math.__all__:
+        eval_globals[name] = getattr(vc2_math, name)
+    try:
+        specification = evaluate_strings_in_json(specification, eval_globals)
+    except JSONEvalError as exc:
+        sys.stderr.write("Error in Python expression: {}\n".format(exc))
+        return 3
     
     if not isinstance(specification, dict):
         sys.stderr.write("Specification must contain a JSON object (got {})\n".format(
             type(specification).__name__,
         ))
-        return 3
+        return 4
     
     def show_traceback():
         if args.verbose > 0:
@@ -352,7 +377,7 @@ def main(*args, **kwargs):
             sys.stderr.write("Empty 'parse info' specification at {} (missing end of sequence?)\n".format(
                 ser.describe_path(),
             ))
-            return 4
+            return 5
         except FixedDictKeyError as exc:
             show_traceback()
             sys.stderr.write("The field {!r} is not allowed in {} (allowed fields: {})\n".format(
@@ -360,19 +385,10 @@ def main(*args, **kwargs):
                 ser.describe_path(),
                 ", ".join(map(repr, exc.fixeddict_class.entry_objs))
             ))
-            return 5
+            return 6
         except UnusedTargetError as exc:
             show_traceback()
             sys.stderr.write("Unused field {}\n".format(exc.args[0]))
-            return 6
-        except JSONEvalError as exc:
-            show_traceback()
-            sys.stderr.write("Error evaluating {!r} in {}: {}: {}\n".format(
-                exc.expression,
-                ser.describe_path(exc.target),
-                type(exc.exception).__name__,
-                exc.exception,
-            ))
             return 7
         except Exception as exc:
             show_traceback()

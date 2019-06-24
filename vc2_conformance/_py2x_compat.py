@@ -11,7 +11,8 @@ __all__ = [
     "get_terminal_size",  # shutil.get_terminal_size
     "wraps",  # functools.wraps
     "unwrap",  # inspect.unwrap
-    "quote", # shlex.quote
+    "quote",  # shlex.quote
+    "string_types",  # (str, ) in Python 3.x or (str, unicode) in Python 2.x
 ]
 
 import sys
@@ -66,3 +67,9 @@ try:
     from shlex import quote
 except ImportError:
     from pipes import quote
+
+
+try:
+    string_types = (str, unicode)
+except NameError:
+    string_types = (str, )

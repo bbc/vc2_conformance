@@ -2,6 +2,8 @@ import pytest
 
 import json
 
+import re
+
 from copy import deepcopy
 
 from io import BytesIO
@@ -15,6 +17,8 @@ from vc2_conformance import decoder
 
 from vc2_conformance.scripts.vc2_bitstream_generator import (
     remove_comments_from_json,
+    evaluate_strings_in_json,
+    JSONEvalError,
     SmartSerialiser,
     NoAutomaticValueAvailableError,
     main,
@@ -49,10 +53,13 @@ class TestRemoveCommentsFromJSON(object):
     @pytest.mark.parametrize("array,comment_index", [
         # Start
         (["# Comment", False, 1, "two", [], {}], 0),
+        ([u"# Comment", False, 1, "two", [], {}], 0),
         # Middle
         ([False, "# Comment", 1, "two", [], {}], 1),
+        ([False, u"# Comment", 1, "two", [], {}], 1),
         # End
         ([False, 1, "two", [], {}, "# Comment"], 5),
+        ([False, 1, "two", [], {}, u"# Comment"], 5),
     ])
     def test_removes_comment_in_array(self, array, comment_index):
         expected_array = deepcopy(array)
@@ -89,6 +96,59 @@ class TestRemoveCommentsFromJSON(object):
         remove_comments_from_json(object)
         assert object == expected_object
 
+class TestEvaluateStringsInJSON(object):
+
+    @pytest.mark.parametrize("value", [
+        # Numbers
+        123,
+        1.23,
+        # Booleans
+        True,
+        False,
+        # Null
+        None,
+        # Empty array
+        [],
+        # No strings in array
+        [False, 1, None, {}, []],
+        # Empty object
+        {},
+        # No strings in object
+        {"one": False, "two": 1, "three": {}, "four": []},
+    ])
+    def test_no_strings(self, value):
+        value_before = deepcopy(value)
+        assert evaluate_strings_in_json(value) == value_before
+    
+    @pytest.mark.parametrize("value,exp_value", [
+        # Naked string
+        ("x + 100", 200),
+        (u"x + 100", 200),
+        # String in array
+        ([1, "x + 100", 3], [1, 200, 3]),
+        ([1, u"x + 100", 3], [1, 200, 3]),
+        # String in object
+        ({"x*2": "x*2"}, {"x*2": 200}),
+        ({"x*2": u"x*2"}, {"x*2": 200}),
+    ])
+    def test_evaluates_string(self, value, exp_value):
+        assert evaluate_strings_in_json(value, {"x": 100}) == exp_value
+    
+    def test_error(self):
+        with pytest.raises(JSONEvalError) as exc_info:
+            evaluate_strings_in_json({
+                "foo": [
+                    1,
+                    "1 / 0",
+                    3,
+                ]
+            })
+        
+        assert str(exc_info.value).startswith(
+            "Evaluation of '1 / 0' in Sequence['foo'][1] failed: "
+            "ZeroDivisionError:"
+        )
+
 
 class TestSmartSerialiser(object):
     
@@ -122,56 +182,6 @@ class TestSmartSerialiser(object):
         w.flush()
         
         assert f.getvalue() == b"\xAA\xAA\xAA\xB0\xB1\xB1"
-    
-    @pytest.mark.parametrize("value_in,exp_bytes", [
-        # Non-string
-        (0xAB, b"\xAB"),
-        # Simple expression
-        ("0x80 + 0x09", b"\x89"),
-        # Named constant from tables
-        ("ParseCodes.end_of_sequence", b"\x10"),
-        # Expression using vc2_math
-        ("intlog2(1023)", b"\x0A"),
-    ])
-    @pytest.mark.parametrize("as_default", [False, True])
-    def test_evaluate_strings_as_python(self, f, w, value_in, exp_bytes, as_default):
-        if as_default:
-            # Value passed in as default
-            default_values = {dict: {"x": value_in}}
-            context = {}
-        else:
-            # Value passed in as value
-            default_values = {}
-            context = {"x": value_in}
-        
-        with SmartSerialiser(w, context, default_values) as ser:
-            ser.uint_lit("x", 1)
-        w.flush()
-        
-        assert f.getvalue() == exp_bytes
-    
-    @pytest.mark.parametrize("value_in", [
-        # As minimal expression
-        "AUTO",
-        # Returned by expression
-        "[AUTO][0]",
-    ])
-    @pytest.mark.parametrize("as_default", [False, True])
-    def test_evaluate_strings_to_auto_call(self, f, w, value_in, as_default):
-        if as_default:
-            # Value passed in as default
-            default_values = {dict: {"x": value_in}}
-            context = {}
-        else:
-            # Value passed in as value
-            default_values = {}
-            context = {"x": value_in}
-        
-        with SmartSerialiser(w, context, default_values) as ser:
-            with pytest.raises(NoAutomaticValueAvailableError) as exc_info:
-                ser.uint_lit("x", 1)
-        
-        assert exc_info.value.args == ("dict['x']", )
     
     def test_parse_info_offset_logging(self, w):
         context = bitstream.Sequence(data_units=[
@@ -207,8 +217,8 @@ class TestSmartSerialiser(object):
             bitstream.DataUnit(
                 parse_info=bitstream.ParseInfo(
                     parse_code=tables.ParseCodes.padding_data,
-                    next_parse_offset="AUTO",
-                    previous_parse_offset="AUTO",
+                    next_parse_offset=SmartSerialiser.AUTO,
+                    previous_parse_offset=SmartSerialiser.AUTO,
                 ),
                 padding=bitstream.Padding(
                     bytes=b"\xAA\xBB",
@@ -217,8 +227,8 @@ class TestSmartSerialiser(object):
             bitstream.DataUnit(
                 parse_info=bitstream.ParseInfo(
                     parse_code=tables.ParseCodes.auxiliary_data,
-                    next_parse_offset="AUTO",
-                    previous_parse_offset="AUTO",
+                    next_parse_offset=SmartSerialiser.AUTO,
+                    previous_parse_offset=SmartSerialiser.AUTO,
                 ),
                 auxiliary_data=bitstream.AuxiliaryData(
                     bytes=b"\xAA\xBB\xCC\xDD",
@@ -227,15 +237,15 @@ class TestSmartSerialiser(object):
             bitstream.DataUnit(
                 parse_info=bitstream.ParseInfo(
                     parse_code=tables.ParseCodes.sequence_header,
-                    next_parse_offset="AUTO",
-                    previous_parse_offset="AUTO",
+                    next_parse_offset=SmartSerialiser.AUTO,
+                    previous_parse_offset=SmartSerialiser.AUTO,
                 ),
             ),
             bitstream.DataUnit(
                 parse_info=bitstream.ParseInfo(
                     parse_code=tables.ParseCodes.end_of_sequence,
-                    next_parse_offset="AUTO",
-                    previous_parse_offset="AUTO",
+                    next_parse_offset=SmartSerialiser.AUTO,
+                    previous_parse_offset=SmartSerialiser.AUTO,
                 ),
             ),
         ])
@@ -258,7 +268,6 @@ class TestSmartSerialiser(object):
             (0, 16),
         ]):
             parse_info = des.context["data_units"][i]["parse_info"]
-            print(i)
             assert parse_info["next_parse_offset"] == exp_next
             assert parse_info["previous_parse_offset"] == exp_prev
     
@@ -296,7 +305,7 @@ class TestSmartSerialiser(object):
                 ),
                 fragment_parse=bitstream.FragmentParse(
                     fragment_header=bitstream.FragmentHeader(
-                        picture_number="AUTO",
+                        picture_number=SmartSerialiser.AUTO,
                         fragment_slice_count=0,
                     ),
                 ),
@@ -307,7 +316,7 @@ class TestSmartSerialiser(object):
                 ),
                 fragment_parse=bitstream.FragmentParse(
                     fragment_header=bitstream.FragmentHeader(
-                        picture_number="AUTO",
+                        picture_number=SmartSerialiser.AUTO,
                         fragment_slice_count=1,
                     ),
                 ),
@@ -318,15 +327,15 @@ class TestSmartSerialiser(object):
                 ),
                 picture_parse=bitstream.PictureParse(
                     picture_header=bitstream.PictureHeader(
-                        picture_number="AUTO",
+                        picture_number=SmartSerialiser.AUTO,
                     ),
                 ),
             ),
             bitstream.DataUnit(
                 parse_info=bitstream.ParseInfo(
                     parse_code=tables.ParseCodes.end_of_sequence,
-                    next_parse_offset="AUTO",
-                    previous_parse_offset="AUTO",
+                    next_parse_offset=SmartSerialiser.AUTO,
+                    previous_parse_offset=SmartSerialiser.AUTO,
                 ),
             ),
         ])
@@ -476,14 +485,16 @@ class TestMain(object):
         assert capsys.readouterr()[1].startswith("Invalid JSON")
     
     @pytest.mark.parametrize("value", [
+        # Null
+        None,
         # Number
         123,
         1.23,
         # Bool
         True,
         False,
-        # String
-        "foobar",
+        # String (NB: will be executed as python which results in a string)
+        "'foobar'",
         # Array
         [],
     ])
@@ -522,15 +533,15 @@ class TestMain(object):
                 "data_units": [
                     {"parse_info": {"parse_code": "ParseCodes.end_of_sequence"}},
                 ],
-                "bad_entry": "oops",
+                "bad_entry": "'oops'",
             }, f)
         
         assert main([spec_filename, bitstream_filename]) != 0
         
-        assert capsys.readouterr()[1] == (
-            "The field 'bad_entry' is not allowed in dict "
-            "(allowed fields: 'data_units', '_state')\n"
-        )
+        assert re.match((
+            r"The field u?'bad_entry' is not allowed in dict "
+            r"\(allowed fields: 'data_units', '_state'\)\n"
+        ), capsys.readouterr()[1]) is not None
     
     def test_unused_field(self, tmpdir, capsys):
         spec_filename = str(tmpdir.join("spec.json"))
@@ -550,9 +561,10 @@ class TestMain(object):
         
         assert main([spec_filename, bitstream_filename]) != 0
         
-        assert capsys.readouterr()[1] == (
-            "Unused field Sequence['data_units'][0]['picture_parse']\n"
-        )
+        assert re.match(
+            r"Unused field Sequence\['data_units'\]\[0\]\[u?'picture_parse'\]\n",
+            capsys.readouterr()[1],
+        ) is not None
     
     def test_bad_python_eval(self, tmpdir, capsys):
         spec_filename = str(tmpdir.join("spec.json"))
@@ -571,11 +583,12 @@ class TestMain(object):
         
         assert main([spec_filename, bitstream_filename]) != 0
         
-        assert capsys.readouterr()[1] == (
-            "Error evaluating 'ParseCodes.oopsie' in "
-            "Sequence['data_units'][0]['parse_info']['parse_code']: "
-            "AttributeError: oopsie\n"
-        )
+        assert re.match(
+            r"Error in Python expression: Evaluation of u?'ParseCodes\.oopsie' "
+            r"in Sequence\[u?'data_units'\]\[0\]\[u?'parse_info'\]\[u?'parse_code'\] failed: "
+            r"AttributeError: oopsie\n",
+            capsys.readouterr()[1],
+        ) is not None
     
     def test_vc2_pseudocode_error(self, tmpdir, capsys):
         spec_filename = str(tmpdir.join("spec.json"))
