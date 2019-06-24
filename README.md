@@ -42,6 +42,9 @@ This Python package installs the following applications:
 * `vc2-bitstream-viewer`: A VC-2 bitstream viewer which unpacks and displays
   the raw values encoded in the bitstream. A diagnostic tool.
 
+* `vc2-bitstream-generator`: A VC-2 bitstream generator. Generates bitstreams
+  based on low-level descriptions of bitstream contents written in JSON format.
+
 
 Developers
 ----------
