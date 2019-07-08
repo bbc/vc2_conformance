@@ -26,6 +26,8 @@ from vc2_conformance.tables._csv_reading import (
     to_dict_value,
 )
 
+from vc2_conformance._constraint_table import ValueSet
+
 __all__ = [
     "PARSE_INFO_PREFIX",
     "PARSE_INFO_HEADER_BYTES",
@@ -781,4 +783,46 @@ headers and transform parameters headers and are enumerated below:
 * (13.5.3.2)
     * ``total_slice_bytes``: int (total number of bytes allowed in a high quality
       picture slice, including all prefix bytes and slice size fields.
+
+See also: :py:data:`LEVEL_CONSTRAINT_ANY_VALUES`.
+"""
+
+LEVEL_CONSTRAINT_ANY_VALUES = {
+    "level": ValueSet(*Levels),
+    "profile": ValueSet(*Profiles),
+    "base_video_format": ValueSet(*BaseVideoFormats),
+    "custom_dimensions_flag": ValueSet(False, True),
+    "custom_color_diff_format_flag": ValueSet(False, True),
+    "color_diff_format_index": ValueSet(*ColorDifferenceSamplingFormats),
+    "custom_scan_format_flag": ValueSet(False, True),
+    "source_sampling": ValueSet(*SourceSamplingModes),
+    "custom_frame_rate_flag": ValueSet(False, True),
+    "frame_rate_index": ValueSet(0, *PresetFrameRates),
+    "custom_pixel_aspect_ratio_flag": ValueSet(False, True),
+    "pixel_aspect_ratio_index": ValueSet(0, *PresetPixelAspectRatios),
+    "custom_clean_area_flag": ValueSet(False, True),
+    "custom_signal_range_flag": ValueSet(False, True),
+    "custom_signal_range_index": ValueSet(0, *PresetSignalRanges),
+    "custom_color_spec_flag": ValueSet(False, True),
+    "custom_color_spec_index": ValueSet(0, *PresetColorSpecs),
+    "custom_color_primaries_flag": ValueSet(False, True),
+    "custom_color_primaries_index": ValueSet(*PresetColorPrimaries),
+    "custom_color_matrix_flag": ValueSet(False, True),
+    "custom_color_matrix_index": ValueSet(*PresetColorMatrices),
+    "custom_transfer_function_flag": ValueSet(False, True),
+    "custom_transfer_function_index": ValueSet(*PresetTransferFunctions),
+    "picture_coding_mode": ValueSet(*PictureCodingModes),
+    "wavelet_index": ValueSet(*WaveletFilters),
+    "asym_transform_index_flag": ValueSet(False, True),
+    "wavelet_index_ho": ValueSet(*WaveletFilters),
+    "asym_transform_flag": ValueSet(False, True),
+    "slices_have_same_dimensions": ValueSet(False, True),
+    "custom_quant_matrix": ValueSet(False, True),
+}
+"""
+For values in :py:data:`LEVEL_CONSTRAINTS` which may hold
+:py:class:`~vc2_conformance._constraint_table.AnyValue`, defines an explicit
+:py:class:`~vc2_conformance._constraint_table.ValueSet` defining all valid
+values. Where the range of allowed values is truly open ended, no value is
+provided in this table.
 """
