@@ -78,22 +78,45 @@ class ValueSet(object):
         """
         
         # Individual values explicitly included in this value set
-        self._values = set(v for v in values_and_ranges if not isinstance(v, tuple))
+        self._values = set()
         
         # A series of (lower_bound, upper_bound) tuples which give *incuslive*
         # ranges of values which are permitted.
-        self._ranges = set(v for v in values_and_ranges if isinstance(v, tuple))
+        self._ranges = set()
+        
+        for value_or_range in values_and_ranges:
+            if isinstance(value_or_range, tuple):
+                self.add_range(*value_or_range)
+            else:
+                self.add_value(value_or_range)
     
     def add_value(self, value):
         """
         Add a single value to the set.
         """
-        self._values.add(value)
+        # Don't add duplicates
+        if value not in self:
+            self._values.add(value)
     
     def add_range(self, lower_bound, upper_bound):
         """
         Add the range of values between the two inclusive bounds to the set.
         """
+        # Remove any single values which are encompassed by this new range
+        for value in list(self._values):
+            if lower_bound <= value <= upper_bound:
+                self._values.remove(value)
+        
+        # Combine this range with any existing ranges where possible
+        ranges_to_remove = []
+        for other_lower_bound, other_upper_bound in self._ranges:
+            if lower_bound <= other_upper_bound and other_lower_bound <= upper_bound:
+                ranges_to_remove.append((other_lower_bound, other_upper_bound))
+                lower_bound = min(lower_bound, other_lower_bound)
+                upper_bound = max(upper_bound, other_upper_bound)
+        for lower_upper in ranges_to_remove:
+            self._ranges.remove(lower_upper)
+        
         self._ranges.add((lower_bound, upper_bound))
     
     def __contains__(self, value):

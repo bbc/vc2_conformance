@@ -11,6 +11,68 @@ from vc2_conformance._constraint_table import (
 
 class TestValueSet(object):
     
+    def test_constructor_empty(self):
+        vs = ValueSet()
+        assert vs._values == set()
+        assert vs._ranges == set()
+    
+    def test_add_value(self):
+        vs = ValueSet()
+        
+        # Duplicate values not allowed
+        vs.add_value(123)
+        vs.add_value(123)
+        assert list(vs) == [123]
+        
+        # Values already in a range not allowed
+        vs.add_range(10, 20)
+        vs.add_value(10)
+        vs.add_value(15)
+        vs.add_value(20)
+        assert list(vs) == [123, (10, 20)]
+    
+    def test_add_range_non_overlapping(self):
+        vs = ValueSet()
+        vs.add_range(10, 20)
+        vs.add_range(30, 40)
+        vs.add_range(22, 27)
+        assert sorted(vs) == [(10, 20), (22, 27), (30, 40)]
+    
+    def test_add_range_overlap_single_values(self):
+        vs = ValueSet()
+        vs.add_value(5)
+        vs.add_value(10)
+        vs.add_value(15)
+        vs.add_value(20)
+        vs.add_value(25)
+        vs.add_range(10, 20)
+        assert vs._values == set([5, 25])
+        assert vs._ranges == set([(10, 20)])
+    
+    @pytest.mark.parametrize("ranges", [
+        # Touching
+        [(10, 20), (20, 30)],
+        [(20, 30), (10, 20)],
+        # Overlapping
+        [(10, 25), (15, 30)],
+        [(15, 30), (10, 25)],
+        # Super/subset
+        [(10, 30), (15, 25)],
+        [(15, 25), (10, 30)],
+        # Many combined
+        [(10, 15), (17, 22), (25, 30), (14, 26)],
+    ])
+    def test_add_range_overlap_existing_ranges(self, ranges):
+        vs = ValueSet()
+        for r in ranges:
+            vs.add_range(*r)
+        assert vs._ranges == set([(10, 30)])
+    
+    def test_constructor_works(self):
+        vs = ValueSet(5, 10, 15, 20, 25, (10, 15), (15, 21))
+        assert vs._values == set([5, 25])
+        assert vs._ranges == set([(10, 21)])
+    
     def test_empty(self):
         empty = ValueSet()
         assert None not in empty
@@ -62,18 +124,6 @@ class TestValueSet(object):
         vs = ValueSet()
         vs.add_value(1)
         vs.add_range(10, 20)
-        
-        assert 0 not in vs
-        assert 1 in vs
-        assert 2 not in vs
-        assert 9 not in vs
-        assert 10 in vs
-        assert 15 in vs
-        assert 20 in vs
-        assert 21 not in vs
-    
-    def test_constructor(self):
-        vs = ValueSet(1, (10, 20))
         
         assert 0 not in vs
         assert 1 in vs
@@ -152,7 +202,7 @@ class TestValueSet(object):
         vs.add_range(13, 17)
         vs.add_range(20, 25)
         vs.add_range(33, 37)
-        assert str(vs) == "{3-7, 10, 13-17, 20, 20-25, 30, 33-37}"
+        assert str(vs) == "{3-7, 10, 13-17, 20-25, 30, 33-37}"
     
     def test_str_uses_repr(self):
         vs = ValueSet()
