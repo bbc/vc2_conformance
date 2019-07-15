@@ -137,6 +137,10 @@ ParseInfo = fixeddict(
           formatter=Hex(2)),
     Entry("next_parse_offset"),
     Entry("previous_parse_offset"),
+    
+    # Computed value: The byte offset of the start of this parse_info block in
+    # the bitstream.
+    Entry("_offset"),
 )
 """
 (10.5.1) Parse info header defined by ``parse_info()``.

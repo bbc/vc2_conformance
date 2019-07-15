@@ -103,6 +103,42 @@ versions of the VC-2 pseudo code can be found in the :py:mod:`.vc2` submodule.
 .. automodule:: vc2_conformance.bitstream.exp_golomb
     :members:
 
+
+Auto-fill logic
+---------------
+
+The :py:func:`~vc2_conformance.vc2_autofill.autofill_and_serialise_sequence`
+utility function is provided which can be used to automatically fill in
+bitstream fields to enable compact descriptions of VC-2 bitstreams to be
+constructed. For example, the following describes a valid bitstream with a
+single HD mid-grey picture::
+
+    from vc2_conformance.tables import ParseCodes, BaseVideoFormats
+    
+    from vc2_conformance.bitstream import (
+        Sequence,
+        SequenceHeader,
+        ParseInfo,
+        BitstreamWriter,
+        autofill_and_serialise_sequence,
+    )
+    
+    seq = Sequence(data_units=[
+        DataUnit(
+            parse_info=ParseInfo(parse_code=ParseCodes.sequence_header),
+            sequence_header=SequenceHeader(
+                base_video_format=BaseVideoFormats.hd1080p_50
+            )
+        ),
+        DataUnit(parse_info=ParseInfo(parse_code=ParseCodes.high_quality_picture)),
+        DataUnit(parse_info=ParseInfo(parse_code=ParseCodes.end_of_sequence)),
+    ])
+    with open("bitstream.vc2", "wb") as f:
+        autofill_and_serialise_sequence(f, seq)
+
+In the example above, all of the bitstream values will be filled with default
+values. In addition, the picture numbers and parse info offset fields will be
+auto-filled with correctly computed values.
 """
 
 from vc2_conformance.bitstream.exceptions import *
@@ -119,6 +155,7 @@ from vc2_conformance.bitstream.serdes import *
 # VC-2 specific parts
 from vc2_conformance.bitstream.vc2 import *
 from vc2_conformance.bitstream.vc2_fixeddicts import *
+from vc2_conformance.bitstream.vc2_autofill import *
 
 # Metadata for introspection purposes
 from vc2_conformance.bitstream.metadata import *

@@ -176,6 +176,10 @@ def parse_info(serdes, state):
     """(10.5.1) Read a parse_info header."""
     serdes.byte_align("padding")
     
+    ## Begin not in spec
+    serdes.computed_value("_offset", serdes.io.tell()[0])
+    ## End not in spec
+    
     serdes.uint_lit("parse_info_prefix", 4)
     state["parse_code"] = serdes.uint_lit("parse_code", 1)
     state["next_parse_offset"] = serdes.uint_lit("next_parse_offset", 4)
