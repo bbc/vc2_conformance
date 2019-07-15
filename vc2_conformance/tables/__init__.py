@@ -820,7 +820,7 @@ LEVEL_CONSTRAINT_ANY_VALUES = {
     "custom_quant_matrix": ValueSet(False, True),
 }
 """
-For values in :py:data:`LEVEL_CONSTRAINTS` which may hold
+For keys in :py:data:`LEVEL_CONSTRAINTS` which may hold
 :py:class:`~vc2_conformance._constraint_table.AnyValue`, defines an explicit
 :py:class:`~vc2_conformance._constraint_table.ValueSet` defining all valid
 values. Where the range of allowed values is truly open ended, no value is

@@ -19,8 +19,6 @@ from vc2_conformance.scripts.vc2_bitstream_generator import (
     remove_comments_from_json,
     evaluate_strings_in_json,
     JSONEvalError,
-    SmartSerialiser,
-    NoAutomaticValueAvailableError,
     main,
 )
 
@@ -148,218 +146,6 @@ class TestEvaluateStringsInJSON(object):
             "Evaluation of '1 / 0' in Sequence['foo'][1] failed: "
             "ZeroDivisionError:"
         )
-
-
-class TestSmartSerialiser(object):
-    
-    @pytest.fixture
-    def f(self):
-        return BytesIO()
-    
-    @pytest.fixture
-    def w(self, f):
-        return bitstream.BitstreamWriter(f)
-    
-    def test_remember_last_value_as_default(self, f, w):
-        default_values = {dict: {"a": 0xAA, "b": 0xBB}}
-        context = {
-            # Should use default from the beginning as usual if no values
-            # present
-            "a": [],
-            # Should use last used value as default
-            "b": [0xB0, 0xB1],
-        }
-        with SmartSerialiser(w, context, default_values) as ser:
-            ser.declare_list("a")
-            ser.uint_lit("a", 1)
-            ser.uint_lit("a", 1)
-            ser.uint_lit("a", 1)
-            
-            ser.declare_list("b")
-            ser.uint_lit("b", 1)
-            ser.uint_lit("b", 1)
-            ser.uint_lit("b", 1)
-        w.flush()
-        
-        assert f.getvalue() == b"\xAA\xAA\xAA\xB0\xB1\xB1"
-    
-    def test_parse_info_offset_logging(self, w):
-        context = bitstream.Sequence(data_units=[
-            bitstream.DataUnit(
-                parse_info=bitstream.ParseInfo(
-                    parse_code=tables.ParseCodes.padding_data,
-                    next_parse_offset=tables.PARSE_INFO_HEADER_BYTES + 10,
-                ),
-            ),
-            bitstream.DataUnit(
-                parse_info=bitstream.ParseInfo(
-                    parse_code=tables.ParseCodes.padding_data,
-                    next_parse_offset=tables.PARSE_INFO_HEADER_BYTES + 20,
-                ),
-            ),
-            bitstream.DataUnit(
-                parse_info=bitstream.ParseInfo(
-                    parse_code=tables.ParseCodes.end_of_sequence,
-                ),
-            ),
-        ])
-        with SmartSerialiser(w, context, bitstream.vc2_default_values) as ser:
-            bitstream.parse_sequence(ser, State())
-        
-        assert ser._parse_info_offsets == [
-            0,
-            tables.PARSE_INFO_HEADER_BYTES + 10,
-            tables.PARSE_INFO_HEADER_BYTES + 10 + tables.PARSE_INFO_HEADER_BYTES + 20,
-        ]
-    
-    def test_auto_parse_info_offsets(self, f, w):
-        context = bitstream.Sequence(data_units=[
-            bitstream.DataUnit(
-                parse_info=bitstream.ParseInfo(
-                    parse_code=tables.ParseCodes.padding_data,
-                    next_parse_offset=SmartSerialiser.AUTO,
-                    previous_parse_offset=SmartSerialiser.AUTO,
-                ),
-                padding=bitstream.Padding(
-                    bytes=b"\xAA\xBB",
-                )
-            ),
-            bitstream.DataUnit(
-                parse_info=bitstream.ParseInfo(
-                    parse_code=tables.ParseCodes.auxiliary_data,
-                    next_parse_offset=SmartSerialiser.AUTO,
-                    previous_parse_offset=SmartSerialiser.AUTO,
-                ),
-                auxiliary_data=bitstream.AuxiliaryData(
-                    bytes=b"\xAA\xBB\xCC\xDD",
-                )
-            ),
-            bitstream.DataUnit(
-                parse_info=bitstream.ParseInfo(
-                    parse_code=tables.ParseCodes.sequence_header,
-                    next_parse_offset=SmartSerialiser.AUTO,
-                    previous_parse_offset=SmartSerialiser.AUTO,
-                ),
-            ),
-            bitstream.DataUnit(
-                parse_info=bitstream.ParseInfo(
-                    parse_code=tables.ParseCodes.end_of_sequence,
-                    next_parse_offset=SmartSerialiser.AUTO,
-                    previous_parse_offset=SmartSerialiser.AUTO,
-                ),
-            ),
-        ])
-        with SmartSerialiser(w, context, bitstream.vc2_default_values) as ser:
-            bitstream.parse_sequence(ser, State())
-        w.flush()
-        write_end_offset = w.tell()
-        
-        # Deserialise the stream again to check the parse info offsets
-        f.seek(0)
-        r = bitstream.BitstreamReader(f)
-        with bitstream.Deserialiser(r) as des:
-            bitstream.parse_sequence(des, State())
-        assert r.tell() == write_end_offset
-        
-        for i, (exp_next, exp_prev) in enumerate([
-            (tables.PARSE_INFO_HEADER_BYTES + 2, 0),
-            (tables.PARSE_INFO_HEADER_BYTES + 4, tables.PARSE_INFO_HEADER_BYTES + 2),
-            (16, tables.PARSE_INFO_HEADER_BYTES + 4),
-            (0, 16),
-        ]):
-            parse_info = des.context["data_units"][i]["parse_info"]
-            assert parse_info["next_parse_offset"] == exp_next
-            assert parse_info["previous_parse_offset"] == exp_prev
-    
-    
-    def test_auto_picture_number(self, f, w):
-        context = bitstream.Sequence(data_units=[
-            bitstream.DataUnit(
-                parse_info=bitstream.ParseInfo(
-                    parse_code=tables.ParseCodes.sequence_header,
-                ),
-                sequence_header=bitstream.SequenceHeader(
-                    video_parameters=bitstream.SourceParameters(
-                        # Avoid creating large frames in test cases
-                        frame_size=bitstream.FrameSize(
-                            custom_dimensions_flag=True,
-                            frame_width=4,
-                            frame_height=4,
-                        ),
-                    ),
-                ),
-            ),
-            bitstream.DataUnit(
-                parse_info=bitstream.ParseInfo(
-                    parse_code=tables.ParseCodes.high_quality_picture,
-                ),
-                picture_parse=bitstream.PictureParse(
-                    picture_header=bitstream.PictureHeader(
-                        picture_number=0xFFFFFFFE,
-                    ),
-                ),
-            ),
-            bitstream.DataUnit(
-                parse_info=bitstream.ParseInfo(
-                    parse_code=tables.ParseCodes.high_quality_picture_fragment,
-                ),
-                fragment_parse=bitstream.FragmentParse(
-                    fragment_header=bitstream.FragmentHeader(
-                        picture_number=SmartSerialiser.AUTO,
-                        fragment_slice_count=0,
-                    ),
-                ),
-            ),
-            bitstream.DataUnit(
-                parse_info=bitstream.ParseInfo(
-                    parse_code=tables.ParseCodes.high_quality_picture_fragment,
-                ),
-                fragment_parse=bitstream.FragmentParse(
-                    fragment_header=bitstream.FragmentHeader(
-                        picture_number=SmartSerialiser.AUTO,
-                        fragment_slice_count=1,
-                    ),
-                ),
-            ),
-            bitstream.DataUnit(
-                parse_info=bitstream.ParseInfo(
-                    parse_code=tables.ParseCodes.high_quality_picture,
-                ),
-                picture_parse=bitstream.PictureParse(
-                    picture_header=bitstream.PictureHeader(
-                        picture_number=SmartSerialiser.AUTO,
-                    ),
-                ),
-            ),
-            bitstream.DataUnit(
-                parse_info=bitstream.ParseInfo(
-                    parse_code=tables.ParseCodes.end_of_sequence,
-                    next_parse_offset=SmartSerialiser.AUTO,
-                    previous_parse_offset=SmartSerialiser.AUTO,
-                ),
-            ),
-        ])
-        with SmartSerialiser(w, context, bitstream.vc2_default_values) as ser:
-            bitstream.parse_sequence(ser, State())
-        w.flush()
-        write_end_offset = w.tell()
-        
-        # Deserialise the stream again to check the picture numbers
-        f.seek(0)
-        r = bitstream.BitstreamReader(f)
-        with bitstream.Deserialiser(r) as des:
-            bitstream.parse_sequence(des, State())
-        assert r.tell() == write_end_offset
-        
-        for i, type, exp_picture_number in [
-            (1, "picture", 0xFFFFFFFE),
-            (2, "fragment", 0xFFFFFFFF),
-            (3, "fragment", 0xFFFFFFFF),  # Non-first fragment shouldn't increment
-            (4, "picture", 0),
-        ]:
-            pic_or_frag_parse = des.context["data_units"][i]["{}_parse".format(type)]
-            header = pic_or_frag_parse["{}_header".format(type)]
-            assert header["picture_number"] == exp_picture_number
 
 
 class TestMain(object):
@@ -522,7 +308,7 @@ class TestMain(object):
         
         assert main([spec_filename, bitstream_filename]) != 0
         
-        assert capsys.readouterr()[1].startswith("Empty 'parse info' specification")
+        assert capsys.readouterr()[1].startswith("Specification must end with an 'end of sequence' data unit")
 
     def test_disallowed_field(self, tmpdir, capsys):
         spec_filename = str(tmpdir.join("spec.json"))
@@ -601,6 +387,11 @@ class TestMain(object):
                     {
                         "parse_info": {
                             "parse_code": "ParseCodes.high_quality_picture",
+                        },
+                    },
+                    {
+                        "parse_info": {
+                            "parse_code": "ParseCodes.end_of_sequence",
                         },
                     },
                 ],

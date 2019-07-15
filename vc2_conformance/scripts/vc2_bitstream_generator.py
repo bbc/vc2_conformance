@@ -23,15 +23,14 @@ from vc2_conformance.state import State
 from vc2_conformance._py2x_compat import string_types
 
 from vc2_conformance.bitstream import (
-    Serialiser,
-    ParseInfo,
-    Padding,
-    AuxiliaryData,
-    PictureHeader,
-    FragmentHeader,
-    vc2_default_values,
-    parse_sequence,
+    AUTO,
     BitstreamWriter,
+    Serialiser,
+    vc2_default_values_with_auto,
+    autofill_picture_number,
+    autofill_parse_offsets,
+    autofill_parse_offsets_finalize,
+    parse_sequence,
     UnusedTargetError,
 )
 
@@ -111,187 +110,6 @@ def evaluate_strings_in_json(obj, globals={}, locals={}, path=()):
     return obj
 
 
-class NoAutomaticValueAvailableError(Exception):
-    """
-    Thrown when an 'AUTO' is encountered for a bitstream value where no
-    automatic functionality exists.
-    """
-
-
-class EmptyParseInfoFound(Exception):
-    """
-    Thrown when a data unit is provided with an empty parse info definition.
-    This may be used to terminate the bitstream prematurely (without an
-    end-of-sequence)
-    """
-
-
-class SmartSerialiser(Serialiser):
-    """
-    A :py:class:`vc2_conformance.bitstream.Serialiser` with a number of
-    additional features aimed at 1) supporting context dictionaries
-    deserialised from JSON and 2) supporting more advanced 'default'/automatic
-    value filling.
-    """
-    
-    # A sentinel value indicating some smart 'automatic' value should be
-    # chosen.
-    AUTO = Sentinel("AUTO")
-    
-    
-    def __init__(self, *args, **kwargs):
-        super(SmartSerialiser, self).__init__(*args, **kwargs)
-        
-        # Use a local copy of the default values (since we'll be mutating
-        # these)
-        self.default_values = deepcopy(self.default_values)
-        
-        # Log of byte offsets of all parse_info blocks in the stream
-        self._parse_info_offsets = []
-        
-        # Indices of ParseInfo blocks in which the next_parse_offset field
-        # should be overwritten with the correct value after serialisation
-        # finishes.
-        self._next_parse_offset_values_to_update = []
-        
-        # The latest picture number to be used in the stream
-        self._last_picture_number = -1
-    
-    def _get_context_value(self, target):
-        value = super(SmartSerialiser, self)._get_context_value(target)
-        
-        # Stop if an empty parse info is encountered
-        if target == "parse_info_prefix" and type(self.cur_context) == ParseInfo:
-            if not self.cur_context:
-                raise EmptyParseInfoFound()
-        
-        # Log parse_info block offsets
-        if target == "parse_info_prefix" and type(self.cur_context) == ParseInfo:
-            num_bytes, num_bits = self.io.tell()
-            assert num_bits == 7
-            self._parse_info_offsets.append(num_bytes)
-        
-        # Update the default value to be the current value
-        context_type = type(self.cur_context)
-        if context_type not in self.default_values:
-            self.default_values[context_type] = {}
-        self.default_values[context_type][target] = value
-        
-        if value is SmartSerialiser.AUTO:
-            value = self._get_auto(target)
-        
-        # Log picture numbers
-        if target == "picture_number" and type(self.cur_context) in (PictureHeader, FragmentHeader):
-            self._last_picture_number = value
-        
-        return value
-    
-    def _get_auto(self, target):
-        if target == "next_parse_offset" and type(self.cur_context) == ParseInfo:
-            return self._get_auto_next_parse_offset()
-        elif target == "previous_parse_offset" and type(self.cur_context) == ParseInfo:
-            return self._get_auto_previous_parse_offset()
-        elif target == "picture_number" and type(self.cur_context) in (PictureHeader, FragmentHeader):
-            return self._get_auto_picture_number()
-        else:
-            raise NoAutomaticValueAvailableError(self.describe_path(target))
-    
-    def _get_auto_next_parse_offset(self):
-        parse_code = self.context["_state"]["parse_code"]
-        if parse_code == ParseCodes.end_of_sequence:
-            # Special case: end of sequence always has a next parse offset of 0
-            return 0
-        elif parse_code in (ParseCodes.padding_data, ParseCodes.auxiliary_data):
-            # Special case: padding and auxiliary data blocks lengths are
-            # determined entirely from the next_parse_offset field. If set to
-            # auto, we must look inside the context dictionary for these blocks
-            # to determine the intended size.
-            if parse_code == ParseCodes.padding_data:
-                data_unit_field = "padding"
-                data_unit_field_type = Padding
-            elif parse_code == ParseCodes.auxiliary_data:
-                data_unit_field = "auxiliary_data"
-                data_unit_field_type = AuxiliaryData
-            
-            # Grab the aux/padding data in this data unit and calculate its
-            # length directly
-            data_unit_context = self._context_stack[-1]
-            data_context = data_unit_context.get(data_unit_field, data_unit_field_type())
-            aux_or_padding_data = data_context.get(
-                "bytes",
-                self.default_values.get(data_unit_field_type, b""),
-            )
-            
-            return PARSE_INFO_HEADER_BYTES + len(aux_or_padding_data)
-        else:
-            # For simplicity of implementation the next parse offset is
-            # initially set to an arbitrary value then later
-            # overwritten with the correct value by
-            # set_auto_next_parse_offset_values.
-            self._next_parse_offset_values_to_update.append(len(self._parse_info_offsets) - 1)
-            return 0
-    
-    def set_auto_next_parse_offset_values(self):
-        """
-        Call at the end of serialisation to go back and fill in all
-        next_parse_offset fields which were set to AUTO.
-        """
-        end_num_bytes, end_num_bits = self.io.tell()
-        
-        for parse_info_index in self._next_parse_offset_values_to_update:
-            if parse_info_index >= len(self._parse_info_offsets) - 1:
-                next_parse_offset = end_num_bytes - self._parse_info_offsets[-1]
-                if end_num_bits != 7:
-                    next_parse_offset += 1
-            else:
-                next_parse_offset = (
-                    self._parse_info_offsets[parse_info_index + 1] -
-                    self._parse_info_offsets[parse_info_index]
-                )
-            
-            self.io.seek(
-                self._parse_info_offsets[parse_info_index] +
-                4 +  # Skip past 32-bit parse info prefix
-                1  # Skip past 8-bit parse code
-            )
-            self.io.write_uint_lit(4, next_parse_offset)
-        
-        self.io.seek(end_num_bytes, end_num_bits)
-    
-    def _get_auto_previous_parse_offset(self):
-        if len(self._parse_info_offsets) < 2:
-            return 0
-        else:
-            return self._parse_info_offsets[-1] - self._parse_info_offsets[-2]
-    
-    def _get_auto_picture_number(self):
-        picture_number = self._last_picture_number
-        
-        # Increment unless we're mid-fragment
-        if self.cur_context.get("fragment_slice_count", 0) == 0:
-            picture_number = picture_number + 1
-        
-        picture_number &= 0xFFFFFFFF
-        
-        return picture_number
-    
-    def __exit__(self, exc_type, exc_value, traceback):
-        super(SmartSerialiser, self).__exit__(exc_type, exc_value, traceback)
-        self.set_auto_next_parse_offset_values()
-
-
-vc2_default_values_with_auto = deepcopy(vc2_default_values)
-"""
-Like :py:data:`vc2_conformance.bitstreams.vc2_default_values` but with 'AUTO'
-set as the default value for all fields which support it.
-"""
-
-vc2_default_values_with_auto[ParseInfo]["next_parse_offset"] = SmartSerialiser.AUTO
-vc2_default_values_with_auto[ParseInfo]["previous_parse_offset"] = SmartSerialiser.AUTO
-vc2_default_values_with_auto[PictureHeader]["picture_number"] = SmartSerialiser.AUTO
-vc2_default_values_with_auto[FragmentHeader]["picture_number"] = SmartSerialiser.AUTO
-
-
 def parse_args(*args, **kwargs):
     """
     Parse a set of command line arguments. Returns a :py:mod:`argparse`
@@ -346,7 +164,7 @@ def main(*args, **kwargs):
     
     specification = remove_comments_from_json(specification)
         
-    eval_globals = {"AUTO": SmartSerialiser.AUTO}
+    eval_globals = {"AUTO": AUTO}
     for name in tables.__all__:
         eval_globals[name] = getattr(tables, name)
     for name in vc2_math.__all__:
@@ -363,21 +181,37 @@ def main(*args, **kwargs):
         ))
         return 4
     
+    if not (
+        "data_units" in specification and
+        len(specification["data_units"]) >= 1 and
+        specification["data_units"][-1].get("parse_info", {}).get("parse_code") == ParseCodes.end_of_sequence
+    ):
+        sys.stderr.write("Specification must end with an 'end of sequence' data unit\n")
+        return 5
+    
     def show_traceback():
         if args.verbose > 0:
             traceback.print_exc()
     
     with open(args.bitstream, "wb") as f:
-        w = BitstreamWriter(f)
+        writer = BitstreamWriter(f)
+        
         try:
-            with SmartSerialiser(w, specification, vc2_default_values_with_auto) as ser:
+            autofill_picture_number(specification)
+            (
+                next_parse_offsets_to_autofill,
+                previous_parse_offsets_to_autofill,
+            ) = autofill_parse_offsets(specification)
+            
+            with Serialiser(writer, specification, vc2_default_values_with_auto) as ser:
                 parse_sequence(ser, State())
-        except EmptyParseInfoFound:
-            show_traceback()
-            sys.stderr.write("Empty 'parse info' specification at {} (missing end of sequence?)\n".format(
-                ser.describe_path(),
-            ))
-            return 5
+            
+            autofill_parse_offsets_finalize(
+                writer,
+                ser.context,
+                next_parse_offsets_to_autofill,
+                previous_parse_offsets_to_autofill,
+            )
         except FixedDictKeyError as exc:
             show_traceback()
             sys.stderr.write("The field {!r} is not allowed in {} (allowed fields: {})\n".format(
@@ -398,7 +232,7 @@ def main(*args, **kwargs):
                 exc,
             ))
             return 8
-        w.flush()
+        writer.flush()
     
     return 0
 
