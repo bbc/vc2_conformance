@@ -2,6 +2,8 @@ import pytest
 
 from vc2_conformance import bitstream
 
+from vc2_conformance.decoder import BadParseCode, NoQuantisationMatrixAvailable
+
 from vc2_conformance.test_cases import registry
 
 
@@ -14,11 +16,11 @@ class TestForceXFail(object):
                 bar,
             ])
         
-        fx = registry.force_xfail(f, "Testing")
+        fx = registry.force_xfail(f, BadParseCode)
         
         assert fx(123, bar=321) == registry.XFail(
             bitstream.Sequence(data_units=[123, 321]),
-            "Testing",
+            BadParseCode,
         )
     
     def test_leaves_xfail_intact(self):
@@ -26,20 +28,20 @@ class TestForceXFail(object):
             return registry.XFail(bitstream.Sequence(data_units=[
                 foo,
                 bar,
-            ]), "Original")
+            ]), NoQuantisationMatrixAvailable)
         
-        fx = registry.force_xfail(f, "Testing")
+        fx = registry.force_xfail(f, BadParseCode)
         
         assert fx(123, bar=321) == registry.XFail(
             bitstream.Sequence(data_units=[123, 321]),
-            "Original",
+            NoQuantisationMatrixAvailable,
         )
     
     def test_leaves_none_intact(self):
         def f(foo, bar):
             return None
         
-        fx = registry.force_xfail(f, "Testing")
+        fx = registry.force_xfail(f, BadParseCode)
         
         assert fx(123, bar=321) is None
 
@@ -125,42 +127,42 @@ class TestTestCaseRegistry(object):
             """Help!"""
             return bitstream.Sequence(data_units=foo)
         
-        r.test_case(f, xfail="Testing", parameters=("foo", [[], [123]]))
+        r.test_case(f, xfail=BadParseCode, parameters=("foo", [[], [123]]))
         
         assert len(r.test_cases) == 2
         
-        names = [t.name for t in r.test_cases]
+        names = list(r.test_cases)
         assert names == ["f[foo=[]]", "f[foo=[123]]"]
         
-        retvals = [t.function() for t in r.test_cases]
+        retvals = [f() for f in r.test_cases.values()]
         assert retvals == [
-            registry.XFail(bitstream.Sequence(data_units=[]), "Testing"),
-            registry.XFail(bitstream.Sequence(data_units=[123]), "Testing"),
+            registry.XFail(bitstream.Sequence(data_units=[]), BadParseCode),
+            registry.XFail(bitstream.Sequence(data_units=[123]), BadParseCode),
         ]
         
-        docs = [t.doc for t in r.test_cases]
+        docs = [f.__doc__ for f in r.test_cases.values()]
         assert docs == ["Help!", "Help!"]
     
     def test_test_case_as_decorator_with_arguments(self):
         r = registry.TestCaseRegistry()
         
-        @r.test_case(xfail="Testing", parameters=("foo", [[], [123]]))
+        @r.test_case(xfail=BadParseCode, parameters=("foo", [[], [123]]))
         def f(foo):
             """Help!"""
             return bitstream.Sequence(data_units=foo)
         
         assert len(r.test_cases) == 2
         
-        names = [t.name for t in r.test_cases]
+        names = list(r.test_cases)
         assert names == ["f[foo=[]]", "f[foo=[123]]"]
         
-        retvals = [t.function() for t in r.test_cases]
+        retvals = [f() for f in r.test_cases.values()]
         assert retvals == [
-            registry.XFail(bitstream.Sequence(data_units=[]), "Testing"),
-            registry.XFail(bitstream.Sequence(data_units=[123]), "Testing"),
+            registry.XFail(bitstream.Sequence(data_units=[]), BadParseCode),
+            registry.XFail(bitstream.Sequence(data_units=[123]), BadParseCode),
         ]
         
-        docs = [t.doc for t in r.test_cases]
+        docs = [f.__doc__ for f in r.test_cases.values()]
         assert docs == ["Help!", "Help!"]
     
     def test_test_case_as_decorator_without_arguments(self):
@@ -173,13 +175,13 @@ class TestTestCaseRegistry(object):
         
         assert len(r.test_cases) == 1
         
-        names = [t.name for t in r.test_cases]
+        names = list(r.test_cases)
         assert names == ["f"]
         
-        retvals = [t.function() for t in r.test_cases]
+        retvals = [f() for f in r.test_cases.values()]
         assert retvals == [bitstream.Sequence()]
         
-        docs = [t.doc for t in r.test_cases]
+        docs = [f.__doc__ for f in r.test_cases.values()]
         assert docs == ["Help!"]
     
     def test_test_case_unknown_kwargs(self):
@@ -222,7 +224,7 @@ class TestTestCaseRegistry(object):
         def quo(foo, bar):
             return None
         
-        names = [t.name for t in r.test_cases]
+        names = list(r.test_cases)
         assert names == [
             "foo",
             "outer:bar",

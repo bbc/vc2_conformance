@@ -29,20 +29,26 @@ Py.Test) to result in several similar cases being produced::
     ...     return Sequence(...)
 
 Test cases which are designed to violate bitstream rules may be marked as
-expected to fail::
+expected to fail. The xfail argument should be provided with the relevant
+:py:mod:`vc2_conformance.decoder.exceptions` exception type. This will be
+automatically checked by the vc2_conformance test suite::
 
-    >>> @test_case(xfail="Conflicting options")
-    >>> def conflicting_test_sequence():
+    >>> from vc2_conformance.decoder import BadParseCode
+    
+    >>> @test_case(xfail=BadParseCode)
+    >>> def test_case_with_invalid_parse_code():
     ...     return Sequence(...)
 
 In cases where some (but not all) test parameterisations are expected to fail,
 an :py:class:`XFail` object may be returned to indicate those cases which may
 fail.
 
+    >>> from vc2_conformance.decoder import NoQuantisationMatrixAvailable
+    
     >>> @test_case(parameters=("dwt_depth", range(10)))
     >>> def conflicting_test_sequence(dwt_depth):
     ...     if dwt_depth > 4:
-    ...         return XFail(Sequence(...), reason="unsupported dwt_depth")
+    ...         return XFail(Sequence(...), reason=NoQuantisationMatrixAvailable)
     ...     else:
     ...         return Sequence(...)
 
@@ -81,33 +87,7 @@ __all__ = [
 ]
 
 
-TestCase = namedtuple("TestCase", "name,function,doc")
-"""
-A test case to be executed.
-
-Parameters
-==========
-identifier : str
-    A unique, human-readable name for this test case.
-function : callable
-    A callable which will be called with no arguments and returns a
-    :py:class:`vc2_conformance.bitstream.Sequence` which defines a particular
-    test case.
-    
-    This function may return a :py:class:`XFail` instance if the test case is
-    expected not to be handled successfully by the target decoder. For example,
-    this might be the case for out-of-range or illigal bitstream parameter
-    combinations.
-    
-    Finally, the function may return None to indicate that this particular test
-    case should be skipped. This is useful for parameterized test cases where
-    some parameter combinations are not meaningful.
-doc : str
-    A Python documentation string describing the test.
-"""
-
-
-XFail = namedtuple("XFail", "sequence,reason")
+XFail = namedtuple("XFail", "sequence,error")
 """
 To be returned by a test case function when a particular test is expected to
 fail.
@@ -116,12 +96,13 @@ Parameters
 ==========
 sequence : :py:class:`vc2_conformance.bitstream.Sequence`
     The test case itself.
-reason : str
-    A brief explanation why this test is expected to fail.
+error : :py:class:`Exception`
+    The :py:mod:`vc2_conformance.decoder.exceptions` exception type which this
+    test case is expected to violate.
 """
 
 
-def force_xfail(func, reason):
+def force_xfail(func, error):
     """
     Function wrapper which wraps the original function's output in
     :py:class:`XFail` except when the original function has already returned
@@ -133,7 +114,7 @@ def force_xfail(func, reason):
         if out is None or isinstance(out, XFail):
             return out
         else:
-            return XFail(out, reason)
+            return XFail(out, error)
     
     return wrapper
 
@@ -223,8 +204,10 @@ class TestCaseRegistry(object):
     """
     
     def __init__(self):
-        # The TestCase objects for each case registered so far.
-        self.test_cases = []
+        # The test case returning functions for each case registered so far.
+        #
+        # {name: function() -> Sequence, ...}
+        self.test_cases = OrderedDict()
         
         # The current stack of nested group names
         self._group_stack = []
@@ -249,10 +232,11 @@ class TestCaseRegistry(object):
         
         Parameters
         ==========
-        xfail : None or str
-            If a string, this test case (including any parameterizations) will
-            be marked as expected to fail for the reason expressed in the
-            string.
+        xfail : None or :py:exc:`vc2_conformance.decoder.ConformanceError`
+            If a :py:exc:`vc2_conformance.decoder.ConformanceError`, this test
+            case (including any parameterizations) will be marked as expected
+            to fail with the conformance checking decoder throwing the provided
+            exception type.
             
             For tests which are expected to pass, This argument should be
             absent or set to None. For parameterized test cases, individual
@@ -270,30 +254,28 @@ class TestCaseRegistry(object):
                 ))
             
             name = ":".join(self._group_stack + [func.__name__])
-            doc = func.__doc__
             
             if xfail is not None:
                 func = force_xfail(func, xfail)
             
             if parameters is None:
-                self.test_cases.append(TestCase(name, func, doc))
+                assert name not in self.test_cases
+                self.test_cases[name] = func
             else:
                 for parameters in expand_parameters(parameters):
-                    self.test_cases.append(TestCase(
-                        "{}[{}]".format(
-                            name,
-                            ", ".join(
-                                "{}={!r}".format(key, value)
-                                for key, value in parameters.items()
-                            )
-                        ),
-                        partial(func, **parameters),
-                        doc,
-                    ))
+                    this_name = "{}[{}]".format(
+                        name,
+                        ", ".join(
+                            "{}={!r}".format(key, value)
+                            for key, value in parameters.items()
+                        )
+                    )
+                    assert this_name not in self.test_cases
+                    self.test_cases[this_name] = wraps(func)(partial(func, **parameters))
             
             return func
         
-        # Support use as @test_case and @test_case(foo, bar)
+        # Support use as both @test_case and @test_case(foo, bar)
         if func is None:
             return wrap
         else:
