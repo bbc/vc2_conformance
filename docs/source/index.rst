@@ -29,3 +29,4 @@ source is reproduced here.
    maintainer/utils.rst
    maintainer/bitstream.rst
    maintainer/verification.rst
+   maintainer/analysis.rst

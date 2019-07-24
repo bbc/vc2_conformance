@@ -10,8 +10,8 @@ If you're not interested in the details, you can skip directly to the
 convenience function for computing quantisation matrices:
 :py:func:`derive_quantisation_matrix`.
 
-Motivation
-----------
+Motivation/Background
+---------------------
 
 VC-2 achieves lossy compression by quantizing wavelet transform coefficients.
 This quantisation introduces errors (noise) into the transformed signal. When a
@@ -57,7 +57,7 @@ computer algebra system is used for all calculations. This means that all
 operations are carried out symbolically in much the same way they would be
 performed on paper.
 
-.. _SymPy:: https://www.sympy.org/en/index.html
+.. _SymPy: https://www.sympy.org/
 
 
 Filter Noise Gain
@@ -88,7 +88,7 @@ From lifting to classical filters
 For reasons of efficiency and perfect reconstruction, the VC-2 wavelet filters
 are specified in terms of lifting operations:
 
-.. image:: lifting_filters.svg
+.. image:: /_static/quantisation_matrices/lifting_filters.svg
     :alt: VC-2's lifting filter architecture.
 
 This figure shows both the analysis (picture to transform coefficients) and
@@ -101,7 +101,7 @@ By contrast, the :py:func:`fir_filter_noise_gain` function requires our filters
 to be defined as classical Finite Impulse Response (FIR) filters. That is, we
 must transform the picture above into the one below:
 
-.. image:: classical_filters.svg
+.. image:: /_static/quantisation_matrices/classical_filters.svg
     :alt: The classical FIR filter architecture.
 
 
@@ -120,7 +120,7 @@ The figure below shows the lifting representation of the analysis (top) and
 synthesis (bottom) filters again, additionally labelled according to the
 convention used here:
 
-.. image:: lifting_z_transform.svg
+.. image:: /_static/quantisation_matrices/lifting_z_transform.svg
     :alt: Names used for synthesis z-transform representation.
 
 Using a :math:`z`\ -domain representation then our picture signal,
@@ -147,7 +147,8 @@ makes up the even samples and the HF component the odd samples:
     \end{array}
 
 The resulting :math:`z`-domain matrix forms of the analysis and synthesis
-lifting processes respectively are::
+lifting processes respectively are:
+
 
 .. math::
 
@@ -185,7 +186,7 @@ lifting processes respectively are::
         X_0(z) \\
         X_1(z)
     \end{bmatrix}
-
+    \\
     \begin{bmatrix}
         X_0(z) \\
         X_1(z)
@@ -226,6 +227,8 @@ representations of the lifting step filters. These functions can be found for
 a given wavelet transform using:
 
 .. autofunction:: lifting_stage_to_z_transform
+
+.. autoclass:: StageType
 
 If the left-most parts of the above matrices are multiplied together into
 :math:`2 \times 2` matrices: :math:`\textbf{H}(z)` (the analysis filter in
@@ -283,7 +286,7 @@ The matrix form representation achieved above implements the following
 (slightly more formally illustrated, this time) analysis/synthesis filtering
 processes:
 
-.. image:: matrix_form_formal.svg
+.. image:: /_static/quantisation_matrices/matrix_form_formal.svg
     :alt: Formal z-domain matrix representation.
 
 In this new diagram, the 'split' and 'interleave' processes are shown in terms
@@ -293,7 +296,7 @@ From the matrix based representation (where our filters are defined by the
 matrices :math:`\textbf{H}(z)` (analysis) and :math:`\textbf{G}(z)` (synthesis)
 we now wish to decompose this into the classical form below:
 
-.. image:: classical_form_formal.svg
+.. image:: /_static/quantisation_matrices/classical_form_formal.svg
     :alt: Formal z-domain classical representation.
 
 In this representation, the analysis filter is defined by :math:`H_0(z^2)` and
@@ -315,7 +318,7 @@ The first step is to modify the :math:`\textbf{H}(z)` and :math:`\textbf{G}(z)`
 filters to work on full-rate signals (i.e. to move the decimation step after
 analysis or before synthesis, as illustrated below:
 
-.. image:: matrix_form_formal_decimate_inside.svg
+.. image:: /_static/quantisation_matrices/matrix_form_formal_decimate_inside.svg
     :alt: Decimation stages moved other side of filters.
 
 The modification is straight-forward -- the filter coefficients are interleaved
@@ -487,7 +490,7 @@ A convenience function is provided which carries out all of the above steps for
 Computing Quantisation Matrices
 -------------------------------
 
-The :py:math:`\alpha` and  :py:math:`\beta` values found by
+The :math:`\alpha` and  :math:`\beta` values found by
 :py:func:`wavelet_filter_to_alpha_beta` may now be used to create the
 quantisation matrices for a given transform.
 
@@ -495,7 +498,7 @@ During the VC-2 2D wavelet transform, the filtering process is applied
 recursively. The consequence of this is that the noise gains accumulate
 (multiplicatively). This is illustrated below:
 
-.. image:: noise_gain_accumulation.svg
+.. image:: /_static/quantisation_matrices/noise_gain_accumulation.svg
     :alt: Noise-gain accumulation during filtering.
 
 The :math:`s` term is the scaling factor due to the bit shift used by VC-2
@@ -514,7 +517,7 @@ And is computed by:
     When an asymmetric transform is used, the bit shift for the horizontal
     transform is used (see ``filter_bit_shift`` (15.4.2)).
 
-The weighting of :math:`\alpha`, :math:`\beta` and :math:`s`for all bands and
+The weighting of :math:`\alpha`, :math:`\beta` and :math:`s` for all bands and
 levels may be computed automatically using:
 
 .. autofunction:: accumulated_noise_gains

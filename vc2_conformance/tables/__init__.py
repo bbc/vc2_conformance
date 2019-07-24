@@ -4,10 +4,6 @@
 
 Constants, :py:class:`~enum.Enum` values and data tables defined by the VC-2
 specification.
-
-.. automodule:: vc2_conformance.tables
-    :members:
-    :undoc-members:
 """
 
 from enum import IntEnum

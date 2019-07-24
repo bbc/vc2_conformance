@@ -29,6 +29,7 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.intersphinx",
     "sphinx.ext.doctest",
+    "sphinx.ext.mathjax",
     "numpydoc",
 ]
 
