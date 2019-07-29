@@ -8,3 +8,4 @@ production of quantisation matrices and extreme-case test signals.
 """
 
 from vc2_conformance.wavelet_filter_analysis.quantisation_matrices import derive_quantisation_matrix
+from vc2_conformance.wavelet_filter_analysis.bit_widths import *
