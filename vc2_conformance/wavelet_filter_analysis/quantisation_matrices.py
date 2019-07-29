@@ -431,7 +431,7 @@ matrix equation:
     zX_\text{odd}(z) &=
         G_{10}(z^2) Y_0(z^2) + G_{11}(z^2) Y_1(z^2) \\
 
-In the diagrams we have defined $X(z) = X_0(z^2) + z^{-1} X_1(z^2)$.
+In the diagrams we have defined :math:`X(z) = X_0(z^2) + z^{-1} X_1(z^2)`.
 Substituting the formulae above into this expression and then rearranging we
 get:
 
