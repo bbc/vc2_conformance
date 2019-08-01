@@ -47,6 +47,7 @@ add_module_names = False
 intersphinx_mapping = {
     "python": ("http://docs.python.org/3", None),
     "ast": ("https://greentreesnakes.readthedocs.io/en/latest/", None),
+    "sympy": ("https://docs.sympy.org/latest/", None),
 }
 
 
