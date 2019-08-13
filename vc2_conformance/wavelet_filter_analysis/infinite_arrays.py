@@ -1,16 +1,12 @@
 r"""
-Infinite VC-2 Filters
-=====================
+Infinite Arrays
+===============
 
-An implementation of VC-2's wavelet filters based on symbolic arithmetic acting
-over an infinite picture.
+Infinite array types which may be used to construct algebraic descriptions of
+wavelet filters on infinite inputs.
 
-This module may be used to obtain algebraic expressions describing the complete
-arithmetic required to produce any given intermediate or output value during
-the encoding or decoding process.
-
-Infinite arrays
----------------
+:py:class:`InfiniteArray` types
+-------------------------------
 
 The implementation assumes all inputs (and therefore outputs) to every
 operation are infinite 2D arrays. As a consequence, no edge-extension or
@@ -63,7 +59,7 @@ these elements are typically very similar.
 Consider the following example:
 
     >>> from vc2_conformance.tables import LIFTING_FILTERS, WaveletFilters
-    >>> from vc2_conformance.wavelet_filter_analysis.infinite_filters import (
+    >>> from vc2_conformance.wavelet_filter_analysis.infinite_arrays import (
     ...     SymbolArray,
     ...     LiftedArray,
     ... )
@@ -98,17 +94,6 @@ from its :py:attr:`~InfiniteArray.period` property. For example::
     >>> v.period
     (1, 1)
 
-
-VC-2 filter implementations
----------------------------
-
-This module implements the VC-2 synthesis (and complementrary analysis) filters
-on :py:class:`InfiniteArray`\ s as follows:
-
-.. autofunction:: dwt
-
-.. autofunction:: idwt
-
 """
 
 from sympy import Symbol, sympify
@@ -120,6 +105,17 @@ from vc2_conformance._py2x_compat import gcd
 from vc2_conformance.wavelet_filter_analysis.symbolic_error_terms import (
     new_error_term,
 )
+
+
+__all__ = [
+    "InfiniteArray",
+    "SymbolArray",
+    "LiftedArray",
+    "RightShiftedArray",
+    "LeftShiftedArray",
+    "SubsampledArray",
+    "InterleavedArray",
+]
 
 
 def lcm(a, b):
@@ -187,7 +183,7 @@ class InfiniteArray(object):
         
         An array's period is the interval at which the algebraic form of
         elements in the array are similar (see
-        :mod:`vc2_conformance.wavelet_filter_analysis.infinite_filters`).
+        :mod:`vc2_conformance.wavelet_filter_analysis.infinite_arrays`).
         
         Returns
         =======
@@ -650,174 +646,3 @@ class InterleavedArray(InfiniteArray):
                 self._array_odd.period,
             ))
         )
-
-
-def vh_analysis(h_filter_params, v_filter_params, array):
-    r"""
-    Return a set of four :py:class:`InfiniteArray`\ s resulting from applying a
-    single VC-2 wavelet analysis filtering level to the provided input array.
-    """
-    shifted_array = LeftShiftedArray(array, h_filter_params.filter_bit_shift)
-    
-    filtered_array = shifted_array
-    for stage in h_filter_params.stages:
-        filtered_array = LiftedArray(filtered_array, stage, 0)
-    for stage in v_filter_params.stages:
-        filtered_array = LiftedArray(filtered_array, stage, 1)
-    
-    ll_array = SubsampledArray(filtered_array, (2, 2), (0, 0))
-    hl_array = SubsampledArray(filtered_array, (2, 2), (1, 0))
-    lh_array = SubsampledArray(filtered_array, (2, 2), (0, 1))
-    hh_array = SubsampledArray(filtered_array, (2, 2), (1, 1))
-    
-    return ll_array, hl_array, lh_array, hh_array
-
-
-def h_analysis(h_filter_params, array):
-    r"""
-    Return a set of two :py:class:`InfiniteArray`\ s resulting from applying a
-    single horizontal-only VC-2 wavelet analysis filtering level to the
-    provided input array.
-    """
-    shifted_array = LeftShiftedArray(array, h_filter_params.filter_bit_shift)
-    
-    filtered_array = shifted_array
-    for stage in h_filter_params.stages:
-        filtered_array = LiftedArray(filtered_array, stage, 0)
-    
-    l_array = SubsampledArray(filtered_array, (2, 1), (0, 0))
-    h_array = SubsampledArray(filtered_array, (2, 1), (1, 0))
-    
-    return l_array, h_array
-
-
-def dwt(h_filter_params, v_filter_params, dwt_depth, dwt_depth_ho, array):
-    """
-    Perform a multi-level VC-2 (analysis) Discrete Wavelet Transform (IDWT) on
-    a :py:class:`InfiniteArray` in a manner which is the complement of the
-    'idwt' pseudocode function in (15.4.1).
-    
-    Parameters
-    ==========
-    h_filter_params, v_filter_params : :py:class:`vc2_conformance.tables.LiftingFilterParameters`
-        Horizontal and vertical filter parameters (e.g. from
-        :py:data:`vc2_conformance.tables.LIFTING_FILTERS`.
-    dwt_depth, dwt_depth_ho: int
-        Transform depths for 2D and horizontal-only transforms.
-    array : :py:class:`InfiniteArray`
-        The picture to be analysed.
-    
-    Returns
-    =======
-    coeff_arrays : {level: {orientation: :py:class:`InfiniteArray`, ...}, ...}
-        The transform coefficient values. These dictionaries are indexed the
-        same way as 'coeff_data' in the idwt pseudocode function in (15.4.1) in
-        the VC-2 specification.
-    """
-    coeff_arrays = {}
-    
-    dc = array
-    for n in reversed(range(dwt_depth_ho + 1,
-                            dwt_depth_ho + dwt_depth + 1)):
-        ll, hl, lh, hh = vh_analysis(h_filter_params, v_filter_params, dc)
-        dc = ll
-        coeff_arrays[n] = {}
-        coeff_arrays[n]["HL"] = hl
-        coeff_arrays[n]["LH"] = lh
-        coeff_arrays[n]["HH"] = hh
-    for n in reversed(range(1, dwt_depth_ho + 1)):
-        l, h = h_analysis(h_filter_params, dc)
-        dc = l
-        coeff_arrays[n] = {}
-        coeff_arrays[n]["H"] = h
-    
-    coeff_arrays[0] = {}
-    if dwt_depth_ho == 0:
-        coeff_arrays[0]["LL"] = dc
-    else:
-        coeff_arrays[0]["L"] = dc
-    
-    return coeff_arrays
-
-
-def vh_synthesis(h_filter_params, v_filter_params, ll_array, hl_array, lh_array, hh_array):
-    r"""
-    Return a :py:class:`InfiniteArray` resulting from applying a single VC-2
-    wavelet synthesis filtering level to the provided input arrays.
-    """
-    array = InterleavedArray(
-        InterleavedArray(ll_array, hl_array, 0),
-        InterleavedArray(lh_array, hh_array, 0),
-        1,
-    )
-    
-    filtered_array = array
-    for stage in v_filter_params.stages:
-        filtered_array = LiftedArray(filtered_array, stage, 1)
-    for stage in h_filter_params.stages:
-        filtered_array = LiftedArray(filtered_array, stage, 0)
-    
-    shifted_array = RightShiftedArray(filtered_array, h_filter_params.filter_bit_shift)
-    
-    return shifted_array
-
-
-def h_synthesis(h_filter_params, l_array, h_array):
-    r"""
-    Return a :py:class:`InfiniteArray` resulting from applying a single VC-2
-    horizontal-only wavelet synthesis filtering level to the provided input
-    arrays.
-    """
-    array = InterleavedArray(l_array, h_array, 0)
-    
-    filtered_array = array
-    for stage in h_filter_params.stages:
-        filtered_array = LiftedArray(filtered_array, stage, 0)
-    
-    shifted_array = RightShiftedArray(filtered_array, h_filter_params.filter_bit_shift)
-    
-    return shifted_array
-
-
-def idwt(h_filter_params, v_filter_params, dwt_depth, dwt_depth_ho, coeff_arrays):
-    """
-    Perform a multi-level VC-2 Inverse (synthesis) Discrete Wavelet Transform
-    (IDWT) on a :py:class:`InfiniteArray` in a manner equivalent to the 'idwt'
-    pseudocode function in (15.4.1).
-    
-    Parameters
-    ==========
-    h_filter_params, v_filter_params : :py:class:`vc2_conformance.tables.LiftingFilterParameters`
-        Horizontal and vertical filter parameters (e.g. from
-        :py:data:`vc2_conformance.tables.LIFTING_FILTERS`.
-    dwt_depth, dwt_depth_ho: int
-        Transform depths for 2D and horizontal-only transforms.
-    coeff_arrays : {level: {orientation: :py:class:`InfiniteArray`, ...}, ...}
-        The transform coefficient values to use in the transform. These
-        dictionaries are indexed the same way as 'coeff_data' in the idwt
-        pseudocode function in (15.4.1) in the VC-2 specification.
-    
-    Returns
-    =======
-    picture : :py:class:`InfiniteArray`
-        The synthesised picture.
-    """
-    if dwt_depth_ho == 0:
-        dc = coeff_arrays[0]["LL"]
-    else:
-        dc = coeff_arrays[0]["L"]
-    
-    for n in range(1, dwt_depth_ho + 1):
-        dc = h_synthesis(h_filter_params, dc, coeff_arrays[n]["H"])
-    for n in range(dwt_depth_ho + 1,
-                   dwt_depth_ho + dwt_depth + 1):
-        dc = vh_synthesis(
-            h_filter_params,
-            v_filter_params,
-            dc,
-            coeff_arrays[n]["HL"],
-            coeff_arrays[n]["LH"],
-            coeff_arrays[n]["HH"],
-        )
-    
-    return dc
