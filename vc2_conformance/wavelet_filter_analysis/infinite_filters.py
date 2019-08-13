@@ -99,32 +99,6 @@ from its :py:attr:`~InfiniteArray.period` property. For example::
     (1, 1)
 
 
-Error terms
------------
-
-Though all arithmetic is carried out as if using (infinite precision) real
-numbers, wherever a right shift (truncating integer division) is performed in
-the above classes an error term (with a unique name like :math:`e_{123}`) is
-added to the result, standing in for the possible rounding error in the range
-:math:`[0, 1)`.
-
-Error symbols are created using:
-
-.. autofunction:: new_error_term
-
-The error symbols in a given expression may be stripped out using:
-
-.. autofunction:: strip_error_terms
-
-The following function may be used to work out the worst-case error bounds for
-a given expression. The lower-bound is defined as when all negatively-weighted
-error terms are 1 and all positively weighted errors are 0.  Conversely the
-upper-bound is given when all positively-weighted error terms are set to 1 and
-the negatively-weighted terms are 0.
-
-.. autofunction:: worst_case_error_bounds
-
-
 VC-2 filter implementations
 ---------------------------
 
@@ -143,65 +117,16 @@ from vc2_conformance.tables import LiftingFilterTypes
 
 from vc2_conformance._py2x_compat import gcd
 
+from vc2_conformance.wavelet_filter_analysis.symbolic_error_terms import (
+    new_error_term,
+)
+
 
 def lcm(a, b):
     """
     Compute the Lowest Common Multiple (LCM) of two integers.
     """
     return abs(a*b) // gcd(a, b)
-
-
-_last_error_term = 0
-"""Used by :py:func:`new_error_term`. For internal use only."""
-
-def new_error_term():
-    """
-    Create a new, and unique, :py:mod:`sympy` symbol with a name of the form
-    'e_123'.
-    """
-    global _last_error_term
-    _last_error_term += 1
-    return Symbol("e_{}".format(_last_error_term))
-
-
-def strip_error_terms(expression):
-    """
-    Strip all error terms (created by :py:func:`new_error_term`) from an
-    expression.
-    """
-    expression = sympify(expression)
-    
-    return expression.subs({
-        sym: 0
-        for sym in expression.free_symbols
-        if sym.name.startswith("e_")
-    })
-
-
-def worst_case_error_bounds(expression):
-    """
-    Calculate the worst-case error bounds for the value of the provided
-    expression.
-    
-    Returns
-    =======
-    lower_bound, upper_bound
-    """
-    expression = sympify(expression)
-    
-    lower_bound = expression.subs({
-        sym: 1 if expression.coeff(sym) < 0 else 0
-        for sym in expression.free_symbols
-        if sym.name.startswith("e_")
-    })
-    
-    upper_bound = expression.subs({
-        sym: 1 if expression.coeff(sym) > 0 else 0
-        for sym in expression.free_symbols
-        if sym.name.startswith("e_")
-    })
-    
-    return lower_bound, upper_bound
 
 
 class InfiniteArray(object):
@@ -322,10 +247,9 @@ class LiftedArray(InfiniteArray):
         
         In this implementation, real arithmetic (rather than truncating integer
         arithmetic) is used. Consequently, rounding errors which would be
-        present in an integer implementation are not represented. Instead an
-        error term (produced by :py:func:`new_error_term`) is added to the
-        result. This error term should be considered as lying in the range
-        :math:`[0, 1)`.
+        present in an integer implementation are represented by the insertion
+        of error terms (see
+        :py:mod:`~vc2_conformance.wavelet_filter_analysis.symbolic_error_terms`).
         
         Parameters
         ==========
@@ -490,10 +414,9 @@ class RightShiftedArray(InfiniteArray):
         
         In this implementation, real arithmetic (rather than truncating integer
         arithmetic) is used. Consequently, rounding errors which would be
-        present in an integer implementation are not represented. Instead an
-        error term (produced by :py:func:`new_error_term`) is added to the
-        result. This error term should be considered as lying in the range
-        :math:`[0, 1)`.
+        present in an integer implementation are represented by the insertion
+        of error terms (see
+        :py:mod:`~vc2_conformance.wavelet_filter_analysis.symbolic_error_terms`).
         
         Parameters
         ==========
