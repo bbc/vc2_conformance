@@ -6,6 +6,8 @@ import random
 
 import sympy
 
+from itertools import combinations_with_replacement, product
+
 from vc2_conformance import tables
 
 from vc2_conformance.picture_decoding import SYNTHESIS_LIFTING_FUNCTION_TYPES
@@ -15,6 +17,7 @@ from vc2_conformance.wavelet_filter_analysis.quantisation_matrices import (
 )
 
 from vc2_conformance.wavelet_filter_analysis.infinite_filters import (
+    lcm,
     new_error_term,
     strip_error_terms,
     worst_case_error_bounds,
@@ -28,6 +31,30 @@ from vc2_conformance.wavelet_filter_analysis.infinite_filters import (
     dwt,
     idwt,
 )
+
+
+@pytest.mark.parametrize("a,b,exp", [
+    # a==b
+    (1, 1, 1),  # Ones
+    (7, 7, 7),  # Prime
+    (10, 10, 10),  # Non-prime
+    # a!=b where one or both numbers are prime
+    (1, 7, 7),
+    (7, 1, 7),
+    (3, 7, 21),
+    (7, 3, 21),
+    # a!=b where one number is prime
+    (2, 5, 10),
+    (5, 2, 10),
+    (10, 5, 10),
+    (5, 10, 10),
+    # a!=b where both numbers share a common factor
+    (10, 15, 30),
+    (15, 10, 30),
+])
+def test_lcm(a, b, exp):
+    assert lcm(a, b) == exp
+
 
 def test_new_error_term():
     e1 = new_error_term()
@@ -117,6 +144,8 @@ class TestInfiniteArray(object):
 def test_symbol_array():
     a = SymbolArray(3, "foo")
     
+    assert a.period == (1, 1, 1)
+    
     foo_0_0_0 = a[0, 0, 0]
     assert foo_0_0_0.name == "foo_0_0_0"
     
@@ -127,83 +156,81 @@ def test_symbol_array():
     assert foo__1__2__3.name == "foo_-1_-2_-3"
 
 
-class TestSubsampledArray(object):
+class RepeatingSymbolArray(SymbolArray):
+    """
+    A :py:class:`SymbolArray` used in tests which repeats the same symbols with
+    a specified period.
+    """
+    def __init__(self, period, prefix="v"):
+        self._period = period
+        super(RepeatingSymbolArray, self).__init__(len(self._period), prefix)
     
-    @pytest.mark.parametrize("steps,offsets", [
-        # Too short
-        ((1, 2), (1, 2, 3)),
-        ((1, 2, 3), (1, 2)),
-        ((1, 2), (1, 2)),
-        # Too long
-        ((1, 2, 3, 4), (1, 2, 3)),
-        ((1, 2, 3), (1, 2, 3, 4)),
-        ((1, 2, 3, 4), (1, 2, 3, 4)),
-    ])
-    def test_bad_arguments(self, steps, offsets):
-        a = SymbolArray(3, "v")
-        with pytest.raises(TypeError):
-            SubsampledArray(a, steps, offsets)
+    def get(self, key):
+        key = tuple(
+            k % p
+            for k, p in zip(key, self.period)
+        )
+        return super(RepeatingSymbolArray, self).get(key)
     
-    def test_subsampling(self):
-        a = SymbolArray(3, "v")
-        s = SubsampledArray(a, (1, 2, 3), (0, 10, 20))
-        
-        assert s[0, 0, 0].name == "v_0_10_20"
-        
-        assert s[1, 0, 0].name == "v_1_10_20"
-        assert s[0, 1, 0].name == "v_0_12_20"
-        assert s[0, 0, 1].name == "v_0_10_23"
-        
-        assert s[2, 2, 2].name == "v_2_14_26"
+    @property
+    def period(self):
+        return self._period
 
 
-class TestInterleavedArray(object):
+def test_repeating_symbol_array():
+    a = RepeatingSymbolArray((3, 2))
     
-    def test_mismatched_array_dimensions(self):
-        a = SymbolArray(2, "a")
-        b = SymbolArray(3, "b")
-        
-        with pytest.raises(TypeError):
-            InterleavedArray(a, b, 0)
+    assert a.ndim == 2
+    assert a.period == (3, 2)
     
-    def test_interleave_dimension_out_of_range(self):
-        a = SymbolArray(2, "a")
-        b = SymbolArray(2, "b")
-        
-        with pytest.raises(TypeError):
-            InterleavedArray(a, b, 2)
+    assert len(set(
+        a[x, y]
+        for x in range(3)
+        for y in range(2)
+    )) == 3 * 2
     
-    def test_interleave(self):
-        a = SymbolArray(2, "a")
-        b = SymbolArray(2, "b")
+    for x in range(3):
+        for y in range(2):
+            assert a[x, y] == a[x+3, y]
+            assert a[x, y] == a[x, y+2]
+            assert a[x, y] == a[x+3, y+2]
+
+
+def period_empirically_correct(a):
+    """
+    Empirically verify the period a particular array claims to have.
+    
+    Checks that expected repeats are literal repeated values (minus differing
+    error terms).
+    """
+    last_values = None
+    # Get the hyper-cube block of values which sample the complete period
+    # of the array at various period-multiple offsets
+    for offset_steps in combinations_with_replacement([-1, 0, 1, 2], a.ndim):
+        offset = tuple(
+            step * period
+            for step, period in zip(offset_steps, a.period)
+        )
+        values = [
+            strip_error_terms(a[tuple(c + o for c, o in zip(coord, offset))])
+            for coord in product(*(range(d) for d in a.period))
+        ]
         
-        # 'Horizontal'
-        i = InterleavedArray(a, b, 0)
-        assert i[-2, 0].name == "a_-1_0"
-        assert i[-1, 0].name == "b_-1_0"
-        assert i[0, 0].name == "a_0_0"
-        assert i[1, 0].name == "b_0_0"
-        assert i[2, 0].name == "a_1_0"
-        assert i[3, 0].name == "b_1_0"
+        # Every set of values should be identical
+        if last_values is not None and values != last_values:
+            return False
         
-        assert i[0, 1].name == "a_0_1"
-        assert i[1, 1].name == "b_0_1"
-        assert i[2, 1].name == "a_1_1"
-        assert i[3, 1].name == "b_1_1"
-        
-        # 'Vertical'
-        i = InterleavedArray(a, b, 1)
-        assert i[0, -2].name == "a_0_-1"
-        assert i[0, -1].name == "b_0_-1"
-        assert i[0, 0].name == "a_0_0"
-        assert i[0, 1].name == "b_0_0"
-        assert i[0, 2].name == "a_0_1"
-        assert i[0, 3].name == "b_0_1"
-        
-        assert i[1, 0].name == "a_1_0"
-        assert i[1, 1].name == "b_1_0"
-        assert i[1, 2].name == "a_1_1"
-        assert i[1, 3].name == "b_1_1"
+        last_values = values
+    
+    return True
+
+
+def test_period_empirically_correct():
+    a = RepeatingSymbolArray((2, 3))
+    assert period_empirically_correct(a)
+    
+    a._period = (3, 2)  # Naughty!
+    assert not period_empirically_correct(a)
 
 
 class TestLiftedArray(object):
@@ -254,32 +281,170 @@ class TestLiftedArray(object):
             assert (
                 lower_bound <= pseudocode_output <= upper_bound
             )
+    
+    @pytest.mark.parametrize("input_period,dim,exp_period", [
+        # Examples illustrated in the comments
+        ((1, ), 0, (2, )),
+        ((2, ), 0, (2, )),
+        ((4, ), 0, (4, )),
+        ((3, ), 0, (6, )),
+        # Multiple-dimensions
+        ((1, 2, 3), 0, (2, 2, 3)),
+        ((1, 2, 3), 1, (1, 2, 3)),
+        ((1, 2, 3), 2, (1, 2, 6)),
+    ])
+    def test_period(self, input_period, dim, exp_period, stage):
+        a = RepeatingSymbolArray(input_period)
+        l = LiftedArray(a, stage, dim)
+        assert l.period == exp_period
+        assert period_empirically_correct(l)
 
 
-def test_right_shifted_array():
-    a = SymbolArray(3, "foo")
-    sa = RightShiftedArray(a, 3)
+class TestSubsampledArray(object):
     
-    v = a[1, 2, 3]
+    @pytest.mark.parametrize("steps,offsets", [
+        # Too short
+        ((1, 2), (1, 2, 3)),
+        ((1, 2, 3), (1, 2)),
+        ((1, 2), (1, 2)),
+        # Too long
+        ((1, 2, 3, 4), (1, 2, 3)),
+        ((1, 2, 3), (1, 2, 3, 4)),
+        ((1, 2, 3, 4), (1, 2, 3, 4)),
+    ])
+    def test_bad_arguments(self, steps, offsets):
+        a = SymbolArray(3, "v")
+        with pytest.raises(TypeError):
+            SubsampledArray(a, steps, offsets)
     
-    sv = sa[1, 2, 3]
+    def test_subsampling(self):
+        a = SymbolArray(3, "v")
+        s = SubsampledArray(a, (1, 2, 3), (0, 10, 20))
+        
+        assert s[0, 0, 0].name == "v_0_10_20"
+        
+        assert s[1, 0, 0].name == "v_1_10_20"
+        assert s[0, 1, 0].name == "v_0_12_20"
+        assert s[0, 0, 1].name == "v_0_10_23"
+        
+        assert s[2, 2, 2].name == "v_2_14_26"
     
-    sv_no_error = strip_error_terms(sv)
-    sv_error = sv - sv_no_error
-    
-    error_symbol = next(iter(sv_error.free_symbols))
-    
-    assert sv_no_error == (v + 4) / 8
-    assert sv_error == -error_symbol
+    @pytest.mark.parametrize("input_period,steps,exp_period", [
+        # Examples illustrated in the comments
+        ((2, ), (2, ), (1, )),
+        ((3, ), (2, ), (3, )),
+        # Multiple dimensions
+        ((1, 2, 3), (3, 2, 1), (1, 1, 3)),
+    ])
+    def test_period(self, input_period, steps, exp_period):
+        a = RepeatingSymbolArray(input_period)
+        s = SubsampledArray(a, steps, (0, )*len(steps))
+        assert s.period == exp_period
+        assert period_empirically_correct(s)
 
 
-def test_left_shifted_array():
-    a = SymbolArray(3, "foo")
-    sa = LeftShiftedArray(a, 3)
+class TestInterleavedArray(object):
     
-    v = a[1, 2, 3]
+    def test_mismatched_array_dimensions(self):
+        a = SymbolArray(2, "a")
+        b = SymbolArray(3, "b")
+        
+        with pytest.raises(TypeError):
+            InterleavedArray(a, b, 0)
     
-    assert sa[1, 2, 3] == v * 8
+    def test_interleave_dimension_out_of_range(self):
+        a = SymbolArray(2, "a")
+        b = SymbolArray(2, "b")
+        
+        with pytest.raises(TypeError):
+            InterleavedArray(a, b, 2)
+    
+    def test_interleave(self):
+        a = SymbolArray(2, "a")
+        b = SymbolArray(2, "b")
+        
+        # 'Horizontal'
+        i = InterleavedArray(a, b, 0)
+        assert i[-2, 0].name == "a_-1_0"
+        assert i[-1, 0].name == "b_-1_0"
+        assert i[0, 0].name == "a_0_0"
+        assert i[1, 0].name == "b_0_0"
+        assert i[2, 0].name == "a_1_0"
+        assert i[3, 0].name == "b_1_0"
+        
+        assert i[0, 1].name == "a_0_1"
+        assert i[1, 1].name == "b_0_1"
+        assert i[2, 1].name == "a_1_1"
+        assert i[3, 1].name == "b_1_1"
+        
+        # 'Vertical'
+        i = InterleavedArray(a, b, 1)
+        assert i[0, -2].name == "a_0_-1"
+        assert i[0, -1].name == "b_0_-1"
+        assert i[0, 0].name == "a_0_0"
+        assert i[0, 1].name == "b_0_0"
+        assert i[0, 2].name == "a_0_1"
+        assert i[0, 3].name == "b_0_1"
+        
+        assert i[1, 0].name == "a_1_0"
+        assert i[1, 1].name == "b_1_0"
+        assert i[1, 2].name == "a_1_1"
+        assert i[1, 3].name == "b_1_1"
+    
+    @pytest.mark.parametrize("input_a_period,input_b_period,dim,exp_period", [
+        # Examples illustrated in the comments
+        ((1, ), (2, ), 0, (4, )),
+        ((2, ), (3, ), 0, (12, )),
+        ((2, 1), (3, 1), 1, (6, 2)),
+    ])
+    def test_period(self, input_a_period, input_b_period, dim, exp_period):
+        a = RepeatingSymbolArray(input_a_period, "a")
+        b = RepeatingSymbolArray(input_b_period, "b")
+        i = InterleavedArray(a, b, dim)
+        assert i.period == exp_period
+        assert period_empirically_correct(i)
+
+
+class TestRightShiftedArray(object):
+    
+    def test_shifting(self):
+        a = SymbolArray(3, "foo")
+        sa = RightShiftedArray(a, 3)
+        
+        v = a[1, 2, 3]
+        
+        sv = sa[1, 2, 3]
+        
+        sv_no_error = strip_error_terms(sv)
+        sv_error = sv - sv_no_error
+        
+        error_symbol = next(iter(sv_error.free_symbols))
+        
+        assert sv_no_error == (v + 4) / 8
+        assert sv_error == -error_symbol
+    
+    def test_period(self):
+        a = RepeatingSymbolArray((1, 2, 3))
+        sa = RightShiftedArray(a, 3)
+        assert sa.period == (1, 2, 3)
+        assert period_empirically_correct(sa)
+
+
+class TestLeftShiftedArray(object):
+
+    def test_left_shifted_array(self):
+        a = SymbolArray(3, "foo")
+        sa = LeftShiftedArray(a, 3)
+        
+        v = a[1, 2, 3]
+        
+        assert sa[1, 2, 3] == v * 8
+    
+    def test_period(self):
+        a = RepeatingSymbolArray((1, 2, 3))
+        sa = LeftShiftedArray(a, 3)
+        assert sa.period == (1, 2, 3)
+        assert period_empirically_correct(sa)
 
 
 def test_dwt_and_idwt():

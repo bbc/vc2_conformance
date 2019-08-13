@@ -24,8 +24,8 @@ indexed using the usual Python syntax (e.g. an element in a 2D array might be
 accessed as ``a[1, -2]``).
 
 Entries in an :py:class:`InfiniteArray` are computed on demand (infinite memory
-not required!) and the actual values held depend entirely on the
-:py:class:`InfiniteArray` subclass.
+not required!) and the actual values depend entirely on the implementation of
+the :py:class:`InfiniteArray` subclass.
 
 .. autoclass:: InfiniteArray
     :members:
@@ -52,6 +52,51 @@ Arrays may be subsampled or interleaved, producing new
 .. autoclass:: SubsampledArray
 
 .. autoclass:: InterleavedArray
+
+
+Array period
+------------
+
+While :py:class:`InfiniteArray`\ s have an infinite number of elements,
+these elements are typically very similar.
+
+Consider the following example:
+
+    >>> from vc2_conformance.tables import LIFTING_FILTERS, WaveletFilters
+    >>> from vc2_conformance.wavelet_filter_analysis.infinite_filters import (
+    ...     SymbolArray,
+    ...     LiftedArray,
+    ... )
+    
+    >>> v = SymbolArray(2)
+    >>> stage = LIFTING_FILTERS[WaveletFilters.haar_no_shift].stages[0]
+    >>> out = LiftedArray(v, stage, 0)
+    
+    >>> out[0, 0]
+    e_1 + v_0_0 - v_1_0/2 - 1/2
+    >>> out[1, 0]
+    v_1_0
+    >>> out[2, 0]
+    e_2 + v_2_0 - v_3_0/2 - 1/2
+    >>> out[3, 0]
+    v_3_0
+
+In this example, after a lifting stage all odd-numbered values consist of a
+single symbol and all even numbered values follow the same algebraic pattern
+(i.e. ``e_? + v_?_0 - v_?_0/2 - 1/2``).
+
+An array's *period* is the period with which the algebraic structures in the
+array repeat. The array in the example has a period of (2, 1) because the
+pattern of values repeats every two elements horizontally and on every element
+vertically. The period of a given :py:class:`InfiniteArray` can be obtained
+from its :py:attr:`~InfiniteArray.period` property. For example::
+
+    >>> out.period
+    (2, 1)
+    
+    >>> # NB: SymbolArrays always have a period of 1 in every dimension
+    >>> v.period
+    (1, 1)
 
 
 Error terms
@@ -84,6 +129,15 @@ the negatively-weighted terms are 0.
 from sympy import Symbol, sympify
 
 from vc2_conformance.tables import LiftingFilterTypes
+
+from vc2_conformance._py2x_compat import gcd
+
+
+def lcm(a, b):
+    """
+    Compute the Lowest Common Multiple (LCM) of two integers.
+    """
+    return abs(a*b) // gcd(a, b)
 
 
 _last_error_term = 0
@@ -188,6 +242,23 @@ class InfiniteArray(object):
     def ndim(self):
         """The number of dimensions in the array."""
         return self._ndim
+    
+    
+    @property
+    def period(self):
+        """
+        Return the period of this array.
+        
+        An array's period is the interval at which the algebraic form of
+        elements in the array are similar (see
+        :mod:`vc2_conformance.wavelet_filter_analysis.infinite_filters`).
+        
+        Returns
+        =======
+        period : (int, ...)
+            The period of the array in each dimension.
+        """
+        raise NotImplementedError()
 
 
 class SymbolArray(InfiniteArray):
@@ -225,6 +296,10 @@ class SymbolArray(InfiniteArray):
             self._prefix,
             "_".join(map(str, keys)),
         ))
+    
+    @property
+    def period(self):
+        return (1, ) * self.ndim
 
 
 class LiftedArray(InfiniteArray):
@@ -323,6 +398,71 @@ class LiftedArray(InfiniteArray):
                 return self._input_array[keys] + total
             else:
                 return self._input_array[keys] - total
+    
+    @property
+    def period(self):
+        # A lifting filter applies the same filtering operation to all odd and
+        # all even entries in an array.
+        #
+        # For an input with period 1 or 2, this results in an output with
+        # period 2 (since all odd samples will be the result of one filtering
+        # operation and all even samples another).
+        #
+        #           Input (period=1)              Input (period=2)
+        #      +---+---+---+---+---+---+     +---+---+---+---+---+---+
+        #      | a | a | a | a | a | a |     | a | b | a | b | a | b |
+        #      +---+---+---+---+---+---+     +---+---+---+---+---+---+
+        #                  |                             |
+        #                  |                             |
+        #                  V                             V
+        #      +---+---+---+---+---+---+     +---+---+---+---+---+---+
+        #      | Ea| Oa| Ea| Oa| Ea| Oa|     | Ea| Ob| Ea| Ob| Ea| Ob|
+        #      +---+---+---+---+---+---+     +---+---+---+---+---+---+
+        #          Output (period=2)             Output (period=2)
+        #
+        #                              +---+
+        #                       Key:   | Ea|
+        #                              +---+
+        #                               /  \
+        #                              /    \
+        #             'E' = Even filter      'a' = Aligned with input 'a'
+        #             'O' = Odd filter       'b' = Aligned with input 'b'
+        #                                    ...
+        # For inputs with an *even* period greater than 2, the resulting output
+        # will have the same period as the input:
+        #
+        #             Input (period=4)
+        #     +---+---+---+---+---+---+---+---+
+        #     | a | b | c | d | a | b | c | d |
+        #     +---+---+---+---+---+---+---+---+
+        #                     |
+        #                     |
+        #                     V
+        #     +---+---+---+---+---+---+---+---+
+        #     | Ea| Ob| Ec| Od| Ea| Ob| Ec| Od|
+        #     +---+---+---+---+---+---+---+---+
+        #             Output (period=4)
+        #
+        # Finally, for inputs with an *odd* period greater than 2, the
+        # resulting output will have a period of *double* the input as the
+        # filters drift in and out of phase with the repeating input:
+        #
+        #                     Input (period=3)
+        #     +---+---+---+---+---+---+---+---+---+---+---+---+
+        #     | a | b | c | a | b | c | a | b | c | a | b | c |
+        #     +---+---+---+---+---+---+---+---+---+---+---+---+
+        #                             |
+        #                             |
+        #                             V
+        #     +---+---+---+---+---+---+---+---+---+---+---+---+
+        #     | Ea| Ob| Ec| Oa| Eb| Oc| Ea| Ob| Ec| Oa| Eb| Oc|
+        #     +---+---+---+---+---+---+---+---+---+---+---+---+
+        #                     Output (period=6)
+        
+        return tuple(
+            lcm(2, p) if dim == self._filter_dimension else p
+            for dim, p in enumerate(self._input_array.period)
+        )
 
 
 class RightShiftedArray(InfiniteArray):
@@ -366,6 +506,10 @@ class RightShiftedArray(InfiniteArray):
             value -= new_error_term()
             
             return value
+    
+    @property
+    def period(self):
+        return self._input_array.period
 
 
 class LeftShiftedArray(InfiniteArray):
@@ -389,6 +533,10 @@ class LeftShiftedArray(InfiniteArray):
     
     def get(self, keys):
         return self._input_array[keys] * (1 << self._shift_bits)
+    
+    @property
+    def period(self):
+        return self._input_array.period
 
 
 class SubsampledArray(InfiniteArray):
@@ -425,6 +573,46 @@ class SubsampledArray(InfiniteArray):
             (key*step) + offset
             for key, step, offset in zip(keys, self._steps, self._offsets)
         )]
+    
+    @property
+    def period(self):
+        # In cases where the input period is divisible by the step size,
+        # the output period will be the former divided by the latter:
+        #
+        #           Input (period=2)
+        #      +---+---+---+---+---+---+
+        #      | a | b | a | b | a | b |
+        #      +---+---+---+---+---+---+
+        #        .       . |     .
+        #        .       . |     .       step=2, offset=0
+        #        .       . V     .
+        #      +-------+-------+-------+
+        #      | a     | a     | a     |
+        #      +-------+-------+-------+
+        #          Output (period=1)
+        #
+        # However, if the input period is not evenly divisible by the step
+        # interval, the resulting output period will be greater due to the
+        # changing phase relationship of the subsampling and input period.
+        #
+        #                      Input (period=3)
+        #      +---+---+---+---+---+---+---+---+---+---+---+---+
+        #      | a | b | c | a | b | c | a | b | c | a | b | c |
+        #      +---+---+---+---+---+---+---+---+---+---+---+---+
+        #        .       .       .     | .       .       .
+        #        .       .       .     | .       .       .       step=2, offset=0
+        #        .       .       .     V .       .       .
+        #      +-------+-------+-------+-------+-------+-------+
+        #      | a     | c     | b     | a     | c     | b     |
+        #      +-------+-------+-------+-------+-------+-------+
+        #                     Output (period=3)
+        #
+        # Expressed mathematically, the actual period is found as the LCM of
+        # the input period and step size, divided by the step size.
+        return tuple(
+            lcm(p, step)//step
+            for p, step in zip(self._input_array.period, self._steps)
+        )
 
 
 class InterleavedArray(InfiniteArray):
@@ -466,6 +654,68 @@ class InterleavedArray(InfiniteArray):
             return self._array_even[downscaled_keys]
         else:
             return self._array_odd[downscaled_keys]
+    
+    @property
+    def period(self):
+        # When a pair of arrays are interleaved the resulting period in the
+        # interleaved dimension will be double the LCM of their respective
+        # periods. This is because, the respective phases of the two inputs may
+        # drift with respect to eachother. For example:
+        #
+        #      +-------+-------+-------+-------+
+        #      | a     | a     | a     | a     | Input (period=1)
+        #      +-------+-------+-------+-------+
+        #      +-.-----+-.-----+-.-----+-.-----+
+        #      | .   A | .   B | .   A | .   B | Input (period=2)
+        #      +-.-----+-.-----+-.-----+-.-----+
+        #        .   .   .   . | .   .   .   .
+        #        .   .   .   . | .   .   .   .
+        #        .   .   .   . V .   .   .   .
+        #      +---+---+---+---+---+---+---+---+
+        #      | a | A | a | B | a | A | a | B | Output (period=4)
+        #      +---+---+---+---+---+---+---+---+
+        #
+        # Example 2:
+        #
+        #      +-------+-------+-------+-------+-------+-------+
+        #      | a     | b     | a     | b     | a     | b     | Input (period=2)
+        #      +-------+-------+-------+-------+-------+-------+
+        #      +-.-----+-.-----+-.-----+-.-----+-.-----+-.-----+
+        #      | .   A | .   B | .   C | .   A | .   B | .   C | Input (period=3)
+        #      +-.-----+-.-----+-.-----+-.-----+-.-----+-.-----+
+        #        .   .   .   .   .   . | .   .   .   .   .   .
+        #        .   .   .   .   .   . | .   .   .   .   .   .
+        #        .   .   .   .   .   . V .   .   .   .   .   .
+        #      +---+---+---+---+---+---+---+---+---+---+---+---+
+        #      | a | A | b | B | a | C | b | A | a | B | b | C | Output (period=12)
+        #      +---+---+---+---+---+---+---+---+---+---+---+---+
+        #
+        # In the dimension not being interleaved, the period will simply be the
+        # LCM of the two inputs in that dimension as the phases of the
+        # interleaved values drift with respect to eachother. In the
+        # illustraton below, interleaving occurs on dimension 1:
+        #
+        #      +---+---+---+---+---+---+---+---+---+---+---+---+
+        #      | a | b | a | b | a | b | a | b | a | b | a | b | Input (period=(2, xxx))
+        #      +---+---+---+---+---+---+---+---+---+---+---+---+
+        #      +---+---+---+---+---+---+---+---+---+---+---+---+
+        #      | A | B | C | A | B | C | A | B | C | A | B | C | Input (period=(3, xxx))
+        #      +---+---+---+---+---+---+---+---+---+---+---+---+
+        #                              |
+        #                              |
+        #                              V
+        #      +---+---+---+---+---+---+---+---+---+---+---+---+
+        #      | a | b | a | b | a | b | a | b | a | b | a | b |
+        #      +---+---+---+---+---+---+---+---+---+---+---+---+ Output (period=(6, xxx))
+        #      | A | B | C | A | B | C | A | B | C | A | B | C |
+        #      +---+---+---+---+---+---+---+---+---+---+---+---+
+        return tuple(
+            lcm(pa, pb) * (2 if dim == self._interleave_dimension else 1)
+            for dim, (pa, pb) in enumerate(zip(
+                self._array_even.period,
+                self._array_odd.period,
+            ))
+        )
 
 
 def vh_analysis(h_filter_params, v_filter_params, array):

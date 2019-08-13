@@ -13,6 +13,7 @@ __all__ = [
     "unwrap",  # inspect.unwrap
     "quote",  # shlex.quote
     "string_types",  # (str, ) in Python 3.x or (str, unicode) in Python 2.x
+    "gcd",  # math.gcd
 ]
 
 import sys
@@ -73,3 +74,8 @@ try:
     string_types = (str, unicode)
 except NameError:
     string_types = (str, )
+
+try:
+    from math import gcd  # Python >= 3.5
+except ImportError:
+    from fractions import gcd  # Python < 3.5
