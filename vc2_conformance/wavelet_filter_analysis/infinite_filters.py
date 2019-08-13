@@ -124,6 +124,17 @@ the negatively-weighted terms are 0.
 
 .. autofunction:: worst_case_error_bounds
 
+
+VC-2 filter implementations
+---------------------------
+
+This module implements the VC-2 synthesis (and complementrary analysis) filters
+on :py:class:`InfiniteArray`\ s as follows:
+
+.. autofunction:: dwt
+
+.. autofunction:: idwt
+
 """
 
 from sympy import Symbol, sympify
@@ -759,8 +770,26 @@ def h_analysis(h_filter_params, array):
 
 def dwt(h_filter_params, v_filter_params, dwt_depth, dwt_depth_ho, array):
     """
-    Perform a multi-level VC-2 wavelet transform on a
-    :py:class:`InfiniteArray`.
+    Perform a multi-level VC-2 (analysis) Discrete Wavelet Transform (IDWT) on
+    a :py:class:`InfiniteArray` in a manner which is the complement of the
+    'idwt' pseudocode function in (15.4.1).
+    
+    Parameters
+    ==========
+    h_filter_params, v_filter_params : :py:class:`vc2_conformance.tables.LiftingFilterParameters`
+        Horizontal and vertical filter parameters (e.g. from
+        :py:data:`vc2_conformance.tables.LIFTING_FILTERS`.
+    dwt_depth, dwt_depth_ho: int
+        Transform depths for 2D and horizontal-only transforms.
+    array : :py:class:`InfiniteArray`
+        The picture to be analysed.
+    
+    Returns
+    =======
+    coeff_arrays : {level: {orientation: :py:class:`InfiniteArray`, ...}, ...}
+        The transform coefficient values. These dictionaries are indexed the
+        same way as 'coeff_data' in the idwt pseudocode function in (15.4.1) in
+        the VC-2 specification.
     """
     coeff_arrays = {}
     
@@ -829,8 +858,26 @@ def h_synthesis(h_filter_params, l_array, h_array):
 
 def idwt(h_filter_params, v_filter_params, dwt_depth, dwt_depth_ho, coeff_arrays):
     """
-    Perform a multi-level VC-2 wavelet transform on a
-    :py:class:`InfiniteArray`.
+    Perform a multi-level VC-2 Inverse (synthesis) Discrete Wavelet Transform
+    (IDWT) on a :py:class:`InfiniteArray` in a manner equivalent to the 'idwt'
+    pseudocode function in (15.4.1).
+    
+    Parameters
+    ==========
+    h_filter_params, v_filter_params : :py:class:`vc2_conformance.tables.LiftingFilterParameters`
+        Horizontal and vertical filter parameters (e.g. from
+        :py:data:`vc2_conformance.tables.LIFTING_FILTERS`.
+    dwt_depth, dwt_depth_ho: int
+        Transform depths for 2D and horizontal-only transforms.
+    coeff_arrays : {level: {orientation: :py:class:`InfiniteArray`, ...}, ...}
+        The transform coefficient values to use in the transform. These
+        dictionaries are indexed the same way as 'coeff_data' in the idwt
+        pseudocode function in (15.4.1) in the VC-2 specification.
+    
+    Returns
+    =======
+    picture : :py:class:`InfiniteArray`
+        The synthesised picture.
     """
     if dwt_depth_ho == 0:
         dc = coeff_arrays[0]["LL"]
