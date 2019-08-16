@@ -29,13 +29,16 @@ Error symbols in a given expression may be stripped out using:
 
 .. autofunction:: strip_error_terms
 
-The following function may be used to work out the worst-case error bounds for
+The following functions may be used to work out the worst-case error bounds for
 a given expression. The lower-bound is defined to be the case when all
 negatively-weighted error terms are 1 and all positively weighted errors are 0.
 Conversely the upper-bound is given when all positively-weighted error terms
 are set to 1 and the negatively-weighted terms are 0.
 
-.. autofunction:: worst_case_error_bounds
+.. autofunction:: upper_error_bound
+
+.. autofunction:: lower_error_bound
+
 """
 
 from sympy import Symbol, sympify
@@ -43,7 +46,8 @@ from sympy import Symbol, sympify
 __all__ = [
     "new_error_term",
     "strip_error_terms",
-    "worst_case_error_bounds",
+    "upper_error_bound",
+    "lower_error_bound",
 ]
 
 
@@ -74,29 +78,29 @@ def strip_error_terms(expression):
     })
 
 
-def worst_case_error_bounds(expression):
+def upper_error_bound(expression):
     """
-    Calculate the worst-case error bounds for the value of the provided
-    expression.
-    
-    Returns
-    =======
-    lower_bound, upper_bound
+    Calculate the upper-bound for the total value of the error terms in the
+    provided expression.
     """
     expression = sympify(expression)
     
-    lower_bound = expression.subs({
-        sym: 1 if expression.coeff(sym) < 0 else 0
-        for sym in expression.free_symbols
-        if sym.name.startswith("e_")
-    })
-    
-    upper_bound = expression.subs({
+    return expression.subs({
         sym: 1 if expression.coeff(sym) > 0 else 0
         for sym in expression.free_symbols
         if sym.name.startswith("e_")
     })
+
+
+def lower_error_bound(expression):
+    """
+    Calculate the lower-bound for the total value of the error terms in the
+    provided expression.
+    """
+    expression = sympify(expression)
     
-    return lower_bound, upper_bound
-
-
+    return expression.subs({
+        sym: 1 if expression.coeff(sym) < 0 else 0
+        for sym in expression.free_symbols
+        if sym.name.startswith("e_")
+    })

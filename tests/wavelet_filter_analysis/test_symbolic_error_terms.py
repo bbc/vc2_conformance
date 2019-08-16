@@ -5,7 +5,8 @@ import sympy
 from vc2_conformance.wavelet_filter_analysis.symbolic_error_terms import (
     new_error_term,
     strip_error_terms,
-    worst_case_error_bounds,
+    lower_error_bound,
+    upper_error_bound,
 )
 
 
@@ -49,5 +50,6 @@ def test_strip_error_terms(expr_in, expr_out):
     # Errors and other values
     (sympy.abc.a + 5 + 3*new_error_term(), sympy.abc.a + 5, sympy.abc.a + 8),
 ])
-def test_worst_case_error_bounds(expr_in, lower, upper):
-    assert worst_case_error_bounds(expr_in) == (lower, upper)
+def test_error_bounds(expr_in, lower, upper):
+    assert lower_error_bound(expr_in) == lower
+    assert upper_error_bound(expr_in) == upper
