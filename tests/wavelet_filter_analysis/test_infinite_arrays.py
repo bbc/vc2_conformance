@@ -12,7 +12,8 @@ from vc2_conformance.picture_decoding import SYNTHESIS_LIFTING_FUNCTION_TYPES
 
 from vc2_conformance.wavelet_filter_analysis.symbolic_error_terms import (
     strip_error_terms,
-    worst_case_error_bounds,
+    lower_error_bound,
+    upper_error_bound,
 )
 
 from vc2_conformance.wavelet_filter_analysis.infinite_arrays import (
@@ -226,7 +227,8 @@ class TestLiftedArray(object):
                 for i, value in enumerate(input_array)
             })
             
-            lower_bound, upper_bound = worst_case_error_bounds(output)
+            lower_bound = lower_error_bound(output)
+            upper_bound = upper_error_bound(output)
             
             assert (
                 lower_bound <= pseudocode_output <= upper_bound

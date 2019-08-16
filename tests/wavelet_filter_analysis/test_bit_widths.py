@@ -19,8 +19,8 @@ from vc2_conformance.wavelet_filter_analysis.infinite_arrays import (
 )
 
 from vc2_conformance.wavelet_filter_analysis.bit_widths import (
-    idwt,
-    dwt,
+    analysis_transform,
+    synthesis_transform,
     make_coeff_arrays,
     extract_coeffs,
     maximise_filter_output,
@@ -28,7 +28,7 @@ from vc2_conformance.wavelet_filter_analysis.bit_widths import (
     minimum_signed_int_width,
 )
 
-class TestVC2FilterImplementations(object):
+class TestAnalysisAndSynthesisTransforms(object):
 
     @pytest.mark.parametrize("wavelet_index,wavelet_index_ho,dwt_depth,dwt_depth_ho,exp_error", [
         # Check that when no shifting occurs, no constant error exists
@@ -54,10 +54,10 @@ class TestVC2FilterImplementations(object):
             True,
         ),
     ])
-    def test_idwt_inverts_dwt(self, wavelet_index, wavelet_index_ho, dwt_depth, dwt_depth_ho, exp_error):
+    def test_filters_invert_eachother(self, wavelet_index, wavelet_index_ho, dwt_depth, dwt_depth_ho, exp_error):
         # Test that the analysis and synthesis filters invert each-other as a
-        # check of consistency (and, indirectly, the correctness of the DWT
-        # implementation)
+        # check of consistency (and, indirectly, the correctness of the
+        # analysis implementation)
         
         h_sf = tables.LIFTING_FILTERS[wavelet_index_ho]
         v_sf = tables.LIFTING_FILTERS[wavelet_index]
@@ -67,8 +67,20 @@ class TestVC2FilterImplementations(object):
         
         input_picture = SymbolArray(2, "p")
         
-        transform_coeffs = dwt(h_af, v_af, dwt_depth, dwt_depth_ho, input_picture)
-        output_picture = idwt(h_sf, v_sf, dwt_depth, dwt_depth_ho, transform_coeffs)
+        transform_coeffs, _ = analysis_transform(
+            h_af,
+            v_af,
+            dwt_depth,
+            dwt_depth_ho,
+            input_picture,
+        )
+        output_picture, _ = synthesis_transform(
+            h_sf,
+            v_sf,
+            dwt_depth,
+            dwt_depth_ho,
+            transform_coeffs,
+        )
         
         rounding_errors = strip_error_terms(output_picture[0, 0]) - input_picture[0, 0]
         
@@ -88,6 +100,116 @@ class TestVC2FilterImplementations(object):
             assert 0 <= rounding_errors <= upper_bound
         else:
             assert rounding_errors == 0
+    
+    @pytest.mark.parametrize("dwt_depth,dwt_depth_ho", [
+        (0, 0),
+        (1, 0),
+        (2, 0),
+        (0, 1),
+        (0, 2),
+        (1, 1),
+        (2, 2),
+    ])
+    def test_analysis_intermediate_steps_as_expected(self, dwt_depth, dwt_depth_ho):
+        filter_params = convert_between_synthesis_and_analysis(
+            tables.LIFTING_FILTERS[tables.WaveletFilters.haar_with_shift]
+        )
+        
+        input_picture = SymbolArray(2, "p")
+        
+        _, intermediate_values = analysis_transform(
+            filter_params,
+            filter_params,
+            dwt_depth,
+            dwt_depth_ho,
+            input_picture,
+        )
+        
+        # 2D stages have all expected values
+        for level in range(dwt_depth_ho + 1, dwt_depth + dwt_depth_ho + 1):
+            names = set(n for l, n in intermediate_values if l == level)
+            assert names == set([
+                "Input",
+                "DC",
+                "DC'",
+                "DC''",
+                "L",
+                "L'",
+                "L''",
+                "H",
+                "H'",
+                "H''",
+                "LL",
+                "LH",
+                "HL",
+                "HH",
+            ])
+        
+        # HO stages have all expected values
+        for level in range(1, dwt_depth_ho + 1):
+            names = set(n for l, n in intermediate_values if l == level)
+            assert names == set([
+                "Input",
+                "DC",
+                "DC'",
+                "DC''",
+                "L",
+                "H",
+            ])
+    
+    @pytest.mark.parametrize("dwt_depth,dwt_depth_ho", [
+        (0, 0),
+        (1, 0),
+        (2, 0),
+        (0, 1),
+        (0, 2),
+        (1, 1),
+        (2, 2),
+    ])
+    def test_synthesis_intermediate_steps_as_expected(self, dwt_depth, dwt_depth_ho):
+        filter_params = tables.LIFTING_FILTERS[tables.WaveletFilters.haar_with_shift]
+        
+        transform_coeffs = make_coeff_arrays(dwt_depth, dwt_depth_ho)
+        
+        _, intermediate_values = synthesis_transform(
+            filter_params,
+            filter_params,
+            dwt_depth,
+            dwt_depth_ho,
+            transform_coeffs,
+        )
+        
+        # 2D stages have all expected values
+        for level in range(dwt_depth_ho + 1, dwt_depth + dwt_depth_ho + 1):
+            names = set(n for l, n in intermediate_values if l == level)
+            assert names == set([
+                "LL",
+                "LH",
+                "HL",
+                "HH",
+                "L''",
+                "L'",
+                "L",
+                "H''",
+                "H'",
+                "H",
+                "DC''",
+                "DC'",
+                "DC",
+                "Output",
+            ])
+        
+        # HO stages have all expected values
+        for level in range(1, dwt_depth_ho + 1):
+            names = set(n for l, n in intermediate_values if l == level)
+            assert names == set([
+                "L",
+                "H",
+                "DC''",
+                "DC'",
+                "DC",
+                "Output",
+            ])
 
 
 class TestMakeCoeffArrays(object):
