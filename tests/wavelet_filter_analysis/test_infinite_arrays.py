@@ -96,6 +96,8 @@ def test_symbol_array():
     a = SymbolArray(3, "foo")
     
     assert a.period == (1, 1, 1)
+    assert a.relative_step_size_to(a) == (1, 1, 1)
+    assert a.relative_step_size_to(SymbolArray(2, "bar")) is None
     
     foo_0_0_0 = a[0, 0, 0]
     assert foo_0_0_0.name == "foo_0_0_0"
@@ -250,6 +252,15 @@ class TestLiftedArray(object):
         l = LiftedArray(a, stage, dim)
         assert l.period == exp_period
         assert period_empirically_correct(l)
+    
+    def test_relative_step_size_to(self, stage):
+        a = SymbolArray(2)
+        s = SubsampledArray(a, (2, 3), (0, 0))
+        l = LiftedArray(s, stage, 0)
+        
+        assert l.relative_step_size_to(a) == (2, 3)
+        assert l.relative_step_size_to(l) == (1, 1)
+        assert l.relative_step_size_to(SymbolArray(2, "nope")) is None
 
 
 class TestSubsampledArray(object):
@@ -293,6 +304,19 @@ class TestSubsampledArray(object):
         s = SubsampledArray(a, steps, (0, )*len(steps))
         assert s.period == exp_period
         assert period_empirically_correct(s)
+    
+    def test_relative_step_size_to(self):
+        a = SymbolArray(3)
+        
+        s1 = SubsampledArray(a, (1, 2, 3), (4, 5, 6))
+        assert s1.relative_step_size_to(a) == (1, 2, 3)
+        assert s1.relative_step_size_to(s1) == (1, 1, 1)
+        assert s1.relative_step_size_to(SymbolArray(3, "nope")) is None
+        
+        s2 = SubsampledArray(s1, (11, 22, 33), (4, 5, 6))
+        assert s2.relative_step_size_to(a) == (11*1, 22*2, 33*3)
+        assert s2.relative_step_size_to(s1) == (11, 22, 33)
+        assert s2.relative_step_size_to(s2) == (1, 1, 1)
 
 
 class TestInterleavedArray(object):
@@ -355,6 +379,45 @@ class TestInterleavedArray(object):
         i = InterleavedArray(a, b, dim)
         assert i.period == exp_period
         assert period_empirically_correct(i)
+    
+    def test_relative_step_size_to(self):
+        a1 = SymbolArray(2, "a1")
+        a2 = SymbolArray(2, "a2")
+        i1 = InterleavedArray(a1, a2, 0)
+        assert i1.relative_step_size_to(a1) == (0.5, 1)
+        assert i1.relative_step_size_to(a2) == (0.5, 1)
+        assert i1.relative_step_size_to(i1) == (1, 1)
+        
+        # Other dimensions work
+        a3 = SymbolArray(2, "a3")
+        a4 = SymbolArray(2, "a4")
+        i2 = InterleavedArray(a3, a4, 1)
+        assert i2.relative_step_size_to(a3) == (1, 0.5)
+        assert i2.relative_step_size_to(a4) == (1, 0.5)
+        assert i2.relative_step_size_to(i2) == (1, 1)
+        
+        # Non-matching arrays work
+        assert i2.relative_step_size_to(i1) is None
+        
+        # Deep nesting
+        i3 = InterleavedArray(i1, i2, 0)
+        assert i3.relative_step_size_to(a1) == (0.25, 1)
+        assert i3.relative_step_size_to(a2) == (0.25, 1)
+        assert i3.relative_step_size_to(a3) == (0.5, 0.5)
+        assert i3.relative_step_size_to(a4) == (0.5, 0.5)
+        assert i3.relative_step_size_to(i1) == (0.5, 1)
+        assert i3.relative_step_size_to(i2) == (0.5, 1)
+        assert i3.relative_step_size_to(i3) == (1, 1)
+        
+        # Check partial support when the same values appear on both sides of an
+        # interleaving
+        i4 = InterleavedArray(i1, a1, 1)
+        assert i4.relative_step_size_to(SymbolArray(2, "nope")) is None
+        assert i4.relative_step_size_to(i4) == (1, 1)
+        assert i4.relative_step_size_to(i1) == (1, 0.5)
+        assert i4.relative_step_size_to(a2) == (0.5, 0.5)
+        with pytest.raises(ValueError):
+            i4.relative_step_size_to(a1)
 
 
 class TestRightShiftedArray(object):
@@ -380,6 +443,15 @@ class TestRightShiftedArray(object):
         sa = RightShiftedArray(a, 3)
         assert sa.period == (1, 2, 3)
         assert period_empirically_correct(sa)
+    
+    def test_relative_step_size_to(self):
+        a = SymbolArray(2)
+        s = SubsampledArray(a, (2, 3), (0, 0))
+        r = RightShiftedArray(s, 123)
+        
+        assert r.relative_step_size_to(a) == (2, 3)
+        assert r.relative_step_size_to(r) == (1, 1)
+        assert r.relative_step_size_to(SymbolArray(2, "nope")) is None
 
 
 class TestLeftShiftedArray(object):
@@ -397,3 +469,12 @@ class TestLeftShiftedArray(object):
         sa = LeftShiftedArray(a, 3)
         assert sa.period == (1, 2, 3)
         assert period_empirically_correct(sa)
+    
+    def test_relative_step_size_to(self):
+        a = SymbolArray(2)
+        s = SubsampledArray(a, (2, 3), (0, 0))
+        l = LeftShiftedArray(s, 123)
+        
+        assert l.relative_step_size_to(a) == (2, 3)
+        assert l.relative_step_size_to(l) == (1, 1)
+        assert l.relative_step_size_to(SymbolArray(2, "nope")) is None

@@ -94,9 +94,70 @@ from its :py:attr:`~InfiniteArray.period` property. For example::
     >>> v.period
     (1, 1)
 
+
+Relative step sizes
+-------------------
+
+When a :py:class:`SubsampledArray` or :py:class:`InterleavedArray` is used, the
+step size between neighbouring indices in the resulting array changes. For
+exaple, consider the following::
+
+    >>> from vc2_conformance.wavelet_filter_analysis.infinite_arrays import (
+    ...     SymbolArray,
+    ...     SubsampledArray,
+    ...     InterleavedArray,
+    ... )
+    
+    >>> v = SymbolArray(2)
+    >>> ss = SubsampledArray(v, (2, 3), (0, 0))
+    
+    >>> ss[0, 0]
+    v_0_0
+    >>> ss[1, 0]
+    v_2_0
+    >>> ss[2, 0]
+    v_4_0
+    >>> ss[0, 1]
+    v_0_3
+    >>> ss[0, 2]
+    v_0_6
+
+Here the step size of the array ``ss`` is twice (horizontally) and thrice
+(vertically) that of the array ``a``.
+
+Conversely::
+
+    >>> v1 = SymbolArray(2, "v1")
+    >>> v2 = SymbolArray(2, "v2")
+    >>> il = InterleavedArray(v1, v2, 0)
+    
+    >>> il[0, 0]
+    v1_0_0
+    >>> il[2, 0]
+    v1_1_0
+    >>> il[4, 0]
+    v1_2_0
+    >>> il[0, 1]
+    v1_0_1
+    >>> il[0, 2]
+    v1_0_2
+
+This time, the step size of ``il`` is half, horizontally, that of ``v1`` (or
+``v2``) but the same vertically.
+
+The step size relationships between pairings of arrays may be looked up using
+the :py:meth:`InfiniteArray.relative_step_size_to` method. For example::
+
+    >>> ss.relative_step_size_to(v)
+    (Fraction(2, 1), Fraction(3, 1))
+    >>> il.relative_step_size_to(v1)
+    (Fraction(1, 2), Fraction(1, 1))
+
 """
 
 from sympy import Symbol, sympify
+
+from fractions import Fraction
 
 from vc2_conformance.tables import LiftingFilterTypes
 
@@ -191,6 +252,25 @@ class InfiniteArray(object):
             The period of the array in each dimension.
         """
         raise NotImplementedError()
+    
+    def relative_step_size_to(self, other):
+        r"""
+        For a step along a dimension in this array, compute the equivalent step
+        size in the provided array.
+        
+        Parameters
+        ==========
+        other : :py:class:`InfiniteArray`
+            An array to compare the step size with. Must have been used (maybe
+            indirectly) to define this array.
+        
+        Returns
+        =======
+        relative_step_size : (:py:class:`fractions.Fraction`, ...) or None
+            The relative step sizes for each dimension, or None if the provided
+            array was not used in the computation of this array.
+        """
+        raise NotImplementedError()
 
 
 class SymbolArray(InfiniteArray):
@@ -232,6 +312,12 @@ class SymbolArray(InfiniteArray):
     @property
     def period(self):
         return (1, ) * self.ndim
+    
+    def relative_step_size_to(self, other):
+        if other is self:
+            return (Fraction(1), ) * self.ndim
+        else:
+            return None
 
 
 class LiftedArray(InfiniteArray):
@@ -394,6 +480,12 @@ class LiftedArray(InfiniteArray):
             lcm(2, p) if dim == self._filter_dimension else p
             for dim, p in enumerate(self._input_array.period)
         )
+    
+    def relative_step_size_to(self, other):
+        if other is self:
+            return (Fraction(1), ) * self.ndim
+        else:
+            return self._input_array.relative_step_size_to(other)
 
 
 class RightShiftedArray(InfiniteArray):
@@ -440,6 +532,12 @@ class RightShiftedArray(InfiniteArray):
     @property
     def period(self):
         return self._input_array.period
+    
+    def relative_step_size_to(self, other):
+        if other is self:
+            return (Fraction(1), ) * self.ndim
+        else:
+            return self._input_array.relative_step_size_to(other)
 
 
 class LeftShiftedArray(InfiniteArray):
@@ -467,6 +565,12 @@ class LeftShiftedArray(InfiniteArray):
     @property
     def period(self):
         return self._input_array.period
+    
+    def relative_step_size_to(self, other):
+        if other is self:
+            return (Fraction(1), ) * self.ndim
+        else:
+            return self._input_array.relative_step_size_to(other)
 
 
 class SubsampledArray(InfiniteArray):
@@ -542,6 +646,22 @@ class SubsampledArray(InfiniteArray):
         return tuple(
             lcm(p, step)//step
             for p, step in zip(self._input_array.period, self._steps)
+        )
+    
+    def relative_step_size_to(self, other):
+        if other is self:
+            return (Fraction(1), ) * self.ndim
+        
+        relative_step_size = self._input_array.relative_step_size_to(other)
+        if relative_step_size is None:
+            return None
+        
+        return tuple(
+            step_size * prev_relative_step_size
+            for step_size, prev_relative_step_size in zip(
+                self._steps,
+                relative_step_size,
+            )
         )
 
 
@@ -645,4 +765,30 @@ class InterleavedArray(InfiniteArray):
                 self._array_even.period,
                 self._array_odd.period,
             ))
+        )
+    
+    def relative_step_size_to(self, other):
+        if other is self:
+            return (Fraction(1), ) * self.ndim
+        
+        even_step_size = self._array_even.relative_step_size_to(other)
+        odd_step_size = self._array_odd.relative_step_size_to(other)
+        
+        if even_step_size is None and odd_step_size is None:
+            return None
+        
+        if even_step_size is not None and not odd_step_size is None:
+            raise ValueError(
+                "Cannot find relative step size of {} in {} "
+                "as it is interleaved with itself.".format(other, self)
+            )
+        
+        if even_step_size is not None:
+            relative_step_size = even_step_size
+        else:
+            relative_step_size = odd_step_size
+        
+        return tuple(
+            s/2 if d == self._interleave_dimension else s
+            for d, s in enumerate(relative_step_size)
         )
