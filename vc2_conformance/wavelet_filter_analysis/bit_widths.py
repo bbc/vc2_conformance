@@ -190,7 +190,13 @@ below::
     ... }
     
     >>> # Apply the filter
-    >>> picture, _ = synthesis_transform(h_filter_params, v_filter_params, dwt_depth, dwt_depth_ho, coeff_arrays)
+    >>> picture, intermediate_values = synthesis_transform(
+    ...     h_filter_params,
+    ...     v_filter_params,
+    ...     dwt_depth,
+    ...     dwt_depth_ho,
+    ...     coeff_arrays,
+    ... )
     
     >>> # An algebraic expression for the filter which produced output pixel
     >>> # (0, 0) is found thus:
@@ -368,13 +374,19 @@ minimum and maximum possible output value for this filter::
     >>> least_possible_value
     -4613/8
 
-From this we can determine the number of bits necessary to store any value
-which might be computed for this pixel (or other pixels with the same filter
-phase). The following function is provided for this purpose:
+The above steps are automated by the following functions:
+
+.. autofunction:: synthesis_filter_output_bounds
+
+.. autofunction:: analysis_filter_output_bounds
+
+From the values above we can determine the number of bits necessary to store
+any value which might be computed for this pixel (or other pixels with the same
+filter phase). The following function is provided for this purpose:
 
 .. autofunction:: minimum_signed_int_width
 
-Therefore minimum number of bits for this output pixel in our example is::
+And is demonstrated here to conclude this example::
 
     >>> from vc2_conformance.wavelet_filter_analysis.bit_widths import minimum_signed_int_width
     
@@ -385,12 +397,147 @@ Therefore minimum number of bits for this output pixel in our example is::
     11
 
 
-Finding extreme intermediate values
------------------------------------
+Generating test signals
+-----------------------
 
-The technique above may be used to find extreme filter output values (and bit
-widths) however intermediate bit widths are also of interest.
+Worst-case filter inputs (as found using :py:func:`maximise_filter_output` and
+:py:func:`minimise_filter_output`) make useful test signals for real
+implementations because they trigger extreme, but legal, values within their
+processing chains.
 
+To explain how this is done, we'll work through an example of how we obtain a
+usable test signal to maximise the value of a single filter phase's output in a
+synthesis transform.
+
+Lets start by defining a 1-level 2D followed by 1-level horizontal-only LeGall
+synthesis filter using :py:func:`synthesis_transform` as before::
+
+    >>> from vc2_conformance.wavelet_filter_analysis.infinite_arrays import SymbolArray
+    >>> from vc2_conformance.wavelet_filter_analysis.bit_widths import (
+    ...     synthesis_transform,
+    ...     make_coeff_arrays,
+    ... )
+    >>> from vc2_conformance.tables import WaveletFilters, LIFTING_FILTERS
+    
+    >>> # Specify the filters
+    >>> synthesis_filter = LIFTING_FILTERS[WaveletFilters.le_gall_5_3]
+    >>> dwt_depth = 1
+    >>> dwt_depth_ho = 1
+    
+    >>> # Perform synthesis
+    >>> coeff_arrays = make_coeff_arrays(dwt_depth, dwt_depth_ho)
+    >>> picture, intermediate_values = synthesis_transform(
+    ...     synthesis_filter,
+    ...     synthesis_filter,
+    ...     dwt_depth,
+    ...     dwt_depth_ho,
+    ...     coeff_arrays,
+    ... )
+
+In this example we'll attempt to produce a test signal which maximises the
+filter phase which notionally produces pixel (0, 0). We can start by using
+:py:func:`maximise_filter_output` as before::
+
+    >>> from vc2_conformance.wavelet_filter_analysis.bit_widths import (
+    ...     extract_coeffs,
+    ...     maximise_filter_output,
+    ... )
+    
+    >>> coeffs = extract_coeffs(picture[0, 0])
+    >>> for sym, value in maximise_filter_output(coeffs, -512, 511).items():
+    ...     print("{} = {}".format(sym, value))
+    coeff_0_L_0_0 = 511
+    coeff_1_H_-1_0 = -512
+    coeff_1_H_0_0 = -512
+    coeff_2_HH_-1_-1 = 511
+    coeff_2_HH_-1_0 = 511
+    coeff_2_HH_0_-1 = 511
+    coeff_2_HH_0_0 = 511
+    coeff_2_HL_-1_0 = -512
+    coeff_2_HL_0_0 = -512
+    coeff_2_LH_0_-1 = -512
+    coeff_2_LH_0_0 = -512
+
+
+Unfortunately, this result implies that our test signal must include
+coefficients at negative coordinates and so we can't use this result as-is to
+produce a real test signal.
+
+.. note::
+
+    In VC-2, transform coefficients beyond the boundaries of the inputs are
+    substituted for coefficients near the boundary (see remarks about edge
+    extension in (15.4.4.2)). As a consequence, the filters operating near the
+    edges of the picture may receive some duplicated inputs. Since this reduces
+    our freedom to choose worst-case signals (since some inputs are copies) our
+    test case should choose pixel values to maximise/minimise where edge
+    extension is *not* used.
+
+We must attempt to find an output pixel with the same filter phase as our
+example but which doesn't require any input coefficients with negative
+coordinates. As we saw earlier, a pixel at an offset of any multiple of the
+:py:attr:`~InfiniteArray.period` will have the same filter phase. In this case
+the period is::
+
+    >>> picture.period
+    (4, 2)
+
+So we could pick (4, 0), (0, 2), (4, 2), (8, 2) (and so on...). To determine
+which multiple of the period to pick we can use
+:py:meth:`InfiniteArray.relative_step_size_to` to compute the relationship
+between indices in the output (i.e. ``picture``) array and relevant input
+arrays.
+
+As an example lets consider the ``coeff_2_HH_-1_-1`` term. In this case we're
+attempting to use the out-of-bounds coordinate (-1, -1) of the level-2 "HH"
+subband. The relationship between indices in this band and the output is found
+like so::
+
+    >>> picture.relative_step_size_to(coeff_arrays[2]["HH"])
+    (Fraction(1, 2), Fraction(1, 2))
+
+This tells us that to advance the X-index in this array by one, the picture
+array's X-index must be advanced by two. Simillarly, to advance one step in Y,
+the picture array's index must also be advanced by two. In this case, to avoid
+the out-of-bounds X and Y coordinates, we must offset our picture indices by at
+least two in both dimensions.  Since we're constrained to offsetting our
+coordinate by a multiple of the period, (4, 2), we therefore must pick an
+offset of at least (4, 2).
+
+Repeating this process for every coefficient we will eventually find a
+coordinate which eliminates all negative input coordinates. In this example,
+the answer happens to be (4, 2) for which we obtain the following
+negative-coordinate-free coefficients::
+
+    >>> coeffs = extract_coeffs(picture[4, 2])
+    >>> for sym, value in maximise_filter_output(coeffs, -512, 511).items():
+    ...     print("{} = {}".format(sym, value))
+    coeff_0_L_1_1 = 511
+    coeff_1_H_1_1 = -512
+    coeff_1_H_0_1 = -512
+    coeff_2_HH_2_0 = 511
+    coeff_2_HH_1_1 = 511
+    coeff_2_HL_2_1 = -512
+    coeff_2_HL_1_1 = -512
+    coeff_2_LH_2_1 = -512
+    coeff_2_LH_2_0 = -512
+    coeff_2_HH_1_0 = 511
+    coeff_2_HH_2_1 = 511
+
+The above procedure is implemented in the following functions. First, the
+following may be used to convert between :py:mod:`sympy` symbols and
+coordinates:
+
+.. autofunction:: coeff_symbol_to_indices
+
+.. autofunction:: picture_symbol_to_indices
+
+The following automate the process of finding indices of filters with no
+negative input coordinates:
+
+.. autofunction:: find_negative_input_free_synthesis_index
+
+.. autofunction:: find_negative_input_free_analysis_index
 
 """
 
@@ -401,10 +548,23 @@ __all__ = [
     "extract_coeffs",
     "maximise_filter_output",
     "minimise_filter_output",
+    "synthesis_filter_output_bounds",
+    "analysis_filter_output_bounds",
     "minimum_signed_int_width",
+    "coeff_symbol_to_indices",
+    "picture_symbol_to_indices",
+    "find_negative_input_free_synthesis_index",
+    "find_negative_input_free_analysis_index",
 ]
 
 import math
+
+from collections import defaultdict
+
+from vc2_conformance.wavelet_filter_analysis.symbolic_error_terms import (
+    lower_error_bound,
+    upper_error_bound,
+)
 
 from vc2_conformance.wavelet_filter_analysis.infinite_arrays import (
     SymbolArray,
@@ -720,6 +880,73 @@ def minimise_filter_output(coeffs, minimum_input, maximum_input):
     }
 
 
+def analysis_filter_output_bounds(expression, picture_value_range):
+    """
+    Return the bounds for an expression describing a particular anlaysis
+    filter, assuming worst-case error term values.
+    
+    Parameters
+    ==========
+    expression : :py:mod:`sympy` expression
+    picture_value_range : (min, max)
+        The lower and upper bounds for the values of the non-error symbols in
+        the expression.
+    
+    Returns
+    =======
+    (lower_bound, upper_bound)
+    """
+    coeffs = extract_coeffs(expression)
+    
+    min_coeffs = minimise_filter_output(coeffs, *picture_value_range)
+    max_coeffs = maximise_filter_output(coeffs, *picture_value_range)
+    
+    lower_bound = lower_error_bound(expression.subs(min_coeffs))
+    upper_bound = upper_error_bound(expression.subs(max_coeffs))
+    
+    return (lower_bound, upper_bound)
+
+
+def synthesis_filter_output_bounds(expression, coeff_value_ranges):
+    """
+    Return the bounds for an expression describing a particular synthesis
+    filter, assuming worst-case error term values.
+    
+    Parameters
+    ==========
+    expression : :py:mod:`sympy` expression
+    coeff_value_ranges : {(level, orient): (min, max), ...}
+        For each input coefficient band, the maximum values for values in that
+        band.
+    
+    Returns
+    =======
+    (lower_bound, upper_bound)
+    """
+    all_coeffs = extract_coeffs(expression)
+    
+    # {(level, orient): coeffs, ...}
+    coeffs_by_band = defaultdict(dict)
+    for symbol, value in all_coeffs.items():
+        level, orient, _, _ = coeff_symbol_to_indices(symbol)
+        coeffs_by_band[(level, orient)][symbol] = value
+    
+    min_coeffs = {}
+    max_coeffs = {}
+    for level_orient, coeffs in coeffs_by_band.items():
+        min_coeffs.update(
+            minimise_filter_output(coeffs, *coeff_value_ranges[level_orient])
+        )
+        max_coeffs.update(
+            maximise_filter_output(coeffs, *coeff_value_ranges[level_orient])
+        )
+    
+    lower_bound = lower_error_bound(expression.subs(min_coeffs))
+    upper_bound = upper_error_bound(expression.subs(max_coeffs))
+    
+    return (lower_bound, upper_bound)
+
+
 def minimum_signed_int_width(number):
     """
     Return the minimum number of bits necessary to represent the supplied
@@ -741,3 +968,133 @@ def minimum_signed_int_width(number):
     
     # Return number of bits including sign bit
     return number.bit_length() + 1
+
+
+def coeff_symbol_to_indices(symbol):
+    """
+    Extract the index encoded by a coefficient symbol's name (from, e.g.,
+    :py:func:`make_coeff_arrays`).
+    
+    Given a :py:mod:`sympy` symbol with a name of the form ``coeff_1_HH_-2_3``,
+    returns a tuple ``(1, "HH", -2, 3)``.
+    """
+    level, orient, x, y = symbol.name.split("_")[-4:]
+    return (
+        int(level),
+        orient,
+        int(x),
+        int(y),
+    )
+
+def picture_symbol_to_indices(symbol):
+    """
+    Extract the index encoded by a symbol's name (e.g. from a
+    :py:class:`SymbolArray`).
+    
+    Given a :py:mod:`sympy` symbol with a name of the form ``pixel_-2_3``,
+    returns a tuple ``(-2, 3)``.
+    """
+    x, y = symbol.name.split("_")[-2:]
+    return (int(x), int(y))
+
+
+def find_negative_input_free_synthesis_index(coeff_arrays, picture, x, y):
+    """
+    Find a coordinate in 'picture' which implements the same filter as the
+    coordinate (x, y) but doesn't require any negative-indexed values in
+    coeff_arrays.
+    
+    Parameters
+    ==========
+    coeff_arrays : {level: {orient: :py:class:`SymbolArray`, ...}, ...}
+        The input coefficients to the synthesis filter. Must be arrays of
+        symbols, e.g. as produced by :py:class:`make_coeff_arrays`.
+    picture : :py:class:`InfiniteArray`
+        The output of the synthesis filter.
+    x, y : int
+        Coordinates in 'picture'.
+    
+    Returns
+    =======
+    (x2, y2)
+        A set of coordinates in 'picture' which are the result of the same
+        filter phase as (x, y) but whose input coefficients all have
+        non-negative coordinates.
+    """
+    period = picture.period
+    x %= period[0]
+    y %= period[1]
+    
+    x2, y2 = x, y
+    
+    for coeff_symbol in extract_coeffs(picture[x, y]):
+        level, orient, coeff_x, coeff_y = coeff_symbol_to_indices(coeff_symbol)
+        coeff_array = coeff_arrays[level][orient]
+        relative_step_size = picture.relative_step_size_to(coeff_array)
+        
+        min_offsets = (
+            max(0, int(math.ceil(-idx / rss)))
+            for idx, rss in zip((coeff_x, coeff_y), relative_step_size)
+        )
+        
+        # Round up to smallest multiple of period with at least the minimum
+        # offset
+        offset_x, offset_y = (
+            ((mo + p - 1) // p) * p
+            for mo, p in zip(min_offsets, period)
+        )
+        
+        x2 = max(x2, x + offset_x)
+        y2 = max(y2, y + offset_y)
+    
+    return (x2, y2)
+
+
+def find_negative_input_free_analysis_index(picture, coeff_array, x, y):
+    """
+    Find a coordinate in 'coeff_array' which implements the same filter as the
+    coordinate (x, y) but doesn't require any negative-indexed values in
+    coeff_arrays.
+    
+    Parameters
+    ==========
+    picture : :py:class:`SymbolArray`
+        The input to the analysis filter.
+    coeff_array : :py:class:`InfiniteArray`
+        One of the arrays of output coefficients from the analysis filter.
+    x, y : int
+        Coordinates in 'coeff_array'.
+    
+    Returns
+    =======
+    (x2, y2)
+        A set of coordinates in 'coeff_array' which are the result of the same
+        filter phase as (x, y) but whose input pixels all have non-negative
+        coordinates.
+    """
+    period = coeff_array.period
+    x %= period[0]
+    y %= period[1]
+    
+    x2, y2 = x, y
+    
+    for picture_symbol in extract_coeffs(coeff_array[x, y]):
+        picture_x, picture_y = picture_symbol_to_indices(picture_symbol)
+        relative_step_size = coeff_array.relative_step_size_to(picture)
+        
+        min_offsets = (
+            max(0, int(math.ceil(-idx / rss)))
+            for idx, rss in zip((picture_x, picture_y), relative_step_size)
+        )
+        
+        # Round up to smallest multiple of period with at least the minimum
+        # offset
+        offset_x, offset_y = (
+            ((mo + p - 1) // p) * p
+            for mo, p in zip(min_offsets, period)
+        )
+        
+        x2 = max(x2, x + offset_x)
+        y2 = max(y2, y + offset_y)
+    
+    return (x2, y2)

@@ -25,7 +25,13 @@ from vc2_conformance.wavelet_filter_analysis.bit_widths import (
     extract_coeffs,
     maximise_filter_output,
     minimise_filter_output,
+    synthesis_filter_output_bounds,
+    analysis_filter_output_bounds,
     minimum_signed_int_width,
+    picture_symbol_to_indices,
+    coeff_symbol_to_indices,
+    find_negative_input_free_synthesis_index,
+    find_negative_input_free_analysis_index,
 )
 
 class TestAnalysisAndSynthesisTransforms(object):
@@ -307,6 +313,41 @@ def test_minimise_filter_output():
     }
 
 
+def test_analysis_filter_output_bounds():
+    p = SymbolArray(2, "p")
+    expression = (
+        30*p[0, 0] +
+        -10*p[1, 0] +
+        1*new_error_term()
+        -3*new_error_term()
+    )
+    
+    assert analysis_filter_output_bounds(expression, (-1, 1000)) == (
+        -30 - 10000 - 3,
+        30000 + 10 + 1,
+    )
+
+
+def test_synthesis_filter_output_bounds():
+    coeff_arrays = make_coeff_arrays(0, 1)
+    expression = (
+        30*coeff_arrays[0]["L"][0, 0] +
+        -10*coeff_arrays[1]["H"][0, 0] +
+        1*new_error_term()
+        -3*new_error_term()
+    )
+    
+    coeff_value_ranges = {
+        (0, "L"): (-1, 100),
+        (1, "H"): (-10, 1000),
+    }
+    
+    assert synthesis_filter_output_bounds(expression, coeff_value_ranges) == (
+        -30 - 10000 -3,
+        3000 + 100 + 1,
+    )
+
+
 @pytest.mark.parametrize("number,exp_bits", [
     # Zero
     (0, 0),
@@ -336,3 +377,120 @@ def test_minimise_filter_output():
 ])
 def test_minimum_signed_int_width(number, exp_bits):
     assert minimum_signed_int_width(number) == exp_bits
+
+
+@pytest.mark.parametrize("name_prefix", [
+    # No underscores
+    "coeff",
+    # With extra underscores
+    "foo_bar",
+])
+def test_coeff_symbol_to_indices(name_prefix):
+    coeff_arrays = make_coeff_arrays(1, 1, name_prefix)
+    assert coeff_symbol_to_indices(coeff_arrays[0]["L"][-10, 20]) == (0, "L", -10, 20)
+    assert coeff_symbol_to_indices(coeff_arrays[2]["HL"][-10, 20]) == (2, "HL", -10, 20)
+
+
+@pytest.mark.parametrize("name_prefix", [
+    # No underscores
+    "coeff",
+    # With extra underscores
+    "foo_bar",
+])
+def test_pixel_symbol_to_indices(name_prefix):
+    pixels = SymbolArray(2, name_prefix)
+    assert picture_symbol_to_indices(pixels[-10, 20]) == (-10, 20)
+
+
+def test_find_negative_input_free_synthesis_index():
+    # A non-Haar filter (which will always use some out-of-bounds coordinates
+    # for the (0, 0) output)
+    synthesis_filter = tables.LIFTING_FILTERS[tables.WaveletFilters.le_gall_5_3]
+    
+    # Asymmetric
+    dwt_depth = 1
+    dwt_depth_ho = 1
+    
+    coeff_arrays = make_coeff_arrays(dwt_depth, dwt_depth_ho)
+    picture, intermediate_values = synthesis_transform(
+        synthesis_filter,
+        synthesis_filter,
+        dwt_depth,
+        dwt_depth_ho,
+        coeff_arrays,
+    )
+    
+    # The same filter as (0, 0), but at a wildly too-high coordinate
+    x = 40
+    y = 20
+    
+    x2, y2 = find_negative_input_free_synthesis_index(coeff_arrays, picture, x, y)
+    
+    # Make sure solution has no negative terms
+    for _, _, cx, cy in map(coeff_symbol_to_indices, extract_coeffs(picture[x2, y2])):
+        assert cx >= 0
+        assert cy >= 0
+    
+    # Make sure no smaller coordinates are available
+    for x3, y3 in [
+        (x2 - picture.period[0], y2),
+        (x2, y2 - picture.period[1]),
+        (x2 - picture.period[0], y2 - picture.period[1]),
+    ]:
+        assert any(
+            cx < 0 or cy < 0
+            for _, _, cx, cy in map(
+                coeff_symbol_to_indices,
+                extract_coeffs(picture[x3, y3])
+            )
+        )
+
+
+def test_find_negative_input_free_analysis_index():
+    # A non-Haar filter (which will always use some out-of-bounds coordinates
+    # for the (0, 0) output)
+    analysis_filter = convert_between_synthesis_and_analysis(
+        tables.LIFTING_FILTERS[tables.WaveletFilters.le_gall_5_3]
+    )
+    
+    # Asymmetric
+    dwt_depth = 1
+    dwt_depth_ho = 1
+    
+    picture = SymbolArray(2)
+    coeff_arrays, intermediate_values = analysis_transform(
+        analysis_filter,
+        analysis_filter,
+        dwt_depth,
+        dwt_depth_ho,
+        picture,
+    )
+    
+    # Pick an intermediate value prior to final subsampling which ensures that
+    # the period is not (1, 1) in the test
+    coeff_array = intermediate_values[(2, "H''")]
+    
+    # The same filter as (0, 0), but at a wildly too-high coordinate
+    x = 10
+    y = 20
+    
+    x2, y2 = find_negative_input_free_analysis_index(picture, coeff_array, x, y)
+    
+    # Make sure solution has no negative terms
+    for cx, cy in map(picture_symbol_to_indices, extract_coeffs(coeff_array[x2, y2])):
+        assert cx >= 0
+        assert cy >= 0
+    
+    # Make sure no smaller coordinates are available
+    for x3, y3 in [
+        (x2 - coeff_array.period[0], y2),
+        (x2, y2 - coeff_array.period[1]),
+        (x2 - coeff_array.period[0], y2 - coeff_array.period[1]),
+    ]:
+        assert any(
+            cx < 0 or cy < 0
+            for cx, cy in map(
+                picture_symbol_to_indices,
+                extract_coeffs(coeff_array[x3, y3])
+            )
+        )
