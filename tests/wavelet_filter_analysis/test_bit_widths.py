@@ -22,7 +22,7 @@ from vc2_conformance.wavelet_filter_analysis.bit_widths import (
     analysis_transform,
     synthesis_transform,
     make_coeff_arrays,
-    extract_coeffs,
+    non_error_coeffs,
     maximise_filter_output,
     minimise_filter_output,
     synthesis_filter_output_bounds,
@@ -273,7 +273,7 @@ def test_extract_coeffs():
         -5 * sympy.abc.d
     )
     
-    assert extract_coeffs(expr) == {
+    assert non_error_coeffs(expr) == {
         sympy.abc.a: sympy.Rational(1, 2),
         sympy.abc.b: sympy.Rational(1, -3),
         sympy.abc.c: 4,
@@ -427,7 +427,7 @@ def test_find_negative_input_free_synthesis_index():
     x2, y2 = find_negative_input_free_synthesis_index(coeff_arrays, picture, x, y)
     
     # Make sure solution has no negative terms
-    for _, _, cx, cy in map(coeff_symbol_to_indices, extract_coeffs(picture[x2, y2])):
+    for _, _, cx, cy in map(coeff_symbol_to_indices, non_error_coeffs(picture[x2, y2])):
         assert cx >= 0
         assert cy >= 0
     
@@ -441,7 +441,7 @@ def test_find_negative_input_free_synthesis_index():
             cx < 0 or cy < 0
             for _, _, cx, cy in map(
                 coeff_symbol_to_indices,
-                extract_coeffs(picture[x3, y3])
+                non_error_coeffs(picture[x3, y3])
             )
         )
 
@@ -477,7 +477,7 @@ def test_find_negative_input_free_analysis_index():
     x2, y2 = find_negative_input_free_analysis_index(picture, coeff_array, x, y)
     
     # Make sure solution has no negative terms
-    for cx, cy in map(picture_symbol_to_indices, extract_coeffs(coeff_array[x2, y2])):
+    for cx, cy in map(picture_symbol_to_indices, non_error_coeffs(coeff_array[x2, y2])):
         assert cx >= 0
         assert cy >= 0
     
@@ -491,6 +491,6 @@ def test_find_negative_input_free_analysis_index():
             cx < 0 or cy < 0
             for cx, cy in map(
                 picture_symbol_to_indices,
-                extract_coeffs(coeff_array[x3, y3])
+                non_error_coeffs(coeff_array[x3, y3])
             )
         )

@@ -43,6 +43,11 @@ are set to 1 and the negatively-weighted terms are 0.
 
 from sympy import Symbol, sympify
 
+from vc2_conformance.wavelet_filter_analysis.fast_sympy_functions import (
+    subs,
+    coeffs,
+)
+
 __all__ = [
     "new_error_term",
     "strip_error_terms",
@@ -71,7 +76,7 @@ def strip_error_terms(expression):
     """
     expression = sympify(expression)
     
-    return expression.subs({
+    return subs(expression, {
         sym: 0
         for sym in expression.free_symbols
         if sym.name.startswith("e_")
@@ -85,9 +90,9 @@ def upper_error_bound(expression):
     """
     expression = sympify(expression)
     
-    return expression.subs({
-        sym: 1 if expression.coeff(sym) > 0 else 0
-        for sym in expression.free_symbols
+    return subs(expression, {
+        sym: 1 if value > 0 else 0
+        for sym, value in coeffs(expression).items()
         if sym.name.startswith("e_")
     })
 
@@ -99,8 +104,8 @@ def lower_error_bound(expression):
     """
     expression = sympify(expression)
     
-    return expression.subs({
-        sym: 1 if expression.coeff(sym) < 0 else 0
-        for sym in expression.free_symbols
+    return subs(expression, {
+        sym: 1 if value < 0 else 0
+        for sym, value in coeffs(expression).items()
         if sym.name.startswith("e_")
     })

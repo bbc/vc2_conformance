@@ -215,12 +215,12 @@ From an algebraic expression such as the example above, the equivalent FIR
 filter coefficients may be easily read-off. The following function is provided
 which implements this process (while omitting error terms)::
 
-.. autofunction:: extract_coeffs
+.. autofunction:: non_error_coeffs
 
 For example, the coefficients for a particular pixel may be printed like so::
 
-    >>> from vc2_conformance.wavelet_filter_analysis.bit_widths import extract_coeffs
-    >>> for sym, coeff in extract_coeffs(picture[0, 0]).items():
+    >>> from vc2_conformance.wavelet_filter_analysis.bit_widths import non_error_coeffs_coeffs
+    >>> for sym, coeff in non_error_coeffs(picture[0, 0]).items():
     ...     print("{}: {}".format(sym, coeff))
     coeff_0_L_0_0: 1/2
     coeff_1_HH_-1_0: 1/16
@@ -347,7 +347,7 @@ particular pixel given a hypothetical 10-bit input to our running example::
     ... )
     
     >>> pixel_expr = picture[0, 0]
-    >>> coeffs = extract_coeffs(pixel_expr)
+    >>> coeffs = non_error_coeffs(pixel_expr)
     
     >>> max_coeffs = maximise_filter_output(coeffs, -512, 511)
     >>> max_coeffs
@@ -439,11 +439,11 @@ filter phase which notionally produces pixel (0, 0). We can start by using
 :py:func:`maximise_filter_output` as before::
 
     >>> from vc2_conformance.wavelet_filter_analysis.bit_widths import (
-    ...     extract_coeffs,
+    ...     non_error_coeffs,
     ...     maximise_filter_output,
     ... )
     
-    >>> coeffs = extract_coeffs(picture[0, 0])
+    >>> coeffs = non_error_coeffs(picture[0, 0])
     >>> for sym, value in maximise_filter_output(coeffs, -512, 511).items():
     ...     print("{} = {}".format(sym, value))
     coeff_0_L_0_0 = 511
@@ -509,7 +509,7 @@ coordinate which eliminates all negative input coordinates. In this example,
 the answer happens to be (4, 2) for which we obtain the following
 negative-coordinate-free coefficients::
 
-    >>> coeffs = extract_coeffs(picture[4, 2])
+    >>> coeffs = non_error_coeffs(picture[4, 2])
     >>> for sym, value in maximise_filter_output(coeffs, -512, 511).items():
     ...     print("{} = {}".format(sym, value))
     coeff_0_L_1_1 = 511
@@ -545,7 +545,7 @@ __all__ = [
     "analysis_transform",
     "synthesis_transform",
     "make_coeff_arrays",
-    "extract_coeffs",
+    "non_error_coeffs",
     "maximise_filter_output",
     "minimise_filter_output",
     "synthesis_filter_output_bounds",
@@ -560,6 +560,11 @@ __all__ = [
 import math
 
 from collections import defaultdict
+
+from vc2_conformance.wavelet_filter_analysis.fast_sympy_functions import (
+    subs,
+    coeffs,
+)
 
 from vc2_conformance.wavelet_filter_analysis.symbolic_error_terms import (
     lower_error_bound,
@@ -802,7 +807,7 @@ def make_coeff_arrays(dwt_depth, dwt_depth_ho, prefix="coeff"):
     return coeff_arrays
 
 
-def extract_coeffs(expression):
+def non_error_coeffs(expression):
     """
     Extract the coefficients for each non-error and non-constant term in an
     expression.
@@ -819,19 +824,17 @@ def extract_coeffs(expression):
     =======
     coeffs : {variable: coefficient, ...}
     """
-    coeffs = {}
-    
-    for sym in expression.free_symbols:
-        if not sym.name.startswith("e_"):
-            coeffs[sym] = expression.coeff(sym)
-    
-    return coeffs
+    return {
+        sym: value
+        for sym, value in coeffs(expression).items()
+        if not sym.name.startswith("e_")
+    }
 
 
 def maximise_filter_output(coeffs, minimum_input, maximum_input):
     """
     Given a set of FIR filter coefficients (e.g. from
-    :py:func:`extract_coeffs`) return the variable assignments which will
+    :py:func:`non_error_coeffs`) return the variable assignments which will
     maximise the output value for that filter.
     
     Parameters
@@ -857,7 +860,7 @@ def maximise_filter_output(coeffs, minimum_input, maximum_input):
 def minimise_filter_output(coeffs, minimum_input, maximum_input):
     """
     Given a set of FIR filter coefficients (e.g. from
-    :py:func:`extract_coeffs`) return the variable assignments which will
+    :py:func:`non_error_coeffs`) return the variable assignments which will
     minimise the output value for that filter.
     
     Parameters
@@ -896,13 +899,13 @@ def analysis_filter_output_bounds(expression, picture_value_range):
     =======
     (lower_bound, upper_bound)
     """
-    coeffs = extract_coeffs(expression)
+    coeffs = non_error_coeffs(expression)
     
     min_coeffs = minimise_filter_output(coeffs, *picture_value_range)
     max_coeffs = maximise_filter_output(coeffs, *picture_value_range)
     
-    lower_bound = lower_error_bound(expression.subs(min_coeffs))
-    upper_bound = upper_error_bound(expression.subs(max_coeffs))
+    lower_bound = lower_error_bound(subs(expression, min_coeffs))
+    upper_bound = upper_error_bound(subs(expression, max_coeffs))
     
     return (lower_bound, upper_bound)
 
@@ -923,7 +926,7 @@ def synthesis_filter_output_bounds(expression, coeff_value_ranges):
     =======
     (lower_bound, upper_bound)
     """
-    all_coeffs = extract_coeffs(expression)
+    all_coeffs = non_error_coeffs(expression)
     
     # {(level, orient): coeffs, ...}
     coeffs_by_band = defaultdict(dict)
@@ -941,8 +944,8 @@ def synthesis_filter_output_bounds(expression, coeff_value_ranges):
             maximise_filter_output(coeffs, *coeff_value_ranges[level_orient])
         )
     
-    lower_bound = lower_error_bound(expression.subs(min_coeffs))
-    upper_bound = upper_error_bound(expression.subs(max_coeffs))
+    lower_bound = lower_error_bound(subs(expression, min_coeffs))
+    upper_bound = upper_error_bound(subs(expression, max_coeffs))
     
     return (lower_bound, upper_bound)
 
@@ -1027,7 +1030,7 @@ def find_negative_input_free_synthesis_index(coeff_arrays, picture, x, y):
     
     x2, y2 = x, y
     
-    for coeff_symbol in extract_coeffs(picture[x, y]):
+    for coeff_symbol in non_error_coeffs(picture[x, y]):
         level, orient, coeff_x, coeff_y = coeff_symbol_to_indices(coeff_symbol)
         coeff_array = coeff_arrays[level][orient]
         relative_step_size = picture.relative_step_size_to(coeff_array)
@@ -1078,7 +1081,7 @@ def find_negative_input_free_analysis_index(picture, coeff_array, x, y):
     
     x2, y2 = x, y
     
-    for picture_symbol in extract_coeffs(coeff_array[x, y]):
+    for picture_symbol in non_error_coeffs(coeff_array[x, y]):
         picture_x, picture_y = picture_symbol_to_indices(picture_symbol)
         relative_step_size = coeff_array.relative_step_size_to(picture)
         
