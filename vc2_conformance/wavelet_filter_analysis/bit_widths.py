@@ -376,9 +376,16 @@ minimum and maximum possible output value for this filter::
 
 The above steps are automated by the following functions:
 
-.. autofunction:: synthesis_filter_output_bounds
+.. autofunction:: synthesis_filter_expression_bounds
 
-.. autofunction:: analysis_filter_output_bounds
+.. autofunction:: analysis_filter_expression_bounds
+
+In addition, the following functions take a :py:class:`InfiniteArray` and find
+the overall upper and lower bounds of every filter phase in that array.
+
+.. autofunction:: synthesis_filter_bounds
+
+.. autofunction:: analysis_filter_bounds
 
 From the values above we can determine the number of bits necessary to store
 any value which might be computed for this pixel (or other pixels with the same
@@ -539,6 +546,114 @@ negative input coordinates:
 
 .. autofunction:: find_negative_input_free_analysis_index
 
+
+Accounting for Quantisation
+---------------------------
+
+The quantisation and dequantisation steps in the encoder and decoder
+(respectively) may round transform values up or down and consequently these
+rounding errors must also be taken into account.
+
+
+Quantifying quantisation errors
+```````````````````````````````
+
+Below we will derive an expression indicating the worst-case rounding error a
+VC-2's quantiser can produce.
+
+Conceptually VC-2 uses a 'dead-zone' quantiser to quantise transform
+coefficients. The specification informatively notes (13.1.1) that quantisation
+may be implemented as follows:
+
+.. math::
+
+    \text{quantize}(x) = \left\{\begin{array}{ll}
+        \left\lfloor\frac{x}{qf}\right\rfloor & \text{if}~x \ge 0 \\
+        -\left\lfloor\frac{-x}{qf}\right\rfloor & \text{if}~x < 0 \\
+    \end{array}\right
+
+Where :math:`qf` is the chosen quantisation factor.
+
+During dequantisation, the ``inverse_quant`` function (13.3.1) approximates the
+reversal of this process producing dequantised values approximately in the
+middle of the ranges of inputs which might have produced a given quantised
+value.
+
+The figure below illustrates the mapping performed during quantisation:
+
+.. image:: /_static/bit_widths/deadzone_quantisation.svg
+    :alt: Illustration of dead-zone quantiser.
+
+The range of input values which are quantised to 0 is known as the 'dead-zone'
+and is notably twice the width of the regions which quantise to any other
+value. As a consequence, the worst-case quantisation errors arise from inputs
+at the left and right extremes of the dead-zone.
+
+Considering only positive inputs momentarily, the worst-case quantisation error
+occurs when the input is set to the largest value, :math:`x_{\textrm{max}}`,
+which satisifies:
+
+.. math::
+
+    \left\lfloor \frac{x_{\textrm{max}}}{qf} \right\rfloor = 0
+
+Or equivalently, expressed as an inequality:
+
+.. math::
+
+    \frac{x_{\textrm{max}}}{qf} < 1
+
+The maximum value satisfying this inequality may be derrived by introducing an
+infintecimal offset, :math:`\iota`, to the RHS:
+
+.. math::
+
+    \frac{x_{\textrm{max}}}{qf} &< 1 \\
+    \frac{x_{\textrm{max}}}{qf} &\le 1 - \iota \\
+    \frac{x_{\textrm{max}}}{qf} &= 1 - \iota \\
+    x_{\textrm{max}} &= qf - \iota \\
+
+Since all values in VC-2 are integers, the largest integer value of
+:math:`x_{\textrm{max}}` is therefore:
+
+.. math::
+
+    x_{\textrm{max integer}} = \left\lfloor qf - \iota \right\rfloor
+
+Since :math:`x_{\textrm{max integer}}` is the largest value the VC-2 quantiser
+will round to zero, :math:`x_{\textrm{max integer}}` is the largest
+quantisation error in positive part of the dead-zone and therefore the largest
+possible quantisation error for any positive value.
+
+By an analagous process (or the symmetry of the quantiser), the largest
+negative value quantised to zero (and therefore the negative value with the
+largest quantisation error) may be found to be :math:`-x_{\textrm{max
+integer}}`.
+
+The following function may be used to compute :math:`x_{\textrm{max integer}}`
+for any VC-2 quantisation index.
+
+.. autofunction:: worst_case_quantisation_error
+
+
+Bounding quantisation factors
+`````````````````````````````
+
+As the quantisation factor increases, the worst-case quantisation error
+magnitude also increases. We must therefore determine the largest quantisation
+factor which might be applied by an encoder. We will assume that the largest
+quantisation factor which an encoder might choose is the smallest factor which
+would quantise all transform values to zero.
+
+The function below may be used to determine the quantisation index
+corresponding with the smallest quantisation factor sufficient to quantise a
+given value to zero.
+
+.. autofunction:: maximum_useful_quantisation_index
+
+
+
+
 """
 
 __all__ = [
@@ -548,18 +663,24 @@ __all__ = [
     "non_error_coeffs",
     "maximise_filter_output",
     "minimise_filter_output",
-    "synthesis_filter_output_bounds",
-    "analysis_filter_output_bounds",
+    "synthesis_filter_expression_bounds",
+    "analysis_filter_expression_bounds",
+    "synthesis_filter_bounds",
+    "analysis_filter_bounds",
     "minimum_signed_int_width",
     "coeff_symbol_to_indices",
     "picture_symbol_to_indices",
     "find_negative_input_free_synthesis_index",
     "find_negative_input_free_analysis_index",
+    "worst_case_quantisation_error",
+    "maximum_useful_quantisation_index",
 ]
 
 import math
 
 from collections import defaultdict
+
+from vc2_conformance.decoder.transform_data_syntax import quant_factor
 
 from vc2_conformance.wavelet_filter_analysis.fast_sympy_functions import (
     subs,
@@ -883,7 +1004,7 @@ def minimise_filter_output(coeffs, minimum_input, maximum_input):
     }
 
 
-def analysis_filter_output_bounds(expression, picture_value_range):
+def analysis_filter_expression_bounds(expression, picture_value_range):
     """
     Return the bounds for an expression describing a particular anlaysis
     filter, assuming worst-case error term values.
@@ -910,7 +1031,7 @@ def analysis_filter_output_bounds(expression, picture_value_range):
     return (lower_bound, upper_bound)
 
 
-def synthesis_filter_output_bounds(expression, coeff_value_ranges):
+def synthesis_filter_expression_bounds(expression, coeff_value_ranges):
     """
     Return the bounds for an expression describing a particular synthesis
     filter, assuming worst-case error term values.
@@ -948,6 +1069,56 @@ def synthesis_filter_output_bounds(expression, coeff_value_ranges):
     upper_bound = upper_error_bound(subs(expression, max_coeffs))
     
     return (lower_bound, upper_bound)
+
+
+def analysis_filter_bounds(coeff_array, picture_value_range):
+    """
+    Return the overall value bounds across all filter phases of a particular
+    anlaysis filter output subband or intermediate value, assuming worst-case
+    error term values.
+    
+    Parameters
+    ==========
+    coeff_array : :py:class:`InfiniteArray`
+    picture_value_range : (min, max)
+        The lower and upper bounds for the values of the non-error symbols in
+        the expression.
+    
+    Returns
+    =======
+    (lower_bound, upper_bound)
+    """
+    w, h = coeff_array.period
+    lower_bounds, upper_bounds = zip(*(
+        analysis_filter_expression_bounds(coeff_array[x, y], picture_value_range)
+        for x in range(w)
+        for y in range(h)
+    ))
+    return min(lower_bounds), max(upper_bounds)
+
+
+def synthesis_filter_bounds(picture_array, coeff_value_ranges):
+    """
+    Return the overall value bounds across all filter phases of a synthesis
+    filter output or invermediate value, assuming worst-case error term values.
+    
+    Parameters
+    ==========
+    picture_array : :py:class:`InfiniteArray`
+    coeff_value_ranges : {(level, orient): (min, max), ...}
+        For each input coefficient band, the maximum values for values in that
+        band.
+    Returns
+    =======
+    (lower_bound, upper_bound)
+    """
+    w, h = picture_array.period
+    lower_bounds, upper_bounds = zip(*(
+        synthesis_filter_expression_bounds(picture_array[x, y], coeff_value_ranges)
+        for x in range(w)
+        for y in range(h)
+    ))
+    return (min(lower_bounds), max(upper_bounds))
 
 
 def minimum_signed_int_width(number):
@@ -1101,3 +1272,54 @@ def find_negative_input_free_analysis_index(picture, coeff_array, x, y):
         y2 = max(y2, y + offset_y)
     
     return (x2, y2)
+
+
+def worst_case_quantisation_error(quantisation_index):
+    """
+    Compute the worst-case quantisation error which may be introduced by VC-2's
+    quantisation scheme as defined in (13.3).
+    
+    Parameters
+    ==========
+    index : int
+        The VC-2 quantisation index used.
+    
+    Returns
+    =======
+    error_magnitude : int
+        The worst case quantisation error magnitude. Worst-case quantisation
+        errors may be plus or minus this value.
+    """
+    # The worst-case quantisation error occurs when quantising the values:
+    #
+    #     +-floor(qf - iota)
+    #
+    # See the derrivation in documentation at the top of this module for
+    # details.
+    #
+    # In VC-2, the quantisation factor is computed from the quantisation index
+    # by the `quant_factor` pseudocode function (13.3.2). The value returned is
+    # given as a fixed-point number with two fractional bits. That is, 4*qf is
+    # returned, not qf. Consequently, the expression above may be rewritten as:
+    #
+    #     +-floor(quant_factor(quantisation_index)/4.0 - iota)
+    #
+    # This computation is implemented in truncating integer arithmetic by
+    # adding an extra fractional bit to the quatisation factor and replacing
+    # iota with the new smallest fixed point value possible.
+    return ((quant_factor(quantisation_index) << 1) - 1) // 8
+
+
+def maximum_useful_quantisation_index(value):
+    """
+    Compute the smallest quantisation index which quantizes the supplied value
+    to zero. This is considered to be the largest useful quantisation index
+    with respect to this value.
+    """
+    # NB: Since quantisation indices correspond to exponentially growing
+    # quantisation factors, the runtime of this loop is only logarithmic with
+    # respect to the magnitude of the value.
+    quantisation_index = 0
+    while (4*abs(value)) // quant_factor(quantisation_index) != 0:
+        quantisation_index += 1
+    return quantisation_index

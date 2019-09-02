@@ -4,6 +4,11 @@ import sympy
 
 from vc2_conformance import tables
 
+from vc2_conformance.decoder.transform_data_syntax import (
+    quant_factor,
+    inverse_quant,
+)
+
 from vc2_conformance.wavelet_filter_analysis.quantisation_matrices import (
     convert_between_synthesis_and_analysis,
 )
@@ -25,13 +30,15 @@ from vc2_conformance.wavelet_filter_analysis.bit_widths import (
     non_error_coeffs,
     maximise_filter_output,
     minimise_filter_output,
-    synthesis_filter_output_bounds,
-    analysis_filter_output_bounds,
+    synthesis_filter_expression_bounds,
+    analysis_filter_expression_bounds,
     minimum_signed_int_width,
     picture_symbol_to_indices,
     coeff_symbol_to_indices,
     find_negative_input_free_synthesis_index,
     find_negative_input_free_analysis_index,
+    worst_case_quantisation_error,
+    maximum_useful_quantisation_index,
 )
 
 class TestAnalysisAndSynthesisTransforms(object):
@@ -313,7 +320,7 @@ def test_minimise_filter_output():
     }
 
 
-def test_analysis_filter_output_bounds():
+def test_analysis_filter_expression_bounds():
     p = SymbolArray(2, "p")
     expression = (
         30*p[0, 0] +
@@ -322,13 +329,13 @@ def test_analysis_filter_output_bounds():
         -3*new_error_term()
     )
     
-    assert analysis_filter_output_bounds(expression, (-1, 1000)) == (
+    assert analysis_filter_expression_bounds(expression, (-1, 1000)) == (
         -30 - 10000 - 3,
         30000 + 10 + 1,
     )
 
 
-def test_synthesis_filter_output_bounds():
+def test_synthesis_filter_expression_bounds():
     coeff_arrays = make_coeff_arrays(0, 1)
     expression = (
         30*coeff_arrays[0]["L"][0, 0] +
@@ -342,7 +349,7 @@ def test_synthesis_filter_output_bounds():
         (1, "H"): (-10, 1000),
     }
     
-    assert synthesis_filter_output_bounds(expression, coeff_value_ranges) == (
+    assert synthesis_filter_expression_bounds(expression, coeff_value_ranges) == (
         -30 - 10000 -3,
         3000 + 100 + 1,
     )
@@ -494,3 +501,62 @@ def test_find_negative_input_free_analysis_index():
                 non_error_coeffs(coeff_array[x3, y3])
             )
         )
+
+
+
+@pytest.mark.parametrize("quantisation_index", [
+    # Indices with special case offsets
+    0,
+    1,
+    # Remaining phases of multiples of four
+    2,
+    3,
+    4,
+    5,
+    # Some larger indices (with all phases of multiples of four)
+    20,
+    21,
+    22,
+    23,
+])
+def test_worst_case_quantisation_error(quantisation_index):
+    # Empirically determine the worst-case quantisation error and check it
+    # matches the value found
+    qf4 = quant_factor(quantisation_index)
+    quantisation_errors = []
+    for x in range(-1000, 1001):
+        if x >= 0:
+            quantised_x = (4*x) // qf4
+        else:
+            quantised_x = -((4*-x) // qf4)
+        dequantised_x = inverse_quant(quantised_x, quantisation_index)
+        quantisation_errors.append(dequantised_x - x)
+    
+    max_positive_error = max(quantisation_errors)
+    max_negative_error = min(quantisation_errors)
+    
+    error_magnitude = worst_case_quantisation_error(quantisation_index)
+    assert max_positive_error == error_magnitude
+    assert max_negative_error == -error_magnitude
+
+@pytest.mark.parametrize("value", [
+    # The first ten quantisation factors
+    1, 2, 3, 4, 5, 6, 8, 9, 11, 13,
+    # Some non-quantisation-factor values
+    14, 15,
+    # A very large value to ensure runtime is actually logarithmic
+    999999999999,
+])
+def test_maximum_useful_quantisation_index(value):
+    # Empirically check that any lower quantisation index produces a non-zero
+    # result
+    index = maximum_useful_quantisation_index(value)
+    
+    def quantize(value, index):
+        if value >= 0:
+            return (4*value) // quant_factor(index)
+        else:
+            return -((4*-value) // quant_factor(index))
+    
+    assert quantize(value, index) == 0
+    assert quantize(value, index-1) != 0

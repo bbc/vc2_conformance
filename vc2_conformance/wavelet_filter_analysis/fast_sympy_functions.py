@@ -12,7 +12,7 @@ in this software.
 
 """
 
-__all__ = ["subs"]
+__all__ = ["subs", "coeffs"]
 
 from sympy import sympify, Add, Mul, Rational, Symbol
 
