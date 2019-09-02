@@ -163,9 +163,7 @@ from vc2_conformance.tables import LiftingFilterTypes
 
 from vc2_conformance._py2x_compat import gcd
 
-from vc2_conformance.wavelet_filter_analysis.symbolic_error_terms import (
-    new_error_term,
-)
+import vc2_conformance.wavelet_filter_analysis.affine_arithmetic as aa
 
 
 __all__ = [
@@ -327,11 +325,11 @@ class LiftedArray(InfiniteArray):
         Apply a one-dimensional lifting filter step to an array, as described
         in the VC-2 specification (15.4.4).
         
-        In this implementation, real arithmetic (rather than truncating integer
-        arithmetic) is used. Consequently, rounding errors which would be
-        present in an integer implementation are represented by the insertion
-        of error terms (see
-        :py:mod:`~vc2_conformance.wavelet_filter_analysis.symbolic_error_terms`).
+        In this implementation, affine arithmetic (rather than truncating
+        integer arithmetic) is used. Consequently, rounding errors which would
+        be present in an integer implementation are represented by the
+        insertion of error terms (see
+        :py:mod:`~vc2_conformance.wavelet_filter_analysis.affine_arithmetic`).
         
         Parameters
         ==========
@@ -408,8 +406,7 @@ class LiftedArray(InfiniteArray):
             
             # Right-shift replaced with division and error term to enable it to
             # work with SymPy
-            total /= 1 << self._stage.S
-            total -= new_error_term()
+            total = aa.div(total, 1 << self._stage.S)
             
             if LiftedArray.LIFT_ADDS[self._stage.lift_type]:
                 return self._input_array[keys] + total
@@ -500,11 +497,11 @@ class RightShiftedArray(InfiniteArray):
         is added to the input values prior to the right-shift operation (which
         is used to implement rounding behaviour in integer arithmetic).
         
-        In this implementation, real arithmetic (rather than truncating integer
-        arithmetic) is used. Consequently, rounding errors which would be
-        present in an integer implementation are represented by the insertion
-        of error terms (see
-        :py:mod:`~vc2_conformance.wavelet_filter_analysis.symbolic_error_terms`).
+        In this implementation, affine arithmetic (rather than truncating
+        integer arithmetic) is used. Consequently, rounding errors which would
+        be present in an integer implementation are represented by the
+        insertion of error terms (see
+        :py:mod:`~vc2_conformance.wavelet_filter_analysis.affine_arithmetic`).
         
         Parameters
         ==========
@@ -524,8 +521,7 @@ class RightShiftedArray(InfiniteArray):
         else:
             value = self._input_array[keys]
             value += 1 << (self._shift_bits - 1)
-            value /= 1 << self._shift_bits
-            value -= new_error_term()
+            value = aa.div(value, 1 << self._shift_bits)
             
             return value
     

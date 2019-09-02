@@ -13,11 +13,7 @@ from vc2_conformance.wavelet_filter_analysis.quantisation_matrices import (
     convert_between_synthesis_and_analysis,
 )
 
-from vc2_conformance.wavelet_filter_analysis.symbolic_error_terms import (
-    new_error_term,
-    strip_error_terms,
-    upper_error_bound,
-)
+import vc2_conformance.wavelet_filter_analysis.affine_arithmetic as aa
 
 from vc2_conformance.wavelet_filter_analysis.infinite_arrays import (
     SymbolArray,
@@ -95,22 +91,24 @@ class TestAnalysisAndSynthesisTransforms(object):
             transform_coeffs,
         )
         
-        rounding_errors = strip_error_terms(output_picture[0, 0]) - input_picture[0, 0]
-        
+        # In this example, no quantisation is applied between the two
+        # filters. As a consequence the rounding errors in the analysis and
+        # synthesis filters exactly cancel out. As such the input and output
+        # picture values should be identical.
+        #
+        # The bit shift between transform levels used by some filters
+        # unfortunately exposes a limitation of the affine arithmetic approach.
+        # Specifically, we know that the values fed to the inter-level bit
+        # shift are always a multiple of two and so no rounding takes place.
+        # The affine arithmetic, however, has no way to know this and so error
+        # terms are introduced, one per transform level, ammounting to an
+        # small over-estimate of the error bounds. We check that this is the
+        # case.
+        rounding_errors = output_picture[0, 0] - input_picture[0, 0]
         if exp_error:
-            # Once error and the decoded pixel have been removed, all we should be left
-            # with is a small constant. This constant term comes from the bit shift
-            # between transform levels where an offset is introduced which would
-            # normally be truncated away but remains in the symbolic arithmetic,
-            assert rounding_errors.free_symbols == set()
-            
-            # The 'rounding error' due to the lack of truncation in symbolic arithmetic
-            # will be bounded by the error terms in the final result. Since in this
-            # instance we know the only source of error is the added fractional value,
-            # only positive error terms are relevant.
-            upper_bound = upper_error_bound(output_picture[0, 0] - input_picture[0, 0])
-            
-            assert 0 <= rounding_errors <= upper_bound
+            assert len(rounding_errors.free_symbols) == dwt_depth + dwt_depth_ho
+            assert -1 < aa.upper_bound(rounding_errors) < 1
+            assert -1 < aa.lower_bound(rounding_errors) < 1
         else:
             assert rounding_errors == 0
     
@@ -270,9 +268,9 @@ def test_extract_coeffs():
         # Constant term
         1234 +
         # Error terms
-        1 * new_error_term() +
-        2 * new_error_term() +
-        3 * new_error_term() +
+        1 * aa.new_error_symbol() +
+        2 * aa.new_error_symbol() +
+        3 * aa.new_error_symbol() +
         # Non-error/constant terms
         sympy.Rational(1, 2) * sympy.abc.a +
         sympy.Rational(1, -3) * sympy.abc.b +
@@ -325,13 +323,13 @@ def test_analysis_filter_expression_bounds():
     expression = (
         30*p[0, 0] +
         -10*p[1, 0] +
-        1*new_error_term()
-        -3*new_error_term()
+        1*aa.new_error_symbol()
+        -3*aa.new_error_symbol()
     )
     
     assert analysis_filter_expression_bounds(expression, (-1, 1000)) == (
-        -30 - 10000 - 3,
-        30000 + 10 + 1,
+        -30 - 10000 - 1 - 3,
+        30000 + 10 + 1 + 3,
     )
 
 
@@ -340,8 +338,8 @@ def test_synthesis_filter_expression_bounds():
     expression = (
         30*coeff_arrays[0]["L"][0, 0] +
         -10*coeff_arrays[1]["H"][0, 0] +
-        1*new_error_term()
-        -3*new_error_term()
+        1*aa.new_error_symbol()
+        -3*aa.new_error_symbol()
     )
     
     coeff_value_ranges = {
@@ -350,8 +348,8 @@ def test_synthesis_filter_expression_bounds():
     }
     
     assert synthesis_filter_expression_bounds(expression, coeff_value_ranges) == (
-        -30 - 10000 -3,
-        3000 + 100 + 1,
+        -30 - 10000 - 1 - 3,
+        3000 + 100 + 1 + 3,
     )
 
 

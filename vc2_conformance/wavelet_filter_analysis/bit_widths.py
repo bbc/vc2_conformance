@@ -20,25 +20,57 @@ bit width is complicated.
 In the subsections below, possible approaches are discussed before finally
 arriving at the solution used in this module.
 
+
+Real-valued filter analysis
+```````````````````````````
+
+For Finite Impulse Response (FIR) filters such as the wavelet transform, the
+filter coefficients can be used to derive input signals which maximize the
+output signal level for a given allowed input value range. These values can
+then be used to determine the bit width required by the filter's
+implementation.
+
+For example, an FIR filter whose coefficients are :math:`[-1, 2, 3, 2, -1]`
+produces the greatest possible output of any signed 8-bit input with the
+samples :math:`[-128, 127, 127, 127, -128]` and the lowest possible output for
+:math:`[127, -128, -128, -128, 127]`. The resulting outputs, :math:`1145` and
+:math:`-1150` respectively both fit into a signed 12 bit integer. As a
+consequence we can conclude that 12 bits is sufficient for this filter and
+input width.
+
+Since the wavelet transform may be implemented using FIR filters, the above
+approach could be used to find input signals which maximise any desired
+intermediate or output value. Unfortunately because VC-2 uses integer
+arithmetic, the filter is not strictly linear due to rounding during divisions.
+Since there is a potential for rounding errors to compound and accumulate, it
+is conceivable that larger values might be encountered than predicted by a
+simple FIR filter analysis.
+
+Since an under-estimate of bit width requirements could produce catastrophic
+numerical errors, an alternative analysis is required which accounts for the
+non-linearities in integer arithmetic.
+
+
 Theorem Provers
 ```````````````
 
-Theorem provers (such as Z3_) are capable of determining the exact bit width
-required for arbitrary arithmetic problems. In fact, such systems are now
-commonplace in automated software auditing tools where they are able to uncover
-subtle buffer overflow type security vulnerabilities 
+Theorem provers (such as Z3_) may be used to compute optimal bit widths for
+arbitrary calculations under integer arithmetic (see, for example, `"Bit-Width
+Allocation for Hardware Accelerators for Scientific Computing Using SAT-Modulo
+Theory", Kinsman and Nicolici (2007)
+<https://ieeexplore.ieee.org/abstract/document/5419231>`_).
 
 .. _Z3: https://github.com/Z3Prover/z3/
 
-Computing the minimum bit width required for an arbitrary piece of arithmetic
-can be shown to be NP-complete in the general case. This means that beyond a
-certain problem size or complexity finding the exact minimum bit width required
-becomes intractable. Unfortunately, this point is reached by almost all of the
-VC-2 wavelet filters, even for for transform depths of 1.
+Unfortunately, computing the minimum bit width required for an arbitrary piece
+of arithmetic is NP-complete in the general case. This means that beyond a
+certain problem size, finding the true minimum bit width of an expression
+becomes intractable, even for sophisticated theorem proving software.
 
-Though it may be possible to restrict the bit width problem for VC-2 filters
-sufficiently that it becomes tractable, the author has been unable to do so in
-a sensible amount of time.
+Regrettably, the arithmetic expressions for the VC-2 wavelet filters are too
+large to succumb to this approach. As a consequence, we must fall back on
+alternative techniques which cannot guarantee the smallest possible bit width,
+while still ensuring a sufficient number of bits are available.
 
 
 Fixed-point arithmetic analysis
@@ -61,101 +93,56 @@ numbers can, in the worst case, only produce a 10-bit result however the above
 approach may suggest as many as 12 bits are required (depending on the order of
 operations).
 
-A similar, but more refined approach is to track the largest and smallest
+
+Interval arithmetic
+```````````````````
+
+A similar, but more refined approach, is to track the largest and smallest
 values achievable at each point in the computation and, for each operation,
 assume the worst case combinations of its operands to determine the new largest
-and smallest values.
+and smallest values. This approach is known as `interval arithmetic
+<https://en.wikipedia.org/wiki/Interval_arithmetic>`_.
 
 This approach, while an improvement, still produces gross over estimates. These
 result from the fact that values which 'cancel out' are not accounted for (e.g.
-in the expression :math:`a + b - a` the result only needs to be the size of
-:math:`b`, but this approach will over-estimate). This type of cancellation is
-commonplace in real world filters and so this approach will still produce
-unacceptable over-estimates.
+in the expression :math:`(a + b) - a` the result only needs to be the size of
+:math:`b`, but interval arithmetic approach will over-estimate, assuming three
+independent variables). This type of cancellation is commonplace in VC-2's
+filters (where the same pixel values will be used by multiple filters) and so
+this approach will still produce unacceptable over-estimates in practice.
 
 
-Real-valued filter analysis
-```````````````````````````
+Affine arithmetic
+`````````````````
 
-For Finite Impulse Response (FIR) filters such as the wavelet transform, the
-filter coefficients can be used to derive input signals which maximize the
-output signal level for a given allowed input value range. These values can
-then be used to determine the bit width required by the filter's
-implementation.
+Affine arithmetic is a further refinement of interval arithmetic which is able
+to track dependent values in an expression. For example, unlike interval
+arithmetic, given the expression :math:`(a + b) - a`, affine arithmetic is able
+to correctly deduce the resulting bitwidth is that of the variable :math:`b`.
 
-For example, an FIR filter whose coefficients are :math:`[-1, 2, 3, 2, -1]`
-produces the greatest possible output of any signed 8-bit input with the
-samples :math:`[-128, 127, 127, 127, -128]` and the lowest possible output for
-:math:`[127, -128, -128, -128, 127]`. The resulting outputs, :math:`1145` and
-:math:`-1150` respectively both fit into a signed 12 bit integer. As a
-consequence we can conclude that 12 bits is sufficient for this filter and
-input width.
+See the :py:mod:`~vc2_conformance.wavelet_filter_analysis.affine_arithmetic`
+module documentation for a primer on affine arithmetic.
 
-Because VC-2 uses integer arithmetic with division, the filter is not strictly
-linear due to rounding. As a consequence, it is possible that the required bit
-width computed for the linear filter may be a slight over or under estimate.
-The possibility of under-estimating the required bit width makes this approach
-unsuitable for computing bit widths since an under-estimate could result in
-catastrophic numerical errors.
-
-
-Real-valued filter analysis with error tracking
-```````````````````````````````````````````````
-
-This final approach, the one used in this module, is a slight extension of the
-real-valued filter analysis approach above. Critically, however, it is
-guaranteed to yield an answer with at least enough bits, with a very small
-possibility of very slightly over-estimating the required bit depth.
-
-As above, worst-case signals are prepared as if for a real-valued filter and
-worst-case output (and intermediate) values are calculated.
-
-Next, the filtering process is evaluated algebraically, replacing all division
-operations with division plus an error term representing the rounding error,
-e.g.:
-
-.. math::
-    
-    \frac{a}{b} \Rightarrow \frac{a}{b} - e_i
-
-.. note::
-
-    A unique error term, :math:`e_i`, is introduced for every division
-    operation, otherwise unrelated error terms may erroneously cancel out.
-
-Once the final filter output's algebraic expression is arrived at, the
-magnitudes of all of the error terms' coefficients may be used to determine the
-upper and lower bounds on the overall error.
-
-The :py:mod:`~vc2_conformance.wavelet_filter_analysis.symbolic_error_terms`
-module provides functions for creating error terms and determining error
-bounds.
-
-This approach considers a worst-case where every division produces worst-case
-rounding errors and so is guaranteed not to under-estimate the required bit
-width. However, it may not be possible for every division to produce a
-worst-case rounding error simultaneously so there is potential for
-over-estimation of the required bit width.
-
-Fortunately, in well designed filters, rounding errors tend to have
-significantly smaller magnitudes than the signal being processed. Consequently
-it is quite unlikely that accounting for rounding errors will push the signal
-level into a greater number of bits, even if those errors are relatively
-generous over-estimates.
+Affine arithmetic is able to exactly track the value ranges (and thus required
+bit widths) of affine operations (e.g. addition, subtraction, multiplication by
+a constant). In the case of non-affine operations, such as truncating division
+(as implicitly implemented by VC-2's right-shift operations), affine arithmetic
+makes a conservative (over-) estimate of the value bounds when rounding occurs.
+Fortunately, in well-designed filters, rounding errors are much smaller in
+magnitude than signal values and consequently this over-estimation of the error
+bounds is likely to be very small.
 
 
 Symbolic Filter Expressions
 ---------------------------
 
-This focus of this module is implementing the two steps involved in performing
-real-valued filter analysis with error tracking: finding worst-case values and
-estimating worst-case rounding errors.
-
-For both tasks, an algebraic expression describing the filters used by VC-2 is
-required. The
+An symbolic (algebraic) expression describing the filters used by VC-2 will be
+required when finding extreme signals and bit width requirements. The
 :py:mod:`~vc2_conformance.wavelet_filter_analysis.infinite_arrays` module
-provides the pieces needed to produce such an expression (see the
-:py:mod:`~vc2_conformance.wavelet_filter_analysis.infinite_arrays`
+provides the pieces needed to produce such an expression using affine
+arithmetic (see the
+:py:mod:`~vc2_conformance.wavelet_filter_analysis.infinite_arrays` and
+:py:mod:`~vc2_conformance.wavelet_filter_analysis.affine_arithmetic`
 documentation for details). The following functions assemble these to implement
 VC-2's analysis and synthesis filters on :py:class:`~InfiniteArray`\ s.
 
@@ -201,7 +188,7 @@ below::
     >>> # An algebraic expression for the filter which produced output pixel
     >>> # (0, 0) is found thus:
     >>> picture[0, 0]
-    coeff_0_L_0_0/2 + coeff_1_HH_-1_0/16 + coeff_1_HH_0_0/16 - coeff_1_HL_-1_0/8 - coeff_1_HL_0_0/8 - coeff_1_LH_0_0/4 - e_1/8 - e_2/8 + e_3/2 + e_4/2 - e_5 + 1/8
+    coeff_0_L_0_0/2 + coeff_1_HH_-1_0/16 + coeff_1_HH_0_0/16 - coeff_1_HL_-1_0/8 - coeff_1_HL_0_0/8 - coeff_1_LH_0_0/4 + e_1/16 + e_2/16 - e_3/4 - e_4/4 + e_5/2
 
 .. note::
 
@@ -219,7 +206,7 @@ which implements this process (while omitting error terms)::
 
 For example, the coefficients for a particular pixel may be printed like so::
 
-    >>> from vc2_conformance.wavelet_filter_analysis.bit_widths import non_error_coeffs_coeffs
+    >>> from vc2_conformance.wavelet_filter_analysis.bit_widths import non_error_coeffs
     >>> for sym, coeff in non_error_coeffs(picture[0, 0]).items():
     ...     print("{}: {}".format(sym, coeff))
     coeff_0_L_0_0: 1/2
@@ -237,10 +224,10 @@ In general, different output pixels are the result of different filtering
 processes. For example::
 
     >>> picture[0, 0]
-    coeff_0_L_0_0/2 + coeff_1_HH_-1_0/16 + coeff_1_HH_0_0/16 - coeff_1_HL_-1_0/8 - coeff_1_HL_0_0/8 - coeff_1_LH_0_0/4 - e_1/8 - e_2/8 + e_3/2 + e_4/2 - e_5 + 1/8
+    coeff_0_L_0_0/2 + coeff_1_HH_-1_0/16 + coeff_1_HH_0_0/16 - coeff_1_HL_-1_0/8 - coeff_1_HL_0_0/8 - coeff_1_LH_0_0/4 + e_1/16 + e_2/16 - e_3/4 - e_4/4 + e_5/2
     
     >>> picture[1, 0]
-    coeff_0_L_0_0/4 + coeff_0_L_1_0/4 + coeff_1_HH_-1_0/32 - 3*coeff_1_HH_0_0/16 + coeff_1_HH_1_0/32 - coeff_1_HL_-1_0/16 + 3*coeff_1_HL_0_0/8 - coeff_1_HL_1_0/16 - coeff_1_LH_0_0/8 - coeff_1_LH_1_0/8 - e_1/16 - e_10 + 3*e_2/8 + e_3/4 + e_4/4 - e_6/16 + e_7/4 + e_8/4 - e_9/2 + 1/8
+    coeff_0_L_0_0/4 + coeff_0_L_1_0/4 + coeff_1_HH_-1_0/32 - 3*coeff_1_HH_0_0/16 + coeff_1_HH_1_0/32 - coeff_1_HL_-1_0/16 + 3*coeff_1_HL_0_0/8 - coeff_1_HL_1_0/16 - coeff_1_LH_0_0/8 - coeff_1_LH_1_0/8 + e_1/32 + e_10/2 - 3*e_2/16 - e_3/8 - e_4/8 + e_6/32 - e_7/8 - e_8/8 + e_9/4
 
 The figure below illustrates the series of lifting filters which imlement a
 2-level LeGall synthesis transform on a simple one dimensional (interleaved)
@@ -262,11 +249,11 @@ This effect is illustrated below for various pixels which have the same filter
 phase:
 
     >>> picture[0, 0]
-    coeff_0_L_0_0/2 + coeff_1_HH_-1_0/16 + coeff_1_HH_0_0/16 - coeff_1_HL_-1_0/8 - coeff_1_HL_0_0/8 - coeff_1_LH_0_0/4 - e_1/8 - e_2/8 + e_3/2 + e_4/2 - e_5 + 1/8
+    coeff_0_L_0_0/2 + coeff_1_HH_-1_0/16 + coeff_1_HH_0_0/16 - coeff_1_HL_-1_0/8 - coeff_1_HL_0_0/8 - coeff_1_LH_0_0/4 + e_1/16 + e_2/16 - e_3/4 - e_4/4 + e_5/2
     >>> picture[2, 2]
-    coeff_0_L_1_1/2 + coeff_1_HH_0_1/16 + coeff_1_HH_1_1/16 - coeff_1_HL_0_1/8 - coeff_1_HL_1_1/8 - coeff_1_LH_1_1/4 - e_17/8 - e_26/8 + e_27/2 + e_28/2 - e_29 + 1/8
+    coeff_0_L_1_1/2 + coeff_1_HH_0_1/16 + coeff_1_HH_1_1/16 - coeff_1_HL_0_1/8 - coeff_1_HL_1_1/8 - coeff_1_LH_1_1/4 + e_11/16 + e_12/16 - e_13/4 - e_14/4 + e_15/2
     >>> picture[4, 6]
-    coeff_0_L_2_3/2 + coeff_1_HH_1_3/16 + coeff_1_HH_2_3/16 - coeff_1_HL_1_3/8 - coeff_1_HL_2_3/8 - coeff_1_LH_2_3/4 - e_30/8 - e_31/8 + e_32/2 + e_33/2 - e_34 + 1/8
+    coeff_0_L_2_3/2 + coeff_1_HH_1_3/16 + coeff_1_HH_2_3/16 - coeff_1_HL_1_3/8 - coeff_1_HL_2_3/8 - coeff_1_LH_2_3/4 + e_16/16 + e_17/16 - e_18/4 - e_19/4 + e_20/2
 
 The :py:class:`~infinite_arrays.InfiniteArray` class provides the
 :py:attr:`~infinite_arrays.InfiniteArray.period` proprty giving the period with
@@ -359,18 +346,16 @@ particular pixel given a hypothetical 10-bit input to our running example::
 
 By substituting these worst-case inputs into the pixel's algebraic expression,
 and assuming the worst-case values for the error terms (using
-:py:func:`upper_error_bound` and :py:func:`lower_error_bound`) we obtain the
-minimum and maximum possible output value for this filter::
+:py:func:`affine_arithmetic.upper_bound` and
+:py:func:`affine_arithmetic.lower_bound`) we obtain the minimum and maximum
+possible output value for this filter::
 
-    >>> from vc2_conformance.wavelet_filter_analysis.symbolic_error_terms import (
-    ...     upper_error_bound,
-    ...     lower_error_bound,
-    ... )
+    >>> import vc2_conformance.wavelet_filter_analysis.affine_arithmetic as aa
     
-    >>> greatest_possible_value = upper_error_bound(pixel_expr.subs(max_coeffs))
+    >>> greatest_possible_value = aa.upper_bound(pixel_expr.subs(max_coeffs))
     >>> greatest_possible_value
     1153/2
-    >>> least_possible_value = lower_error_bound(pixel_expr.subs(min_coeffs))
+    >>> least_possible_value = aa.lower_bound(pixel_expr.subs(min_coeffs))
     >>> least_possible_value
     -4613/8
 
@@ -687,10 +672,7 @@ from vc2_conformance.wavelet_filter_analysis.fast_sympy_functions import (
     coeffs,
 )
 
-from vc2_conformance.wavelet_filter_analysis.symbolic_error_terms import (
-    lower_error_bound,
-    upper_error_bound,
-)
+import vc2_conformance.wavelet_filter_analysis.affine_arithmetic as aa
 
 from vc2_conformance.wavelet_filter_analysis.infinite_arrays import (
     SymbolArray,
@@ -1025,8 +1007,8 @@ def analysis_filter_expression_bounds(expression, picture_value_range):
     min_coeffs = minimise_filter_output(coeffs, *picture_value_range)
     max_coeffs = maximise_filter_output(coeffs, *picture_value_range)
     
-    lower_bound = lower_error_bound(subs(expression, min_coeffs))
-    upper_bound = upper_error_bound(subs(expression, max_coeffs))
+    lower_bound = aa.lower_bound(subs(expression, min_coeffs))
+    upper_bound = aa.upper_bound(subs(expression, max_coeffs))
     
     return (lower_bound, upper_bound)
 
@@ -1065,8 +1047,8 @@ def synthesis_filter_expression_bounds(expression, coeff_value_ranges):
             maximise_filter_output(coeffs, *coeff_value_ranges[level_orient])
         )
     
-    lower_bound = lower_error_bound(subs(expression, min_coeffs))
-    upper_bound = upper_error_bound(subs(expression, max_coeffs))
+    lower_bound = aa.lower_bound(subs(expression, min_coeffs))
+    upper_bound = aa.upper_bound(subs(expression, max_coeffs))
     
     return (lower_bound, upper_bound)
 

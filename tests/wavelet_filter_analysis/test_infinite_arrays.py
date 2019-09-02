@@ -10,11 +10,7 @@ from vc2_conformance import tables
 
 from vc2_conformance.picture_decoding import SYNTHESIS_LIFTING_FUNCTION_TYPES
 
-from vc2_conformance.wavelet_filter_analysis.symbolic_error_terms import (
-    strip_error_terms,
-    lower_error_bound,
-    upper_error_bound,
-)
+import vc2_conformance.wavelet_filter_analysis.affine_arithmetic as aa
 
 from vc2_conformance.wavelet_filter_analysis.infinite_arrays import (
     lcm,
@@ -165,7 +161,9 @@ def period_empirically_correct(a):
             for step, period in zip(offset_steps, a.period)
         )
         values = [
-            strip_error_terms(a[tuple(c + o for c, o in zip(coord, offset))])
+            # Since error terms will always be different, consider the
+            # lower-bound case arbitrarily in order to make a fair comparison.
+            aa.lower_bound(a[tuple(c + o for c, o in zip(coord, offset))])
             for coord in product(*(range(d) for d in a.period))
         ]
         
@@ -229,8 +227,8 @@ class TestLiftedArray(object):
                 for i, value in enumerate(input_array)
             })
             
-            lower_bound = lower_error_bound(output)
-            upper_bound = upper_error_bound(output)
+            lower_bound = aa.lower_bound(output)
+            upper_bound = aa.upper_bound(output)
             
             assert (
                 lower_bound <= pseudocode_output <= upper_bound
@@ -430,13 +428,8 @@ class TestRightShiftedArray(object):
         
         sv = sa[1, 2, 3]
         
-        sv_no_error = strip_error_terms(sv)
-        sv_error = sv - sv_no_error
-        
-        error_symbol = next(iter(sv_error.free_symbols))
-        
-        assert sv_no_error == (v + 4) / 8
-        assert sv_error == -error_symbol
+        assert aa.lower_bound(sv) == v / 8 - sympy.Rational(1, 2)
+        assert aa.upper_bound(sv) == v / 8 + sympy.Rational(1, 2)
     
     def test_period(self):
         a = RepeatingSymbolArray((1, 2, 3))

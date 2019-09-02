@@ -6,8 +6,3 @@ This module contains routines for analysing the mathematical properties of the
 Wavelet filters used within VC-2. These properties are relevant to the
 production of quantisation matrices and extreme-case test signals.
 """
-
-from vc2_conformance.wavelet_filter_analysis.quantisation_matrices import *
-from vc2_conformance.wavelet_filter_analysis.infinite_arrays import *
-from vc2_conformance.wavelet_filter_analysis.symbolic_error_terms import *
-from vc2_conformance.wavelet_filter_analysis.bit_widths import *
