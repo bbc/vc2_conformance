@@ -30,3 +30,4 @@ source is reproduced here.
    maintainer/bitstream.rst
    maintainer/verification.rst
    maintainer/analysis.rst
+   maintainer/quantisation_output_limits.rst
