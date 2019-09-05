@@ -1,2 +1,3 @@
 sphinx
 numpydoc
+sphinxcontrib-svg2pdfconverter

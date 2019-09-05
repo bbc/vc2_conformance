@@ -31,6 +31,7 @@ extensions = [
     "sphinx.ext.doctest",
     "sphinx.ext.mathjax",
     "numpydoc",
+    "sphinxcontrib.inkscapeconverter",
 ]
 
 # -- Options for numpydoc/autodoc --------------------------------------------
@@ -56,3 +57,10 @@ intersphinx_mapping = {
 html_theme = "nature"
 
 html_static_path = ["_static"]
+
+
+# -- Options for PDF output --------------------------------------------------
+
+latex_elements = {
+    "papersize": "a4paper",
+}
