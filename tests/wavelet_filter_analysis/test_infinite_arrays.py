@@ -21,6 +21,7 @@ from vc2_conformance.wavelet_filter_analysis.infinite_arrays import (
     LiftedArray,
     RightShiftedArray,
     LeftShiftedArray,
+    PeriodicCachingArray,
 )
 
 
@@ -471,3 +472,287 @@ class TestLeftShiftedArray(object):
         assert l.relative_step_size_to(a) == (2, 3)
         assert l.relative_step_size_to(l) == (1, 1)
         assert l.relative_step_size_to(SymbolArray(2, "nope")) is None
+
+
+class TestPeriodicCachingArray(object):
+
+    def test_mismatched_dimensions(self):
+        a = SymbolArray(2, "a")
+        b = SymbolArray(3, "b")
+        
+        with pytest.raises(TypeError):
+            PeriodicCachingArray(a, b)
+
+    def test_duplicate_symbol_array(self):
+        a = SymbolArray(2, "a")
+        b = SymbolArray(2, "b")
+        c = SymbolArray(2, "b")
+        
+        with pytest.raises(TypeError):
+            PeriodicCachingArray(a, b, c, b)
+
+class TestPeriodicCachingArrayWithPeriodOneInput(object):
+
+    # The following series of InfiniteArrays are constructed as fixtures:
+    #
+    #     a -----,
+    #        interleave --> ab --> right-shift --> abr --> subsample --> br
+    #     b -----'
+    #
+    # Where br[x, y] == b[2*x + 1, y]>>1
+
+    @pytest.fixture
+    def a(self):
+        return SymbolArray(2, "a")
+    
+    @pytest.fixture
+    def b(self):
+        return SymbolArray(2, "b")
+    
+    @pytest.fixture
+    def ab(self, a, b):
+        return InterleavedArray(a, b, 0)
+    
+    @pytest.fixture
+    def abr(self, ab):
+        return RightShiftedArray(ab, 1)
+    
+    @pytest.fixture
+    def br(self, abr):
+        # Note the offset: br[0, 0] = b[1, 0] >> 1
+        return SubsampledArray(abr, (4, 1), (3, 0))
+
+    def test_metadata(self, a, b, ab, br):
+        # Sanity check
+        assert br.period == (1, 1)
+        
+        p = PeriodicCachingArray(br, a, b)
+        
+        assert p.ndim == 2
+        assert p.period == (1, 1)
+        assert p.relative_step_size_to(a) == (2, 1)
+        assert p.relative_step_size_to(ab) == (4, 1)
+    
+    def test_recipes(self, a, b, br):
+        # Get the error symbol (introduced by the right-shift)
+        symbols = br[0, 0].free_symbols
+        symbols.remove(b[1, 0])
+        assert len(symbols) == 1
+        error_sym = symbols.pop()
+        
+        p = PeriodicCachingArray(br, a, b)
+        
+        recipe = p._get_substitution_recipe((0, 0))
+        
+        assert recipe == {
+            b[1, 0]: (b.prefix, (2, 1), (1, 0)),
+            error_sym: ("{}_{:x}".format(error_sym.name, id(p)), (1, 1), (0, 0)),
+        }
+        
+        # Make sure values are cached
+        assert p._get_substitution_recipe((0, 0)) is recipe
+    
+    def test_get(self, a, b, br):
+        s = RightShiftedArray(b, 1)
+        p = PeriodicCachingArray(br, a, b)
+        
+        for x, y in [(0, 0), (2, 3)]:
+            # Should encode the same value...
+            assert aa.lower_bound(p[x, y]) == aa.lower_bound(s[(2*x)+1, y])
+            assert aa.upper_bound(p[x, y]) == aa.upper_bound(s[(2*x)+1, y])
+            
+            # ...using different symbols for error
+            error_symbols_only = p[x, y] - s[(2*x)+1, y]
+            assert all(
+                sym.name.startswith("e_")
+                for sym in error_symbols_only.free_symbols
+            )
+        
+        # Should have different error terms in different repeats
+        assert len((p[0, 0] + p[2, 3]).free_symbols) == 4
+    
+    def test_integration(self):
+        # This integration test builds a single stage 2D analysis filter and
+        # checks that the period-cached versions of each array describe the
+        # same functions as the native versions.
+        #
+        # Note that the filter definition below is for a synthesis filter so
+        # what is implemented is not actually a Deslauriers-Dubuc (9, 7)
+        # analysis filter but this is unimportant.
+        filter = tables.LIFTING_FILTERS[tables.WaveletFilters.deslauriers_dubuc_9_7]
+        
+        pixels = SymbolArray(2, "pixels")
+        
+        dc = LeftShiftedArray(pixels, filter.filter_bit_shift)
+        
+        # Horizontal filter
+        for stage in filter.stages:
+            dc = LiftedArray(dc, stage, 0)
+        l = SubsampledArray(dc, (2, 1), (0, 0))
+        h = SubsampledArray(dc, (2, 1), (1, 0))
+        
+        # Vertical filter
+        for stage in filter.stages:
+            l = LiftedArray(l, stage, 1)
+            h = LiftedArray(h, stage, 1)
+        ll = SubsampledArray(l, (1, 2), (0, 0))
+        lh = SubsampledArray(l, (1, 2), (0, 1))
+        hl = SubsampledArray(h, (1, 2), (0, 0))
+        hh = SubsampledArray(h, (1, 2), (0, 1))
+        
+        # Check that when PeriodicCachingArray is used the results are the same
+        for a in [ll, lh, hl, hh]:
+            # Sanity check
+            assert a.period == (1, 1)
+            
+            p = PeriodicCachingArray(a, pixels)
+            assert aa.lower_bound(p[0, 0]) == aa.lower_bound(a[0, 0])
+            assert aa.lower_bound(p[2, 3]) == aa.lower_bound(a[2, 3])
+
+class TestPeriodicCachingArrayWithPeriodNInput(object):
+
+    # The following series of InfiniteArrays are constructed as fixtures:
+    #
+    #     a -------,
+    #          interleave --> ab --,
+    #     b -------'           interleave --> ab_c --> right-shift -> ab_c_r
+    #     c -----------------------'
+    #
+    # Where ab_c is interleaved as:
+    #
+    #     a  b  a  b
+    #     c  c  c  c
+    #     a  b  a  b
+    #     c  c  c  c
+
+    @pytest.fixture
+    def a(self):
+        return SymbolArray(2, "a")
+    
+    @pytest.fixture
+    def b(self):
+        return SymbolArray(2, "b")
+    
+    @pytest.fixture
+    def c(self):
+        return SymbolArray(2, "c")
+    
+    @pytest.fixture
+    def ab(self, a, b):
+        return InterleavedArray(a, b, 0)
+    
+    @pytest.fixture
+    def ab_c(self, ab, c):
+        return InterleavedArray(ab, c, 1)
+    
+    @pytest.fixture
+    def ab_c_r(self, ab_c):
+        return RightShiftedArray(ab_c, 1)
+
+    def test_metadata(self, a, b, c, ab_c_r):
+        # Sanity check
+        assert ab_c_r.period == (2, 2)
+        
+        p = PeriodicCachingArray(ab_c_r, a, b, c)
+        
+        assert p.ndim == 2
+        assert p.period == (2, 2)
+        assert p.relative_step_size_to(a) == (0.5, 0.5)
+        assert p.relative_step_size_to(b) == (0.5, 0.5)
+        assert p.relative_step_size_to(c) == (1, 0.5)
+    
+    def test_recipes(self, a, b, c, ab_c_r):
+        for x, y, exp_sym, exp_scale, exp_offset in [
+            (0, 0, a[0, 0], (1, 1), (0, 0)),
+            (1, 0, b[0, 0], (1, 1), (0, 0)),
+            (0, 1, c[0, 0], (2, 1), (0, 0)),
+            (1, 1, c[1, 0], (2, 1), (1, 0)),
+        ]:
+            # Get the error symbol (introduced by the right-shift)
+            symbols = ab_c_r[x, y].free_symbols
+            symbols.remove(exp_sym)
+            error_sym = symbols.pop()
+            
+            p = PeriodicCachingArray(ab_c_r, a, b, c)
+            
+            recipe = p._get_substitution_recipe((x, y))
+            
+            assert recipe == {
+                exp_sym: (exp_sym.name.split("_")[0], exp_scale, exp_offset),
+                error_sym: ("{}_{:x}".format(error_sym.name, id(p)), (1, 1), (x, y)),
+            }
+            
+            # Make sure values are cached
+            assert p._get_substitution_recipe((x, y)) is recipe
+    
+    def test_get(self, a, b, c, ab_c, ab_c_r):
+        p = PeriodicCachingArray(ab_c_r, a, b, c)
+        
+        for x, y, exp_sym in [
+            (0, 0, a[0, 0]),
+            (1, 0, b[0, 0]),
+            (0, 1, c[0, 0]),
+            (1, 1, c[1, 0]),
+            
+            (4, 6, a[2, 3]),
+            (5, 6, b[2, 3]),
+            (4, 7, c[4, 3]),
+            (5, 7, c[5, 3]),
+        ]:
+            # Should encode the same value...
+            assert aa.lower_bound(p[x, y]) == aa.lower_bound(ab_c_r[x, y])
+            assert aa.upper_bound(p[x, y]) == aa.upper_bound(ab_c_r[x, y])
+            
+            # ...using different symbols for error
+            error_symbols_only = p[x, y] - ab_c_r[x, y]
+            assert all(
+                sym.name.startswith("e_")
+                for sym in error_symbols_only.free_symbols
+            )
+        
+        # Different error symbols should be used in every period
+        assert len(sum(
+            p[x, y]
+            for x in range(4)
+            for y in range(4)
+        ).free_symbols) == 2 * 4 * 4
+    
+    def test_integration(self):
+        # This integration test builds a single stage 2D synthesis filter and
+        # checks that the period-cached versions of each array describe the
+        # same functions as the native versions.
+        filter = tables.LIFTING_FILTERS[tables.WaveletFilters.deslauriers_dubuc_9_7]
+        
+        ll = SymbolArray(2, "ll")
+        lh = SymbolArray(2, "lh")
+        hl = SymbolArray(2, "hl")
+        hh = SymbolArray(2, "hh")
+        
+        # Vertical filter
+        l = InterleavedArray(ll, lh, 1)
+        h = InterleavedArray(hl, hh, 1)
+        for stage in filter.stages:
+            l = LiftedArray(l, stage, 1)
+            h = LiftedArray(h, stage, 1)
+        
+        # Horizontal filter
+        dc = InterleavedArray(l, h, 0)
+        for stage in filter.stages:
+            dc = LiftedArray(dc, stage, 0)
+        
+        pixels = RightShiftedArray(dc, filter.filter_bit_shift)
+        
+        # Sanity check
+        assert pixels.period == (2, 2)
+        
+        # Check that when PeriodicCachingArray is used the results are the same
+        p = PeriodicCachingArray(pixels, ll, lh, hl, hh)
+        for x in range(p.period[0]):
+            for y in range(p.period[1]):
+                assert aa.lower_bound(p[x, y]) == aa.lower_bound(pixels[x, y])
+                assert aa.upper_bound(p[x, y]) == aa.upper_bound(pixels[x, y])
+                
+                xx = x + 2*p.period[0]
+                yy = y + 3*p.period[1]
+                assert aa.lower_bound(p[xx, yy]) == aa.lower_bound(pixels[xx, yy])
+                assert aa.upper_bound(p[xx, yy]) == aa.upper_bound(pixels[xx, yy])
