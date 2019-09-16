@@ -1,6 +1,6 @@
 import pytest
 
-import sympy.abc
+from vc2_conformance.wavelet_filter_analysis.linexp import LinExp
 
 import vc2_conformance.wavelet_filter_analysis.affine_arithmetic as aa
 
@@ -10,8 +10,8 @@ def test_new_error_term():
     e2 = aa.new_error_symbol()
     
     assert e1 - e2 != 0
-    assert e1.name.startswith("e_")
-    assert e2.name.startswith("e_")
+    assert str(e1).startswith("Error(")
+    assert str(e2).startswith("Error(")
 
 
 @pytest.mark.parametrize("expr_in,lower,upper", [
@@ -27,7 +27,7 @@ def test_new_error_term():
     (3*aa.new_error_symbol() + 2*aa.new_error_symbol(), -5, 5),
     (3*aa.new_error_symbol() + 2*aa.new_error_symbol() + 5, 0, 10),
     # Errors and other values
-    (sympy.abc.a + 5 + 3*aa.new_error_symbol(), sympy.abc.a + 2, sympy.abc.a + 8),
+    (LinExp("a") + 5 + 3*aa.new_error_symbol(), LinExp("a") + 2, LinExp("a") + 8),
 ])
 def test_bounds(expr_in, lower, upper):
     assert aa.lower_bound(expr_in) == lower
@@ -43,19 +43,19 @@ def test_error_in_range():
 class TestDiv(object):
     
     def test_basic_division_works(self):
-        r = aa.div(sympy.abc.a, 2)
-        assert aa.lower_bound(r) == (sympy.abc.a/2) - 1
-        assert aa.upper_bound(r) == sympy.abc.a/2
+        r = aa.div(LinExp("a"), 2)
+        assert aa.lower_bound(r) == (LinExp("a")/2) - 1
+        assert aa.upper_bound(r) == LinExp("a")/2
     
     def test_returns_different_error_terms_for_different_inputs(self):
         r1 = aa.div(1, 2)
         r2 = aa.div(2, 2)
         r3 = aa.div(1, 3)
-        assert r1.free_symbols != r2.free_symbols
-        assert r2.free_symbols != r3.free_symbols
-        assert r1.free_symbols != r3.free_symbols
+        assert set(r1.symbols()) != set(r2.symbols())
+        assert set(r2.symbols()) != set(r3.symbols())
+        assert set(r3.symbols()) != set(r1.symbols())
     
     def test_returns_same_error_terms_for_same_inputs(self):
-        r1 = aa.div(sympy.abc.a + sympy.abc.b + 3, 2)
-        r2 = aa.div(sympy.abc.a + sympy.abc.b + 3, 2)
+        r1 = aa.div(LinExp("a") + LinExp("b") + 3, 2)
+        r2 = aa.div(LinExp("a") + LinExp("b") + 3, 2)
         assert r1 == r2

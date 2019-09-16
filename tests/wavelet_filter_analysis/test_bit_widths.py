@@ -1,6 +1,6 @@
 import pytest
 
-import sympy
+from fractions import Fraction
 
 from vc2_conformance import tables
 
@@ -8,6 +8,8 @@ from vc2_conformance.decoder.transform_data_syntax import (
     quant_factor,
     inverse_quant,
 )
+
+from vc2_conformance.wavelet_filter_analysis.linexp import LinExp
 
 from vc2_conformance.wavelet_filter_analysis.quantisation_matrices import (
     convert_between_synthesis_and_analysis,
@@ -106,7 +108,7 @@ class TestAnalysisAndSynthesisTransforms(object):
         # case.
         rounding_errors = output_picture[0, 0] - input_picture[0, 0]
         if exp_error:
-            assert len(rounding_errors.free_symbols) == dwt_depth + dwt_depth_ho
+            assert len(set(rounding_errors.symbols())) == dwt_depth + dwt_depth_ho
             assert -1 < aa.upper_bound(rounding_errors) < 1
             assert -1 < aa.lower_bound(rounding_errors) < 1
         else:
@@ -234,15 +236,15 @@ class TestMakeCoeffArrays(object):
         assert set(coeff_arrays[1]) == set(["LH", "HL", "HH"])
         assert set(coeff_arrays[2]) == set(["LH", "HL", "HH"])
         
-        assert coeff_arrays[0]["LL"][10, 20].name == "foo_0_LL_10_20"
+        assert coeff_arrays[0]["LL"][10, 20] == LinExp((("foo", 0, "LL"), 10, 20))
         
-        assert coeff_arrays[1]["LH"][10, 20].name == "foo_1_LH_10_20"
-        assert coeff_arrays[1]["HL"][10, 20].name == "foo_1_HL_10_20"
-        assert coeff_arrays[1]["HH"][10, 20].name == "foo_1_HH_10_20"
+        assert coeff_arrays[1]["LH"][10, 20] == LinExp((("foo", 1, "LH"), 10, 20))
+        assert coeff_arrays[1]["HL"][10, 20] == LinExp((("foo", 1, "HL"), 10, 20))
+        assert coeff_arrays[1]["HH"][10, 20] == LinExp((("foo", 1, "HH"), 10, 20))
         
-        assert coeff_arrays[2]["LH"][10, 20].name == "foo_2_LH_10_20"
-        assert coeff_arrays[2]["HL"][10, 20].name == "foo_2_HL_10_20"
-        assert coeff_arrays[2]["HH"][10, 20].name == "foo_2_HH_10_20"
+        assert coeff_arrays[2]["LH"][10, 20] == LinExp((("foo", 2, "LH"), 10, 20))
+        assert coeff_arrays[2]["HL"][10, 20] == LinExp((("foo", 2, "HL"), 10, 20))
+        assert coeff_arrays[2]["HH"][10, 20] == LinExp((("foo", 2, "HH"), 10, 20))
     
     def test_2d_and_1d(self):
         coeff_arrays = make_coeff_arrays(1, 2, "foo")
@@ -254,13 +256,13 @@ class TestMakeCoeffArrays(object):
         assert set(coeff_arrays[2]) == set(["H"])
         assert set(coeff_arrays[3]) == set(["LH", "HL", "HH"])
         
-        assert coeff_arrays[0]["L"][10, 20].name == "foo_0_L_10_20"
-        assert coeff_arrays[1]["H"][10, 20].name == "foo_1_H_10_20"
-        assert coeff_arrays[2]["H"][10, 20].name == "foo_2_H_10_20"
+        assert coeff_arrays[0]["L"][10, 20] == LinExp((("foo", 0, "L"), 10, 20))
+        assert coeff_arrays[1]["H"][10, 20] == LinExp((("foo", 1, "H"), 10, 20))
+        assert coeff_arrays[2]["H"][10, 20] == LinExp((("foo", 2, "H"), 10, 20))
         
-        assert coeff_arrays[3]["LH"][10, 20].name == "foo_3_LH_10_20"
-        assert coeff_arrays[3]["HL"][10, 20].name == "foo_3_HL_10_20"
-        assert coeff_arrays[3]["HH"][10, 20].name == "foo_3_HH_10_20"
+        assert coeff_arrays[3]["LH"][10, 20] == LinExp((("foo", 3, "LH"), 10, 20))
+        assert coeff_arrays[3]["HL"][10, 20] == LinExp((("foo", 3, "HL"), 10, 20))
+        assert coeff_arrays[3]["HH"][10, 20] == LinExp((("foo", 3, "HH"), 10, 20))
 
 
 def test_extract_coeffs():
@@ -272,49 +274,49 @@ def test_extract_coeffs():
         2 * aa.new_error_symbol() +
         3 * aa.new_error_symbol() +
         # Non-error/constant terms
-        sympy.Rational(1, 2) * sympy.abc.a +
-        sympy.Rational(1, -3) * sympy.abc.b +
-        4 * sympy.abc.c +
-        -5 * sympy.abc.d
+        Fraction(1, 2) * LinExp("a") +
+        Fraction(1, -3) * LinExp("b") +
+        4 * LinExp("c") +
+        -5 * LinExp("d")
     )
     
     assert non_error_coeffs(expr) == {
-        sympy.abc.a: sympy.Rational(1, 2),
-        sympy.abc.b: sympy.Rational(1, -3),
-        sympy.abc.c: 4,
-        sympy.abc.d: -5,
+        "a": Fraction(1, 2),
+        "b": Fraction(1, -3),
+        "c": 4,
+        "d": -5,
     }
 
 
 def test_maximise_filter_output():
     coeffs = {
-        sympy.abc.a: sympy.Rational(1, 2),
-        sympy.abc.b: sympy.Rational(-1, 2),
-        sympy.abc.c: 1,
-        sympy.abc.d: -1,
+        LinExp("a"): Fraction(1, 2),
+        LinExp("b"): Fraction(-1, 2),
+        LinExp("c"): 1,
+        LinExp("d"): -1,
     }
     
     assert maximise_filter_output(coeffs, -10, 100) == {
-        sympy.abc.a: 100,
-        sympy.abc.b: -10,
-        sympy.abc.c: 100,
-        sympy.abc.d: -10,
+        LinExp("a"): 100,
+        LinExp("b"): -10,
+        LinExp("c"): 100,
+        LinExp("d"): -10,
     }
 
 
 def test_minimise_filter_output():
     coeffs = {
-        sympy.abc.a: sympy.Rational(1, 2),
-        sympy.abc.b: sympy.Rational(-1, 2),
-        sympy.abc.c: 1,
-        sympy.abc.d: -1,
+        LinExp("a"): Fraction(1, 2),
+        LinExp("b"): Fraction(-1, 2),
+        LinExp("c"): 1,
+        LinExp("d"): -1,
     }
     
     assert minimise_filter_output(coeffs, -10, 100) == {
-        sympy.abc.a: -10,
-        sympy.abc.b: 100,
-        sympy.abc.c: -10,
-        sympy.abc.d: 100,
+        LinExp("a"): -10,
+        LinExp("b"): 100,
+        LinExp("c"): -10,
+        LinExp("d"): 100,
     }
 
 
@@ -374,11 +376,11 @@ def test_synthesis_filter_expression_bounds():
     (3.1, 4),
     (-4.0, 3),
     (-4.1, 4),
-    # Sympy values are rounded away from zero
-    (sympy.Rational(30, 10), 3),
-    (sympy.Rational(31, 10), 4),
-    (sympy.Rational(-40, 10), 3),
-    (sympy.Rational(-41, 10), 4),
+    # Fractions are rounded away from zero
+    (Fraction(30, 10), 3),
+    (Fraction(31, 10), 4),
+    (Fraction(-40, 10), 3),
+    (Fraction(-41, 10), 4),
 ])
 def test_minimum_signed_int_width(number, exp_bits):
     assert minimum_signed_int_width(number) == exp_bits

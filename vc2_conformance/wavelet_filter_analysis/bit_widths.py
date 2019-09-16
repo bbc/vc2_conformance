@@ -536,8 +536,9 @@ Accounting for Quantisation
 ---------------------------
 
 The quantisation and dequantisation steps in the encoder and decoder
-(respectively) may round transform values up or down and consequently these
-rounding errors must also be taken into account.
+(respectively) may round transform values up or down and, consequently, these
+rounding errors must also be taken into account when computing bit width
+requirements.
 
 
 Quantifying quantisation errors
@@ -636,9 +637,6 @@ given value to zero.
 
 .. autofunction:: maximum_useful_quantisation_index
 
-
-
-
 """
 
 __all__ = [
@@ -667,10 +665,7 @@ from collections import defaultdict
 
 from vc2_conformance.decoder.transform_data_syntax import quant_factor
 
-from vc2_conformance.wavelet_filter_analysis.fast_sympy_functions import (
-    subs,
-    coeffs,
-)
+from vc2_conformance.wavelet_filter_analysis.linexp import LinExp
 
 import vc2_conformance.wavelet_filter_analysis.affine_arithmetic as aa
 
@@ -880,7 +875,8 @@ def make_coeff_arrays(dwt_depth, dwt_depth_ho, prefix="coeff"):
         same way as 'coeff_data' in the idwt pseudocode function in (15.4.1) in
         the VC-2 specification.
         
-        The symbols will have the naming convention ``prefix_level_orient_x_y``
+        The symbols will have the naming convention ``((prefix, level, orient),
+        x, y)``
         where:
         
         * prefix is given by the 'prefix' argument
@@ -891,20 +887,17 @@ def make_coeff_arrays(dwt_depth, dwt_depth_ho, prefix="coeff"):
     coeff_arrays = {}
     
     if dwt_depth_ho > 0:
-        coeff_arrays[0] = {"L": SymbolArray(2, "{}_0_L".format(prefix))}
+        coeff_arrays[0] = {"L": SymbolArray(2, (prefix, 0, "L"))}
         for level in range(1, dwt_depth_ho + 1):
-            coeff_arrays[level] = {"H": SymbolArray(2, "{}_{}_H".format(
-                prefix,
-                level,
-            ))}
+            coeff_arrays[level] = {"H": SymbolArray(2, (prefix, level, "H"))}
     else:
-        coeff_arrays[0] = {"LL": SymbolArray(2, "{}_0_LL".format(prefix))}
+        coeff_arrays[0] = {"LL": SymbolArray(2, (prefix, 0, "LL"))}
     
     for level in range(dwt_depth_ho + 1, dwt_depth + dwt_depth_ho + 1):
         coeff_arrays[level] = {
-            "LH": SymbolArray(2, "{}_{}_LH".format(prefix, level)),
-            "HL": SymbolArray(2, "{}_{}_HL".format(prefix, level)),
-            "HH": SymbolArray(2, "{}_{}_HH".format(prefix, level)),
+            "LH": SymbolArray(2, (prefix, level, "LH")),
+            "HL": SymbolArray(2, (prefix, level, "HL")),
+            "HH": SymbolArray(2, (prefix, level, "HH")),
         }
     
     return coeff_arrays
@@ -917,9 +910,9 @@ def non_error_coeffs(expression):
     
     Parameters
     ==========
-    expression : :py:mod`sympy` expression
-        An expression containing a simple sum of variables multiplied by
-        coefficients. Error terms involving variables created by
+    expression : :py:class:`LinExp` expression
+        An expression. Constants as well as error terms involving variables
+        created by
         :py:func:`~vc2_conformance.wavelet_filter_analysis.symbolic_error_terms.new_error_term`
         will be ignored.
     
@@ -929,8 +922,8 @@ def non_error_coeffs(expression):
     """
     return {
         sym: value
-        for sym, value in coeffs(expression).items()
-        if not sym.name.startswith("e_")
+        for sym, value in LinExp(expression)
+        if not isinstance(sym, aa.Error) and sym is not None
     }
 
 
@@ -1007,8 +1000,8 @@ def analysis_filter_expression_bounds(expression, picture_value_range):
     min_coeffs = minimise_filter_output(coeffs, *picture_value_range)
     max_coeffs = maximise_filter_output(coeffs, *picture_value_range)
     
-    lower_bound = aa.lower_bound(subs(expression, min_coeffs))
-    upper_bound = aa.upper_bound(subs(expression, max_coeffs))
+    lower_bound = aa.lower_bound(expression.subs(min_coeffs))
+    upper_bound = aa.upper_bound(expression.subs(max_coeffs))
     
     return (lower_bound, upper_bound)
 
@@ -1047,8 +1040,8 @@ def synthesis_filter_expression_bounds(expression, coeff_value_ranges):
             maximise_filter_output(coeffs, *coeff_value_ranges[level_orient])
         )
     
-    lower_bound = aa.lower_bound(subs(expression, min_coeffs))
-    upper_bound = aa.upper_bound(subs(expression, max_coeffs))
+    lower_bound = aa.lower_bound(expression.subs(min_coeffs))
+    upper_bound = aa.upper_bound(expression.subs(max_coeffs))
     
     return (lower_bound, upper_bound)
 
@@ -1134,13 +1127,8 @@ def coeff_symbol_to_indices(symbol):
     Given a :py:mod:`sympy` symbol with a name of the form ``coeff_1_HH_-2_3``,
     returns a tuple ``(1, "HH", -2, 3)``.
     """
-    level, orient, x, y = symbol.name.split("_")[-4:]
-    return (
-        int(level),
-        orient,
-        int(x),
-        int(y),
-    )
+    (_, level, orient), x, y = LinExp(symbol).symbol
+    return (level, orient, x, y)
 
 def picture_symbol_to_indices(symbol):
     """
@@ -1150,8 +1138,8 @@ def picture_symbol_to_indices(symbol):
     Given a :py:mod:`sympy` symbol with a name of the form ``pixel_-2_3``,
     returns a tuple ``(-2, 3)``.
     """
-    x, y = symbol.name.split("_")[-2:]
-    return (int(x), int(y))
+    _, x, y = LinExp(symbol).symbol
+    return (x, y)
 
 
 def find_negative_input_free_synthesis_index(coeff_arrays, picture, x, y):

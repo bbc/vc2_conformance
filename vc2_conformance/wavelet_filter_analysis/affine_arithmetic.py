@@ -2,8 +2,8 @@ r"""
 Affine Airthmetic
 =================
 
-This module provides utilities for performing Affine Arithmetic (AA) within
-:py:mod:`sympy`.
+This module provides utilities for performing Affine Arithmetic (AA) with the
+:py:mod:`linexp` library.
 
 Affine Arithmetic Primer
 ------------------------
@@ -76,15 +76,22 @@ non-affine operations.
 API
 ---
 
-A new affine error :py:mod:`sympy` symbol (:math:`e_n` in the above examples)
-may be created by:
+A new affine error symbol (:math:`e_n` in the above examples) may be created
+by:
 
 .. autofunction:: new_error_symbol
+
+.. autoclass:: Error
 
 An affine expression representing an error within a specified range may be
 created using:
 
 .. autofunction:: error_in_range
+
+The following function implements Python/VC-2 style truncating integer
+division.
+
+.. autofunction:: div
 
 The following functions may be used to work out the bounds for a given affine
 arithmetic expression.
@@ -93,14 +100,13 @@ arithmetic expression.
 
 .. autofunction:: lower_bound
 
-The following function implements Python/VC-2 style truncating integer
-division.
-
-.. autofunction:: div
-
 """
 
-from sympy import Symbol, sympify
+from vc2_conformance.wavelet_filter_analysis.linexp import LinExp
+
+from collections import namedtuple
+
+from fractions import Fraction
 
 from vc2_conformance.wavelet_filter_analysis.fast_sympy_functions import (
     subs,
@@ -108,26 +114,28 @@ from vc2_conformance.wavelet_filter_analysis.fast_sympy_functions import (
 )
 
 __all__ = [
+    "Error",
     "new_error_symbol",
     "error_in_range",
+    "div",
     "upper_bound",
     "lower_bound",
-    "div",
 ]
 
+Error = namedtuple("Error", "id")
+"""An error symbol."""
 
 _last_error_term = 0
 """Used by :py:func:`new_error_symbol`. For internal use only."""
 
 def new_error_symbol():
     """
-    Create a new, and unique, :py:mod:`sympy` symbol with a name of the form
-    'e_123'. This term should be considered as having a value in the range
-    :math:`[-1, +1]`.
+    Create a :py:class:`LinExp` with a unique :py:class:`Error` symbol. This
+    term should be considered as having a value in the range :math:`[-1, +1]`.
     """
     global _last_error_term
     _last_error_term += 1
-    return Symbol("e_{}".format(_last_error_term))
+    return LinExp(Error(_last_error_term))
 
 
 def error_in_range(lower, upper):
@@ -135,36 +143,10 @@ def error_in_range(lower, upper):
     Create an affine arithmetic expression defining an error in the specified
     range (using a new error symbol created by :py:func:`new_error_symbol`).
     """
-    mean = sympify(lower + upper) / 2
-    half_range = sympify(upper - lower) / 2
+    mean = Fraction(lower + upper, 2)
+    half_range = Fraction(upper - lower, 2)
     
     return (half_range * new_error_symbol()) + mean
-
-
-def upper_bound(expression):
-    """
-    Calculate the upper-bound of an affine arithmetic expression.
-    """
-    expression = sympify(expression)
-    
-    return subs(expression, {
-        sym: 1 if value > 0 else -1
-        for sym, value in coeffs(expression).items()
-        if sym.name.startswith("e_")
-    })
-
-
-def lower_bound(expression):
-    """
-    Calculate the lower-bound of an affine arithmetic expression.
-    """
-    expression = sympify(expression)
-    
-    return subs(expression, {
-        sym: 1 if value < 0 else -1
-        for sym, value in coeffs(expression).items()
-        if sym.name.startswith("e_")
-    })
 
 
 # Cache of previous 'div' outputs
@@ -182,12 +164,39 @@ def div(numerator, denominator):
     provided. When a numerator/denominator pairing is repeated, the same symbol
     will be used.
     """
+    
     global _div_result_cache
     
     if (numerator, denominator) not in _div_result_cache:
         _div_result_cache[(numerator, denominator)] = (
-            (sympify(numerator) / denominator) +
+            (LinExp(numerator) / denominator) +
             error_in_range(-1, 0)
         )
     
     return _div_result_cache[(numerator, denominator)]
+
+
+def upper_bound(expression):
+    """
+    Calculate the upper-bound of an affine arithmetic expression.
+    """
+    expression = LinExp(expression)
+    
+    return expression.subs({
+        sym: 1 if value > 0 else -1
+        for sym, value in expression
+        if isinstance(sym, Error)
+    })
+
+
+def lower_bound(expression):
+    """
+    Calculate the lower-bound of an affine arithmetic expression.
+    """
+    expression = LinExp(expression)
+    
+    return expression.subs({
+        sym: 1 if value < 0 else -1
+        for sym, value in expression
+        if isinstance(sym, Error)
+    })
