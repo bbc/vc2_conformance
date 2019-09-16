@@ -316,8 +316,11 @@ class LinExp(object):
         else:
             raise TypeError("LinExp contains more than a symbol.")
     
-    def __bool__(self):
+    def __bool__(self):  # Python 3.x
         return bool(self._coeffs)
+    
+    def __nonzero__(self):  # Python 2.x
+        return self.__bool__()
     
     def __repr__(self):
         if self.is_constant:
@@ -411,7 +414,11 @@ class LinExp(object):
         if diff.is_constant:
             return diff.constant < 0
         else:
-            return NotImplemented
+            # Python 2.x Workaround: Strictly we should return NotImplemented
+            # in this case. Unfortunately due to a bug in
+            # functools.total_ordering in Python 2.x, we must throw the
+            # TypeError directly to avoid infinite recursion.
+            raise TypeError("Cannot compare LinExps with different symbols.")
     
     @classmethod
     def _pairwise_operator(cls, a, b, op):
