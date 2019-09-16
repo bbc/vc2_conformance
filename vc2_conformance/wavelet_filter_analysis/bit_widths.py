@@ -165,14 +165,14 @@ below::
     >>> dwt_depth = 1
     >>> dwt_depth_ho = 0
     
-    >>> # Create a series of infinite 2D arrays of sympy Symbols representing
-    >>> # transform coefficients (inputs) for our transform
+    >>> # Create a series of infinite 2D arrays of symbols representing #
+    >>> transform coefficients (inputs) for our transform
     >>> coeff_arrays = {
-    ...     0: {"LL": SymbolArray(2, "coeff_0_L")},
+    ...     0: {"LL": SymbolArray(2, ("coeff", 0, "L"))},
     ...     1: {
-    ...         "LH": SymbolArray(2, "coeff_1_LH"),
-    ...         "HL": SymbolArray(2, "coeff_1_HL"),
-    ...         "HH": SymbolArray(2, "coeff_1_HH"),
+    ...         "LH": SymbolArray(2, ("coeff", 1, "LH")),
+    ...         "HL": SymbolArray(2, ("coeff", 1, "HL")),
+    ...         "HH": SymbolArray(2, ("coeff", 1, "HH")),
     ...     },
     ... }
     
@@ -187,8 +187,10 @@ below::
     
     >>> # An algebraic expression for the filter which produced output pixel
     >>> # (0, 0) is found thus:
-    >>> picture[0, 0]
-    coeff_0_L_0_0/2 + coeff_1_HH_-1_0/16 + coeff_1_HH_0_0/16 - coeff_1_HL_-1_0/8 - coeff_1_HL_0_0/8 - coeff_1_LH_0_0/4 + e_1/16 + e_2/16 - e_3/4 - e_4/4 + e_5/2
+    >>> print(picture[0, 0])
+    (1/2)*(('coeff', 0, 'L'), 0, 0) + (-1/4)*(('coeff', 1, 'LH'), 0, 0) + (-1/4)*Error(id=9) + (-1/8)*(('coeff', 1, 'HL'), -1, 0) + (1/16)*(('coeff', 1, 'HH'), -1, 0) + (1/16)*Error(id=6) + (-1/8)*(('coeff', 1, 'HL'), 0, 0) + (1/16)*(('coeff', 1, 'HH'), 0, 0) + (1/16)*Error(id=7) + (-1/4)*Error(id=8) + (1/2)*Error(id=10)
+
+
 
 .. note::
 
@@ -209,12 +211,12 @@ For example, the coefficients for a particular pixel may be printed like so::
     >>> from vc2_conformance.wavelet_filter_analysis.bit_widths import non_error_coeffs
     >>> for sym, coeff in non_error_coeffs(picture[0, 0]).items():
     ...     print("{}: {}".format(sym, coeff))
-    coeff_0_L_0_0: 1/2
-    coeff_1_HH_-1_0: 1/16
-    coeff_1_HH_0_0: 1/16
-    coeff_1_HL_-1_0: -1/8
-    coeff_1_HL_0_0: -1/8
-    coeff_1_LH_0_0: -1/4
+    (('coeff', 0, 'L'), 0, 0): 1/2
+    (('coeff', 1, 'LH'), 0, 0): -1/4
+    (('coeff', 1, 'HL'), -1, 0): -1/8
+    (('coeff', 1, 'HH'), -1, 0): 1/16
+    (('coeff', 1, 'HL'), 0, 0): -1/8
+    (('coeff', 1, 'HH'), 0, 0): 1/16
 
 
 Finding every equivalent FIR filter
@@ -223,11 +225,11 @@ Finding every equivalent FIR filter
 In general, different output pixels are the result of different filtering
 processes. For example::
 
-    >>> picture[0, 0]
-    coeff_0_L_0_0/2 + coeff_1_HH_-1_0/16 + coeff_1_HH_0_0/16 - coeff_1_HL_-1_0/8 - coeff_1_HL_0_0/8 - coeff_1_LH_0_0/4 + e_1/16 + e_2/16 - e_3/4 - e_4/4 + e_5/2
+    >>> print(picture[0, 0])
+    (1/2)*(('coeff', 0, 'L'), 0, 0) + (-1/4)*(('coeff', 1, 'LH'), 0, 0) + (-1/4)*Error(id=9) + (-1/8)*(('coeff', 1, 'HL'), -1, 0) + (1/16)*(('coeff', 1, 'HH'), -1, 0) + (1/16)*Error(id=6) + (-1/8)*(('coeff', 1, 'HL'), 0, 0) + (1/16)*(('coeff', 1, 'HH'), 0, 0) + (1/16)*Error(id=7) + (-1/4)*Error(id=8) + (1/2)*Error(id=10)
     
-    >>> picture[1, 0]
-    coeff_0_L_0_0/4 + coeff_0_L_1_0/4 + coeff_1_HH_-1_0/32 - 3*coeff_1_HH_0_0/16 + coeff_1_HH_1_0/32 - coeff_1_HL_-1_0/16 + 3*coeff_1_HL_0_0/8 - coeff_1_HL_1_0/16 - coeff_1_LH_0_0/8 - coeff_1_LH_1_0/8 + e_1/32 + e_10/2 - 3*e_2/16 - e_3/8 - e_4/8 + e_6/32 - e_7/8 - e_8/8 + e_9/4
+    >>> print(picture[1, 0])
+    (3/8)*(('coeff', 1, 'HL'), 0, 0) + (-3/16)*(('coeff', 1, 'HH'), 0, 0) + (-3/16)*Error(id=7) + (1/4)*(('coeff', 0, 'L'), 0, 0) + (-1/8)*(('coeff', 1, 'LH'), 0, 0) + (-1/8)*Error(id=9) + (-1/16)*(('coeff', 1, 'HL'), -1, 0) + (1/32)*(('coeff', 1, 'HH'), -1, 0) + (1/32)*Error(id=6) + (-1/8)*Error(id=8) + (1/4)*(('coeff', 0, 'L'), 1, 0) + (-1/8)*(('coeff', 1, 'LH'), 1, 0) + (-1/8)*Error(id=13) + (-1/16)*(('coeff', 1, 'HL'), 1, 0) + (1/32)*(('coeff', 1, 'HH'), 1, 0) + (1/32)*Error(id=11) + (-1/8)*Error(id=12) + (1/4)*Error(id=14) + (1/2)*Error(id=15)
 
 The figure below illustrates the series of lifting filters which imlement a
 2-level LeGall synthesis transform on a simple one dimensional (interleaved)
@@ -248,12 +250,12 @@ polyphase filter is implemented.
 This effect is illustrated below for various pixels which have the same filter
 phase:
 
-    >>> picture[0, 0]
-    coeff_0_L_0_0/2 + coeff_1_HH_-1_0/16 + coeff_1_HH_0_0/16 - coeff_1_HL_-1_0/8 - coeff_1_HL_0_0/8 - coeff_1_LH_0_0/4 + e_1/16 + e_2/16 - e_3/4 - e_4/4 + e_5/2
-    >>> picture[2, 2]
-    coeff_0_L_1_1/2 + coeff_1_HH_0_1/16 + coeff_1_HH_1_1/16 - coeff_1_HL_0_1/8 - coeff_1_HL_1_1/8 - coeff_1_LH_1_1/4 + e_11/16 + e_12/16 - e_13/4 - e_14/4 + e_15/2
-    >>> picture[4, 6]
-    coeff_0_L_2_3/2 + coeff_1_HH_1_3/16 + coeff_1_HH_2_3/16 - coeff_1_HL_1_3/8 - coeff_1_HL_2_3/8 - coeff_1_LH_2_3/4 + e_16/16 + e_17/16 - e_18/4 - e_19/4 + e_20/2
+    >>> print(picture[0, 0])
+    (1/2)*(('coeff', 0, 'L'), 0, 0) + (-1/4)*(('coeff', 1, 'LH'), 0, 0) + (-1/4)*Error(id=9) + (-1/8)*(('coeff', 1, 'HL'), -1, 0) + (1/16)*(('coeff', 1, 'HH'), -1, 0) + (1/16)*Error(id=6) + (-1/8)*(('coeff', 1, 'HL'), 0, 0) + (1/16)*(('coeff', 1, 'HH'), 0, 0) + (1/16)*Error(id=7) + (-1/4)*Error(id=8) + (1/2)*Error(id=10)
+    >>> print(picture[2, 2])
+    (1/2)*(('coeff', 0, 'L'), 1, 1) + (-1/4)*(('coeff', 1, 'LH'), 1, 1) + (-1/4)*Error(id=19) + (-1/8)*(('coeff', 1, 'HL'), 0, 1) + (1/16)*(('coeff', 1, 'HH'), 0, 1) + (1/16)*Error(id=16) + (-1/8)*(('coeff', 1, 'HL'), 1, 1) + (1/16)*(('coeff', 1, 'HH'), 1, 1) + (1/16)*Error(id=17) + (-1/4)*Error(id=18) + (1/2)*Error(id=20)
+    >>> print(picture[4, 6])
+    (1/2)*(('coeff', 0, 'L'), 2, 3) + (-1/4)*(('coeff', 1, 'LH'), 2, 3) + (-1/4)*Error(id=24) + (-1/8)*(('coeff', 1, 'HL'), 1, 3) + (1/16)*(('coeff', 1, 'HH'), 1, 3) + (1/16)*Error(id=21) + (-1/8)*(('coeff', 1, 'HL'), 2, 3) + (1/16)*(('coeff', 1, 'HH'), 2, 3) + (1/16)*Error(id=22) + (-1/4)*Error(id=23) + (1/2)*Error(id=25)
 
 The :py:class:`~infinite_arrays.InfiniteArray` class provides the
 :py:attr:`~infinite_arrays.InfiniteArray.period` proprty giving the period with
@@ -338,11 +340,11 @@ particular pixel given a hypothetical 10-bit input to our running example::
     
     >>> max_coeffs = maximise_filter_output(coeffs, -512, 511)
     >>> max_coeffs
-    {coeff_1_HH_0_0: 511, coeff_1_HL_0_0: -512, coeff_1_HH_-1_0: 511, coeff_0_L_0_0: 511, coeff_1_HL_-1_0: -512, coeff_1_LH_0_0: -512}
+    {(('coeff', 0, 'L'), 0, 0): 511, (('coeff', 1, 'LH'), 0, 0): -512, (('coeff', 1, 'HL'), -1, 0): -512, (('coeff', 1, 'HH'), -1, 0): 511, (('coeff', 1, 'HL'), 0, 0): -512, (('coeff', 1, 'HH'), 0, 0): 511}
     
     >>> min_coeffs = minimise_filter_output(coeffs, -512, 511)
     >>> min_coeffs
-    {coeff_1_HH_0_0: -512, coeff_1_HL_0_0: 511, coeff_1_HH_-1_0: -512, coeff_0_L_0_0: -512, coeff_1_HL_-1_0: 511, coeff_1_LH_0_0: 511}
+    {(('coeff', 0, 'L'), 0, 0): -512, (('coeff', 1, 'LH'), 0, 0): 511, (('coeff', 1, 'HL'), -1, 0): 511, (('coeff', 1, 'HH'), -1, 0): -512, (('coeff', 1, 'HL'), 0, 0): 511, (('coeff', 1, 'HH'), 0, 0): -512}
 
 By substituting these worst-case inputs into the pixel's algebraic expression,
 and assuming the worst-case values for the error terms (using
@@ -353,10 +355,10 @@ possible output value for this filter::
     >>> import vc2_conformance.wavelet_filter_analysis.affine_arithmetic as aa
     
     >>> greatest_possible_value = aa.upper_bound(pixel_expr.subs(max_coeffs))
-    >>> greatest_possible_value
+    >>> print(greatest_possible_value)
     1153/2
     >>> least_possible_value = aa.lower_bound(pixel_expr.subs(min_coeffs))
-    >>> least_possible_value
+    >>> print(least_possible_value)
     -4613/8
 
 The above steps are automated by the following functions:
@@ -438,18 +440,17 @@ filter phase which notionally produces pixel (0, 0). We can start by using
     >>> coeffs = non_error_coeffs(picture[0, 0])
     >>> for sym, value in maximise_filter_output(coeffs, -512, 511).items():
     ...     print("{} = {}".format(sym, value))
-    coeff_0_L_0_0 = 511
-    coeff_1_H_-1_0 = -512
-    coeff_1_H_0_0 = -512
-    coeff_2_HH_-1_-1 = 511
-    coeff_2_HH_-1_0 = 511
-    coeff_2_HH_0_-1 = 511
-    coeff_2_HH_0_0 = 511
-    coeff_2_HL_-1_0 = -512
-    coeff_2_HL_0_0 = -512
-    coeff_2_LH_0_-1 = -512
-    coeff_2_LH_0_0 = -512
-
+    (('coeff', 0, 'L'), 0, 0) = 511
+    (('coeff', 1, 'H'), -1, 0) = -512
+    (('coeff', 1, 'H'), 0, 0) = -512
+    (('coeff', 2, 'LH'), 0, -1) = -512
+    (('coeff', 2, 'LH'), 0, 0) = -512
+    (('coeff', 2, 'HL'), -1, 0) = -512
+    (('coeff', 2, 'HH'), -1, -1) = 511
+    (('coeff', 2, 'HH'), -1, 0) = 511
+    (('coeff', 2, 'HL'), 0, 0) = -512
+    (('coeff', 2, 'HH'), 0, -1) = 511
+    (('coeff', 2, 'HH'), 0, 0) = 511
 
 Unfortunately, this result implies that our test signal must include
 coefficients at negative coordinates and so we can't use this result as-is to
@@ -504,28 +505,20 @@ negative-coordinate-free coefficients::
     >>> coeffs = non_error_coeffs(picture[4, 2])
     >>> for sym, value in maximise_filter_output(coeffs, -512, 511).items():
     ...     print("{} = {}".format(sym, value))
-    coeff_0_L_1_1 = 511
-    coeff_1_H_1_1 = -512
-    coeff_1_H_0_1 = -512
-    coeff_2_HH_2_0 = 511
-    coeff_2_HH_1_1 = 511
-    coeff_2_HL_2_1 = -512
-    coeff_2_HL_1_1 = -512
-    coeff_2_LH_2_1 = -512
-    coeff_2_LH_2_0 = -512
-    coeff_2_HH_1_0 = 511
-    coeff_2_HH_2_1 = 511
+    (('coeff', 0, 'L'), 1, 1) = 511
+    (('coeff', 1, 'H'), 0, 1) = -512
+    (('coeff', 1, 'H'), 1, 1) = -512
+    (('coeff', 2, 'LH'), 2, 0) = -512
+    (('coeff', 2, 'LH'), 2, 1) = -512
+    (('coeff', 2, 'HL'), 1, 1) = -512
+    (('coeff', 2, 'HH'), 1, 0) = 511
+    (('coeff', 2, 'HH'), 1, 1) = 511
+    (('coeff', 2, 'HL'), 2, 1) = -512
+    (('coeff', 2, 'HH'), 2, 0) = 511
+    (('coeff', 2, 'HH'), 2, 1) = 511
 
-The above procedure is implemented in the following functions. First, the
-following may be used to convert between :py:mod:`sympy` symbols and
-coordinates:
-
-.. autofunction:: coeff_symbol_to_indices
-
-.. autofunction:: picture_symbol_to_indices
-
-The following automate the process of finding indices of filters with no
-negative input coordinates:
+The above procedure is implemented in the following functions which automate
+the process of finding indices of filters with no negative input coordinates:
 
 .. autofunction:: find_negative_input_free_synthesis_index
 
@@ -651,8 +644,6 @@ __all__ = [
     "synthesis_filter_bounds",
     "analysis_filter_bounds",
     "minimum_signed_int_width",
-    "coeff_symbol_to_indices",
-    "picture_symbol_to_indices",
     "find_negative_input_free_synthesis_index",
     "find_negative_input_free_analysis_index",
     "worst_case_quantisation_error",
@@ -986,7 +977,7 @@ def analysis_filter_expression_bounds(expression, picture_value_range):
     
     Parameters
     ==========
-    expression : :py:mod:`sympy` expression
+    expression : :py:class:`LinExp` expression
     picture_value_range : (min, max)
         The lower and upper bounds for the values of the non-error symbols in
         the expression.
@@ -1013,7 +1004,7 @@ def synthesis_filter_expression_bounds(expression, coeff_value_ranges):
     
     Parameters
     ==========
-    expression : :py:mod:`sympy` expression
+    expression : :py:class:`LinExp` expression
     coeff_value_ranges : {(level, orient): (min, max), ...}
         For each input coefficient band, the maximum values for values in that
         band.
@@ -1027,7 +1018,7 @@ def synthesis_filter_expression_bounds(expression, coeff_value_ranges):
     # {(level, orient): coeffs, ...}
     coeffs_by_band = defaultdict(dict)
     for symbol, value in all_coeffs.items():
-        level, orient, _, _ = coeff_symbol_to_indices(symbol)
+        (_, level, orient), _, _ = symbol
         coeffs_by_band[(level, orient)][symbol] = value
     
     min_coeffs = {}
@@ -1119,29 +1110,6 @@ def minimum_signed_int_width(number):
     return number.bit_length() + 1
 
 
-def coeff_symbol_to_indices(symbol):
-    """
-    Extract the index encoded by a coefficient symbol's name (from, e.g.,
-    :py:func:`make_coeff_arrays`).
-    
-    Given a :py:mod:`sympy` symbol with a name of the form ``coeff_1_HH_-2_3``,
-    returns a tuple ``(1, "HH", -2, 3)``.
-    """
-    (_, level, orient), x, y = LinExp(symbol).symbol
-    return (level, orient, x, y)
-
-def picture_symbol_to_indices(symbol):
-    """
-    Extract the index encoded by a symbol's name (e.g. from a
-    :py:class:`SymbolArray`).
-    
-    Given a :py:mod:`sympy` symbol with a name of the form ``pixel_-2_3``,
-    returns a tuple ``(-2, 3)``.
-    """
-    _, x, y = LinExp(symbol).symbol
-    return (x, y)
-
-
 def find_negative_input_free_synthesis_index(coeff_arrays, picture, x, y):
     """
     Find a coordinate in 'picture' which implements the same filter as the
@@ -1172,7 +1140,7 @@ def find_negative_input_free_synthesis_index(coeff_arrays, picture, x, y):
     x2, y2 = x, y
     
     for coeff_symbol in non_error_coeffs(picture[x, y]):
-        level, orient, coeff_x, coeff_y = coeff_symbol_to_indices(coeff_symbol)
+        (_, level, orient), coeff_x, coeff_y = coeff_symbol
         coeff_array = coeff_arrays[level][orient]
         relative_step_size = picture.relative_step_size_to(coeff_array)
         
@@ -1223,7 +1191,7 @@ def find_negative_input_free_analysis_index(picture, coeff_array, x, y):
     x2, y2 = x, y
     
     for picture_symbol in non_error_coeffs(coeff_array[x, y]):
-        picture_x, picture_y = picture_symbol_to_indices(picture_symbol)
+        _, picture_x, picture_y = picture_symbol
         relative_step_size = coeff_array.relative_step_size_to(picture)
         
         min_offsets = (

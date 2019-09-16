@@ -31,8 +31,6 @@ from vc2_conformance.wavelet_filter_analysis.bit_widths import (
     synthesis_filter_expression_bounds,
     analysis_filter_expression_bounds,
     minimum_signed_int_width,
-    picture_symbol_to_indices,
-    coeff_symbol_to_indices,
     find_negative_input_free_synthesis_index,
     find_negative_input_free_analysis_index,
     worst_case_quantisation_error,
@@ -386,29 +384,6 @@ def test_minimum_signed_int_width(number, exp_bits):
     assert minimum_signed_int_width(number) == exp_bits
 
 
-@pytest.mark.parametrize("name_prefix", [
-    # No underscores
-    "coeff",
-    # With extra underscores
-    "foo_bar",
-])
-def test_coeff_symbol_to_indices(name_prefix):
-    coeff_arrays = make_coeff_arrays(1, 1, name_prefix)
-    assert coeff_symbol_to_indices(coeff_arrays[0]["L"][-10, 20]) == (0, "L", -10, 20)
-    assert coeff_symbol_to_indices(coeff_arrays[2]["HL"][-10, 20]) == (2, "HL", -10, 20)
-
-
-@pytest.mark.parametrize("name_prefix", [
-    # No underscores
-    "coeff",
-    # With extra underscores
-    "foo_bar",
-])
-def test_pixel_symbol_to_indices(name_prefix):
-    pixels = SymbolArray(2, name_prefix)
-    assert picture_symbol_to_indices(pixels[-10, 20]) == (-10, 20)
-
-
 def test_find_negative_input_free_synthesis_index():
     # A non-Haar filter (which will always use some out-of-bounds coordinates
     # for the (0, 0) output)
@@ -434,7 +409,7 @@ def test_find_negative_input_free_synthesis_index():
     x2, y2 = find_negative_input_free_synthesis_index(coeff_arrays, picture, x, y)
     
     # Make sure solution has no negative terms
-    for _, _, cx, cy in map(coeff_symbol_to_indices, non_error_coeffs(picture[x2, y2])):
+    for _, cx, cy in non_error_coeffs(picture[x2, y2]):
         assert cx >= 0
         assert cy >= 0
     
@@ -446,10 +421,7 @@ def test_find_negative_input_free_synthesis_index():
     ]:
         assert any(
             cx < 0 or cy < 0
-            for _, _, cx, cy in map(
-                coeff_symbol_to_indices,
-                non_error_coeffs(picture[x3, y3])
-            )
+            for _, cx, cy in non_error_coeffs(picture[x3, y3])
         )
 
 
@@ -484,7 +456,7 @@ def test_find_negative_input_free_analysis_index():
     x2, y2 = find_negative_input_free_analysis_index(picture, coeff_array, x, y)
     
     # Make sure solution has no negative terms
-    for cx, cy in map(picture_symbol_to_indices, non_error_coeffs(coeff_array[x2, y2])):
+    for _, cx, cy in non_error_coeffs(coeff_array[x2, y2]):
         assert cx >= 0
         assert cy >= 0
     
@@ -496,10 +468,7 @@ def test_find_negative_input_free_analysis_index():
     ]:
         assert any(
             cx < 0 or cy < 0
-            for cx, cy in map(
-                picture_symbol_to_indices,
-                non_error_coeffs(coeff_array[x3, y3])
-            )
+            for _, cx, cy in non_error_coeffs(coeff_array[x3, y3])
         )
 
 

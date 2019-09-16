@@ -126,6 +126,18 @@ class TestLinExp(object):
         with pytest.raises(TypeError):
             LinExp(value).constant
     
+    def test_number_type_casts(self):
+        v = LinExp(1.5)
+        
+        assert isinstance(complex(v), complex)
+        assert complex(v) == 1.5+0j
+        
+        assert isinstance(float(v), float)
+        assert float(v) == 1.5
+        
+        assert isinstance(int(v), int)
+        assert int(v) == 1
+    
     @pytest.mark.parametrize("value,exp_bool", [
         (0, False),
         ({None: 123}, True),

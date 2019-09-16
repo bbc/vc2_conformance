@@ -1,4 +1,4 @@
-"""
+r"""
 :py:mod:`linexp`: A simple computer algebra system
 ==================================================
 
@@ -163,7 +163,7 @@ class LinExp(object):
             return super(LinExp, cls).__new__(cls)
     
     def __init__(self, value=0):
-        """
+        r"""
         Create a new linear expression.
     
         A linear expression is defined has having the general form:
@@ -282,6 +282,15 @@ class LinExp(object):
             return self[None]
         else:
             raise TypeError("LinExp is not a constant.")
+    
+    def __complex__(self):
+        return complex(self.constant)
+    
+    def __float__(self):
+        return float(self.constant)
+    
+    def __int__(self):
+        return int(self.constant)
     
     @property
     def is_symbol(self):

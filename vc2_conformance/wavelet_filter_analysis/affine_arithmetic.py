@@ -108,11 +108,6 @@ from collections import namedtuple
 
 from fractions import Fraction
 
-from vc2_conformance.wavelet_filter_analysis.fast_sympy_functions import (
-    subs,
-    coeffs,
-)
-
 __all__ = [
     "Error",
     "new_error_symbol",
