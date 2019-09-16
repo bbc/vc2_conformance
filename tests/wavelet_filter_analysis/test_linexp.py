@@ -113,12 +113,18 @@ class TestLinExp(object):
     
     @pytest.mark.parametrize("value,exp_value", [
         (0, 0),
-        ({None: 123}, 123),
-        ({"a": 123}, 0),
-        ({"a": 123, None: 321}, 321),
+        (123, 123),
     ])
     def test_constant(self, value, exp_value):
         assert LinExp(value).constant == exp_value
+    
+    @pytest.mark.parametrize("value", [
+        {"a": 123},
+        {"a": 123, None: 321},
+    ])
+    def test_constant_when_not_constant(self, value):
+        with pytest.raises(TypeError):
+            LinExp(value).constant
     
     @pytest.mark.parametrize("value,exp_bool", [
         (0, False),

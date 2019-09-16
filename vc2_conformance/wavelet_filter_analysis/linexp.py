@@ -86,6 +86,14 @@ expression would be strictly linear. For example::
     >>> expr / a
     TypeError: unsupported operand type(s) for /: 'LinExp' and 'LinExp'
 
+Expressions may use :py:class:`~fractions.Fraction`\ s to represent
+coefficients exactly. Accordingly :py:class:`LinExp` implements division using
+:py:class:`~fractions.Fraction`::
+
+    >>> expr_over_three = expr / 3
+    >>> str(expr_over_three)
+    '(1/3)*a + (2/3)*b + -1*c + 100/3'
+
 Internally, linear expressions are represented by a dictionary of the form
 ``{symbol: coefficient, ...}``. For example::
 
@@ -266,8 +274,14 @@ class LinExp(object):
     
     @property
     def constant(self):
-        """The constant term in this linear expression."""
-        return self[None]
+        """
+        If :py:attr:`is_constant` is True, returns the value as a normal
+        numerical Python type. Otherwise raises :py:exc:TypeError`
+        """
+        if self.is_constant:
+            return self[None]
+        else:
+            raise TypeError("LinExp is not a constant.")
     
     @property
     def is_symbol(self):
