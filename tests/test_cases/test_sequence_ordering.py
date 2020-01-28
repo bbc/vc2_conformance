@@ -1,6 +1,6 @@
 import pytest
 
-from vc2_conformance.tables import ParseCodes
+from vc2_data_tables import ParseCodes
 
 from vc2_conformance.test_cases.sequence_ordering import (
     find_minimal_sequence,

@@ -16,7 +16,8 @@ from vc2_conformance.file_format import read
 from vc2_conformance._py2x_compat import quote
 
 from vc2_conformance import bitstream
-from vc2_conformance import tables
+
+import vc2_data_tables as tables
 
 from vc2_conformance.scripts.vc2_bitstream_validator import (
     format_pseudocode_traceback,

@@ -10,7 +10,7 @@ See also :py:mod:`vc2_conformance.picture_encoding`.
 
 from vc2_conformance.metadata import ref_pseudocode
 
-from vc2_conformance.tables import LIFTING_FILTERS, LiftingFilterTypes
+from vc2_data_tables import LIFTING_FILTERS, LiftingFilterTypes
 
 from vc2_conformance.vc2_math import clip
 

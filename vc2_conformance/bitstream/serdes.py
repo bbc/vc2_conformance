@@ -228,7 +228,7 @@ For example, here's how the ``parse_info`` header (10.5.1) might be represented:
 
     from vc2_conformance.fixeddict import fixeddict, Entry
     from vc2_conformance.formatters import Hex
-    from vc2_conformance.tables import ParseCodes, PARSE_INFO_PREFIX
+    from vc2_data_tables import ParseCodes, PARSE_INFO_PREFIX
     ParseInfo = fixeddict(
         "ParseInfo",
         Entry("parse_info_prefix", formatter=Hex(8)),

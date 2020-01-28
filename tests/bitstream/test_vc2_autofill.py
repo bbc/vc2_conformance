@@ -4,7 +4,7 @@ from copy import deepcopy
 
 from io import BytesIO
 
-from vc2_conformance import tables
+import vc2_data_tables as tables
 
 from vc2_conformance.state import State
 

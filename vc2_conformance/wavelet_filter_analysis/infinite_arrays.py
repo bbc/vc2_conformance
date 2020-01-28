@@ -58,7 +58,7 @@ these elements are typically very similar.
 
 Consider the following example:
 
-    >>> from vc2_conformance.tables import LIFTING_FILTERS, WaveletFilters
+    >>> from vc2_data_tables import LIFTING_FILTERS, WaveletFilters
     >>> from vc2_conformance.wavelet_filter_analysis.infinite_arrays import (
     ...     SymbolArray,
     ...     LiftedArray,
@@ -172,7 +172,7 @@ from fractions import Fraction
 
 from vc2_conformance.wavelet_filter_analysis.linexp import LinExp
 
-from vc2_conformance.tables import LiftingFilterTypes
+from vc2_data_tables import LiftingFilterTypes
 
 from vc2_conformance._py2x_compat import gcd
 
@@ -350,7 +350,7 @@ class LiftedArray(InfiniteArray):
         input_array : :py:class:`InfiniteArray`
             The input array whose entries will be filtered by the specified
             lifting stage.
-        stage : :py:class:`vc2_conformance.tables.LiftingStage`
+        stage : :py:class:`vc2_data_tables.LiftingStage`
             A description of the lifting stage.
         interleave_dimension: int
             The dimension along which the filter will act.

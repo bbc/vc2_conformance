@@ -10,7 +10,9 @@ from shlex import split
 
 from bitarray import bitarray
 
-from vc2_conformance import bitstream, video_parameters, tables
+from vc2_conformance import bitstream, video_parameters
+
+import vc2_data_tables as tables
 
 from vc2_conformance.state import State
 

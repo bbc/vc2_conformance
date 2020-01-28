@@ -9,8 +9,9 @@ from decoder_test_utils import (
 )
 
 from vc2_conformance import bitstream
-from vc2_conformance import tables
 from vc2_conformance import decoder
+
+import vc2_data_tables as tables
 
 from vc2_conformance._symbol_re import Matcher
 

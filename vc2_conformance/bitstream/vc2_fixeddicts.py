@@ -22,7 +22,7 @@ from vc2_conformance._string_formatters import (
 
 from vc2_conformance.state import State
 
-from vc2_conformance.tables import (
+from vc2_data_tables import (
     PARSE_INFO_PREFIX,
     ParseCodes,
     PictureCodingModes,

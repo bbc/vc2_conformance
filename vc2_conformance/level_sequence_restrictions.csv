@@ -1,0 +1,16 @@
+# VC-2 Level sequence restrictions,,
+,# Human readable explanation of rule for error messages,# See vc2_conformance._symbol_re
+index,sequence_restriction_explanation,sequence_restriction_regex
+# Generalized levels,,
+0,No restrictions on sequence ordering is applied.,.*
+1,"Either pictures or picture fragments may be used in a stream, but not both.",sequence_header ( (sequence_header | auxiliary_data | padding_data | low_delay_picture | high_quality_picture)* | (sequence_header | auxiliary_data | padding_data | low_delay_picture_fragment | high_quality_picture_fragment)*) end_of_sequence
+2,“,“
+3,“,“
+4,“,“
+5,“,“
+6,“,“
+7,“,“
+# Specialized levels,,
+64,Sequences must consist of alternating sequence headers and low-delay pictures,(sequence_header low_delay_picture)* end_of_sequence
+65,Sequences must consist of alternating sequence headers and low-delay pictures,(sequence_header low_delay_picture)* end_of_sequence
+66,Sequences must consist of alternating sequence headers and high-quality pictures,(sequence_header high_quality_picture)* end_of_sequence

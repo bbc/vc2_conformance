@@ -1,1 +1,2 @@
-include vc2_conformance/tables/*.csv
+include vc2_conformance/level_constraints.csv
+include vc2_conformance/level_sequence_restrictions.csv

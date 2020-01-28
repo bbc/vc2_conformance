@@ -17,7 +17,7 @@ from vc2_conformance.test_cases.common import (
     get_illigal_enum_values,
 )
 
-from vc2_conformance.tables import (
+from vc2_data_tables import (
     ParseCodes,
     SourceSamplingModes,
     PictureCodingModes,

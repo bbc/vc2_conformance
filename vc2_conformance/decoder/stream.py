@@ -16,7 +16,7 @@ from vc2_conformance.parse_code_functions import (
     is_end_of_sequence,
 )
 
-from vc2_conformance.tables import (
+from vc2_data_tables import (
     PARSE_INFO_PREFIX,
     PARSE_INFO_HEADER_BYTES,
     ParseCodes,

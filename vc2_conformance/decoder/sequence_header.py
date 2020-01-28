@@ -7,7 +7,7 @@ from vc2_conformance.metadata import ref_pseudocode
 
 from vc2_conformance.vc2_math import intlog2
 
-from vc2_conformance.tables import (
+from vc2_data_tables import (
     BaseVideoFormats,
     PictureCodingModes,
     Profiles,
@@ -22,6 +22,10 @@ from vc2_conformance.tables import (
     PresetColorPrimaries,
     PresetColorMatrices,
     PresetTransferFunctions,
+)
+
+from vc2_conformance.level_constraints import (
+    LEVEL_SEQUENCE_RESTRICTIONS,
 )
 
 from vc2_conformance.video_parameters import (
@@ -202,7 +206,7 @@ def parse_parameters(state):
     ## Begin not in spec
     if "_level_sequence_matcher" not in state:
         state["_level_sequence_matcher"] = Matcher(
-            LEVELS[state["level"]].sequence_restriction_regex
+            LEVEL_SEQUENCE_RESTRICTIONS[state["level"]].sequence_restriction_regex
         )
         # If we're at this point we're currently reading the first sequence
         # header (in the first data unit) of a sequence. Advance the state

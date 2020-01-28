@@ -1,8 +1,10 @@
-from vc2_conformance.tables import (
-    Levels,
+from vc2_data_tables import Levels
+
+from vc2_conformance.level_constraints import (
     LEVEL_CONSTRAINTS,
     LEVEL_CONSTRAINT_ANY_VALUES,
 )
+
 from vc2_conformance._constraint_table import allowed_values_for
 
 

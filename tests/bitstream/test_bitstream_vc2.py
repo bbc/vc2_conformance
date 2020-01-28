@@ -4,7 +4,7 @@ from io import BytesIO
 
 from bitarray import bitarray
 
-from vc2_conformance import tables
+import vc2_data_tables as tables
 
 from vc2_conformance.state import State
 from vc2_conformance.video_parameters import VideoParameters

@@ -10,7 +10,7 @@ For example, if a test sequence containing (at least) a padding data unit is
 required while meeting the sequence restrictions imposed by VC-2,
 :py:func:`find_minimal_sequence` may be used::
 
-    >>> from vc2_conformance.tables import ParseCodes
+    >>> from vc2_data_tables import ParseCodes
     >>> from vc2_conformance.test_cases.sequence_ordering import find_minimal_sequence
     
     >>> pattern = "sequence_header .* end_of_sequence"
@@ -22,7 +22,7 @@ from copy import deepcopy
 
 from collections import deque
 
-from vc2_conformance.tables import ParseCodes
+from vc2_data_tables import ParseCodes
 
 from vc2_conformance._symbol_re import Matcher, WILDCARD, END_OF_SEQUENCE
 
@@ -38,25 +38,25 @@ class ImpossibleSequenceError(Exception):
 def find_minimal_sequence(data_units, *patterns, **kwargs):
     """
     Find the shortest sequence of data unit types (i.e.
-    :py:class:`vc2_conformance.tables.ParseCodes`) which is matched by the
+    :py:class:`vc2_data_tables.ParseCodes`) which is matched by the
     supplied set of regular expressions.
     
     Parameters
     ==========
-    data_units : [:py:class:`vc2_conformance.tables.ParseCodes`, ...]
+    data_units : [:py:class:`vc2_data_tables.ParseCodes`, ...]
         The minimal set of entries which must be included in the sequence, in
         the order they are required to appear.
     patterns : str
         A series of :py:mod:`~vc2_conformance._symbol_re` regular expression
         specificeations whose symbols are the names given for the various parse
-        codes defined in :py:class:`vc2_conformance.tables.ParseCodes`.
+        codes defined in :py:class:`vc2_data_tables.ParseCodes`.
     depth_limit : int
         Keyword-only argument specifying the maximum number of non-target data
         units to try including before giving up. Defaults to 4.
     
     Returns
     =======
-    data_units : [:py:class:`vc2_conformance.tables.ParseCodes`, ...]
+    data_units : [:py:class:`vc2_data_tables.ParseCodes`, ...]
         A sequence of data unit types which would be matched by the specified
         patterns.
     

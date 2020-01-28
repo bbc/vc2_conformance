@@ -36,9 +36,9 @@ from vc2_conformance.bitstream import (
 
 from vc2_conformance.fixeddict import FixedDictKeyError
 
-from vc2_conformance.tables import ParseCodes, PARSE_INFO_HEADER_BYTES
+import vc2_data_tables as tables
 
-from vc2_conformance import tables, vc2_math
+from vc2_conformance import vc2_math
 
 
 def remove_comments_from_json(obj):
@@ -184,7 +184,7 @@ def main(*args, **kwargs):
     if not (
         "data_units" in specification and
         len(specification["data_units"]) >= 1 and
-        specification["data_units"][-1].get("parse_info", {}).get("parse_code") == ParseCodes.end_of_sequence
+        specification["data_units"][-1].get("parse_info", {}).get("parse_code") == tables.ParseCodes.end_of_sequence
     ):
         sys.stderr.write("Specification must end with an 'end of sequence' data unit\n")
         return 5

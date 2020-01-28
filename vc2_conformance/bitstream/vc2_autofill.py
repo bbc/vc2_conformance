@@ -12,7 +12,7 @@ from copy import deepcopy
 
 from sentinels import Sentinel
 
-from vc2_conformance.tables import (
+from vc2_data_tables import (
     PARSE_INFO_HEADER_BYTES,
     ParseCodes,
 )

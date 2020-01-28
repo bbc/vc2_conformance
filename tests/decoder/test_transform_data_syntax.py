@@ -7,8 +7,9 @@ from decoder_test_utils import serialise_to_bytes, bytes_to_state
 from vc2_conformance.vc2_math import intlog2
 
 from vc2_conformance import bitstream
-from vc2_conformance import tables
 from vc2_conformance import decoder
+
+import vc2_data_tables as tables
 
 # State dictionary with a minimal set of pre-populated values for the unpacking
 # of a single-sample, single pixel picture.

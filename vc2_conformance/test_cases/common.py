@@ -3,7 +3,7 @@ Common utlity functions or test values for use in test cases
 ============================================================
 """
 
-from vc2_conformance.tables import (
+from vc2_data_tables import (
     BaseVideoFormats,
     BASE_VIDEO_FORMAT_PARAMETERS,
     PresetSignalRanges,
@@ -65,7 +65,7 @@ def get_base_video_format_satisfying(parameter_predicate):
     
     Returns
     =======
-    base_video_format : :py:class:`vc2_conformance.tables.BaseVideoFormats`
+    base_video_format : :py:class:`vc2_data_tables.BaseVideoFormats`
         The index of a base video format satisfying parameter_predicate.
     
     Raises
@@ -82,7 +82,7 @@ def get_base_video_format_satisfying(parameter_predicate):
 def get_base_video_format_with(parameter, value):
     """
     Return the first base video format index with the specified
-    :py:class:`vc2_conformance.tables.BaseVideoFormatParameters` parameter set
+    :py:class:`vc2_data_tables.BaseVideoFormatParameters` parameter set
     to the specified value.
     """
     return get_base_video_format_satisfying(
@@ -93,7 +93,7 @@ def get_base_video_format_with(parameter, value):
 def get_base_video_format_without(parameter, value):
     """
     Return the first base video format index with the specified
-    :py:class:`vc2_conformance.tables.BaseVideoFormatParameters` parameter
+    :py:class:`vc2_data_tables.BaseVideoFormatParameters` parameter
     *not* set to the specified value.
     """
     return get_base_video_format_satisfying(

@@ -27,7 +27,7 @@ from vc2_conformance.metadata import ref_pseudocode
 
 from vc2_conformance.bitstream.serdes import context_type
 
-from vc2_conformance.tables import *
+from vc2_data_tables import *
 
 from vc2_conformance.state import State
 

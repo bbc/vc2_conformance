@@ -113,7 +113,7 @@ bitstream fields to enable compact descriptions of VC-2 bitstreams to be
 constructed. For example, the following describes a valid bitstream with a
 single HD mid-grey picture::
 
-    from vc2_conformance.tables import ParseCodes, BaseVideoFormats
+    from vc2_data_tables import ParseCodes, BaseVideoFormats
     
     from vc2_conformance.bitstream import (
         Sequence,

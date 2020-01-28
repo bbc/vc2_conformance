@@ -25,7 +25,7 @@ The :py:class:`Matcher` object is used to compare a sequence of symbols
 underscores) against a predefined pattern given as a regular expression.
 
 For the application of checking VC-2 sequence contents,
-:py:class:`~vc2_conformance.tables.ParseCodes` name strings may be used as
+:py:class:`~vc2_data_tables.ParseCodes` name strings may be used as
 symbols. For example::
 
     >>> from vc2_conformance._symbol_re import Matcher

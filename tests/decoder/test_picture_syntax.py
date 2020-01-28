@@ -7,8 +7,9 @@ from vc2_conformance._constraint_table import ValueSet
 from vc2_conformance.state import State
 
 from vc2_conformance import bitstream
-from vc2_conformance import tables
 from vc2_conformance import decoder
+
+import vc2_data_tables as tables
 
 
 def test_picture_header_picture_numbering_sanity_check():

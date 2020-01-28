@@ -2,7 +2,7 @@ import pytest
 
 from fractions import Fraction
 
-from vc2_conformance import tables
+import vc2_data_tables as tables
 
 from vc2_conformance.decoder.transform_data_syntax import (
     quant_factor,

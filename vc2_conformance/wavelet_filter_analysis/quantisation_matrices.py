@@ -262,7 +262,7 @@ yielding:
 For the analysis filter and synthesis filters respectively.
 
 The following function may be used to convert a
-:py:class:`vc2_conformance.tables.LiftingFilterParameters` into a :math:`2
+:py:class:`vc2_data_tables.LiftingFilterParameters` into a :math:`2
 \times 2` matrix.
 
 .. autofunction:: wavelet_filter_to_matrix_form
@@ -270,7 +270,7 @@ The following function may be used to convert a
 .. note::
 
     All of the wavelet specifications in the VC-2 specification (and therefore
-    in :py:data:`vc2_conformance.tables.LIFTING_FILTERS`) define *synthesis*
+    in :py:data:`vc2_data_tables.LIFTING_FILTERS`) define *synthesis*
     filter lifting stages. As suggested by the figures above, these are easily
     converted into analysis filter specifications by reversing the order and
     changing the operation. The following function may be used to convert
@@ -577,7 +577,7 @@ from sympy import (
 
 from sympy.abc import z
 
-from vc2_conformance.tables import (
+from vc2_data_tables import (
     LiftingFilterTypes,
     LiftingFilterParameters,
     LiftingStage,
@@ -621,14 +621,14 @@ def fir_filter_noise_gain(coefficients):
 
 def lifting_stage_to_z_transform(stage):
     """
-    Given a :py:class:`vc2_conformance.tables.LiftingStage` describing wavelet
+    Given a :py:class:`vc2_data_tables.LiftingStage` describing wavelet
     filter stage, return the type of lifting stage (either predict or update)
     and a :math:`z`-domain representation of the filtering operation as used in
     the matrix filter representation.
     
     Parameters
     ==========
-    stage : :py:class:`vc2_conformance.tables.LiftingStage`
+    stage : :py:class:`vc2_data_tables.LiftingStage`
     
     Returns
     =======
@@ -664,7 +664,7 @@ def lifting_stage_to_z_transform(stage):
 
 def wavelet_filter_to_matrix_form(lifting_filter_parameters):
     """
-    Convert a :py:class:`vc2_conformance.tables.LiftingFilterParameters` filter
+    Convert a :py:class:`vc2_data_tables.LiftingFilterParameters` filter
     specification into :math:`z`-domain matrix form.
     """
     matrix = None
@@ -699,11 +699,11 @@ def convert_between_synthesis_and_analysis(lifting_filter_parameters):
     
     Parameters
     ==========
-    lifting_filter_parameters : :py:class:`vc2_conformance.tables.LiftingFilterParameters`
+    lifting_filter_parameters : :py:class:`vc2_data_tables.LiftingFilterParameters`
     
     Returns
     =======
-    lifting_filter_parameters : :py:class:`vc2_conformance.tables.LiftingFilterParameters`
+    lifting_filter_parameters : :py:class:`vc2_data_tables.LiftingFilterParameters`
     """
     return LiftingFilterParameters(
         stages=[
@@ -791,7 +791,7 @@ def z_to_coeffs(poly):
 def wavelet_filter_to_alpha_beta(synthesis_lifting_filter_parameters):
     r"""
     Given synthesis filter definition (in a
-    :py:class:`vc2_conformance.tables.LiftingFilterParameters`) return the
+    :py:class:`vc2_data_tables.LiftingFilterParameters`) return the
     low-pass and high-pass filter noise gains (:math:`\alpha` and
     :math:`\beta`).
     """
@@ -809,7 +809,7 @@ def wavelet_filter_to_alpha_beta(synthesis_lifting_filter_parameters):
 def wavelet_filter_to_synthesis_bit_shift_scale(synthesis_lifting_filter_parameters):
     r"""
     Given synthesis filter definition (in a
-    :py:class:`vc2_conformance.tables.LiftingFilterParameters`) return the
+    :py:class:`vc2_data_tables.LiftingFilterParameters`) return the
     scaling factor, :math:`s`, imposed after each 2D or horizontal-only
     transform level.
     """
@@ -840,7 +840,7 @@ def accumulated_noise_gains(alpha_v, beta_v, alpha_h, beta_h, s, dwt_depth, dwt_
     {level: {band: noise_gain, ...}, ...}
         A list with one dictionary per level in the same layout as the
         quantisation matrices in
-        :py:data:`vc2_conformance.tables.QUANTISATION_MATRICES`.
+        :py:data:`vc2_data_tables.QUANTISATION_MATRICES`.
     """
     gains = [{"LL": 1}]
     
@@ -913,7 +913,7 @@ def derive_quantisation_matrix(wavelet_index, wavelet_index_ho, dwt_depth, dwt_d
     
     Parameters
     ==========
-    wavelet_index, wavelet_index_ho : :py:class:`vc2_conformance.tables.WaveletFilters`
+    wavelet_index, wavelet_index_ho : :py:class:`vc2_data_tables.WaveletFilters`
         The vertical and horizontal wavelet filter indices respectively.
     dwt_depth, dwt_depth_ho
         The wavelet transform depth (2D depth and horizontal only depth).
@@ -922,7 +922,7 @@ def derive_quantisation_matrix(wavelet_index, wavelet_index_ho, dwt_depth, dwt_d
     =======
     {level: {band: int, ...}, ...}
         A quantisation matrix, as laid out in
-        :py:data:`vc2_conformance.tables.QUANTISATION_MATRICES`.
+        :py:data:`vc2_data_tables.QUANTISATION_MATRICES`.
     """
     wavelet_v = LIFTING_FILTERS[wavelet_index]
     wavelet_h = LIFTING_FILTERS[wavelet_index_ho]

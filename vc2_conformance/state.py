@@ -9,7 +9,7 @@ VC-2 spec.
 
 from vc2_conformance._string_formatters import Hex
 
-from vc2_conformance.tables import (
+from vc2_data_tables import (
     ParseCodes,
     WaveletFilters,
     Profiles,
@@ -175,7 +175,8 @@ State = fixeddict(
     Entry("_level_sequence_matcher"),
     # A dictionary which will be incrementally populated with values read or
     # computed from the bitstream which are constrained by the level
-    # constraints table (see vc2_conformance.tables.LEVEL_CONSTRAINTS and
+    # constraints table (see
+    # vc2_conformance.level_constraints.LEVEL_CONSTRAINTS and
     # vc2_conformance.decoder.assertions.assert_level_constraint).
     Entry("_level_constrained_values"),
 )

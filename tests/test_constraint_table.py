@@ -1,11 +1,14 @@
 import pytest
 
+import os
+
 from vc2_conformance._constraint_table import (
     ValueSet,
     AnyValue,
     filter_allowed_values,
     is_allowed_combination,
     allowed_values_for,
+    read_constraints_from_csv,
 )
 
 
@@ -338,3 +341,47 @@ class TestAllowedValuesFor(object):
             "foo",
             {"bar": 123},
         ) == ValueSet(1, 3)
+
+
+def test_read_constraints_from_csv():
+    constraints = read_constraints_from_csv(os.path.join(
+        os.path.dirname(__file__),
+        "sample_constraint_table.csv"
+    ))
+    
+    # Every column included (incl. empty column!)
+    assert len(constraints) == 4
+    
+    # All columns should have all row names
+    assert all(set(c) == set(["foo", "bar", "baz", "quo", "qux"])
+               for c in constraints)
+    
+    # Plain integers in 'foo'
+    assert constraints[0]["foo"] == ValueSet(1)
+    assert constraints[1]["foo"] == ValueSet(2)
+    assert constraints[2]["foo"] == ValueSet()  # Empty
+    assert constraints[3]["foo"] == ValueSet(3)
+    
+    # Multiple integers in 'bar'
+    assert constraints[0]["bar"] == ValueSet(10, 100)
+    assert constraints[1]["bar"] == ValueSet(20, 200)
+    assert constraints[2]["bar"] == ValueSet()  # Empty
+    assert constraints[3]["bar"] == ValueSet(30, 300)
+    
+    # 'Ditto' used in 'baz'
+    assert constraints[0]["baz"] == ValueSet(12)
+    assert constraints[1]["baz"] == ValueSet(12)  # Ditto'd
+    assert constraints[2]["baz"] == ValueSet()  # Empty
+    assert constraints[3]["baz"] == ValueSet(3)
+    
+    # 'any', ranges and empty values used in 'quo'
+    assert constraints[0]["quo"] == AnyValue()
+    assert constraints[1]["quo"] == ValueSet((2, 200), (300, 3000))
+    assert constraints[2]["quo"] == ValueSet()  # Empty
+    assert constraints[3]["quo"] == ValueSet()
+    
+    # Booleans in 'qux'
+    assert constraints[0]["qux"] == ValueSet(False)
+    assert constraints[1]["qux"] == ValueSet(True)
+    assert constraints[2]["qux"] == ValueSet()  # Empty
+    assert constraints[3]["qux"] == ValueSet(True, False)

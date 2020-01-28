@@ -1,6 +1,6 @@
 import pytest
 
-from vc2_conformance.tables import ParseCodes, PictureCodingModes
+from vc2_data_tables import ParseCodes, PictureCodingModes
 
 from vc2_conformance.state import State
 

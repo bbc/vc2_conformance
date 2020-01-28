@@ -65,7 +65,7 @@ functions may be provided for each entry in the dictionary. To define these,
 so::
 
     >>> from vc2_conformance._string_formatters import Hex
-    >>> from vc2_conformance.tables import ParseCodes  # An IntEnum
+    >>> from vc2_data_tables import ParseCodes  # An IntEnum
     >>> ParseInfo = fixeddict(
     ...     "ParseInfo",
     ...     Entry("parse_info_prefix",

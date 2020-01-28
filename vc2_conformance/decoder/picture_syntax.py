@@ -27,12 +27,13 @@ from vc2_conformance.decoder.io import (
     read_bool,
 )
 
-from vc2_conformance.tables import (
+from vc2_data_tables import (
     PictureCodingModes,
     WaveletFilters,
-    LEVEL_CONSTRAINTS,
     QUANTISATION_MATRICES,
 )
+
+from vc2_conformance.level_constraints import LEVEL_CONSTRAINTS
 
 from vc2_conformance.decoder.assertions import (
     assert_in,

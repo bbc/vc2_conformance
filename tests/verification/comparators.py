@@ -18,7 +18,7 @@ spec with their implementations in the :py:mod:`vc2_conformance` package.
 
 import ast
 
-from vc2_conformance import tables
+import vc2_data_tables as tables
 
 from verification.node_comparator import NodeComparator, NodesDiffer
 
@@ -44,7 +44,7 @@ class Identical(NodeComparator):
     1. Their docstrings may be different.
     2. A :py:func:`vc2_conformance.metadata.ref_pseudocode` decorator may be
        present in the second function.
-    3. Constants from  the :py:mod:`vc2_conformance.tables` module may be
+    3. Constants from  the :py:mod:`vc2_data_tables` module may be
        used in place of numerical literals.
     """
     

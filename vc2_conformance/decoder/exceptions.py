@@ -13,7 +13,7 @@ from vc2_conformance._string_utils import wrap_paragraphs
 
 from vc2_conformance.vc2_math import intlog2
 
-from vc2_conformance.tables import (
+from vc2_data_tables import (
     PARSE_INFO_PREFIX,
     PARSE_INFO_HEADER_BYTES,
     ParseCodes,
@@ -21,6 +21,10 @@ from vc2_conformance.tables import (
     PROFILES,
     LEVELS,
     WaveletFilters,
+)
+
+from vc2_conformance.level_constraints import (
+    LEVEL_SEQUENCE_RESTRICTIONS,
 )
 
 from vc2_conformance.bitstream.io import (
@@ -31,7 +35,7 @@ from vc2_conformance.bitstream.io import (
 def known_parse_code_to_string(parse_code):
     """
     Convert a known parse code (i.e. one in
-    :py:class:`~vc2_conformance.tables.ParseCodes`) into a string such as::
+    :py:class:`~vc2_data_tables.ParseCodes`) into a string such as::
     
         "end of sequence (0x10)"
     """
@@ -43,7 +47,7 @@ def known_parse_code_to_string(parse_code):
 def known_profile_to_string(profile):
     """
     Convert a known profile number (i.e. one in
-    :py:class:`~vc2_conformance.tables.Profiles`) into a string such as::
+    :py:class:`~vc2_data_tables.Profiles`) into a string such as::
     
         "high quality (3)"
     """
@@ -55,7 +59,7 @@ def known_profile_to_string(profile):
 def known_wavelet_to_string(wavelet_index):
     """
     Convert a known wavelet index (i.e. one in
-    :py:class:`~vc2_conformance.tables.WaveletFilters`) into a string such as::
+    :py:class:`~vc2_data_tables.WaveletFilters`) into a string such as::
     
         "Haar With Shift (4)"
     """
@@ -75,10 +79,10 @@ def explain_parse_code_sequence_structure_restrictions(
     
     Parameters
     ==========
-    actual_parse_code : None, :py:class:`vc2_conformance.tables.ParseCodes`
+    actual_parse_code : None, :py:class:`vc2_data_tables.ParseCodes`
         The (valid) parse code which was encountered which violated the stated
         sequencing requirements. If None, a premature end of sequence was encountered.
-    expected_parse_codes : None or [:py:class:`vc2_conformance.tables.ParseCodes`, ...]
+    expected_parse_codes : None or [:py:class:`vc2_data_tables.ParseCodes`, ...]
         If a list, enumerates the (valid) parse codes which would have been
         allowed instead. If None, any parse code would have been allowed.
     expected_end : bool
@@ -698,7 +702,7 @@ class LevelInvalidSequence(ConformanceError):
         """.format(
             self.level,
             LEVELS[self.level].standard,
-            LEVELS[self.level].sequence_restriction_explanation,
+            LEVEL_SEQUENCE_RESTRICTIONS[self.level].sequence_restriction_explanation,
             explain_parse_code_sequence_structure_restrictions(
                 self.parse_code,
                 self.expected_parse_codes,
@@ -739,8 +743,9 @@ class ParseCodeNotAllowedInProfile(ConformanceError):
 class ValueNotAllowedInLevel(ConformanceError):
     """
     A value was encountered in the bitstream which was not allowed by the
-    current level. See :py:data:`vc2_conformance.tables.LEVEL_CONSTRAINTS` for
-    details of the constrained keys.
+    current level. See
+    :py:data:`vc2_conformance.level_constraints.LEVEL_CONSTRAINTS` for details
+    of the constrained keys.
     
     :py:attr:`level_constrained_values` will be the previously specified
     values which were allowed by the level constraints.

@@ -22,7 +22,7 @@ so::
 Test cases may also be parameterised (similar to test parameterisation in
 Py.Test) to result in several similar cases being produced::
 
-    >>> from vc2_conformance.tables import BaseVideoFormats
+    >>> from vc2_data_tables import BaseVideoFormats
     
     >>> @test_case(parameters=("base_video_format", list(BaseVideoFormats)))
     >>> def check_base_video_format_support(base_video_format):
@@ -191,7 +191,7 @@ class TestCaseRegistry(object):
         
         >>> # In a test-case defining module
         >>> from vc2_conformance.test_cases.registry import test_group, test_case
-        >>> from vc2_conformance.tables import ParseCodes
+        >>> from vc2_data_tables import ParseCodes
         >>> from vc2_conformance.bitstream import Sequence, DataUnit, ParseInfo
         >>> with test_group("minimal_sequences"):
         ...     @test_case(xfail="Missing sequence header")

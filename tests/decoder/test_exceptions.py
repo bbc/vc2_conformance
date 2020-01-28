@@ -4,7 +4,7 @@ from textwrap import dedent
 
 from collections import OrderedDict
 
-from vc2_conformance import tables
+import vc2_data_tables as tables
 
 from vc2_conformance._string_utils import wrap_paragraphs
 

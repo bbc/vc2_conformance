@@ -156,7 +156,7 @@ below::
 
     >>> from vc2_conformance.wavelet_filter_analysis.infinite_arrays import SymbolArray
     >>> from vc2_conformance.wavelet_filter_analysis.bit_widths import synthesis_transform
-    >>> from vc2_conformance.tables import WaveletFilters, LIFTING_FILTERS
+    >>> from vc2_data_tables import WaveletFilters, LIFTING_FILTERS
     
     >>> # In this example we'll demonstrate a 1-level 2D wavelet transform
     >>> # using a LeGall wavelet horizontally and Haar wavelet vertically.
@@ -411,7 +411,7 @@ synthesis filter using :py:func:`synthesis_transform` as before::
     ...     synthesis_transform,
     ...     make_coeff_arrays,
     ... )
-    >>> from vc2_conformance.tables import WaveletFilters, LIFTING_FILTERS
+    >>> from vc2_data_tables import WaveletFilters, LIFTING_FILTERS
     
     >>> # Specify the filters
     >>> synthesis_filter = LIFTING_FILTERS[WaveletFilters.le_gall_5_3]
@@ -678,9 +678,9 @@ def analysis_transform(h_filter_params, v_filter_params, dwt_depth, dwt_depth_ho
     
     Parameters
     ==========
-    h_filter_params, v_filter_params : :py:class:`vc2_conformance.tables.LiftingFilterParameters`
+    h_filter_params, v_filter_params : :py:class:`vc2_data_tables.LiftingFilterParameters`
         Horizontal and vertical filter parameters (e.g. from
-        :py:data:`vc2_conformance.tables.LIFTING_FILTERS`.
+        :py:data:`vc2_data_tables.LIFTING_FILTERS`.
     dwt_depth, dwt_depth_ho: int
         Transform depths for 2D and horizontal-only transforms.
     array : :py:class:`InfiniteArray`
@@ -774,9 +774,9 @@ def synthesis_transform(h_filter_params, v_filter_params, dwt_depth, dwt_depth_h
     
     Parameters
     ==========
-    h_filter_params, v_filter_params : :py:class:`vc2_conformance.tables.LiftingFilterParameters`
+    h_filter_params, v_filter_params : :py:class:`vc2_data_tables.LiftingFilterParameters`
         Horizontal and vertical filter parameters (e.g. from
-        :py:data:`vc2_conformance.tables.LIFTING_FILTERS`.
+        :py:data:`vc2_data_tables.LIFTING_FILTERS`.
     dwt_depth, dwt_depth_ho: int
         Transform depths for 2D and horizontal-only transforms.
     coeff_arrays : {level: {orientation: :py:class:`InfiniteArray`, ...}, ...}

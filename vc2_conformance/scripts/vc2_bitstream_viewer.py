@@ -133,7 +133,7 @@ from vc2_conformance import bitstream
 
 from vc2_conformance.state import State
 
-from vc2_conformance.tables import PARSE_INFO_PREFIX
+from vc2_data_tables import PARSE_INFO_PREFIX
 
 from vc2_conformance._string_utils import ellipsise_lossy
 from vc2_conformance._string_formatters import Hex

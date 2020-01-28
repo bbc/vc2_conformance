@@ -3,7 +3,8 @@ import pytest
 from decoder_test_utils import populate_parse_offsets, serialise_to_bytes
 
 from vc2_conformance import bitstream
-from vc2_conformance import tables
+
+import vc2_data_tables as tables
 
 
 class TestPopulateParseOffsets(object):

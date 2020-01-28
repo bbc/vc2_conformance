@@ -13,7 +13,7 @@ from sympy import (
 
 from sympy.abc import a, b, c, d, z
 
-from vc2_conformance import tables
+import vc2_data_tables as tables
 
 from vc2_conformance.wavelet_filter_analysis.quantisation_matrices import (
     StageType,

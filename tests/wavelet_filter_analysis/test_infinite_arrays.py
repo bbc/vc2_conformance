@@ -6,7 +6,7 @@ from fractions import Fraction
 
 from itertools import combinations_with_replacement, product
 
-from vc2_conformance import tables
+import vc2_data_tables as tables
 
 from vc2_conformance.picture_decoding import SYNTHESIS_LIFTING_FUNCTION_TYPES
 

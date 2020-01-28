@@ -7,6 +7,9 @@ combinations of values -- e.g. restrictions imposed by VC-2's levels. This
 module provides various tools for testing combinations of values against these
 tables of constraints.
 
+Tutorial
+--------
+
 Constraint tables enumerate allowed combinations of values as a list of
 dictionaries containing :py;class:`ValueSet` objects.  are described using as a
 list of dictionaries defining acceptable combinations. Take for eaxmple the
@@ -51,7 +54,33 @@ field given the current rules. For example::
     >>> allowed_values_for(real_foods, "type", {"color": "red"})
     ValueSet('apple', 'tomato')
 
+
+API
+---
+
+.. autoclass:: ValueSet
+
+.. autoclass:: AnyValue
+
+.. autofunction:: filter_allowed_values
+
+.. autofunction:: is_allowed_combination
+
+.. autofunction:: allowed_values_for
+
+
+Reading from CSV
+----------------
+
+A Constraint table can be read from CSV files using the following function:
+
+.. autofunction:: read_constraints_from_csv
+
 """
+
+import csv
+
+from vc2_data_tables.csv_readers import is_ditto
 
 
 __all__ = [
@@ -60,6 +89,7 @@ __all__ = [
     "filter_allowed_values",
     "is_allowed_combination",
     "allowed_values_for",
+    "read_constraints_from_csv",
 ]
 
 
@@ -266,5 +296,75 @@ def allowed_values_for(allowed_values, key, values={}):
     
     for allowed in filter_allowed_values(allowed_values, values):
         out += allowed.get(key, ValueSet())
+    
+    return out
+
+
+def read_constraints_from_csv(csv_filename):
+    r"""
+    Reads a table of constraints from a CSV file.
+    
+    The CSV file should be arranged with each row describing a particular value
+    to be constrained and each column defining an allowed combination of
+    values.
+    
+    Empty rows and rows containing only '#' prefixed values will be skipped.
+    
+    The first column will be treated as the keys being constrained, remaining
+    columns should contain allowed combinations of values. Each of these values
+    will be converted into a :py:class:`ValueSet` as follows::
+    
+    * Values which contain integers will be converted to ``int``
+    * Values which contain 'TRUE' or 'FALSE' will be converted to ``bool``
+    * Values containing a pair of integers separated by a ``-`` will be treated
+      as an incusive range.
+    * Several comma-separated instances of the above will be combined into a
+      single :py:class:`ValueSet`.
+    * The value 'any' will be substituted for :py:class:`AnyValue`.
+    * Empty cells will be converted into empty :py:class:`ValueSet`\ s.
+    * Cells which contain only a pair of quotes (e.g. ``"``, i.e. ditto) will
+      be assigned the same value as the column to their left.
+    
+    The read constraint table will be returned as a list of dictionaries (one
+    per column) as expected by the functions in
+    :py:mod:`vc2_conformance._constraint_table`.
+    """
+    out = []
+    
+    with open(csv_filename) as f:
+        for row in csv.reader(f):
+            # Skip empty lines
+            if all(not cell.strip() or cell.strip().startswith("#")
+                   for cell in row):
+                continue
+            
+            # Add extra constraint sets as required
+            for _ in range(len(out), len(row) - 1):
+                out.append({})
+            
+            # Populate this row's values
+            key = row[0]
+            last_value = ValueSet()
+            for i, column in enumerate(row[1:]):
+                value = ValueSet()
+                if is_ditto(column):
+                    value += last_value
+                elif column.strip().lower() == "any":
+                    value = AnyValue()
+                else:
+                    for value_string in column.split(","):
+                        values = [
+                            True if s.strip().lower() == "true" else
+                            False if s.strip().lower() == "false" else
+                            int(s)
+                            for s in value_string.partition("-")[::2]
+                            if s
+                        ]
+                        if len(values) == 1:
+                            value.add_value(values[0])
+                        elif len(values) == 2:
+                            value.add_range(values[0], values[1])
+                out[i][key] = value
+                last_value = value
     
     return out

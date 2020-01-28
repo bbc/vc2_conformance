@@ -5,11 +5,12 @@
 
 from collections import OrderedDict
 
-from vc2_conformance.tables import (
+from vc2_data_tables import (
     ParseCodes,
-    LEVEL_CONSTRAINTS,
     PictureCodingModes,
 )
+
+from vc2_conformance.level_constraints import LEVEL_CONSTRAINTS
 
 from vc2_conformance._symbol_re import WILDCARD, END_OF_SEQUENCE
 
@@ -51,9 +52,9 @@ def assert_parse_code_in_sequence(parse_code, matcher, exception_type, *args):
     If it does not, ``exception_type`` will be raised with the following
     arguments:
     
-    * The ``parse_code`` (as a :py:class:`~vc2_conformance.tables.ParseCodes`)
+    * The ``parse_code`` (as a :py:class:`~vc2_data_tables.ParseCodes`)
     * A list of parse codes (as a
-      :py:class:`~vc2_conformance.tables.ParseCodes`) which would have been
+      :py:class:`~vc2_data_tables.ParseCodes`) which would have been
       valid (or ``None`` if any parse code would be allowed.
     * A boolean which is True if it would have been valid to end the sequence
       at this point.
@@ -90,7 +91,7 @@ def assert_parse_code_sequence_ended(matcher, exception_type, *args):
     
     * The ``parse_code`` will be None
     * A list of parse codes (as a
-      :py:class:`~vc2_conformance.tables.ParseCodes`) which would have been
+      :py:class:`~vc2_data_tables.ParseCodes`) which would have been
       valid (or ``None`` if any parse code would be allowed.
     * A boolean which is True if it would have been valid to end the sequence
       at this point. (Always False, in this case)
@@ -110,7 +111,7 @@ def assert_parse_code_sequence_ended(matcher, exception_type, *args):
 def assert_level_constraint(state, key, value):
     """
     Check that the given key and value is allowed according to the
-    :py:data:`vc2_conformance.tables.LEVEL_CONSTRAINTS`. Throws a
+    :py:data:`vc2_conformance.level_constraints.LEVEL_CONSTRAINTS`. Throws a
     :py;exc:`vc2_conformance.decoder.exceptions.ValueNotAllowedInLevel`
     exception on failure.
     

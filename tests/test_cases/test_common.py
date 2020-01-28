@@ -4,8 +4,9 @@ from io import BytesIO
 
 from enum import IntEnum
 
+import vc2_data_tables as tables
+
 from vc2_conformance import bitstream
-from vc2_conformance import tables
 from vc2_conformance import decoder
 
 from vc2_conformance.arrays import width, height

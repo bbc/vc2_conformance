@@ -18,9 +18,6 @@ This Python package includes the following key components:
 
 from vc2_conformance.version import __version__
 
-# VC-2 constants and tables
-import vc2_conformance.tables
-
 # VC-2 pseudocode functions
 from vc2_conformance import vc2_math
 from vc2_conformance import arrays

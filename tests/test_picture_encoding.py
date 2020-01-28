@@ -2,7 +2,7 @@ import pytest
 
 from copy import deepcopy
 
-from vc2_conformance import tables
+import vc2_data_tables as tables
 
 from vc2_conformance.arrays import new_array, width, height
 

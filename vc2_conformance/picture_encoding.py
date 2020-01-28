@@ -9,7 +9,7 @@ This functionality is not specified by the standard but is used to generate
 simple bitstreams (and test cases) in this software (and its test suite).
 """
 
-from vc2_conformance.tables import LIFTING_FILTERS, LiftingFilterTypes
+from vc2_data_tables import LIFTING_FILTERS, LiftingFilterTypes
 
 from vc2_conformance.arrays import (
     new_array,

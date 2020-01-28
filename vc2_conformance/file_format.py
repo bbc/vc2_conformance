@@ -62,7 +62,7 @@ from collections import OrderedDict
 from vc2_conformance.vc2_math import intlog2
 from vc2_conformance.arrays import new_array
 
-from vc2_conformance.tables import (
+from vc2_data_tables import (
     ColorDifferenceSamplingFormats,
     PictureCodingModes,
 )
@@ -106,7 +106,7 @@ def write(picture, video_parameters, picture_coding_mode, filename):
     ==========
     picture : {"Y": [[s, ...], ...], "C1": ..., "C2": ..., "pic_num": int}
     video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
-    picture_coding_mode : :py:class:`~vc2_conformance.tables.PictureCodingModes`
+    picture_coding_mode : :py:class:`~vc2_data_tables.PictureCodingModes`
     filename : str
         The filename of either the picture data file (.raw) or metadata file
         (.json). The name of the other file will be inferred automatically.
@@ -137,7 +137,7 @@ def read(filename):
     =======
     picture : {"Y": [[s, ...], ...], "C1": ..., "C2": ..., "pic_num": int}
     video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
-    picture_coding_mode : :py:class:`~vc2_conformance.tables.PictureCodingModes`
+    picture_coding_mode : :py:class:`~vc2_data_tables.PictureCodingModes`
     """
     metadata_filename, picture_filename = get_metadata_and_picture_filenames(filename)
     
@@ -166,7 +166,7 @@ def compute_dimensions_and_depths(video_parameters, picture_coding_mode):
     Parameters
     ==========
     video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
-    picture_coding_mode : :py:class:`~vc2_conformance.tables.PictureCodingModes`
+    picture_coding_mode : :py:class:`~vc2_data_tables.PictureCodingModes`
     
     Returns
     =======
@@ -205,7 +205,7 @@ def write_picture(picture, video_parameters, picture_coding_mode, file):
     ==========
     picture : {"Y": [[s, ...], ...], "C1": ..., "C2": ..., "pic_num": int}
     video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
-    picture_coding_mode : :py:class:`~vc2_conformance.tables.PictureCodingModes`
+    picture_coding_mode : :py:class:`~vc2_data_tables.PictureCodingModes`
     file : :py:class:`file`
         A file open for binary writing.
     """
@@ -231,7 +231,7 @@ def write_metadata(picture, video_parameters, picture_coding_mode, file):
     ==========
     picture : {"Y": [[s, ...], ...], "C1": ..., "C2": ..., "pic_num": int}
     video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
-    picture_coding_mode : :py:class:`~vc2_conformance.tables.PictureCodingModes`
+    picture_coding_mode : :py:class:`~vc2_data_tables.PictureCodingModes`
     file : :py:class:`file`
         A file open for binary writing.
     """
@@ -261,7 +261,7 @@ def read_metadata(file):
     Returns
     =======
     video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
-    picture_coding_mode : :py:class:`~vc2_conformance.tables.PictureCodingModes`
+    picture_coding_mode : :py:class:`~vc2_data_tables.PictureCodingModes`
     picture_number : int
     """
     metadata = json.loads(file.read().decode("utf-8"))
@@ -280,7 +280,7 @@ def read_picture(video_parameters, picture_coding_mode, picture_number, file):
     Parameters
     ==========
     video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
-    picture_coding_mode : :py:class:`~vc2_conformance.tables.PictureCodingModes`
+    picture_coding_mode : :py:class:`~vc2_data_tables.PictureCodingModes`
     picture_number : int
     file : :py:class:`file`
         A file open for binary reading.
