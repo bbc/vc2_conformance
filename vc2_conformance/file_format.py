@@ -48,16 +48,21 @@ with the following fields:
 * ``picture_coding_mode``: The picture coding mode (11.5)
 * ``picture_number``: The picture number as a string (in base 10) because JSON
   always uses floats. (12.2) (14.2)
+* ``informative_picture_parameters``: An informative entry giving the
+  dimensions and bit depths of each picture component, for convenience.  For
+  normative purposes, this data should be computed using the procedure defined
+  in set_coding_parameters (11.6.1). Contains an object with keys "Y", "C1" and
+  "C2" containing objects with the following keys:
+  * ``width`` and ``height``: The dimensions of the picture component.
+  * ``depth_bits``: The number of bits per pixel.
+  * ``bytes_per_sample``: The number of bytes used to store each pixel.
 
-The dimensions and depth of the picture components in an associated picture
-data file can be computed using the procedure defined in set_coding_parameters
-(11.6.1).
 """
 
 import json
 import os
 
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 
 from vc2_conformance.vc2_math import intlog2
 from vc2_conformance.arrays import new_array
@@ -159,6 +164,24 @@ def read(filename):
     return (picture, video_parameters, picture_coding_mode)
 
 
+DimensionsAndDepths = namedtuple(
+    "DimensionsAndDepths",
+    "width,height,depth_bits,bytes_per_sample",
+)
+"""
+A set of picture component dimensions and bit depths.
+
+Parameters
+==========
+width, height : int
+    The dimensions of the picture.
+depth_bits : int
+    The number of bits per pixel.
+bytes_per_sample : int
+    The number of bytes used to store each pixel value.
+"""
+
+
 def compute_dimensions_and_depths(video_parameters, picture_coding_mode):
     """
     Compute the dimensions, bit depth and bytes-per-sample of a picture.
@@ -172,7 +195,8 @@ def compute_dimensions_and_depths(video_parameters, picture_coding_mode):
     =======
     OrderedDict
         An ordered dictionary mapping from component name ("Y", "C1" and "C2")
-        to a (width, height, depth_bits, bytes_per_sample) tuple.
+        to a :py:class:`DimensionsAndDepths`(width, height, depth_bits,
+        bytes_per_sample) namedtuple.
     """
     state = State()
     set_coding_parameters(state, video_parameters, picture_coding_mode)
@@ -192,7 +216,7 @@ def compute_dimensions_and_depths(video_parameters, picture_coding_mode):
         bytes_per_sample = (depth_bits + 7) // 8  # Round up to whole number of bytes
         bytes_per_sample = 1 << intlog2(bytes_per_sample)  # Round up to power of two
         
-        out[component] = (width, height, depth_bits, bytes_per_sample)
+        out[component] = DimensionsAndDepths(width, height, depth_bits, bytes_per_sample)
     
     return out
 
@@ -235,6 +259,7 @@ def write_metadata(picture, video_parameters, picture_coding_mode, file):
     file : :py:class:`file`
         A file open for binary writing.
     """
+    
     # Conversion below is necessary under Python 2.x where IntEnum values are
     # not correctly serialised as integers but instead into invalid JSON.
     file.write(json.dumps(
@@ -245,6 +270,13 @@ def write_metadata(picture, video_parameters, picture_coding_mode, file):
             },
             "picture_coding_mode": int(picture_coding_mode),
             "picture_number": str(picture["pic_num"]),
+            "informative_picture_parameters": {
+                component: params._asdict()
+                for component, params in compute_dimensions_and_depths(
+                    video_parameters,
+                    picture_coding_mode,
+                ).items()
+            }
         }
     ).encode("utf-8"))
 
