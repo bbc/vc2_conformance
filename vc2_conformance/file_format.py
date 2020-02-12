@@ -62,6 +62,11 @@ from vc2_conformance.arrays import new_array
 from vc2_data_tables import (
     ColorDifferenceSamplingFormats,
     PictureCodingModes,
+    ColorDifferenceSamplingFormats,
+    SourceSamplingModes,
+    ColorPrimariesParameters,
+    ColorMatrixParameters,
+    TransferFunctionParameters,
 )
 
 from vc2_conformance.state import State
@@ -257,7 +262,10 @@ def write_metadata(picture, video_parameters, picture_coding_mode, file):
     file.write(json.dumps(
         {
             "video_parameters": {
-                key: int(value) if isinstance(value, int) else value
+                key: int(value) if (
+                    isinstance(value, int) and
+                    not isinstance(value, bool)
+                ) else value
                 for key, value in video_parameters.items()
             },
             "picture_coding_mode": int(picture_coding_mode),
@@ -268,7 +276,7 @@ def write_metadata(picture, video_parameters, picture_coding_mode, file):
 
 def read_metadata(file):
     """
-    Read a JSON picture etadata file.
+    Read a JSON picture metadata file.
     
     Parameters
     ==========
@@ -283,11 +291,28 @@ def read_metadata(file):
     """
     metadata = json.loads(file.read().decode("utf-8"))
     
-    return (
-        metadata["video_parameters"],
-        metadata["picture_coding_mode"],
-        int(metadata["picture_number"]),
-    )
+    video_parameters = VideoParameters(metadata["video_parameters"])
+    
+    # Convert back into native types
+    for name, int_enum_type in [
+        ("color_diff_format_index", ColorDifferenceSamplingFormats),
+        ("source_sampling", SourceSamplingModes),
+    ]:
+        video_parameters[name] = int_enum_type(video_parameters[name])
+    
+    # Convert back into native namedtuple types
+    for name, named_tuple_type in [
+        ("color_primaries", ColorPrimariesParameters),
+        ("color_matrix", ColorMatrixParameters),
+        ("transfer_function", TransferFunctionParameters),
+    ]:
+        video_parameters[name] = named_tuple_type(*video_parameters[name])
+    
+    picture_coding_mode = PictureCodingModes(metadata["picture_coding_mode"])
+    
+    picture_number = int(metadata["picture_number"])
+    
+    return (video_parameters, picture_coding_mode, picture_number)
 
 
 def read_picture(video_parameters, picture_coding_mode, picture_number, file):

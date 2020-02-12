@@ -10,7 +10,7 @@ import json
 
 import vc2_data_tables as tables
 
-from vc2_conformance.video_parameters import VideoParameters
+from vc2_conformance.video_parameters import VideoParameters, set_source_defaults
 
 from vc2_conformance.file_format import (
     get_metadata_and_picture_filenames,
@@ -43,16 +43,22 @@ def picture():
 
 @pytest.fixture
 def video_parameters():
-    return VideoParameters(
-        frame_width=4,
-        frame_height=4,
-        color_diff_format_index=tables.ColorDifferenceSamplingFormats.color_4_2_0,
-        # 23-bit luma samples: Not a whole number of bytes and not nearest to a
-        # power-of-two bytes
-        luma_excursion=(1<<23) - 1,
-        # 8-bit color-diff samples: An exact number of bytes
-        color_diff_excursion=255,
-    )
+    video_parameters = set_source_defaults(tables.BaseVideoFormats.custom_format)
+    
+    # Low-resolution 4:2:0 format (matching the picture fixture above)
+    video_parameters["frame_width"] = 4
+    video_parameters["frame_height"] = 4
+    video_parameters["color_diff_format_index"] = tables.ColorDifferenceSamplingFormats.color_4_2_0
+    video_parameters["clean_width"] = 4
+    video_parameters["clean_height"] = 4
+    
+    # 23-bit luma samples: Not a whole number of bytes and not nearest to a
+    # power-of-two bytes
+    video_parameters["luma_excursion"] = (1<<23) - 1
+    # 8-bit color-diff samples: An exact number of bytes
+    video_parameters["color_diff_excursion"] = 255
+    
+    return video_parameters
 
 
 @pytest.fixture
@@ -60,20 +66,10 @@ def picture_coding_mode():
     return tables.PictureCodingModes.pictures_are_fields
 
 
-def test_write_picture_and_metadata(picture, video_parameters, picture_coding_mode):
+def test_write_picture(picture, video_parameters, picture_coding_mode):
     picture_file = BytesIO()
-    metadata_file = BytesIO()
     
     write_picture(picture, video_parameters, picture_coding_mode, picture_file)
-    write_metadata(picture, video_parameters, picture_coding_mode, metadata_file)
-    
-    # Check metadata
-    metadata_file.seek(0)
-    assert json.load(metadata_file) == {
-        "video_parameters": video_parameters,
-        "picture_coding_mode": tables.PictureCodingModes.pictures_are_fields,
-        "picture_number": str(0xDEADBEEF),
-    }
     
     # Check picture data
     picture_file.seek(0)
@@ -100,7 +96,7 @@ def test_write_picture_and_metadata(picture, video_parameters, picture_coding_mo
     assert picture_file.read() == b""
 
 
-def test_read_picture_and_metadata(picture, video_parameters, picture_coding_mode):
+def test_read_picture_and_read_and_write_metadata(picture, video_parameters, picture_coding_mode):
     picture_file = BytesIO()
     metadata_file = BytesIO()
     
@@ -114,7 +110,13 @@ def test_read_picture_and_metadata(picture, video_parameters, picture_coding_mod
         new_picture_number,
     ) = read_metadata(metadata_file)
     
+    # Check both values and types are restored
     assert new_video_parameters == video_parameters
+    assert (
+        {k: type(v) for k, v in video_parameters.items()} ==
+        {k: type(v) for k, v in new_video_parameters.items()}
+    )
+    
     assert new_picture_coding_mode == picture_coding_mode
     
     picture_file.seek(0)
