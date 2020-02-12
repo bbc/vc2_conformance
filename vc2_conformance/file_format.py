@@ -48,14 +48,6 @@ with the following fields:
 * ``picture_coding_mode``: The picture coding mode (11.5)
 * ``picture_number``: The picture number as a string (in base 10) because JSON
   always uses floats. (12.2) (14.2)
-* ``informative_picture_parameters``: An informative entry giving the
-  dimensions and bit depths of each picture component, for convenience.  For
-  normative purposes, this data should be computed using the procedure defined
-  in set_coding_parameters (11.6.1). Contains an object with keys "Y", "C1" and
-  "C2" containing objects with the following keys:
-  * ``width`` and ``height``: The dimensions of the picture component.
-  * ``depth_bits``: The number of bits per pixel.
-  * ``bytes_per_sample``: The number of bytes used to store each pixel.
 
 """
 
@@ -270,13 +262,6 @@ def write_metadata(picture, video_parameters, picture_coding_mode, file):
             },
             "picture_coding_mode": int(picture_coding_mode),
             "picture_number": str(picture["pic_num"]),
-            "informative_picture_parameters": {
-                component: params._asdict()
-                for component, params in compute_dimensions_and_depths(
-                    video_parameters,
-                    picture_coding_mode,
-                ).items()
-            }
         }
     ).encode("utf-8"))
 

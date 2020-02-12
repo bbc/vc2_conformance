@@ -73,26 +73,6 @@ def test_write_picture_and_metadata(picture, video_parameters, picture_coding_mo
         "video_parameters": video_parameters,
         "picture_coding_mode": tables.PictureCodingModes.pictures_are_fields,
         "picture_number": str(0xDEADBEEF),
-        "informative_picture_parameters": {
-            "Y": {
-                "width": 4,
-                "height": 2,
-                "depth_bits": 23,
-                "bytes_per_sample": 4,
-            },
-            "C1": {
-                "width": 2,
-                "height": 1,
-                "depth_bits": 8,
-                "bytes_per_sample": 1,
-            },
-            "C2": {
-                "width": 2,
-                "height": 1,
-                "depth_bits": 8,
-                "bytes_per_sample": 1,
-            },
-        },
     }
     
     # Check picture data
