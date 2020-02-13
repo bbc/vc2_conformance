@@ -15,3 +15,6 @@ pip-selfcheck.json
 *.pdf
 *.svg
 *.ods
+
+picture_*.raw
+picture_*.json
