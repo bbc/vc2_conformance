@@ -14,6 +14,7 @@ from vc2_conformance.video_parameters import VideoParameters, set_source_default
 
 from vc2_conformance.file_format import (
     get_metadata_and_picture_filenames,
+    get_picture_filename_pattern,
     read_metadata,
     read_picture,
     write_metadata,
@@ -27,6 +28,12 @@ def test_get_metadata_and_picture_filenames():
     assert get_metadata_and_picture_filenames("/foo/bar/.baz.xxx") == (
         "/foo/bar/.baz.json",
         "/foo/bar/.baz.raw",
+    )
+
+
+def test_get_picture_filename_pattern():
+    assert get_picture_filename_pattern("/foo/bar/.baz_123.raw") == (
+        "/foo/bar/.baz_%d.raw"
     )
 
 

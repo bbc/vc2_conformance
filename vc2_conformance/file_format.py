@@ -51,8 +51,9 @@ with the following fields:
 
 """
 
-import json
 import os
+import re
+import json
 
 from collections import OrderedDict, namedtuple
 
@@ -64,9 +65,9 @@ from vc2_data_tables import (
     PictureCodingModes,
     ColorDifferenceSamplingFormats,
     SourceSamplingModes,
-    ColorPrimariesParameters,
-    ColorMatrixParameters,
-    TransferFunctionParameters,
+    PresetColorPrimaries,
+    PresetColorMatrices,
+    PresetTransferFunctions,
 )
 
 from vc2_conformance.state import State
@@ -94,6 +95,17 @@ def get_metadata_and_picture_filenames(filename):
     return (
         "{}.json".format(base_name),
         "{}.raw".format(base_name),
+    )
+
+def get_picture_filename_pattern(filename):
+    """
+    Given the filename of a picture file (*.raw), return a version with the
+    number replaced with '%d'.
+    """
+    return re.sub(
+        r"(.*)_[0-9]+\.raw",
+        r"\1_%d.raw",
+        filename,
     )
 
 
@@ -297,16 +309,11 @@ def read_metadata(file):
     for name, int_enum_type in [
         ("color_diff_format_index", ColorDifferenceSamplingFormats),
         ("source_sampling", SourceSamplingModes),
+        ("preset_color_primaries_index", PresetColorPrimaries),
+        ("preset_color_matrix_index", PresetColorMatrices),
+        ("preset_transfer_function_index", PresetTransferFunctions),
     ]:
         video_parameters[name] = int_enum_type(video_parameters[name])
-    
-    # Convert back into native namedtuple types
-    for name, named_tuple_type in [
-        ("color_primaries", ColorPrimariesParameters),
-        ("color_matrix", ColorMatrixParameters),
-        ("transfer_function", TransferFunctionParameters),
-    ]:
-        video_parameters[name] = named_tuple_type(*video_parameters[name])
     
     picture_coding_mode = PictureCodingModes(metadata["picture_coding_mode"])
     

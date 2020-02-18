@@ -73,11 +73,11 @@ VideoParameters = fixeddict(
     Entry("color_diff_offset"),
     Entry("color_diff_excursion"),
     # (11.4.10.2) color_primaries
-    Entry("color_primaries"),
+    Entry("preset_color_primaries_index", enum=PresetColorPrimaries),
     # (11.4.10.3) color_matrix
-    Entry("color_matrix"),
+    Entry("preset_color_matrix_index", enum=PresetColorMatrices),
     # (11.4.10.4) transfer_function
-    Entry("transfer_function"),
+    Entry("preset_transfer_function_index", enum=PresetTransferFunctions),
 )
 """(11.4) Video parameters struct."""
 ref_value(VideoParameters, "11.4")
@@ -112,9 +112,9 @@ def set_source_defaults(base_video_format):
         luma_excursion=preset_signal_ranges.luma_excursion,
         color_diff_offset=preset_signal_ranges.color_diff_offset,
         color_diff_excursion=preset_signal_ranges.color_diff_excursion,
-        color_primaries=PRESET_COLOR_PRIMARIES[preset_color_spec.color_primaries_index],
-        color_matrix=PRESET_COLOR_MATRICES[preset_color_spec.color_matrix_index],
-        transfer_function=PRESET_TRANSFER_FUNCTIONS[preset_color_spec.transfer_function_index],
+        preset_color_primaries_index=preset_color_spec.color_primaries_index,
+        preset_color_matrix_index=preset_color_spec.color_matrix_index,
+        preset_transfer_function_index=preset_color_spec.transfer_function_index,
     )
 
 @ref_pseudocode
@@ -174,17 +174,17 @@ def preset_signal_range(video_parameters, index):
 @ref_pseudocode(deviation="inferred_implementation")
 def preset_color_primaries(video_parameters, index):
     """(11.4.10.2) Set the color primaries parameter from a preset."""
-    video_parameters["color_primaries"] = PRESET_COLOR_PRIMARIES[index]
+    video_parameters["preset_color_primaries_index"] = index
 
 @ref_pseudocode(deviation="inferred_implementation")
 def preset_color_matrix(video_parameters, index):
     """(11.4.10.3) Set the color matrix parameter from a preset."""
-    video_parameters["color_matrix"] = PRESET_COLOR_MATRICES[index]
+    video_parameters["preset_color_matrix_index"] = index
 
 @ref_pseudocode(deviation="inferred_implementation")
 def preset_transfer_function(video_parameters, index):
     """(11.4.10.4) Set the transfer function parameter from a preset."""
-    video_parameters["transfer_function"] = PRESET_TRANSFER_FUNCTIONS[index]
+    video_parameters["preset_transfer_function_index"] = index
 
 @ref_pseudocode(deviation="inferred_implementation")
 def preset_color_spec(video_parameters, index):
