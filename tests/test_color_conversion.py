@@ -254,11 +254,10 @@ def test_from_444_all_formats_supported(format):
 def test_to_444(format):
     a = np.arange(6 * 4, dtype=float).reshape(6, 4)
     
-    if format == ColorDifferenceSamplingFormats.color_4_4_4:
-        assert np.array_equal(to_444(a, format), a)
-    else:
-        with pytest.raises(NotImplementedError):
-            to_444(a, format)
+    upsampled = to_444(a, format)
+    downsampled = from_444(upsampled, format)
+    
+    assert np.array_equal(a, downsampled)
 
 
 def test_to_xyz():

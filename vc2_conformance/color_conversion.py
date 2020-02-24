@@ -677,14 +677,18 @@ def to_444(chroma, subsampling):
     
     .. warning::
         
-        This function is currently not implemented and will raise
-        :py:exc:`NotImplementedError` when provided anything other than a 4:4:4
-        format.
+        This function uses an extremely crude anti-aliasing filter during
+        upsampling which is likely to produce artefacts. As such, pictures
+        produced by this function should not be used for anything where high
+        fidelity is required.
     """
     if subsampling == ColorDifferenceSamplingFormats.color_4_4_4:
         return chroma
-    else:
-        raise NotImplementedError("Only 4:4:4 sampling currently supported")
+    elif subsampling == ColorDifferenceSamplingFormats.color_4_2_2:
+        return np.repeat(chroma, 2, axis=1)
+    elif subsampling == ColorDifferenceSamplingFormats.color_4_2_0:
+        return np.repeat(np.repeat(chroma, 2, axis=1), 2, axis=0)
+
 
 
 ################################################################################
