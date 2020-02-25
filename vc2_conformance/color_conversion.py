@@ -87,6 +87,8 @@ evaluation of certain transform steps.
 
 .. autofunction:: matmul_colors
 
+.. autofunction:: swap_primaries
+
 """
 
 import numpy as np
@@ -108,7 +110,6 @@ from vc2_conformance.vc2_math import intlog2
 __all__ = [
     "to_xyz",
     "from_xyz",
-    "matmul_colors",
     "float_to_int",
     "int_to_float",
     "from_444",
@@ -119,6 +120,8 @@ __all__ = [
     "INVERSE_TRANSFER_FUNCTIONS",
     "XYZ_TO_LINEAR_RGB",
     "LINEAR_RGB_TO_XYZ",
+    "matmul_colors",
+    "swap_primaries",
 ]
 
 
@@ -879,3 +882,37 @@ def matmul_colors(matrix, array):
         matrix,
         array.reshape(-1, 3).T,
     ).T.reshape(array.shape)
+
+
+def swap_primaries(xyz, video_parameters_before, video_parameters_after):
+    r"""
+    Given an image defined in terms of one set of primaries, return a new image
+    defined in terms of a different set of primaries but with the same
+    numerical R, G and B values under the new set of primaries.
+    
+    This transformation is useful when an image is defined not by absolute
+    colours but rather colors relative to whatever primaries are in use. For
+    example, a test pattern designed to show swatches of pure color primaries
+    may be given relative to a particular set of primaries but needs to be
+    adapted for use with another set of primaries.
+    
+    Parameters
+    ==========
+    xyz : :math:`3 \times 3` array (height, width, 3)
+    video_parameters_before : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+    video_parameters_after : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+    
+    Returns
+    =======
+    xyz : :math:`3 \times 3` array (height, width, 3)
+    """
+    xyz_to_linear_rgb_before = XYZ_TO_LINEAR_RGB[
+        video_parameters_before["preset_color_primaries_index"]
+    ]
+    linear_rgb_after_to_xyz = LINEAR_RGB_TO_XYZ[
+        video_parameters_after["preset_color_primaries_index"]
+    ]
+    
+    m = np.matmul(linear_rgb_after_to_xyz, xyz_to_linear_rgb_before)
+    
+    return matmul_colors(m, xyz)

@@ -30,6 +30,7 @@ from vc2_conformance.color_conversion import (
     to_xyz,
     from_xyz,
     matmul_colors,
+    swap_primaries,
 )
 
 
@@ -426,3 +427,36 @@ def test_matmul_colors():
     assert np.array_equal(new_rgb[:, :, 0], old_r * 2)
     assert np.array_equal(new_rgb[:, :, 1], old_g * 3)
     assert np.array_equal(new_rgb[:, :, 2], old_b * 4)
+
+
+def test_swap_primaries():
+    vp_before = VideoParameters(
+        preset_color_primaries_index=PresetColorPrimaries.hdtv,
+    )
+    vp_after = VideoParameters(
+        preset_color_primaries_index=PresetColorPrimaries.uhdtv,
+    )
+    
+    linear_rgb_before = np.array([
+        [[0, 0, 0], [0.5, 0.5, 0.5], [1, 1, 1]],
+        [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+    ])
+    
+    xyz_before = matmul_colors(
+        LINEAR_RGB_TO_XYZ[vp_before["preset_color_primaries_index"]],
+        linear_rgb_before,
+    )
+    
+    xyz_after = swap_primaries(
+        xyz_before,
+        vp_before,
+        vp_after,
+    )
+    
+    linear_rgb_after = matmul_colors(
+        XYZ_TO_LINEAR_RGB[vp_after["preset_color_primaries_index"]],
+        xyz_after,
+    )
+    
+    assert not np.all(np.isclose(xyz_before, xyz_after))
+    assert np.all(np.isclose(linear_rgb_before, linear_rgb_after))
