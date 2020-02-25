@@ -29,6 +29,7 @@ from vc2_conformance.color_conversion import (
     to_444,
     to_xyz,
     from_xyz,
+    matmul_colors,
 )
 
 
@@ -405,3 +406,23 @@ def test_to_xyz_and_from_xyz_roundtrip(
     assert np.array_equal(y, new_y)
     assert np.array_equal(c1, new_c1)
     assert np.array_equal(c2, new_c2)
+
+
+def test_matmul_colors():
+    old_r = np.arange(5 * 7).reshape(5, 7)
+    old_g = old_r * 10
+    old_b = old_r * 100
+    
+    old_rgb = np.stack([old_r, old_g, old_b], axis=-1)
+    
+    m = np.array([
+        [2, 0, 0],
+        [0, 3, 0],
+        [0, 0, 4],
+    ])
+    
+    new_rgb = matmul_colors(m, old_rgb)
+    
+    assert np.array_equal(new_rgb[:, :, 0], old_r * 2)
+    assert np.array_equal(new_rgb[:, :, 1], old_g * 3)
+    assert np.array_equal(new_rgb[:, :, 2], old_b * 4)

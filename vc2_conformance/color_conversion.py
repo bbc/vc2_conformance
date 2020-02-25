@@ -78,6 +78,15 @@ implemented based on the specifications cited by the VC-2 specification.
 
 .. autodata:: LINEAR_RGB_TO_XYZ
 
+
+Additional utility functions
+----------------------------
+
+The following additional utility functions are provided for the manual
+evaluation of certain transform steps.
+
+.. autofunction:: matmul_colors
+
 """
 
 import numpy as np
@@ -99,6 +108,7 @@ from vc2_conformance.vc2_math import intlog2
 __all__ = [
     "to_xyz",
     "from_xyz",
+    "matmul_colors",
     "float_to_int",
     "int_to_float",
     "from_444",
@@ -857,3 +867,15 @@ def from_xyz(xyz, video_parameters):
     )
     
     return (y_int, c1_int, c2_int)
+
+
+def matmul_colors(matrix, array):
+    r"""
+    Given a (height, width, 3) 3D array, return a new 3D array where each
+    triple in the first array has been multiplied by the specified :math:`3
+    \times 3` matrix.
+    """
+    return np.matmul(
+        matrix,
+        array.reshape(-1, 3).T,
+    ).T.reshape(array.shape)
