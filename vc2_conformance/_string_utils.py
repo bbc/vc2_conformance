@@ -143,7 +143,7 @@ def table(table_strings, column_sep="  ", indent_prefix="  "):
             for row in table_strings
         )
 
-def split_into_line_wrap_blocks(text):
+def split_into_line_wrap_blocks(text, wrap_indented_blocks=False):
     """
     Split a multi-line string into blocks of text which should be line-wrapped
     independently.
@@ -151,6 +151,9 @@ def split_into_line_wrap_blocks(text):
     For example given a Python string defined like so::
     
         '''
+            A markdown style title
+            ======================
+            
             This is a string with some initial indentation
             and also some hard line-wraps inserted too. This
             paragraph ought to be line-wrapped as an
@@ -165,11 +168,18 @@ def split_into_line_wrap_blocks(text):
               as shown here).
             * Notice that bullets don't have a newline
               between them like paragraphs to.
+            
+            1. Numbered lists are also supported.
+            2. Here long lines will be line wrapped in much
+               the same way as a bulleted list.
         
             Finally:
         
-                An intended block will also remain indented,
-                even if it is line wrapped.
+                An intended block will also remain indented.
+                However, if wrap_indented_blocks is False, the
+                existing linebreaks will be retained (e.g. for
+                markdown-style code blocks). If set to True,
+                the indented block will be line-wrapped.
         '''
     
     This will be split into independently line wrappable segments (as
@@ -197,11 +207,15 @@ def split_into_line_wrap_blocks(text):
     block_lines = [""]
     for line in text.splitlines():
         # Start a new block if we encounter an empty line (between paragraphs)
-        # or a bullet point.
+        # or a bullet point/number.
         if line.rstrip() == "":
             block_lines.append("")
             block_lines.append("")
-        elif line.startswith("* "):
+        elif re.match(r"^([*]\s+|[0-9]+[.]\s+|-+$|=+$)", line):
+            block_lines.append("")
+        elif not wrap_indented_blocks and re.match(r"^\s+", block_lines[-1]):
+            # When block wrapping is disabled, start a new line for every line
+            # in the block
             block_lines.append("")
         
         # Retain indentation of first non-empty line in block
@@ -229,16 +243,16 @@ def split_into_line_wrap_blocks(text):
     
     out = []
     for block_line in block_lines:
-        if block_line.startswith("* "):
-            out.append(("* ", "  ", block_line[2:].rstrip()))
+        prefix, text = re.match(r"^([*]\s+|[0-9]+[.]\s+|\s*)(.*)$", block_line).groups((1, 2))
+        if len(prefix.strip()) > 0:
+            out.append((prefix, " "*len(prefix), text.rstrip()))
         else:
-            indent, text = re.match(r"^(\s*)(.*)$", block_line).groups((1, 2))
-            out.append((indent, indent, text.rstrip()))
+            out.append((prefix, prefix, text.rstrip()))
     
     return out
 
 
-def wrap_blocks(blocks, width=None):
+def wrap_blocks(blocks, width=None, wrap_indented_blocks=False):
     """
     Return a line-wrapped version of a series of text blocks as produced by
     :py:func:`split_into_line_wrap_blocks`.
@@ -247,10 +261,22 @@ def wrap_blocks(blocks, width=None):
     to output.
     
     If 'width' is None, assumes an infinate line width.
+    
+    If 'wrap_indented_blocks' is False (the default) indented (markdown-style)
+    code blocks will not be line wrapped while other indented blocks (e.g.
+    bullets) will be.
     """
     return "\n".join(
         first_indent + ("\n" + rest_indent).join(
-            wrap(text, width - len(first_indent))
+            (
+                wrap(text, width - len(first_indent))
+                if (
+                    wrap_indented_blocks or
+                    len(first_indent) == 0 or
+                    first_indent != rest_indent
+                ) else
+                [text]
+            )
             if width is not None else
             [text]
         )
@@ -258,11 +284,20 @@ def wrap_blocks(blocks, width=None):
     )
 
 
-def wrap_paragraphs(text, width=None):
+def wrap_paragraphs(text, width=None, wrap_indented_blocks=False):
     """
-    Re-wrap a string containing one or more hard-line-wrapped paragraphs and
-    bullet points (see :py:func:`split_into_line_wrap_blocks`).
+    Re-wrap a string containing one or more hard-line-wrapped paragraphs,
+    bullet points, numbered lists and code blocks (see
+    :py:func:`split_into_line_wrap_blocks`).
     
     If 'width' is None, assumes an infinate line width.
+    
+    If 'wrap_indented_blocks' is False (the default) indented (markdown-style)
+    code blocks will not be line wrapped while other indented blocks (e.g.
+    bullets) will be.
     """
-    return wrap_blocks(split_into_line_wrap_blocks(text), width)
+    return wrap_blocks(
+        split_into_line_wrap_blocks(text, wrap_indented_blocks),
+        width,
+        wrap_indented_blocks,
+    )
