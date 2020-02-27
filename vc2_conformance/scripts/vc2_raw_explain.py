@@ -754,8 +754,8 @@ def explain_imagemagick_command(picture_filename, video_parameters, picture_codi
     out += "\n"
     
     out += "This command is provided as a minimal example for basic viewing "
-    out += "of pictures. Interlacing, pixel aspect ratios and correct color "
-    out += "model conversion are not supported."
+    out += "of pictures. Interlacing and correct color model conversion are "
+    out += "not implemented."
     
     return out
 
