@@ -250,9 +250,10 @@ class CommandExplainer(object):
     """
     
     def __init__(self, prefix=""):
-        self.command = prefix
+        self.prefix = prefix
+        self.command = ""
         
-        # [(start, end, note), ...]
+        # [(fragment, note), ...]
         self.notes = []
     
     def append(self, fragment, note=None, strip=True):
@@ -273,13 +274,12 @@ class CommandExplainer(object):
         
         if note is not None:
             if strip:
-                start = len(self.command) - len(fragment.lstrip())
-                end = len(self.command) - len(fragment) + len(fragment.rstrip())
+                self.notes.append((fragment.strip(), note))
             else:
-                start = len(self.command) - len(fragment)
-                end = len(self.command)
-            
-            self.notes.append((start, end, note))
+                self.notes.append((fragment, note))
+    
+    def append_linebreak(self):
+        self.append(" \\\n  ")
     
     def explain(self):
         """
@@ -287,45 +287,20 @@ class CommandExplainer(object):
         """
         out = ""
         
-        out += "    {}\n".format(self.command)
+        out += "    {}{}\n".format(
+            self.prefix,
+            indent(self.command, "    " + " "*len(self.prefix)).lstrip(),
+        )
         
+        # Add list of explanations
         if self.notes:
-            # Draw ASCII brackets under each part of the command
-            brackets = [" "] * (len(self.command) + 1)
-            for start, end, _ in self.notes:
-                if end - start <= 1:
-                    brackets[start] = "|"
-                elif end - start == 2:
-                    brackets[start + 0] = "`"
-                    brackets[start + 1] = "|"
-                else:
-                    for i in range(start, end):
-                        if i == start or i == end -1:
-                            brackets[i] = "'"
-                        elif i == (start + end) // 2:
-                            brackets[i] = ","
-                        else:
-                            brackets[i] = "-"
-            out += "    {}\n".format("".join(brackets).rstrip())
-            
-            # Label each bracket with a number
-            number_strings = list(map(str, range(1, len(self.notes) + 1)))
-            max_digits = len(number_strings[-1])
-            number_strings = [n.ljust(max_digits) for n in number_strings]
-            stacked_number_strings = zip(*number_strings)
-            for digits in stacked_number_strings:
-                numbers = [" "] * (len(self.command) + 1)
-                for i, (start, end, _) in enumerate(self.notes):
-                    numbers[(start + end)//2] = digits[i]
-                out += "    {}\n".format("".join(numbers).rstrip())
-            
+            out += "\n"
+            out += "Where:\n"
             out += "\n"
             
-            # Add list of explanations
-            for i, (start, end, note) in enumerate(self.notes):
-                out += "{}. `{}`: {}\n".format(
-                    i + 1,
-                    self.command[start:end],
+            for (fragment, note) in self.notes:
+                out += "* `{}` = {}\n".format(
+                    fragment,
                     note,
                 )
         
@@ -373,12 +348,12 @@ def example_ffmpeg_command(picture_filename, video_parameters, picture_coding_mo
     
     command.append("ffplay")
     
-    
     #------------------------------------------------------------------------
     # Set input image format
     #------------------------------------------------------------------------
     
-    command.append(" -f image2", "Read pictures from individual files")
+    command.append_linebreak()
+    command.append("-f image2", "Read pictures from individual files")
     
     
     #------------------------------------------------------------------------
@@ -390,8 +365,9 @@ def example_ffmpeg_command(picture_filename, video_parameters, picture_coding_mo
         picture_coding_mode,
     )
     
+    command.append_linebreak()
     command.append(
-        " -video_size {}x{}".format(
+        "-video_size {}x{}".format(
             dimensions_and_depths["Y"].width,
             dimensions_and_depths["Y"].height,
         ),
@@ -404,8 +380,10 @@ def example_ffmpeg_command(picture_filename, video_parameters, picture_coding_mo
     #------------------------------------------------------------------------
     
     frame_rate = Fraction(video_parameters["frame_rate_numer"], video_parameters["frame_rate_denom"])
+    
+    command.append_linebreak()
     command.append(
-        " -framerate {}".format(
+        "-framerate {}".format(
             frame_rate
             if picture_coding_mode == PictureCodingModes.pictures_are_frames else
             frame_rate * 2
@@ -418,7 +396,8 @@ def example_ffmpeg_command(picture_filename, video_parameters, picture_coding_mo
     # Set pixel format (e.g. RGB-vs-YCbCr, bit depth, color subsampling)
     #------------------------------------------------------------------------
     
-    command.append(" -pixel_format ", "Specifies raw picture encoding.")
+    command.append_linebreak()
+    command.append("-pixel_format ", "Specifies raw picture encoding.")
     
     if is_rgb_color(video_parameters):
         command.append("gbr", "RGB colour.")
@@ -471,13 +450,13 @@ def example_ffmpeg_command(picture_filename, video_parameters, picture_coding_mo
             dimensions_and_depths["Y"].depth_bits
         ))
     
-    
     #------------------------------------------------------------------------
     # Input file format
     #------------------------------------------------------------------------
     
+    command.append_linebreak()
     command.append(
-        " -i {}".format(get_picture_filename_pattern(picture_filename)),
+        "-i {}".format(get_picture_filename_pattern(picture_filename)),
         "Input raw picture filename pattern",
     )
     
@@ -540,7 +519,8 @@ def example_ffmpeg_command(picture_filename, video_parameters, picture_coding_mo
         ))
     
     if vf_args:
-        command.append(" -vf ", "define a pipeline of video filtering operations")
+        command.append_linebreak()
+        command.append("-vf ", "define a pipeline of video filtering operations")
         for args in vf_args:
             command.append(*args)
     
@@ -586,8 +566,9 @@ def example_imagemagick_command(picture_filename, video_parameters, picture_codi
         picture_coding_mode,
     )
     
+    command.append_linebreak()
     command.append(
-        " -size {}x{}".format(
+        "-size {}x{}".format(
             dimensions_and_depths["Y"].width,
             dimensions_and_depths["Y"].height,
         ),
@@ -611,7 +592,8 @@ def example_imagemagick_command(picture_filename, video_parameters, picture_codi
     
     bytes_per_sample = dimensions_and_depths["Y"].bytes_per_sample
     if bytes_per_sample == 1:
-        command.append(" -depth 8", "8 bit values.")
+        command.append_linebreak()
+        command.append("-depth 8", "8 bit values.")
     else:
         raise UnsupportedPictureFormat("Unsupported bit depth: {} bits".format(
             dimensions_and_depths["Y"].depth_bits
@@ -637,8 +619,9 @@ def example_imagemagick_command(picture_filename, video_parameters, picture_codi
         color_difference_sampling_format = COLOR_DIFF_FORMAT_NAMES[
             video_parameters["color_diff_format_index"]
         ]
+        command.append_linebreak()
         command.append(
-            " -sampling-factor {}".format(color_difference_sampling_format),
+            "-sampling-factor {}".format(color_difference_sampling_format),
             "{} color difference subsampling.".format(
                 color_difference_sampling_format,
             ),
@@ -648,26 +631,29 @@ def example_imagemagick_command(picture_filename, video_parameters, picture_codi
     # Planar video format
     #------------------------------------------------------------------------
     
-    command.append(" -interlace plane", "Planar format (not related to video interlace mode).")
+    command.append_linebreak()
+    command.append("-interlace plane", "Planar format (not related to video interlace mode).")
     
     #------------------------------------------------------------------------
     # Colorspace
     #------------------------------------------------------------------------
     
-    command.append(" -colorspace sRGB", "Display as if using sRGB color.")
+    command.append_linebreak()
+    command.append("-colorspace sRGB", "Display as if using sRGB color.")
     
     #------------------------------------------------------------------------
     # Input file
     #------------------------------------------------------------------------
     
+    command.append_linebreak()
     if is_rgb_color(video_parameters):
         command.append(
-            " rgb:".format(picture_filename),
+            "rgb:".format(picture_filename),
             "Input is RGB picture.",
         )
     else:
         command.append(
-            " yuv:".format(picture_filename),
+            "yuv:".format(picture_filename),
             "Input is Y C1 C2 picture.",
         )
     
@@ -678,8 +664,9 @@ def example_imagemagick_command(picture_filename, video_parameters, picture_codi
     #------------------------------------------------------------------------
     
     if is_rgb_color(video_parameters):
+        command.append_linebreak()
         command.append(
-            " -separate -swap 1,2 -swap 0,1 -combine".format(picture_filename),
+            "-separate -swap 1,2 -swap 0,1 -combine".format(picture_filename),
             "Change from GRB to RGB channel order (expected by ImageMagick).",
         )
     
@@ -691,8 +678,9 @@ def example_imagemagick_command(picture_filename, video_parameters, picture_codi
         video_parameters["pixel_aspect_ratio_denom"],
     )
     if pixel_aspect_ratio != 1:
+        command.append_linebreak()
         command.append(
-            " -resize {}%,100%".format(
+            "-resize {}%,100%".format(
                 float(pixel_aspect_ratio*100)
             ),
             "rescale non-square pixels for display with square pixels",
@@ -702,8 +690,9 @@ def example_imagemagick_command(picture_filename, video_parameters, picture_codi
     # Output file (PNG)
     #------------------------------------------------------------------------
     
+    command.append_linebreak()
     command.append(
-        " png24:{}png".format(picture_filename[:-3]),
+        "png24:{}png".format(picture_filename[:-3]),
         "Save as 24-bit PNG (e.g. 8 bit channels)",
     )
     

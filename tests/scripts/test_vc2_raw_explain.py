@@ -281,71 +281,18 @@ class TestCommandExplainer(object):
         assert c.command == "foo barbaz"
         assert c.explain() == "    foo barbaz"
     
-    def test_zero_char_note(self):
-        c = CommandExplainer()
-        c.append("foo bar")
-        c.append("", "zero")
-        assert c.command == "foo bar"
-        assert c.explain() == (
-            "    foo bar\n"
-            "           |\n"
-            "           1\n"
-            "\n"
-            "1. ``: zero"
-        )
     
-    def test_single_char_note(self):
-        c = CommandExplainer()
-        c.append("foo bar")
-        c.append(" > ", "redirect to file")
-        c.append("baz")
-        assert c.command == "foo bar > baz"
-        assert c.explain() == (
-            "    foo bar > baz\n"
-            "            |\n"
-            "            1\n"
-            "\n"
-            "1. `>`: redirect to file"
-        )
-    
-    def test_two_char_note(self):
-        c = CommandExplainer()
-        c.append("foo bar")
-        c.append(" >> ", "append to file")
-        c.append("baz")
-        assert c.command == "foo bar >> baz"
-        assert c.explain() == (
-            "    foo bar >> baz\n"
-            "            `|\n"
-            "             1\n"
-            "\n"
-            "1. `>>`: append to file"
-        )
-    
-    def test_three_char_note(self):
+    def test_note(self):
         c = CommandExplainer()
         c.append("foo bar")
         c.append(" baz", "an argument")
         assert c.command == "foo bar baz"
         assert c.explain() == (
             "    foo bar baz\n"
-            "            ','\n"
-            "             1\n"
             "\n"
-            "1. `baz`: an argument"
-        )
-    
-    def test_long_note(self):
-        c = CommandExplainer()
-        c.append("foo bar")
-        c.append(" -o file", "write to file")
-        assert c.command == "foo bar -o file"
-        assert c.explain() == (
-            "    foo bar -o file\n"
-            "            '--,--'\n"
-            "               1\n"
+            "Where:\n"
             "\n"
-            "1. `-o file`: write to file"
+            "* `baz` = an argument"
         )
     
     def test_strip(self):
@@ -358,52 +305,12 @@ class TestCommandExplainer(object):
         assert c.command == "foo no strip | with strip | bar"
         assert c.explain() == (
             "    foo no strip | with strip | bar\n"
-            "       '----,---'  '----,---'\n"
-            "            1           2\n"
             "\n"
-            "1. ` no strip `: no strip\n"
-            "2. `with strip`: with strip"
-        )
-    
-    def test_multiple_digits(self):
-        c = CommandExplainer()
-        c.append("foo")
-        c.append(" a", "one")
-        c.append(" b", "two")
-        c.append(" c", "three")
-        c.append(" d", "four")
-        c.append(" e", "five")
-        c.append(" f", "six")
-        c.append(" g", "seven")
-        c.append(" h", "eight")
-        c.append(" i", "nine")
-        c.append(" j", "ten")
-        c.append(" k", "eleven")
-        c.append(" l", "twelve")
-        c.append(" end", "thirteen")
-        
-        assert c.command == "foo a b c d e f g h i j k l end"
-        assert c.explain() == (
-            "    foo a b c d e f g h i j k l end\n"
-            "        | | | | | | | | | | | | ','\n"
-            "        1 2 3 4 5 6 7 8 9 1 1 1  1\n"
-            "                          0 1 2  3\n"
+            "Where:\n"
             "\n"
-            "1. `a`: one\n"
-            "2. `b`: two\n"
-            "3. `c`: three\n"
-            "4. `d`: four\n"
-            "5. `e`: five\n"
-            "6. `f`: six\n"
-            "7. `g`: seven\n"
-            "8. `h`: eight\n"
-            "9. `i`: nine\n"
-            "10. `j`: ten\n"
-            "11. `k`: eleven\n"
-            "12. `l`: twelve\n"
-            "13. `end`: thirteen"
+            "* ` no strip ` = no strip\n"
+            "* `with strip` = with strip"
         )
-
 
 def write_pictures_to_dir(
     picture_generator,
@@ -466,9 +373,9 @@ class TestExampleFFMPEGCommand(object):
         into an FFMPEG command which outputs PNGs to the specified directory
         with names of the form "frame_%d.png".
         """
-        assert ffplay_command.startswith("$ ffplay ")
+        assert ffplay_command.startswith("ffplay ")
         
-        just_arguments = ffplay_command[len("$ ffplay"):]
+        just_arguments = ffplay_command[len("ffplay"):]
         
         ffmpeg_command = "ffmpeg {} {}".format(
             just_arguments,
@@ -526,7 +433,7 @@ class TestExampleFFMPEGCommand(object):
             picture_coding_mode,
         ).command
         ffmpeg_command = self.ffplay_to_ffmpeg(ffplay_command, working_dir)
-        subprocess.check_call(shlex.split(ffmpeg_command))
+        subprocess.check_call(shlex.split(ffmpeg_command.replace("\\\n", " ")))
         
         # Read in PNGs
         frames = self.read_png_frames(working_dir)
@@ -610,7 +517,7 @@ class TestExampleFFMPEGCommand(object):
         ffmpeg_command = ffmpeg_command.replace(",yadif", "")
         
         # Run FFMPEG
-        subprocess.check_call(shlex.split(ffmpeg_command))
+        subprocess.check_call(shlex.split(ffmpeg_command.replace("\\\n", " ")))
         
         # Read in PNG (should just be one)
         frames = self.read_png_frames(working_dir)
@@ -676,7 +583,7 @@ class TestExampleFFMPEGCommand(object):
             picture_coding_mode,
         ).command
         ffmpeg_command = self.ffplay_to_ffmpeg(ffplay_command, working_dir)
-        subprocess.check_call(shlex.split(ffmpeg_command))
+        subprocess.check_call(shlex.split(ffmpeg_command.replace("\\\n", " ")))
         
         # Read in PNG
         frames = self.read_png_frames(working_dir)
@@ -748,7 +655,7 @@ class TestExampleFFMPEGCommand(object):
         
         # Transcode to PNG format frames using FFMPEG
         ffmpeg_command = self.ffplay_to_ffmpeg(ffplay_command, working_dir)
-        subprocess.check_call(shlex.split(ffmpeg_command))
+        subprocess.check_call(shlex.split(ffmpeg_command.replace("\\\n", " ")))
         
         # Read in PNG
         frames = self.read_png_frames(working_dir)
@@ -876,9 +783,7 @@ class TestExampleImageMagickCommand(object):
             video_parameters,
             picture_coding_mode,
         ).command
-        assert convert_command[:2] == "$ "
-        convert_command = convert_command[2:]
-        subprocess.check_call(shlex.split(convert_command))
+        subprocess.check_call(shlex.split(convert_command.replace("\\\n", " ")))
         
         # Read in PNG
         frame = self.read_png_picture(filename)
@@ -950,9 +855,7 @@ class TestExampleImageMagickCommand(object):
         )
         
         # Transcode to PNG format frames using ImageMagick
-        assert convert_command[:2] == "$ "
-        convert_command = convert_command[2:]
-        subprocess.check_call(shlex.split(convert_command))
+        subprocess.check_call(shlex.split(convert_command.replace("\\\n", " ")))
         
         # Read in PNG
         frame = self.read_png_picture(filename)
