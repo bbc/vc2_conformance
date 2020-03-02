@@ -241,10 +241,10 @@ class TestIterCustomOptionsDicts(object):
         # Values match
         (
             VideoParameters(
-                preset_color_primaries_index=PresetColorPrimaries.hdtv,
+                color_primaries_index=PresetColorPrimaries.hdtv,
             ),
             VideoParameters(
-                preset_color_primaries_index=PresetColorPrimaries.hdtv,
+                color_primaries_index=PresetColorPrimaries.hdtv,
             ),
             [
                 ColorPrimaries(
@@ -259,10 +259,10 @@ class TestIterCustomOptionsDicts(object):
         # Values don't match
         (
             VideoParameters(
-                preset_color_primaries_index=PresetColorPrimaries.uhdtv,
+                color_primaries_index=PresetColorPrimaries.uhdtv,
             ),
             VideoParameters(
-                preset_color_primaries_index=PresetColorPrimaries.hdtv,
+                color_primaries_index=PresetColorPrimaries.hdtv,
             ),
             [
                 ColorPrimaries(
@@ -278,7 +278,7 @@ class TestIterCustomOptionsDicts(object):
             vp,
             dict_type=ColorPrimaries,
             flag_key="custom_color_primaries_flag",
-            parameters=[("preset_color_primaries_index", "index")],
+            parameters=[("color_primaries_index", "index")],
         ))
         
         assert dicts == exp
@@ -288,14 +288,14 @@ class TestIterCustomOptionsDicts(object):
     # Built-in combination, optionally specified
     (
         VideoParameters(
-            preset_color_primaries_index=PresetColorPrimaries.hdtv,
-            preset_color_matrix_index=PresetColorMatrices.hdtv,
-            preset_transfer_function_index=PresetTransferFunctions.tv_gamma,
+            color_primaries_index=PresetColorPrimaries.hdtv,
+            color_matrix_index=PresetColorMatrices.hdtv,
+            transfer_function_index=PresetTransferFunctions.tv_gamma,
         ),
         VideoParameters(
-            preset_color_primaries_index=PresetColorPrimaries.hdtv,
-            preset_color_matrix_index=PresetColorMatrices.hdtv,
-            preset_transfer_function_index=PresetTransferFunctions.tv_gamma,
+            color_primaries_index=PresetColorPrimaries.hdtv,
+            color_matrix_index=PresetColorMatrices.hdtv,
+            transfer_function_index=PresetTransferFunctions.tv_gamma,
         ),
         [
             ColorSpec(
@@ -339,14 +339,14 @@ class TestIterCustomOptionsDicts(object):
     # Partially matches the "custom" preset
     (
         VideoParameters(
-            preset_color_primaries_index=PresetColorPrimaries.hdtv,
-            preset_color_matrix_index=PresetColorMatrices.hdtv,
-            preset_transfer_function_index=PresetTransferFunctions.tv_gamma,
+            color_primaries_index=PresetColorPrimaries.hdtv,
+            color_matrix_index=PresetColorMatrices.hdtv,
+            transfer_function_index=PresetTransferFunctions.tv_gamma,
         ),
         VideoParameters(
-            preset_color_primaries_index=PresetColorPrimaries.hdtv,
-            preset_color_matrix_index=PresetColorMatrices.hdtv,
-            preset_transfer_function_index=PresetTransferFunctions.linear,
+            color_primaries_index=PresetColorPrimaries.hdtv,
+            color_matrix_index=PresetColorMatrices.hdtv,
+            transfer_function_index=PresetTransferFunctions.linear,
         ),
         [
             ColorSpec(

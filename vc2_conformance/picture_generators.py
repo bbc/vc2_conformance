@@ -431,7 +431,7 @@ def linear_ramps(video_parameters, picture_coding_mode):
     ramps_rgb[3, :, 2] = np.linspace(0.0, 1.0, width)
     
     ramps_xyz = matmul_colors(
-        LINEAR_RGB_TO_XYZ[video_parameters["preset_color_primaries_index"]],
+        LINEAR_RGB_TO_XYZ[video_parameters["color_primaries_index"]],
         ramps_rgb,
     )
     

@@ -51,7 +51,7 @@ from vc2_conformance.scripts.vc2_raw_explain import (
 def test_is_rgb_color():
     for matrix_index in PresetColorMatrices:
         expected = matrix_index == PresetColorMatrices.rgb
-        vp = VideoParameters(preset_color_matrix_index=matrix_index)
+        vp = VideoParameters(color_matrix_index=matrix_index)
         assert is_rgb_color(vp) is expected
 
 
@@ -126,7 +126,7 @@ def test_explain_interleaving(picture_coding_mode, source_sampling_mode, top_fie
 def test_explain_component_order_and_sampling(matrix, color_diff_format, expected):
     assert explain_component_order_and_sampling(
         VideoParameters(
-            preset_color_matrix_index=matrix,
+            color_matrix_index=matrix,
             color_diff_format_index=color_diff_format,
         ),
         PictureCodingModes.pictures_are_frames,
@@ -140,7 +140,7 @@ def test_explain_component_order_and_sampling(matrix, color_diff_format, expecte
         VideoParameters(
             frame_width=200,
             frame_height=100,
-            preset_color_matrix_index=PresetColorMatrices.rgb,
+            color_matrix_index=PresetColorMatrices.rgb,
             color_diff_format_index=ColorDifferenceSamplingFormats.color_4_4_4,
             luma_offset=0,
             luma_excursion=255,
@@ -154,7 +154,7 @@ def test_explain_component_order_and_sampling(matrix, color_diff_format, expecte
         VideoParameters(
             frame_width=200,
             frame_height=100,
-            preset_color_matrix_index=PresetColorMatrices.rgb,
+            color_matrix_index=PresetColorMatrices.rgb,
             color_diff_format_index=ColorDifferenceSamplingFormats.color_4_2_0,
             luma_offset=0,
             luma_excursion=255,
@@ -174,7 +174,7 @@ def test_explain_component_order_and_sampling(matrix, color_diff_format, expecte
         VideoParameters(
             frame_width=200,
             frame_height=100,
-            preset_color_matrix_index=PresetColorMatrices.hdtv,
+            color_matrix_index=PresetColorMatrices.hdtv,
             color_diff_format_index=ColorDifferenceSamplingFormats.color_4_4_4,
             luma_offset=0,
             luma_excursion=255,
@@ -194,7 +194,7 @@ def test_explain_component_order_and_sampling(matrix, color_diff_format, expecte
         VideoParameters(
             frame_width=200,
             frame_height=100,
-            preset_color_matrix_index=PresetColorMatrices.hdtv,
+            color_matrix_index=PresetColorMatrices.hdtv,
             color_diff_format_index=ColorDifferenceSamplingFormats.color_4_4_4,
             luma_offset=0,
             luma_excursion=1023,
@@ -218,7 +218,7 @@ def test_explain_component_order_and_sampling(matrix, color_diff_format, expecte
         VideoParameters(
             frame_width=200,
             frame_height=100,
-            preset_color_matrix_index=PresetColorMatrices.hdtv,
+            color_matrix_index=PresetColorMatrices.hdtv,
             color_diff_format_index=ColorDifferenceSamplingFormats.color_4_4_4,
             luma_offset=16,
             luma_excursion=219,
@@ -244,9 +244,9 @@ def test_explain_component_sizes(video_parameters, expected):
 def test_explain_color_model():
     assert explain_color_model(
         VideoParameters(
-            preset_color_primaries_index=PresetColorPrimaries.hdtv,
-            preset_color_matrix_index=PresetColorMatrices.hdtv,
-            preset_transfer_function_index=PresetTransferFunctions.tv_gamma,
+            color_primaries_index=PresetColorPrimaries.hdtv,
+            color_matrix_index=PresetColorMatrices.hdtv,
+            transfer_function_index=PresetTransferFunctions.tv_gamma,
         ),
         PictureCodingModes.pictures_are_fields,
     ) == (
@@ -362,9 +362,9 @@ class TestExampleFFMPEGCommand(object):
             luma_excursion=255,
             color_diff_offset=128,
             color_diff_excursion=255,
-            preset_color_primaries_index=PresetColorPrimaries.hdtv,
-            preset_color_matrix_index=PresetColorMatrices.hdtv,
-            preset_transfer_function_index=PresetTransferFunctions.tv_gamma,
+            color_primaries_index=PresetColorPrimaries.hdtv,
+            color_matrix_index=PresetColorMatrices.hdtv,
+            transfer_function_index=PresetTransferFunctions.tv_gamma,
         )
 
     def ffplay_to_ffmpeg(self, ffplay_command, dirname):
@@ -623,9 +623,9 @@ class TestExampleFFMPEGCommand(object):
         video_parameters["frame_width"] = 16
         video_parameters["frame_height"] = 16
         
-        video_parameters["preset_color_primaries_index"] = primaries
-        video_parameters["preset_color_matrix_index"] = matrix
-        video_parameters["preset_transfer_function_index"] = transfer_function
+        video_parameters["color_primaries_index"] = primaries
+        video_parameters["color_matrix_index"] = matrix
+        video_parameters["transfer_function_index"] = transfer_function
         video_parameters["color_diff_format_index"] = color_diff_format
         
         if matrix == PresetColorMatrices.rgb:
@@ -730,9 +730,9 @@ class TestExampleImageMagickCommand(object):
             luma_excursion=255,
             color_diff_offset=128,
             color_diff_excursion=255,
-            preset_color_primaries_index=PresetColorPrimaries.hdtv,
-            preset_color_matrix_index=PresetColorMatrices.hdtv,
-            preset_transfer_function_index=PresetTransferFunctions.tv_gamma,
+            color_primaries_index=PresetColorPrimaries.hdtv,
+            color_matrix_index=PresetColorMatrices.hdtv,
+            transfer_function_index=PresetTransferFunctions.tv_gamma,
         )
 
     def read_png_picture(self, raw_filename):
@@ -823,9 +823,9 @@ class TestExampleImageMagickCommand(object):
         video_parameters["frame_width"] = 32
         video_parameters["frame_height"] = 16
         
-        video_parameters["preset_color_primaries_index"] = primaries
-        video_parameters["preset_color_matrix_index"] = matrix
-        video_parameters["preset_transfer_function_index"] = transfer_function
+        video_parameters["color_primaries_index"] = primaries
+        video_parameters["color_matrix_index"] = matrix
+        video_parameters["transfer_function_index"] = transfer_function
         video_parameters["color_diff_format_index"] = color_diff_format
         
         if matrix == PresetColorMatrices.rgb:
@@ -936,9 +936,9 @@ def test_explain_ffmpeg_and_imagemagick_commands(
         luma_excursion=255,
         color_diff_offset=128,
         color_diff_excursion=255,
-        preset_color_primaries_index=PresetColorPrimaries.hdtv,
-        preset_color_matrix_index=matrix,
-        preset_transfer_function_index=PresetTransferFunctions.tv_gamma,
+        color_primaries_index=PresetColorPrimaries.hdtv,
+        color_matrix_index=matrix,
+        transfer_function_index=PresetTransferFunctions.tv_gamma,
     )
     
     picture_coding_mode = PictureCodingModes.pictures_are_frames
@@ -976,9 +976,9 @@ def test_cli(tmpdir, capsys, extension):
         luma_excursion=255,
         color_diff_offset=128,
         color_diff_excursion=255,
-        preset_color_primaries_index=PresetColorPrimaries.hdtv,
-        preset_color_matrix_index=PresetColorMatrices.hdtv,
-        preset_transfer_function_index=PresetTransferFunctions.tv_gamma,
+        color_primaries_index=PresetColorPrimaries.hdtv,
+        color_matrix_index=PresetColorMatrices.hdtv,
+        transfer_function_index=PresetTransferFunctions.tv_gamma,
     )
     picture_coding_mode = PictureCodingModes.pictures_are_frames
     write_pictures_to_dir(

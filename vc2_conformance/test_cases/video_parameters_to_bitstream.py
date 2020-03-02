@@ -292,21 +292,21 @@ iter_color_primaries_options = partial(
     iter_custom_options_dicts,
     dict_type=ColorPrimaries,
     flag_key="custom_color_primaries_flag",
-    parameters=[("preset_color_primaries_index", "index")],
+    parameters=[("color_primaries_index", "index")],
 )
 
 iter_color_matrix_options = partial(
     iter_custom_options_dicts,
     dict_type=ColorMatrix,
     flag_key="custom_color_matrix_flag",
-    parameters=[("preset_color_matrix_index", "index")],
+    parameters=[("color_matrix_index", "index")],
 )
 
 iter_transfer_function_options = partial(
     iter_custom_options_dicts,
     dict_type=TransferFunction,
     flag_key="custom_transfer_function_flag",
-    parameters=[("preset_transfer_function_index", "index")],
+    parameters=[("transfer_function_index", "index")],
 )
 
 
@@ -323,9 +323,9 @@ def iter_color_spec_options(base_video_parameters, video_parameters):
     if all(
         base_video_parameters[key] == video_parameters[key]
         for key in [
-            "preset_color_primaries_index",
-            "preset_color_matrix_index",
-            "preset_transfer_function_index",
+            "color_primaries_index",
+            "color_matrix_index",
+            "transfer_function_index",
         ]
     ):
         yield ColorSpec(
@@ -340,9 +340,9 @@ def iter_color_spec_options(base_video_parameters, video_parameters):
     ) in PRESET_COLOR_SPECS.items():
         if (
             index != 0 and
-            video_parameters["preset_color_primaries_index"] == primaries and
-            video_parameters["preset_color_matrix_index"] == matrix and
-            video_parameters["preset_transfer_function_index"] == tf
+            video_parameters["color_primaries_index"] == primaries and
+            video_parameters["color_matrix_index"] == matrix and
+            video_parameters["transfer_function_index"] == tf
         ):
             yield ColorSpec(
                 custom_color_spec_flag=True,
@@ -352,9 +352,9 @@ def iter_color_spec_options(base_video_parameters, video_parameters):
     # Work through all possible ways to express this using fully custom formats
     custom_base_vp = base_video_parameters.copy()
     custom_presets = PRESET_COLOR_SPECS[0]
-    custom_base_vp["preset_color_primaries_index"] = custom_presets.color_primaries_index
-    custom_base_vp["preset_color_matrix_index"] = custom_presets.color_matrix_index
-    custom_base_vp["preset_transfer_function_index"] = custom_presets.transfer_function_index
+    custom_base_vp["color_primaries_index"] = custom_presets.color_primaries_index
+    custom_base_vp["color_matrix_index"] = custom_presets.color_matrix_index
+    custom_base_vp["transfer_function_index"] = custom_presets.transfer_function_index
     
     for (
         color_primaries,

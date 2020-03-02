@@ -309,9 +309,9 @@ def read_metadata(file):
     for name, int_enum_type in [
         ("color_diff_format_index", ColorDifferenceSamplingFormats),
         ("source_sampling", SourceSamplingModes),
-        ("preset_color_primaries_index", PresetColorPrimaries),
-        ("preset_color_matrix_index", PresetColorMatrices),
-        ("preset_transfer_function_index", PresetTransferFunctions),
+        ("color_primaries_index", PresetColorPrimaries),
+        ("color_matrix_index", PresetColorMatrices),
+        ("transfer_function_index", PresetTransferFunctions),
     ]:
         video_parameters[name] = int_enum_type(video_parameters[name])
     

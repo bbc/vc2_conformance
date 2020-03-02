@@ -45,7 +45,7 @@ def is_rgb_color(video_parameters):
     if a Luma+Chroma representation is used instead.
     """
     return (
-        video_parameters["preset_color_matrix_index"] ==
+        video_parameters["color_matrix_index"] ==
         PresetColorMatrices.rgb
     )
 
@@ -103,7 +103,7 @@ def explain_component_order_and_sampling(video_parameters, picture_coding_mode):
     Produce a human-readable informative definition of the component names,
     order and sampling mode.
     """
-    y, c1, c2 = PICTURE_COMPONENT_NAMES[video_parameters["preset_color_matrix_index"]]
+    y, c1, c2 = PICTURE_COMPONENT_NAMES[video_parameters["color_matrix_index"]]
     
     return (
         "Pictures contain three planar components: "
@@ -150,7 +150,7 @@ def explain_component_sizes(video_parameters, picture_coding_mode):
         ))
     else:
         y_name, c1_name, c2_name = PICTURE_COMPONENT_NAMES[
-            video_parameters["preset_color_matrix_index"]
+            video_parameters["color_matrix_index"]
         ]
         explanations.append((
             "The {} component consists of".format(y_name),
@@ -199,9 +199,9 @@ def explain_color_model(video_parameters, picture_coding_mode):
     """
     Produce a human-readable informative definition of the color model in use.
     """
-    primaries = PRESET_COLOR_PRIMARIES[video_parameters["preset_color_primaries_index"]]
-    matrix = PRESET_COLOR_MATRICES[video_parameters["preset_color_matrix_index"]]
-    transfer_function = PRESET_TRANSFER_FUNCTIONS[video_parameters["preset_transfer_function_index"]]
+    primaries = PRESET_COLOR_PRIMARIES[video_parameters["color_primaries_index"]]
+    matrix = PRESET_COLOR_MATRICES[video_parameters["color_matrix_index"]]
+    transfer_function = PRESET_TRANSFER_FUNCTIONS[video_parameters["transfer_function_index"]]
     
     out = (
         "The color model uses the '{}' primaries ({}), "
@@ -407,7 +407,7 @@ def example_ffmpeg_command(picture_filename, video_parameters, picture_coding_mo
                 "Only 4:4:4 colour difference sampling is supported for RGB video."
             )
     elif (
-        video_parameters["preset_color_matrix_index"] ==
+        video_parameters["color_matrix_index"] ==
         PresetColorMatrices.reversible
     ):
         raise UnsupportedPictureFormat(
@@ -609,7 +609,7 @@ def example_imagemagick_command(picture_filename, video_parameters, picture_codi
                 "Only 4:4:4 colour difference sampling is supported for RGB video."
             )
     elif (
-        video_parameters["preset_color_matrix_index"] ==
+        video_parameters["color_matrix_index"] ==
         PresetColorMatrices.reversible
     ):
         raise UnsupportedPictureFormat(

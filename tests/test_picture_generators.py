@@ -61,7 +61,7 @@ def test_read_as_xyz():
     
     # Video format should roughly match expectations
     assert video_parameters["color_diff_format_index"] == ColorDifferenceSamplingFormats.color_4_4_4
-    assert video_parameters["preset_color_matrix_index"] == PresetColorMatrices.rgb
+    assert video_parameters["color_matrix_index"] == PresetColorMatrices.rgb
     assert picture_coding_mode == PictureCodingModes.pictures_are_frames
 
 
@@ -366,9 +366,9 @@ class TestMovingSprite(object):
             source_sampling=SourceSamplingModes.progressive,
             top_field_first=True,
             color_diff_format_index=ColorDifferenceSamplingFormats.color_4_4_4,
-            preset_color_primaries_index=PresetColorPrimaries.hdtv,
-            preset_color_matrix_index=PresetColorMatrices.hdtv,
-            preset_transfer_function_index=PresetTransferFunctions.tv_gamma,
+            color_primaries_index=PresetColorPrimaries.hdtv,
+            color_matrix_index=PresetColorMatrices.hdtv,
+            transfer_function_index=PresetTransferFunctions.tv_gamma,
             luma_offset=0,
             luma_excursion=255,
             color_diff_offset=128,
@@ -537,16 +537,16 @@ class TestMovingSprite(object):
             )
         assert list(pictures) == []
     
-    @pytest.mark.parametrize("preset_color_primaries_index", PresetColorPrimaries)
+    @pytest.mark.parametrize("color_primaries_index", PresetColorPrimaries)
     def test_r_g_b(
         self,
         video_parameters,
-        preset_color_primaries_index,
+        color_primaries_index,
     ):
         """Check that native R, G and B primaries are always used."""
-        video_parameters["preset_color_matrix_index"] = PresetColorMatrices.rgb
+        video_parameters["color_matrix_index"] = PresetColorMatrices.rgb
         video_parameters["color_diff_offset"] = 0
-        video_parameters["preset_color_primaries_index"] = preset_color_primaries_index
+        video_parameters["color_primaries_index"] = color_primaries_index
         picture_coding_mode = PictureCodingModes.pictures_are_frames
         
         pictures = list(moving_sprite(video_parameters, picture_coding_mode, 1))
@@ -554,7 +554,7 @@ class TestMovingSprite(object):
         y, c1, c2 = pictures[0]
         
         xyz = to_xyz(y, c1, c2, video_parameters)
-        rgb = matmul_colors(XYZ_TO_LINEAR_RGB[preset_color_primaries_index], xyz)
+        rgb = matmul_colors(XYZ_TO_LINEAR_RGB[color_primaries_index], xyz)
         
         # Top left is native white
         assert np.all(np.isclose(rgb[0, 0, :], [1.0, 1.0, 1.0], rtol=0.001))
@@ -588,9 +588,9 @@ def test_mid_gray(primaries, transfer_function):
         # The choice of primaries and transfer function should have no effect:
         # the color should be chosen at the code level, not the color model
         # level
-        preset_color_primaries_index=primaries,
-        preset_color_matrix_index=PresetColorMatrices.hdtv,
-        preset_transfer_function_index=transfer_function,
+        color_primaries_index=primaries,
+        color_matrix_index=PresetColorMatrices.hdtv,
+        transfer_function_index=transfer_function,
         # Set two wonky off-center ranges; the offsets should be ignored with the
         # 'mid grey' being the middle of the code range
         luma_offset=20,
@@ -622,9 +622,9 @@ def test_linear_ramps(primaries, transfer_function):
         source_sampling=SourceSamplingModes.progressive,
         top_field_first=True,
         color_diff_format_index=ColorDifferenceSamplingFormats.color_4_4_4,
-        preset_color_primaries_index=primaries,
-        preset_color_matrix_index=PresetColorMatrices.rgb,
-        preset_transfer_function_index=transfer_function,
+        color_primaries_index=primaries,
+        color_matrix_index=PresetColorMatrices.rgb,
+        transfer_function_index=transfer_function,
         luma_offset=0,
         luma_excursion=255,
         color_diff_offset=0,
@@ -700,9 +700,9 @@ class TestGenericPictureGeneratorBehaviour(object):
             source_sampling=SourceSamplingModes.progressive,
             top_field_first=True,
             color_diff_format_index=ColorDifferenceSamplingFormats.color_4_4_4,
-            preset_color_primaries_index=PresetColorPrimaries.hdtv,
-            preset_color_matrix_index=PresetColorMatrices.hdtv,
-            preset_transfer_function_index=PresetTransferFunctions.tv_gamma,
+            color_primaries_index=PresetColorPrimaries.hdtv,
+            color_matrix_index=PresetColorMatrices.hdtv,
+            transfer_function_index=PresetTransferFunctions.tv_gamma,
             luma_offset=0,
             luma_excursion=255,
             color_diff_offset=128,

@@ -274,9 +274,9 @@ def test_to_xyz():
         luma_excursion=255,
         color_diff_offset=0,
         color_diff_excursion=255,
-        preset_color_primaries_index=PresetColorPrimaries.hdtv,
-        preset_color_matrix_index=PresetColorMatrices.rgb,
-        preset_transfer_function_index=PresetTransferFunctions.tv_gamma,
+        color_primaries_index=PresetColorPrimaries.hdtv,
+        color_matrix_index=PresetColorMatrices.rgb,
+        transfer_function_index=PresetTransferFunctions.tv_gamma,
     )
     
     # Find XYZ coordinates for White, black, red green and blue
@@ -286,7 +286,7 @@ def test_to_xyz():
         [1.0, 0.0, 0.0, 0.0, 1.0],
     ])
     test_colors_xyz = np.matmul(
-        LINEAR_RGB_TO_XYZ[video_parameters["preset_color_primaries_index"]],
+        LINEAR_RGB_TO_XYZ[video_parameters["color_primaries_index"]],
         test_colors_rgb,
     )
     
@@ -383,9 +383,9 @@ def test_to_xyz_and_from_xyz_roundtrip(
         luma_excursion=luma_excursion,
         color_diff_offset=color_diff_offset,
         color_diff_excursion=color_diff_excursion,
-        preset_color_primaries_index=primaries,
-        preset_color_matrix_index=matrix,
-        preset_transfer_function_index=transfer_function,
+        color_primaries_index=primaries,
+        color_matrix_index=matrix,
+        transfer_function_index=transfer_function,
     )
     
     luma_bits = intlog2(luma_excursion + 1)
@@ -431,10 +431,10 @@ def test_matmul_colors():
 
 def test_swap_primaries():
     vp_before = VideoParameters(
-        preset_color_primaries_index=PresetColorPrimaries.hdtv,
+        color_primaries_index=PresetColorPrimaries.hdtv,
     )
     vp_after = VideoParameters(
-        preset_color_primaries_index=PresetColorPrimaries.uhdtv,
+        color_primaries_index=PresetColorPrimaries.uhdtv,
     )
     
     linear_rgb_before = np.array([
@@ -443,7 +443,7 @@ def test_swap_primaries():
     ])
     
     xyz_before = matmul_colors(
-        LINEAR_RGB_TO_XYZ[vp_before["preset_color_primaries_index"]],
+        LINEAR_RGB_TO_XYZ[vp_before["color_primaries_index"]],
         linear_rgb_before,
     )
     
@@ -454,7 +454,7 @@ def test_swap_primaries():
     )
     
     linear_rgb_after = matmul_colors(
-        XYZ_TO_LINEAR_RGB[vp_after["preset_color_primaries_index"]],
+        XYZ_TO_LINEAR_RGB[vp_after["color_primaries_index"]],
         xyz_after,
     )
     

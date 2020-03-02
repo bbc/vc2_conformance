@@ -768,19 +768,19 @@ def to_xyz(y, c1, c2, video_parameters):
     
     # Convert to non-linear RGB
     inverse_color_matrix = INVERSE_COLOR_MATRICES[
-        video_parameters["preset_color_matrix_index"]
+        video_parameters["color_matrix_index"]
     ]
     eregeb_cols = np.matmul(inverse_color_matrix, yc1c2_cols)
     
     # Convert to linear RGB
     inverse_transfer_function = INVERSE_TRANSFER_FUNCTIONS[
-        video_parameters["preset_transfer_function_index"]
+        video_parameters["transfer_function_index"]
     ]
     linear_rgb_cols = inverse_transfer_function(eregeb_cols)
     
     # Convert to CIE XYZ
     rgb_to_xyz_matrix = LINEAR_RGB_TO_XYZ[
-        video_parameters["preset_color_primaries_index"]
+        video_parameters["color_primaries_index"]
     ]
     xyz_cols = np.matmul(rgb_to_xyz_matrix, linear_rgb_cols)
     
@@ -825,19 +825,19 @@ def from_xyz(xyz, video_parameters):
     
     # Convert to linear RGB
     xyz_to_rgb_matrix = XYZ_TO_LINEAR_RGB[
-        video_parameters["preset_color_primaries_index"]
+        video_parameters["color_primaries_index"]
     ]
     linear_rgb_cols = np.matmul(xyz_to_rgb_matrix, xyz_cols)
     
     # Convert to non-linear RGB
     transfer_function = TRANSFER_FUNCTIONS[
-        video_parameters["preset_transfer_function_index"]
+        video_parameters["transfer_function_index"]
     ]
     eregeb_cols = transfer_function(linear_rgb_cols)
     
     # Convert to Y C1 C2
     color_matrix = COLOR_MATRICES[
-        video_parameters["preset_color_matrix_index"]
+        video_parameters["color_matrix_index"]
     ]
     yc1c2_cols = np.matmul(color_matrix, eregeb_cols)
     
@@ -907,10 +907,10 @@ def swap_primaries(xyz, video_parameters_before, video_parameters_after):
     xyz : :math:`3 \times 3` array (height, width, 3)
     """
     xyz_to_linear_rgb_before = XYZ_TO_LINEAR_RGB[
-        video_parameters_before["preset_color_primaries_index"]
+        video_parameters_before["color_primaries_index"]
     ]
     linear_rgb_after_to_xyz = LINEAR_RGB_TO_XYZ[
-        video_parameters_after["preset_color_primaries_index"]
+        video_parameters_after["color_primaries_index"]
     ]
     
     m = np.matmul(linear_rgb_after_to_xyz, xyz_to_linear_rgb_before)
