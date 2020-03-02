@@ -701,7 +701,7 @@ def example_imagemagick_command(picture_filename, video_parameters, picture_codi
 
 def explain_ffmpeg_command(picture_filename, video_parameters, picture_coding_mode):
     """
-    Produce a human-readable informative message explaining how FFMPEG may be
+    Produce a human-readable informative message explaining how FFMPEG can be
     used to playback the raw video format.
     """
     try:
@@ -711,7 +711,7 @@ def explain_ffmpeg_command(picture_filename, video_parameters, picture_coding_mo
     
     out = ""
     
-    out += "The following command may be used to play back this video format using FFMPEG:"
+    out += "The following command can be used to play back this video format using FFMPEG:"
     
     out += "\n"
     out += "\n"
@@ -732,7 +732,7 @@ def explain_ffmpeg_command(picture_filename, video_parameters, picture_coding_mo
 
 def explain_imagemagick_command(picture_filename, video_parameters, picture_coding_mode):
     """
-    Produce a human-readable informative message explaining how ImageMagick may be
+    Produce a human-readable informative message explaining how ImageMagick can be
     used to display a picture in the raw format.
     """
     try:
@@ -742,7 +742,7 @@ def explain_imagemagick_command(picture_filename, video_parameters, picture_codi
     
     out = ""
     
-    out += "The following command may be used to convert a single raw picture "
+    out += "The following command can be used to convert a single raw picture "
     out += "into PNG format for viewing in a conventional image viewer:"
     
     out += "\n"
