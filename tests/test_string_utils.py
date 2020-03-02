@@ -172,6 +172,22 @@ class TestSplitIntoLineWrapBlocks(object):
             ("", "", "The end."),
         ]
     
+    def test_bullets_at_start(self):
+        assert split_into_line_wrap_blocks("""
+            * Foo
+            * Bar,
+              baz.
+            * Qux.
+            
+            The end.
+        """) == [
+            ("* ", "  ", "Foo"),
+            ("* ", "  ", "Bar, baz."),
+            ("* ", "  ", "Qux."),
+            ("", "", ""),
+            ("", "", "The end."),
+        ]
+    
     def test_numbers(self):
         assert split_into_line_wrap_blocks("""
             Numbered:
@@ -190,6 +206,35 @@ class TestSplitIntoLineWrapBlocks(object):
             ("100. ", "     ", "Qux."),
             ("", "", ""),
             ("", "", "The end."),
+        ]
+    
+    def test_numbers_at_start(self):
+        assert split_into_line_wrap_blocks("""
+            1. Foo
+            2. Bar,
+               baz.
+            100. Qux.
+            
+            The end.
+        """) == [
+            ("1. ", "   ", "Foo"),
+            ("2. ", "   ", "Bar, baz."),
+            ("100. ", "     ", "Qux."),
+            ("", "", ""),
+            ("", "", "The end."),
+        ]
+    
+    def test_dont_confuse_asteriscs_and_number_dots_in_paragraphs(self):
+        assert split_into_line_wrap_blocks("""
+            This is a paragraph
+            which containing a
+            9. It also contains
+            * -- a bullet point
+            in any other
+            setting.
+        """) == [
+            ("", "","This is a paragraph which containing a 9. It also contains * -- a bullet point in any other setting."),
+            
         ]
     
     def test_intented_block_wrap_indented_blocks(self):

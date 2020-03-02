@@ -143,6 +143,10 @@ def table(table_strings, column_sep="  ", indent_prefix="  "):
             for row in table_strings
         )
 
+RE_HEADING_UNDERLINE = re.compile(r"^[-=]+$")
+RE_BULLET_OR_NUMBER = re.compile(r"^([*]\s+|[0-9]+[.]\s+)(.*)$")
+RE_PREFIX_AND_BLOCK = re.compile(r"^([*]\s+|[0-9]+[.]\s+|\s*)(.*)$")
+
 def split_into_line_wrap_blocks(text, wrap_indented_blocks=False):
     """
     Split a multi-line string into blocks of text which should be line-wrapped
@@ -207,11 +211,22 @@ def split_into_line_wrap_blocks(text, wrap_indented_blocks=False):
     block_lines = [""]
     for line in text.splitlines():
         # Start a new block if we encounter an empty line (between paragraphs)
-        # or a bullet point/number.
+        # or a bullet point/number. The first bullet/number must have a blank
+        # line before it.
         if line.rstrip() == "":
             block_lines.append("")
             block_lines.append("")
-        elif re.match(r"^([*]\s+|[0-9]+[.]\s+|-+$|=+$)", line):
+        elif RE_HEADING_UNDERLINE.match(line):
+            block_lines.append("")
+        elif (
+            RE_BULLET_OR_NUMBER.match(line) and (
+                # Don't match asterisks and number-dots midway through
+                # paragraphs -- require that they appear after a blank line or
+                # after another bullet/number.
+                block_lines[-1] == "" or
+                RE_BULLET_OR_NUMBER.match(block_lines[-1])
+            )
+        ):
             block_lines.append("")
         elif not wrap_indented_blocks and re.match(r"^\s+", block_lines[-1]):
             # When block wrapping is disabled, start a new line for every line
@@ -243,7 +258,7 @@ def split_into_line_wrap_blocks(text, wrap_indented_blocks=False):
     
     out = []
     for block_line in block_lines:
-        prefix, text = re.match(r"^([*]\s+|[0-9]+[.]\s+|\s*)(.*)$", block_line).groups((1, 2))
+        prefix, text = RE_PREFIX_AND_BLOCK.match(block_line).groups((1, 2))
         if len(prefix.strip()) > 0:
             out.append((prefix, " "*len(prefix), text.rstrip()))
         else:
