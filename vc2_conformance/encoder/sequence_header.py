@@ -1,8 +1,7 @@
 """
-Routines for converting desired sets of
-:py:class:`~vc2_conformance.video_parameters.VideoParameters` into
-:py:class:`~vc2_conformance.bitstream.SourceParameters` dictionaries ready for
-serialisation.
+Routines for generating sensible
+:py:class:`~vc2_conformance.bitstream.SequenceHeader` dictionaries ready for
+serialisation given a description of an arbitrary video format.
 """
 
 from functools import partial

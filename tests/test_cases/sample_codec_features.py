@@ -55,6 +55,7 @@ MINIMAL_CODEC_FEATURES = CodecFeatures(
     dwt_depth_ho=0,
     slices_x=2,
     slices_y=1,
+    fragment_slice_count=0,
     lossless=False,
     picture_bytes=24,
     quantization_matrix=None,

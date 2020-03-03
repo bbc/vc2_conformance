@@ -40,7 +40,7 @@ from vc2_conformance.video_parameters import (
     set_source_defaults,
 )
 
-from vc2_conformance.test_cases.decoder.video_parameters_to_bitstream import (
+from vc2_conformance.encoder.sequence_header import (
     zip_longest_repeating_final_value,
     iter_custom_options_dicts,
     iter_color_spec_options,
