@@ -1,5 +1,5 @@
 """
-Sample :Py:class:`vc2_conformance.test_cases.codec_features.CodecFeatures`
+Sample :Py:class:`vc2_conformance.codec_features.CodecFeatures`
 objects for use in this test suite.
 """
 
@@ -15,7 +15,7 @@ from vc2_data_tables import (
     WaveletFilters,
 )
 
-from vc2_conformance.test_cases.codec_features import CodecFeatures
+from vc2_conformance.codec_features import CodecFeatures
 
 from vc2_conformance.video_parameters import VideoParameters
 

@@ -6,9 +6,9 @@ This module contains routines for generating test cases for VC-2 encoder and
 decoder implementations.
 
 Test cases are generated on-demand for specific sets of
-:py:class:`~vc2_conformance.test_cases.codec_features.CodecFeatures` by test
+:py:class:`~vc2_conformance.codec_features.CodecFeatures` by test
 case generators. A test case generator is a function which takes a
-:py:class:`~vc2_conformance.test_cases.codec_features.CodecFeatures` as an
+:py:class:`~vc2_conformance.codec_features.CodecFeatures` as an
 argument and returns or yields test pictures or bitstreams.
 
 Test case generators are registered with one of two :py:class:`Registry`
@@ -33,13 +33,13 @@ Test case generators
 Test case generator functions are divided into encoder and decoder test cases.
 
 Encoder test case generators take a
-:py:class:`~vc2_conformance.test_cases.codec_features.CodecFeatures` and
+:py:class:`~vc2_conformance.codec_features.CodecFeatures` and
 produce a :py:class:`EncoderTestSequence` object.
 
 .. autoclass:: EncoderTestSequence
 
 Decoder test case generators take a
-:py:class:`~vc2_conformance.test_cases.codec_features.CodecFeatures` and
+:py:class:`~vc2_conformance.codec_features.CodecFeatures` and
 produce a :py:class:`vc2_conformance.bitstream.Sequence` dictionary.
 
 In the simplest case, test case generator functions may be functions which

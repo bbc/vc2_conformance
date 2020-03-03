@@ -20,7 +20,7 @@ from vc2_conformance.video_parameters import (
     VideoParameters,
 )
 
-from vc2_conformance.test_cases.codec_features import (
+from vc2_conformance.codec_features import (
     CodecFeatures,
     read_dict_list_csv,
     spreadsheet_column_names,

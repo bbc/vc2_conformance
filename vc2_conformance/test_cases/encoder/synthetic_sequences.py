@@ -14,7 +14,7 @@ def picture_generator_to_test_case(picture_generator, codec_features):
     """
     Internal utility. Takes a function from
     :py:mod:`vc2_conformance.picture_generators` and a set of
-    :py:class:`~vc2_conformance.test_cases.codec_features.CodecFeatures` and
+    :py:class:`~vc2_conformance.codec_features.CodecFeatures` and
     returns a :py:class:`~vc2_conformance.test_cases.EncoderTestSequence`.
     """
     out = EncoderTestSequence(
