@@ -71,6 +71,8 @@ CodecFeatures = fixeddict(
     # (12.4.5.2)
     Entry("slices_x"),
     Entry("slices_y"),
+    # (14)
+    Entry("fragment_slice_count"),
     # Bitrate control
     Entry("lossless"),  # Bool
     Entry("picture_bytes"),  # None if lossless, int otherwise
@@ -100,6 +102,9 @@ a collection of these, defining support for several picture formats.
 * ``dwt_depth`` and ``dwt_depth_ho``: The transform depths to use.
 * ``slices_x`` and ``slices_y``: The number of picture slices, horizontally and
   vertically.
+* ``fragment_slice_count``: If fragmented pictures are in use, should be
+  non-zero and contain the maximum number of slices to include in each
+  fragment. Otherwise, should be zero.
 * ``lossless``: If True, lossless variable-bit-rate coding will be used. If
   false, fixed-rate lossy coding is used.
 * ``picture_bytes``: When ``lossless`` is False, this gives the number of bytes
@@ -335,6 +340,9 @@ def read_codec_features_csv(csvfile):
         # (12.4.5.2)
         slices_x                  120                  120
         slices_y                  108                  108
+        # (14)
+        fragment_slice_count      60                   60
+        #
         lossless                  FALSE                TRUE
         picture_bytes             1036800
         # (12.4.5.3)
@@ -391,6 +399,7 @@ def read_codec_features_csv(csvfile):
     * ``dwt_depth_ho`` (int)
     * ``slices_x`` (int)
     * ``slices_y`` (int)
+    * ``fragment_slice_count`` (int)
     * ``lossless`` (``TRUE`` or ``FALSE``)
     * ``picture_bytes`` (int or absent)
     * ``quantization_matrix`` (whitespace separated ints)
@@ -406,6 +415,10 @@ def read_codec_features_csv(csvfile):
     entering values into this table. The value specified here may not
     correspond to the ``base_video_format`` value which is encoded into
     bitstreams.
+    
+    The ``fragment_slice_count`` row, non-zero, indicates fragmented pictures
+    should be used and gives the maximum number of slices to include in each
+    fragment. If the value is zero, fragmented pictures will not be used.
     
     The ``lossless`` row specifies if (variable length) lossless coding should
     be used. If True, the ``picture_bytes`` field must be left empty. If
@@ -497,6 +510,7 @@ def read_codec_features_csv(csvfile):
             ("dwt_depth_ho", int),
             ("slices_x", int),
             ("slices_y", int),
+            ("fragment_slice_count", int),
             ("lossless", parse_bool),
         ]:
             features[field_name] = pop(field_name, field_type)
