@@ -5,6 +5,9 @@ from io import BytesIO
 from collections import defaultdict
 
 from vc2_data_tables import (
+    Profiles,
+    Levels,
+    ParseCodes,
     BaseVideoFormats,
     PresetPixelAspectRatios,
     PRESET_PIXEL_ASPECT_RATIOS,
@@ -30,7 +33,10 @@ from vc2_conformance.bitstream import (
 )
 
 from vc2_conformance.bitstream.vc2 import (
+    vc2_default_values,
     source_parameters,
+    parse_parameters,
+    sequence_header,
 )
 
 from vc2_conformance.state import State
@@ -47,7 +53,11 @@ from vc2_conformance.encoder.sequence_header import (
     iter_source_parameter_options,
     count_video_parameter_differences,
     rank_base_video_format_similarity,
+    make_parse_parameters,
+    make_sequence_header,
 )
+
+from sample_codec_features import MINIMAL_CODEC_FEATURES
 
 
 class TestZipLongestRepeatingFinalValue(object):
@@ -521,3 +531,32 @@ class TestRankBaseVideoFormatSimilarity(object):
 
         for index in rank_base_video_format_similarity(video_parameters):
             assert set_source_defaults(index)["top_field_first"] == top_field_first
+
+
+def serialise(context, pseudocode, state=None, *args, **kwargs):
+    state = state if state is not None else State()
+    with Serialiser(
+        BitstreamWriter(BytesIO()),
+        context,
+        vc2_default_values,
+    ) as ser:
+        return pseudocode(ser, state, *args, **kwargs)
+
+
+def test_make_parse_parameters():
+    state = State()
+    serialise(make_parse_parameters(MINIMAL_CODEC_FEATURES), parse_parameters, state)
+    assert state["major_version"] == 3
+    assert state["minor_version"] == 0
+    assert state["profile"] == Profiles.high_quality
+    assert state["level"] == Levels.unconstrained
+
+
+def test_make_sequence_header():
+    video_parameters = serialise(
+        make_sequence_header(MINIMAL_CODEC_FEATURES),
+        sequence_header,
+    )
+    assert video_parameters == MINIMAL_CODEC_FEATURES["video_parameters"]
+
+

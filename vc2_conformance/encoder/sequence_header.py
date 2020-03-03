@@ -6,9 +6,8 @@ serialisation given a description of an arbitrary video format.
 
 from functools import partial
 
-from itertools import product
-
 from vc2_data_tables import (
+    ParseCodes,
     BaseVideoFormats,
     BASE_VIDEO_FORMAT_PARAMETERS,
     PRESET_FRAME_RATES,
@@ -17,9 +16,16 @@ from vc2_data_tables import (
     PRESET_COLOR_SPECS,
 )
 
-from vc2_conformance.video_parameters import set_source_defaults
+from vc2_conformance.video_parameters import (
+    set_source_defaults,
+    set_coding_parameters,
+)
 
 from vc2_conformance.bitstream import (
+    DataUnit,
+    ParseInfo,
+    ParseParameters,
+    SequenceHeader,
     SourceParameters,
     FrameSize,
     ColorDiffSamplingFormat,
@@ -36,6 +42,11 @@ from vc2_conformance.bitstream import (
 
 
 __all__ = [
+    "rank_base_video_format_similarity",
+    "iter_source_parameter_options",
+    "make_parse_parameters",
+    "make_sequence_header",
+    "make_sequence_header_data_unit",
 ]
 
 
@@ -482,3 +493,56 @@ def rank_base_video_format_similarity(video_parameters):
     )
 
 
+def make_parse_parameters(codec_features):
+    """
+    Create a :py:class:`~vc2_conformance.bitstream.ParseParameters` object
+    using the version, profile and level specified in the
+    :py:class:`~vc2_conformance.codec_features.CodecFeatures`
+    dictionary provided.
+    """
+    return ParseParameters(
+        major_version=codec_features["major_version"],
+        minor_version=codec_features["minor_version"],
+        profile=codec_features["profile"],
+        level=codec_features["level"],
+    )
+
+
+def make_sequence_header(codec_features):
+    """
+    Create a :py:class:`~vc2_conformance.bitstream.SequenceHeader` object which
+    sensibly encodes the video format specified in
+    :py:class:`~vc2_conformance.codec_features.CodecFeatures`
+    dictionary provided.
+    """
+    # Pick a base video format similar to the desired video format
+    base_video_format = rank_base_video_format_similarity(
+        codec_features["video_parameters"],
+    )[0]
+    
+    # Pick a set of SourceParameters which minimally encode any differences
+    # between the base video format and target video format
+    source_parameters = next(iter(iter_source_parameter_options(
+        set_source_defaults(base_video_format),
+        codec_features["video_parameters"],
+    )))
+    
+    return SequenceHeader(
+        parse_parameters=make_parse_parameters(codec_features),
+        base_video_format=base_video_format,
+        video_parameters=source_parameters,
+        picture_coding_mode=codec_features["picture_coding_mode"],
+    )
+
+
+def make_sequence_header_data_unit(codec_features):
+    """
+    Create a :py:class:`~vc2_conformance.bitstream.DataUnit` object containing
+    a sequence header which sensibly encodes the features specified in
+    :py:class:`~vc2_conformance.codec_features.CodecFeatures`
+    dictionary provided.
+    """
+    return DataUnit(
+        parse_info=ParseInfo(parse_code=ParseCodes.sequence_header),
+        sequence_header=make_sequence_header(codec_features),
+    )
