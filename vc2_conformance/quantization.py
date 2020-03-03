@@ -8,6 +8,7 @@ from vc2_conformance.vc2_math import sign
 
 __all__ = [
     "inverse_quant",
+    "forward_quant",
     "quant_factor",
     "quant_offset",
 ]
@@ -23,6 +24,16 @@ def inverse_quant(quantized_coeff, quant_index):
         magnitude += 2
         magnitude //= 4
     return sign(quantized_coeff) * magnitude
+
+
+@ref_pseudocode(deviation="inferred_implementation")
+def forward_quant(coeff, quant_index):
+    """(13.3.1) Based on the informative note 1."""
+    magnitude = abs(coeff)
+    if coeff >= 0:
+        return (4 * magnitude) // quant_factor(quant_index)
+    else:
+        return -((4 * magnitude) // quant_factor(quant_index))
 
 
 @ref_pseudocode
