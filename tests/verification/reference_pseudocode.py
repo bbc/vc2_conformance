@@ -13,7 +13,7 @@ implementations *must* be kept consistent with the VC-2 specification.
 # * state is a global variable (passed as needed as first argument here)
 # * Replace `if x == True(False)` with `if (not) x`
 # * Replace `length` with `len`
-# * Replace `elif` with `elif`
+# * Replace `else if` with `elif`
 # * Replace `for each x in a, b, c` with `for x in [a, b, c]`
 # * Replace long-dash with `-` in arithmetic
 # * Replace constant sentinels with strings (e.g. LL -> "LL")
