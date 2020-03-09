@@ -197,6 +197,18 @@ def parse_int_enum(int_enum_type, value):
     return int_enum_type(number)
 
 
+def parse_int_at_least(minimum, value):
+    """
+    Parse a string containing an integer, raising a :py:exc:`ValueError` if the
+    value is below the specified threshold.
+    """
+    value = int(value)
+    if value < minimum:
+        raise ValueError("{} < {}".format(value, minimum))
+    else:
+        return value
+
+
 def parse_bool(value):
     """
     Parse a wide-ish array of CSV-style bool values.
@@ -479,10 +491,11 @@ def read_codec_features_csv(csvfile):
                 )
             except ValueError as e:
                 raise InvalidCodecFeaturesError(
-                    "Invalid entry for '{}' in '{}' column: {}".format(
+                    "Invalid entry for '{}' in '{}' column: {} ({})".format(
                         field_name,
                         name,
                         value,
+                        e,
                     )
                 )
         
@@ -501,16 +514,16 @@ def read_codec_features_csv(csvfile):
         for field_name, field_type in [
             ("level", partial(parse_int_enum, Levels)),
             ("profile", partial(parse_int_enum, Profiles)),
-            ("major_version", int),
-            ("minor_version", int),
+            ("major_version", partial(parse_int_at_least, 0)),
+            ("minor_version", partial(parse_int_at_least, 0)),
             ("picture_coding_mode", partial(parse_int_enum, PictureCodingModes)),
             ("wavelet_index", partial(parse_int_enum, WaveletFilters)),
             ("wavelet_index_ho", partial(parse_int_enum, WaveletFilters)),
-            ("dwt_depth", int),
-            ("dwt_depth_ho", int),
-            ("slices_x", int),
-            ("slices_y", int),
-            ("fragment_slice_count", int),
+            ("dwt_depth", partial(parse_int_at_least, 0)),
+            ("dwt_depth_ho", partial(parse_int_at_least, 0)),
+            ("slices_x", partial(parse_int_at_least, 1)),
+            ("slices_y", partial(parse_int_at_least, 1)),
+            ("fragment_slice_count", partial(parse_int_at_least, 0)),
             ("lossless", parse_bool),
         ]:
             features[field_name] = pop(field_name, field_type)
@@ -522,23 +535,23 @@ def read_codec_features_csv(csvfile):
         
         # Parse integer video_parameters fields
         for field_name, field_type in [
-            ("frame_width", int),
-            ("frame_height", int),
+            ("frame_width", partial(parse_int_at_least, 1)),
+            ("frame_height", partial(parse_int_at_least, 1)),
             ("color_diff_format_index", partial(parse_int_enum, ColorDifferenceSamplingFormats)),
             ("source_sampling", partial(parse_int_enum, SourceSamplingModes)),
             ("top_field_first", parse_bool),
-            ("frame_rate_numer", int),
-            ("frame_rate_denom", int),
-            ("pixel_aspect_ratio_numer", int),
-            ("pixel_aspect_ratio_denom", int),
-            ("clean_width", int),
-            ("clean_height", int),
-            ("left_offset", int),
-            ("top_offset", int),
-            ("luma_offset", int),
-            ("luma_excursion", int),
-            ("color_diff_offset", int),
-            ("color_diff_excursion", int),
+            ("frame_rate_numer", partial(parse_int_at_least, 1)),
+            ("frame_rate_denom", partial(parse_int_at_least, 1)),
+            ("pixel_aspect_ratio_numer", partial(parse_int_at_least, 1)),
+            ("pixel_aspect_ratio_denom", partial(parse_int_at_least, 1)),
+            ("clean_width", partial(parse_int_at_least, 0)),
+            ("clean_height", partial(parse_int_at_least, 0)),
+            ("left_offset", partial(parse_int_at_least, 0)),
+            ("top_offset", partial(parse_int_at_least, 0)),
+            ("luma_offset", partial(parse_int_at_least, 0)),
+            ("luma_excursion", partial(parse_int_at_least, 1)),
+            ("color_diff_offset", partial(parse_int_at_least, 0)),
+            ("color_diff_excursion", partial(parse_int_at_least, 1)),
             ("color_primaries_index", partial(parse_int_enum, PresetColorPrimaries)),
             ("color_matrix_index", partial(parse_int_enum, PresetColorMatrices)),
             ("transfer_function_index", partial(parse_int_enum, PresetTransferFunctions)),
@@ -555,12 +568,25 @@ def read_codec_features_csv(csvfile):
                 raise InvalidCodecFeaturesError(
                     "Entry provided for 'picture_bytes' when lossless mode "
                     "specified for '{}' column".format(
-                        field_name,
                         name,
                     )
                 )
         else:
-            features["picture_bytes"] = pop("picture_bytes", int)
+            # Check size is sufficient
+            num_slices = features["slices_x"] * features["slices_y"]
+            if features["profile"] == Profiles.high_quality:
+                # (13.5.4) hq_slice headers include 4 8-bit numbers
+                minimum_picture_bytes = 4 * num_slices
+            elif features["profile"] == Profiles.low_delay:
+                # (13.5.3.1) ld_slice header consists of a 7-bit quantization
+                # index and slice-size-dependant fixed-length field starting at
+                # 1 bit in length.
+                minimum_picture_bytes = num_slices
+            
+            features["picture_bytes"] = pop(
+                "picture_bytes",
+                partial(parse_int_at_least, minimum_picture_bytes),
+            )
         
         # Quantisation matrix
         features["quantization_matrix"] = pop(

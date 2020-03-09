@@ -25,6 +25,7 @@ from vc2_conformance.codec_features import (
     read_dict_list_csv,
     spreadsheet_column_names,
     parse_int_enum,
+    parse_int_at_least,
     parse_bool,
     parse_quantization_matrix,
     InvalidCodecFeaturesError,
@@ -153,6 +154,26 @@ class TestParseIntEnum(object):
     def test_invalid(self, string):
         with pytest.raises(ValueError):
             parse_int_enum(Profiles, string)
+
+
+class TestParseIntEnum(object):
+    
+    @pytest.mark.parametrize("string,exp", [
+        ("100", 100),
+        ("123", 123),
+    ])
+    def test_valid(self, string, exp):
+        assert parse_int_at_least(100, string) == exp
+    
+    @pytest.mark.parametrize("string", [
+        "",
+        "1",
+        "99",
+        "foo",
+    ])
+    def test_invalid(self, string):
+        with pytest.raises(ValueError):
+            parse_int_at_least(100, string)
 
 
 class TestParseBool(object):
@@ -500,5 +521,156 @@ class TestReadCodecFeaturesCSV(object):
                 "fragment_slice_count,      0",
                 "lossless,                  FALSE",
                 "picture_bytes,             1036800",
+                "quantization_matrix,       default",
+            ])
+    
+    @pytest.mark.parametrize("field,bad_value,expected_minimum", [
+        ("major_version", -1, 0),
+        ("minor_version", -1, 0),
+        ("frame_width", 0, 1),
+        ("frame_height", 0, 1),
+        ("frame_rate_numer", 0, 1),
+        ("frame_rate_denom", 0, 1),
+        ("pixel_aspect_ratio_numer", 0, 1),
+        ("pixel_aspect_ratio_denom", 0, 1),
+        ("luma_excursion", 0, 1),
+        ("color_diff_excursion", 0, 1),
+        ("dwt_depth", -1, 0),
+        ("dwt_depth_ho", -1, 0),
+        ("slices_x", 0, 1),
+        ("slices_y", 0, 1),
+        ("fragment_slice_count", -1, 0),
+    ])
+    def test_integer_limits(self, field, bad_value, expected_minimum):
+        with pytest.raises(InvalidCodecFeaturesError, match=r".*{}.*< {}.*".format(
+            field,
+            expected_minimum,
+        )):
+            read_codec_features_csv([
+                "{},{}".format(field, bad_value)
+                if line.startswith(field) else
+                line
+                for line in [
+                    "name,                      hd",
+                    "level,                     unconstrained",
+                    "profile,                   high_quality",
+                    "major_version,             3",
+                    "minor_version,             0",
+                    "base_video_format,         hd1080p_50",
+                    "picture_coding_mode,       pictures_are_frames",
+                    "frame_width,               default",
+                    "frame_height,              default",
+                    "color_diff_format_index,   default",
+                    "source_sampling,           default",
+                    "top_field_first,           default",
+                    "frame_rate_numer,          default",
+                    "frame_rate_denom,          default",
+                    "pixel_aspect_ratio_numer,  default",
+                    "pixel_aspect_ratio_denom,  default",
+                    "clean_width,               default",
+                    "clean_height,              default",
+                    "left_offset,               default",
+                    "top_offset,                default",
+                    "luma_offset,               default",
+                    "luma_excursion,            default",
+                    "color_diff_offset,         default",
+                    "color_diff_excursion,      default",
+                    "color_primaries_index,     default",
+                    "color_matrix_index,        default",
+                    "transfer_function_index,   default",
+                    "wavelet_index,             haar_with_shift",
+                    "wavelet_index_ho,          haar_with_shift",
+                    "dwt_depth,                 2",
+                    "dwt_depth_ho,              0",
+                    "slices_x,                  120",
+                    "slices_y,                  108",
+                    "fragment_slice_count,      0",
+                    "lossless,                  FALSE",
+                    "picture_bytes,             1036800",
+                    "quantization_matrix,       default",
+                ]
+            ])
+    
+    def test_too_few_picture_bytes_hq(self):
+        with pytest.raises(InvalidCodecFeaturesError, match=r".*picture_bytes.*< 51840.*"):
+            read_codec_features_csv([
+                "name,                      hd",
+                "level,                     unconstrained",
+                "profile,                   high_quality",
+                "major_version,             3",
+                "minor_version,             0",
+                "base_video_format,         hd1080p_50",
+                "picture_coding_mode,       pictures_are_frames",
+                "frame_width,               default",
+                "frame_height,              default",
+                "color_diff_format_index,   default",
+                "source_sampling,           default",
+                "top_field_first,           default",
+                "frame_rate_numer,          default",
+                "frame_rate_denom,          default",
+                "pixel_aspect_ratio_numer,  default",
+                "pixel_aspect_ratio_denom,  default",
+                "clean_width,               default",
+                "clean_height,              default",
+                "left_offset,               default",
+                "top_offset,                default",
+                "luma_offset,               default",
+                "luma_excursion,            default",
+                "color_diff_offset,         default",
+                "color_diff_excursion,      default",
+                "color_primaries_index,     default",
+                "color_matrix_index,        default",
+                "transfer_function_index,   default",
+                "wavelet_index,             haar_with_shift",
+                "wavelet_index_ho,          haar_with_shift",
+                "dwt_depth,                 2",
+                "dwt_depth_ho,              0",
+                "slices_x,                  120",
+                "slices_y,                  108",
+                "fragment_slice_count,      0",
+                "lossless,                  FALSE",
+                "picture_bytes,             51839",
+                "quantization_matrix,       default",
+            ])
+    
+    def test_too_few_picture_bytes_low_delay(self):
+        with pytest.raises(InvalidCodecFeaturesError, match=r".*picture_bytes.*< 12960.*"):
+            read_codec_features_csv([
+                "name,                      hd",
+                "level,                     unconstrained",
+                "profile,                   low_delay",
+                "major_version,             3",
+                "minor_version,             0",
+                "base_video_format,         hd1080p_50",
+                "picture_coding_mode,       pictures_are_frames",
+                "frame_width,               default",
+                "frame_height,              default",
+                "color_diff_format_index,   default",
+                "source_sampling,           default",
+                "top_field_first,           default",
+                "frame_rate_numer,          default",
+                "frame_rate_denom,          default",
+                "pixel_aspect_ratio_numer,  default",
+                "pixel_aspect_ratio_denom,  default",
+                "clean_width,               default",
+                "clean_height,              default",
+                "left_offset,               default",
+                "top_offset,                default",
+                "luma_offset,               default",
+                "luma_excursion,            default",
+                "color_diff_offset,         default",
+                "color_diff_excursion,      default",
+                "color_primaries_index,     default",
+                "color_matrix_index,        default",
+                "transfer_function_index,   default",
+                "wavelet_index,             haar_with_shift",
+                "wavelet_index_ho,          haar_with_shift",
+                "dwt_depth,                 2",
+                "dwt_depth_ho,              0",
+                "slices_x,                  120",
+                "slices_y,                  108",
+                "fragment_slice_count,      0",
+                "lossless,                  FALSE",
+                "picture_bytes,             12959",
                 "quantization_matrix,       default",
             ])
