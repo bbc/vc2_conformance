@@ -16,6 +16,8 @@ values. These must then be encoded by a suitable VC-2 encoder.
 
 .. autofunction:: moving_sprite
 
+.. autofunction:: static_sprite
+
 .. autofunction:: mid_gray
 
 .. autofunction:: linear_ramps
@@ -54,6 +56,7 @@ from vc2_conformance.color_conversion import (
 
 __all__ = [
     "moving_sprite",
+    "static_sprite",
     "mid_gray",
     "linear_ramps",
 ]
@@ -281,15 +284,45 @@ def pipe(next_function):
     return decorator
 
 
+def read_and_adapt_pointer_sprite(video_parameters):
+    """
+    Read the :py:data:`POINTER_SPRITE_PATH` sprite, correcting to match the
+    pixel aspect ratio and color primaries specified in the provided
+    ``video_parameters``.
+    
+    Returns a CIE-XYZ image.
+    """
+    sprite, sprite_video_parameters, _ = read_as_xyz(POINTER_SPRITE_PATH)
+    
+    # This sprite has been designed with the intention that 'white', 'red',
+    # 'green', and 'blue' in the sprite's color model should be transformed
+    # into the native primaries of the output format. As a consequence, we swap
+    # the color primaries here.
+    sprite = swap_primaries(sprite, sprite_video_parameters, video_parameters)
+    
+    sprite_width = sprite_video_parameters["frame_width"]
+    sprite_height = sprite_video_parameters["frame_height"]
+    assert sprite_video_parameters["pixel_aspect_ratio_numer"] == 1
+    assert sprite_video_parameters["pixel_aspect_ratio_denom"] == 1
+    
+    # Make sprite square under all pixel aspect ratios
+    if video_parameters["pixel_aspect_ratio_numer"] != video_parameters["pixel_aspect_ratio_denom"]:
+        sprite_width *= video_parameters["pixel_aspect_ratio_denom"]
+        sprite_width //= video_parameters["pixel_aspect_ratio_numer"]
+        sprite = resize(sprite, sprite_width, sprite_height)
+    
+    return sprite
+
+
 @pipe(xyz_to_native)
 @pipe(progressive_to_pictures)
 def moving_sprite(video_parameters, picture_coding_mode, duration=1.0):
     """
     A video sequence containing a simple moving synthetic image.
     
-    This sequence consists of a 128 by 128 pixel sprite (shown below) which
-    traverses the screen from left-to-right moving 16 pixels to the right every
-    frame (or 8 every field).
+    This sequence consists of a 128 by 128 pixel sprite (shown below) on a
+    black background which traverses the screen from left-to-right moving 16
+    pixels to the right every frame (or 8 every field).
     
     .. image:: /_static/test_images/pointer.png
     
@@ -320,28 +353,18 @@ def moving_sprite(video_parameters, picture_coding_mode, duration=1.0):
     displayed with the correct pixel aspect ratio (11.4.7).
     
     The text in the sprite is provided to check that the correct picture
-    orientation has been used. The characters 'V', 'C' and '2' are coloured
-    saturated primary red, green, and blue for the color primaries used
-    (11.4.10.2). This provides a basic verification that the color components
-    have been provided to the display system and decoded correctly.
-    """
-    sprite, sprite_video_parameters, _ = read_as_xyz(POINTER_SPRITE_PATH)
+    orientation has been used.
     
-    # This sprite has been designed with the intention that 'white', 'red',
-    # 'green', and 'blue' in the sprite's color model should be transformed
-    # into the native primaries of the output format. As a consequence, we swap
-    # the color primaries here.
-    sprite = swap_primaries(sprite, sprite_video_parameters, video_parameters)
+    The colors of the characters 'V', 'C' and '2' are coloured saturated
+    primary red, green, and blue for the color primaries used (11.4.10.2). This
+    provides a basic verification that the color components have been provided
+    to the display system and decoded correctly.
+    """
+    sprite = read_and_adapt_pointer_sprite(video_parameters)
     
     frame_width = video_parameters["frame_width"]
     frame_height = video_parameters["frame_height"]
     sprite_height, sprite_width, _ = sprite.shape
-    
-    # Make sprite square under all pixel aspect ratios
-    if video_parameters["pixel_aspect_ratio_numer"] != video_parameters["pixel_aspect_ratio_denom"]:
-        sprite_width *= video_parameters["pixel_aspect_ratio_denom"]
-        sprite_width //= video_parameters["pixel_aspect_ratio_numer"]
-        sprite = resize(sprite, sprite_width, sprite_height)
     
     # Generate frames
     num_samples, relative_rate = seconds_to_samples(video_parameters, duration)
@@ -370,6 +393,58 @@ def moving_sprite(video_parameters, picture_coding_mode, duration=1.0):
         picture = np.zeros((frame_height, frame_width, 3))
         picture[:sh, px:px+sw, :] = sprite[:sh, sx:sx + sw, :]
         
+        yield picture
+
+
+@pipe(xyz_to_native)
+@pipe(progressive_to_pictures)
+def static_sprite(video_parameters, picture_coding_mode):
+    """
+    A video sequence containing a exactly one frame containing a synthetic
+    image.
+    
+    This sequence consists of a 128 by 128 pixel sprite (shown below) located
+    at the top-left corner of the frame on a black background.
+    
+    .. image:: /_static/test_images/pointer.png
+    
+    This test sequence may be used to verify that interlacing, pixel aspect
+    ratio and frame-rate metadata is being correctly reported by a codec for
+    display purposes.
+    
+    For if incorrect field ordering is specified, edges will appear ragged and
+    not smooth.
+    
+    The sprite should be square with the white triangle having equal height and
+    length and the hypotenuse lying at an angle of 45 degrees. The circular
+    cut-out should be a perfect circle. This verifies that the pictures are
+    displayed with the correct pixel aspect ratio (11.4.7).
+    
+    The text in the sprite is provided to check that the correct picture
+    orientation has been used.
+    
+    The colors of the characters 'V', 'C' and '2' are coloured saturated
+    primary red, green, and blue for the color primaries used (11.4.10.2). This
+    provides a basic verification that the color components have been provided
+    to the display system and decoded correctly.
+    """
+    sprite = read_and_adapt_pointer_sprite(video_parameters)
+    
+    frame_width = video_parameters["frame_width"]
+    frame_height = video_parameters["frame_height"]
+    sprite_height, sprite_width, _ = sprite.shape
+    
+    # For bizarre, tiny picture formats too small for the sprite, clip the
+    # sprite to fit
+    sw = min(frame_width, sprite_width)
+    sh = min(frame_height, sprite_height)
+    
+    # Blit the sprite onto an otherwise empty frame
+    picture = np.zeros((frame_height, frame_width, 3))
+    picture[:sh, :sw, :] = sprite[:sh, :sw, :]
+    
+    yield picture
+    if video_parameters["source_sampling"] == SourceSamplingModes.interlaced:
         yield picture
 
 

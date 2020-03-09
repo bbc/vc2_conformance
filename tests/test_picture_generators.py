@@ -34,7 +34,9 @@ from vc2_conformance.picture_generators import (
     progressive_to_pictures,
     xyz_to_native,
     pipe,
+    read_and_adapt_pointer_sprite,
     moving_sprite,
+    static_sprite,
     mid_gray,
     linear_ramps,
 )
@@ -352,8 +354,53 @@ def test_pipe():
     assert list(picture_generator(vp, pcm, [1, 2, 3])) == [10, 10, 20, 20, 30, 30]
 
 
-class TestMovingSprite(object):
+class TestReadAndAdaptPointerSprite(object):
 
+    def test_pixel_aspect_ratio(self):
+        video_parameters = VideoParameters(
+            color_primaries_index=PresetColorPrimaries.uhdtv,
+            pixel_aspect_ratio_numer=4,
+            pixel_aspect_ratio_denom=3,
+        )
+        
+        xyz = read_and_adapt_pointer_sprite(video_parameters)
+        
+        # Check aspect ratio
+        h, w, _ = xyz.shape
+        assert 4 * w == 3 * h
+    
+    def test_primaries(self):
+        video_parameters = VideoParameters(
+            color_primaries_index=PresetColorPrimaries.uhdtv,
+            pixel_aspect_ratio_numer=1,
+            pixel_aspect_ratio_denom=1,
+        )
+        
+        xyz = read_and_adapt_pointer_sprite(video_parameters)
+        
+        # Check color primaries
+        rgb = matmul_colors(XYZ_TO_LINEAR_RGB[
+            video_parameters["color_primaries_index"]
+        ], xyz)
+        
+        # Top left is native white
+        assert np.all(np.isclose(rgb[0, 0, :], [1.0, 1.0, 1.0], rtol=0.001))
+        
+        # Hole centre is native black
+        assert np.all(np.isclose(rgb[32, 32, :], [0.0, 0.0, 0.0], rtol=0.001))
+        
+        # 'V' is native red
+        assert np.all(np.isclose(rgb[126, 56, :], [1.0, 0.0, 0.0], rtol=0.001))
+        
+        # 'C' is native green
+        assert np.all(np.isclose(rgb[126, 79, :], [0.0, 1.0, 0.0], rtol=0.001))
+        
+        # '2' is native blue
+        assert np.all(np.isclose(rgb[126, 118, :], [0.0, 0.0, 1.0], rtol=0.001))
+
+
+class TestMovingSprite(object):
+    
     @pytest.fixture
     def video_parameters(self):
         return VideoParameters(
@@ -374,7 +421,7 @@ class TestMovingSprite(object):
             color_diff_offset=128,
             color_diff_excursion=255,
         )
-
+    
     # top_corner_pixels[picture_no][line_no][x_coord_div_8] = expected_value_div_255
     @pytest.mark.parametrize("source_sampling_mode,picture_coding_mode,top_corner_pixels", [
         (
@@ -492,84 +539,6 @@ class TestMovingSprite(object):
             assert np.array_equal(y[0:2, 0:4*8:8], np.array(rows)*255)
             
         assert list(pictures) == []
-    
-    @pytest.mark.parametrize("source_sampling_mode", SourceSamplingModes)
-    @pytest.mark.parametrize("picture_coding_mode", PictureCodingModes)
-    def test_pixel_aspect_ratio(
-        self,
-        video_parameters,
-        source_sampling_mode,
-        picture_coding_mode,
-    ):
-        """Check sprite aspect ratio is corrected for pixel aspect ratio."""
-        video_parameters["source_sampling"] = source_sampling_mode
-        video_parameters["pixel_aspect_ratio_numer"] = 4
-        video_parameters["pixel_aspect_ratio_denom"] = 3
-        
-        pictures = iter(moving_sprite(video_parameters, picture_coding_mode, 3))
-        
-        if picture_coding_mode == PictureCodingModes.pictures_are_frames:
-            expected_pictures = 3
-        elif picture_coding_mode == PictureCodingModes.pictures_are_fields:
-            expected_pictures = 6
-        
-        for _ in range(expected_pictures):
-            y, cb, cr = next(pictures)
-            
-            ys, xs = np.nonzero(y)
-            width = np.max(xs) - np.min(xs) + 1
-            height = np.max(ys) - np.min(ys) + 1
-            
-            if picture_coding_mode == PictureCodingModes.pictures_are_fields:
-                # Compensate for interlacing halving the picture height
-                height *= 2.0
-            elif picture_coding_mode == PictureCodingModes.pictures_are_frames:
-                if source_sampling_mode == SourceSamplingModes.interlaced:
-                    # Compensate for two fields showing intermediate states
-                    width -= 8
-            
-            assert np.isclose(
-                (float(width) / float(height)),
-                (
-                    video_parameters["pixel_aspect_ratio_denom"] /
-                    video_parameters["pixel_aspect_ratio_numer"]
-                ),
-            )
-        assert list(pictures) == []
-    
-    @pytest.mark.parametrize("color_primaries_index", PresetColorPrimaries)
-    def test_r_g_b(
-        self,
-        video_parameters,
-        color_primaries_index,
-    ):
-        """Check that native R, G and B primaries are always used."""
-        video_parameters["color_matrix_index"] = PresetColorMatrices.rgb
-        video_parameters["color_diff_offset"] = 0
-        video_parameters["color_primaries_index"] = color_primaries_index
-        picture_coding_mode = PictureCodingModes.pictures_are_frames
-        
-        pictures = list(moving_sprite(video_parameters, picture_coding_mode, 1))
-        assert len(pictures) == 1
-        y, c1, c2 = pictures[0]
-        
-        xyz = to_xyz(y, c1, c2, video_parameters)
-        rgb = matmul_colors(XYZ_TO_LINEAR_RGB[color_primaries_index], xyz)
-        
-        # Top left is native white
-        assert np.all(np.isclose(rgb[0, 0, :], [1.0, 1.0, 1.0], rtol=0.001))
-        
-        # Hole centre is native black
-        assert np.all(np.isclose(rgb[32, 32, :], [0.0, 0.0, 0.0], rtol=0.001))
-        
-        # 'V' is native red
-        assert np.all(np.isclose(rgb[126, 56, :], [1.0, 0.0, 0.0], rtol=0.001))
-        
-        # 'C' is native green
-        assert np.all(np.isclose(rgb[126, 79, :], [0.0, 1.0, 0.0], rtol=0.001))
-        
-        # '2' is native blue
-        assert np.all(np.isclose(rgb[126, 118, :], [0.0, 0.0, 1.0], rtol=0.001))
 
 
 @pytest.mark.parametrize("primaries", PresetColorPrimaries)
@@ -682,6 +651,7 @@ class TestGenericPictureGeneratorBehaviour(object):
     
     @pytest.fixture(params=[
         moving_sprite,
+        static_sprite,
         mid_gray,
         linear_ramps,
     ])
