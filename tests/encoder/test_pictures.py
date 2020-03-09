@@ -3,6 +3,7 @@ import pytest
 import numpy as np
 
 import os
+import sys
 
 from io import BytesIO
 
@@ -21,6 +22,12 @@ from vc2_data_tables import (
     PresetTransferFunctions,
     ParseCodes,
 )
+
+# Add parent directory to path for sample_codec_features test utility module
+sys.path.append(os.path.join(
+    os.path.dirname(__file__),
+    "..",
+))
 
 from sample_codec_features import MINIMAL_CODEC_FEATURES
 
@@ -52,6 +59,7 @@ from vc2_conformance.bitstream import (
     ParseInfo,
     Sequence,
     autofill_and_serialise_sequence,
+    AUTO,
 )
 
 from vc2_conformance.decoder.transform_data_syntax import (
@@ -1169,6 +1177,13 @@ class TestMakePictureParseDataUnit(object):
             # errors should result in PSNRs well below this, however.
             assert psnr > 35.0
     
+    def test_default_pic_num(self, codec_features, natural_picture):
+        natural_picture = natural_picture.copy()
+        del natural_picture["pic_num"]
+        
+        data_unit = make_picture_parse_data_unit(codec_features, natural_picture)
+        assert data_unit["picture_parse"]["picture_header"]["picture_number"] == AUTO
+    
     @pytest.mark.parametrize("profile", Profiles)
     def test_minimum_qindex(self, codec_features, natural_picture, profile):
         codec_features["profile"] = profile
@@ -1300,6 +1315,14 @@ class TestMakeFragmentParseDataUnits(object):
             DataUnit(parse_info=ParseInfo(parse_code=ParseCodes.end_of_sequence)),
         ]))
         assert decoded_pictures == expected_decoded_pictures
+    
+    def test_default_pic_num(self, codec_features, natural_picture):
+        natural_picture = natural_picture.copy()
+        del natural_picture["pic_num"]
+        
+        data_units = make_fragment_parse_data_units(codec_features, natural_picture)
+        for data_unit in data_units:
+            assert data_unit["fragment_parse"]["fragment_header"]["picture_number"] == AUTO
     
     def test_minimum_qindex(self, codec_features, natural_picture):
         # Chose a data rate high enough that very little quantisation would

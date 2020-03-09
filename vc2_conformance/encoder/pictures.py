@@ -6,7 +6,7 @@ This module contains the "meaty bit" of an extremely simple VC-2 encoder. For
 most purposes, a (series of) :py:class:`~vc2_conformance.bitstream.DataUnit`\ s
 may be produced which encode an arbitrary picture using:
 
-.. autofunction:: make_picture_parse
+.. autofunction:: make_picture_data_units
 
 This codec is designed to operate in one of three modes:
 
@@ -129,6 +129,7 @@ from vc2_conformance.bitstream import (
     FragmentParse,
     FragmentHeader,
     FragmentData,
+    AUTO,
 )
 
 from vc2_conformance.bitstream.exp_golomb import (
@@ -256,7 +257,7 @@ def quantize_coeffs(qindex, coeff_values, quant_matrix_values):
         )
         for coeff_value, quant_matrix_value in zip(
             coeff_values,
-            quant_matrix_values
+            quant_matrix_values,
         )
     ]
 
@@ -307,6 +308,8 @@ def quantize_to_fit(target_size, coeff_sets, align_bits=1, minimum_qindex=0):
         For each set of coefficients provided, the quantised coefficient
         values.
     """
+    assert target_size >= 0
+    
     for qindex in count(minimum_qindex):
         quantized_coeff_sets = [
             quantize_coeffs(
@@ -782,7 +785,8 @@ def make_picture_parse(codec_features, picture, minimum_qindex=0):
     picture : {"Y": [[s, ...], ...], "C1": ..., "C2": ..., "pic_num": int}
         The picture to be encoded. This picture will be compressed using a
         simple VC-2 encoder implementation. It does not necessarily produce the
-        most high-quality encodings.
+        most high-quality encodings. If ``pic_num`` is omitted,
+        :py:class:`~vc2_conformance.bitstream.vc2_autofill.AUTO` will be used.
     minimum_qindex : int
         Specifies the minimum quantization index to be used. Must be 0 for
         lossless codecs.
@@ -796,7 +800,7 @@ def make_picture_parse(codec_features, picture, minimum_qindex=0):
     transform_coeffs = transform_and_slice_picture(codec_features, picture)
     
     picture_header = PictureHeader(
-        picture_number=picture["pic_num"],
+        picture_number=picture.get("pic_num", AUTO),
     )
     
     slice_parameters = SliceParameters(
@@ -868,7 +872,8 @@ def make_picture_parse_data_unit(codec_features, picture, minimum_qindex=0):
     picture : {"Y": [[s, ...], ...], "C1": ..., "C2": ..., "pic_num": int}
         The picture to be encoded. This picture will be compressed using a
         simple VC-2 encoder implementation. It does not necessarily produce the
-        most high-quality encodings.
+        most high-quality encodings. If ``pic_num`` is omitted,
+        :py:class:`~vc2_conformance.bitstream.vc2_autofill.AUTO` will be used.
     minimum_qindex : int
         Specifies the minimum quantization index to be used. Must be 0 for
         lossless codecs.
@@ -906,7 +911,8 @@ def make_fragment_parse_data_units(codec_features, picture, minimum_qindex=0):
     picture : {"Y": [[s, ...], ...], "C1": ..., "C2": ..., "pic_num": int}
         The picture to be encoded. This picture will be compressed using a
         simple VC-2 encoder implementation. It does not necessarily produce the
-        most high-quality encodings.
+        most high-quality encodings. If ``pic_num`` is omitted,
+        :py:class:`~vc2_conformance.bitstream.vc2_autofill.AUTO` will be used.
     minimum_qindex : int
         Specifies the minimum quantization index to be used. Must be 0 for
         lossless codecs.
@@ -942,7 +948,7 @@ def make_fragment_parse_data_units(codec_features, picture, minimum_qindex=0):
         ),
         fragment_parse=FragmentParse(
             fragment_header=FragmentHeader(
-                picture_number=picture["pic_num"],
+                picture_number=picture.get("pic_num", AUTO),
                 fragment_data_length=0,
                 fragment_slice_count=0,
             ),
@@ -968,7 +974,7 @@ def make_fragment_parse_data_units(codec_features, picture, minimum_qindex=0):
                     ),
                     fragment_parse=FragmentParse(
                         fragment_header=FragmentHeader(
-                            picture_number=picture["pic_num"],
+                            picture_number=picture.get("pic_num", AUTO),
                             fragment_data_length=0,
                             # NB: Will be incremented in the next step(s)
                             fragment_slice_count=0,
@@ -1009,7 +1015,8 @@ def make_picture_data_units(codec_features, picture, minimum_qindex=0):
     picture : {"Y": [[s, ...], ...], "C1": ..., "C2": ..., "pic_num": int}
         The picture to be encoded. This picture will be compressed using a
         simple VC-2 encoder implementation. It does not necessarily produce the
-        most high-quality encodings.
+        most high-quality encodings. If ``pic_num`` is omitted,
+        :py:class:`~vc2_conformance.bitstream.vc2_autofill.AUTO` will be used.
     minimum_qindex : int
         Specifies the minimum quantization index to be used. Must be 0 for
         lossless codecs.
