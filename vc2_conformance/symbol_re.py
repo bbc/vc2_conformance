@@ -1,6 +1,6 @@
 """
-:py:class:`vc2_conformance._symbol_re`: Regular expressions for VC-2 sequences
-==============================================================================
+:py:class:`vc2_conformance.symbol_re`: Regular expressions for VC-2 sequences
+=============================================================================
 
 This module contains logic for checking that a series of abstract symbols
 conform to a particular pattern as defined by a regular expression.
@@ -11,7 +11,7 @@ VC-2 standard and current level.
 
 .. note::
     
-    In the context of software development the term 'regular expressions' is
+    In the context of software development the term 'regular expression' is
     often used to refer to just the specific application of string pattern
     matching. This module instead refers to the generalised meaning of 'regular
     expressions' where a regular expressions may match patterns in any sequence
@@ -20,15 +20,15 @@ VC-2 standard and current level.
 Usage
 -----
 
-The :py:class:`Matcher` object is used to compare a sequence of symbols
-(represented as Python strings containing only alpha-numeric characters and
-underscores) against a predefined pattern given as a regular expression.
+The :py:class:`Matcher` object is used to match a sequence of symbols against a
+specified pattern. A symbol is a string containing only alpha-numeric
+characters and underscores.
 
 For the application of checking VC-2 sequence contents,
 :py:class:`~vc2_data_tables.ParseCodes` name strings may be used as
 symbols. For example::
 
-    >>> from vc2_conformance._symbol_re import Matcher
+    >>> from vc2_conformance.symbol_re import Matcher
     
     >>> # Checking the sequence of data units within a VC-2 sequence consist of
     >>> # alternating sequence_headers and HQ pictures eventually ending with

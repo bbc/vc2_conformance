@@ -1,6 +1,6 @@
 import pytest
 
-from vc2_conformance._symbol_re import (
+from vc2_conformance.symbol_re import (
     tokenize_regex,
     parse_regex,
     SymbolRegexSyntaxError,

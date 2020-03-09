@@ -1,5 +1,5 @@
 # VC-2 Level sequence restrictions,,
-,# Human readable explanation of rule for error messages,# See vc2_conformance._symbol_re
+,# Human readable explanation of rule for error messages,# See vc2_conformance.symbol_re
 index,sequence_restriction_explanation,sequence_restriction_regex
 # Generalized levels,,
 0,No restrictions on sequence ordering is applied.,.*

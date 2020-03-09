@@ -12,7 +12,7 @@ from vc2_data_tables import (
 
 from vc2_conformance.level_constraints import LEVEL_CONSTRAINTS
 
-from vc2_conformance._symbol_re import WILDCARD, END_OF_SEQUENCE
+from vc2_conformance.symbol_re import WILDCARD, END_OF_SEQUENCE
 
 from vc2_conformance._constraint_table import allowed_values_for
 
@@ -47,7 +47,7 @@ def assert_in_enum(value, enum, exception_type):
 def assert_parse_code_in_sequence(parse_code, matcher, exception_type, *args):
     """
     Check that the specified parse code's name matches the next value in the
-    sequence defined by :py:class:`vc2_conformance._symbol_re.Matcher`.
+    sequence defined by :py:class:`vc2_conformance.symbol_re.Matcher`.
     
     If it does not, ``exception_type`` will be raised with the following
     arguments:
@@ -83,7 +83,7 @@ def assert_parse_code_in_sequence(parse_code, matcher, exception_type, *args):
 
 def assert_parse_code_sequence_ended(matcher, exception_type, *args):
     """
-    Check that the specified :py:class:`vc2_conformance._symbol_re.Matcher` has
+    Check that the specified :py:class:`vc2_conformance.symbol_re.Matcher` has
     reached a valid end for the sequence of parse codes specified.
     
     If the matcher still expects more parse codes, ``exception_type`` will be

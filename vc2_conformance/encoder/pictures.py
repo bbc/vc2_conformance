@@ -39,9 +39,10 @@ transform coefficients fit into the slice.
     This codec may not always produce highest quality pictures possible in
     lossless modes. For example, sometimes chosing higher quantisation indices
     can produce fewer coding artefacts, for example when VC-2 codecs are
-    cascaded. Further, in theory, better picture quality might be obtained by
-    applying additional 'tweaks' to the quantized coefficients.
-
+    cascaded. Simillarly, high quality may be obtained by chosing lower
+    quantisation indices while dropping certain coefficients entirely. Further,
+    in theory, better picture quality might be obtained by applying additional
+    'tweaks' to the quantized coefficients.
 
 The minimum qindex mode is intended for use when encoding specialised test
 patterns which should be quantized with a specific quantisation index. In this

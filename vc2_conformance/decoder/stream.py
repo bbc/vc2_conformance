@@ -42,7 +42,7 @@ from vc2_conformance.decoder.exceptions import (
     PictureInterleavedWithFragmentedPicture,
 )
 
-from vc2_conformance._symbol_re import Matcher
+from vc2_conformance.symbol_re import Matcher
 
 from vc2_conformance.picture_decoding import picture_decode
 

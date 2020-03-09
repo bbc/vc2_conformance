@@ -68,7 +68,7 @@ from vc2_conformance.decoder.exceptions import (
     PixelAspectRatioContainsZeros,
 )
 
-from vc2_conformance._symbol_re import Matcher
+from vc2_conformance.symbol_re import Matcher
 
 from vc2_conformance.decoder.io import (
     record_bitstream_start,

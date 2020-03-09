@@ -2,7 +2,7 @@
 :py:mod:`vc2_conformance.level_constraints`
 ===========================================
 
-A :py:class:`vc2_conformance._symbol_re` expression giving the sequence
+A :py:class:`vc2_conformance.symbol_re` expression giving the sequence
 restrictions defined by different levels.
 
 .. autoclass:: LevelSequenceRestrictions
@@ -68,7 +68,7 @@ Parameters
 sequence_restriction_explanation : str
     A human readable explanation of the restriction imposed (informative).
 sequence_restriction_regex : str
-    A :py:class:`vc2_conformance._symbol_re` pattern describing the sequence
+    A :py:class:`vc2_conformance.symbol_re` pattern describing the sequence
     ordering allowed. Each symbol will be a
     :py:class:`~vc2_data_tables.ParseCodes` name string.
 """

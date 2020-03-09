@@ -4,7 +4,7 @@ from vc2_data_tables import ParseCodes, PictureCodingModes
 
 from vc2_conformance.state import State
 
-from vc2_conformance._symbol_re import Matcher
+from vc2_conformance.symbol_re import Matcher
 
 from vc2_conformance._constraint_table import ValueSet
 

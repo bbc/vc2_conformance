@@ -109,7 +109,7 @@ State = fixeddict(
     # beyond the scope of the VC-2 spec).
     
     # (10.4.1) parse_sequence related state
-    # A vc2_conformance._symbol_re.Matcher which checks that the sequence
+    # A vc2_conformance.symbol_re.Matcher which checks that the sequence
     # follows the specified general pattern of data units (other matchers will
     # test for, e.g. level-defined patterns).
     Entry("_generic_sequence_matcher"),
@@ -168,7 +168,7 @@ State = fixeddict(
     Entry("_file"),
     
     # (C.3) Level-related state
-    # A vc2_conformance._symbol_re.Matcher which checks that the sequence
+    # A vc2_conformance.symbol_re.Matcher which checks that the sequence
     # follows the pattern dictated by the current level. Populated after the
     # first (11.2.1) parse_parameters is encountered (and should therefore be
     # ignored until that point).

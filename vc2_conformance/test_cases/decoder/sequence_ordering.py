@@ -3,7 +3,7 @@
 =========================================================================================
 
 This module contains a utility for generating minimal sequences which conform
-to a specified set of :py:mod:`~vc2_conformance._symbol_re` regular
+to a specified set of :py:mod:`~vc2_conformance.symbol_re` regular
 expressions.
 
 For example, if a test sequence containing (at least) a padding data unit is
@@ -24,7 +24,7 @@ from collections import deque
 
 from vc2_data_tables import ParseCodes
 
-from vc2_conformance._symbol_re import Matcher, WILDCARD, END_OF_SEQUENCE
+from vc2_conformance.symbol_re import Matcher, WILDCARD, END_OF_SEQUENCE
 
 
 class ImpossibleSequenceError(Exception):
@@ -47,7 +47,7 @@ def find_minimal_sequence(data_units, *patterns, **kwargs):
         The minimal set of entries which must be included in the sequence, in
         the order they are required to appear.
     patterns : str
-        A series of :py:mod:`~vc2_conformance._symbol_re` regular expression
+        A series of :py:mod:`~vc2_conformance.symbol_re` regular expression
         specificeations whose symbols are the names given for the various parse
         codes defined in :py:class:`vc2_data_tables.ParseCodes`.
     depth_limit : int
