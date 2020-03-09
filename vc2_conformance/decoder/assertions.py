@@ -68,6 +68,7 @@ def assert_parse_code_in_sequence(parse_code, matcher, exception_type, *args):
         for parse_code_name in matcher.valid_next_symbols():
             if parse_code_name == WILDCARD:
                 expected_parse_codes = None
+                break
             elif parse_code_name == END_OF_SEQUENCE:
                 expected_end = True
             elif expected_parse_codes is not None:
@@ -102,6 +103,7 @@ def assert_parse_code_sequence_ended(matcher, exception_type, *args):
         for parse_code_name in matcher.valid_next_symbols():
             if parse_code_name == WILDCARD:
                 expected_parse_codes = None
+                break
             elif expected_parse_codes is not None:
                 expected_parse_codes.append(getattr(ParseCodes, parse_code_name))
         

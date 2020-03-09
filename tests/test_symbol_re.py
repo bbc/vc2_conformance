@@ -10,6 +10,8 @@ from vc2_conformance.symbol_re import (
     Union,
     NFANode,
     Matcher,
+    make_matching_sequence,
+    ImpossibleSequenceError,
 )
 
 
@@ -318,8 +320,8 @@ class TestMatcher(object):
         # Union
         ("foo | bar | ", set(["foo", "bar", ""])),
         ("foo | bar | $", set(["foo", "bar", ""])),
-        ("foo | bar | .", set(["."])),  # Simplify to wildcard if present
-        ("foo | bar | . | $", set([".", ""])),  # But don't simplify out end of sequence
+        ("foo | bar | .", set(["foo", "bar", "."])),
+        ("foo | bar | . | $", set(["foo", "bar", ".", ""])),
         # Star
         ("foo*", set(["foo", ""])),
         # Plus
@@ -329,3 +331,148 @@ class TestMatcher(object):
         m = Matcher(regex)
         assert m.valid_next_symbols() == next_symbols
 
+
+class TestMakeMatchingSequence(object):
+
+    def test_empty_no_patterns(self):
+        assert make_matching_sequence([]) == []
+
+    def test_arbitrary_no_patterns(self):
+        # When no patterns are supplied, any sequence should match
+        assert make_matching_sequence(["a", "b", "c"]) == ["a", "b", "c"]
+
+    @pytest.mark.parametrize("patterns", [
+        # Single patterns which would allow an empty sequence
+        [""],
+        [".*"],
+        ["$"],
+        [".*$"],
+        # Multiple patterns at once which would allow an empty sequence
+        ["", ".*", "$", ".*$"],
+    ])
+    def test_patterns_allow_empty_sequence(self, patterns):
+        assert make_matching_sequence([], *patterns) == []
+
+    @pytest.mark.parametrize("patterns", [
+        ["a b c$"],
+        ["...$"],
+        [".*"],
+        [
+            "a . . $",
+            ". b . $",
+            ". . c $",
+        ],
+    ])
+    def test_fully_matched_pattern(self, patterns):
+        # Patterns which match the test sequence exactly
+        assert make_matching_sequence(["a", "b", "c"], *patterns) == ["a", "b", "c"]
+
+    @pytest.mark.parametrize("patterns", [
+        # Only one option
+        ["a b$"],
+        # Two options, one shorter
+        ["a a? b$"],
+        # All patterns together enforce the solution
+        [
+            "a .*",
+            ".* b",
+            ". .",
+        ],
+        # Wildcard options first
+        [
+            ". .",
+            ".* b",
+            "a .*",
+        ],
+        # End-of-sequence required
+        [
+            "a .* $",
+            ".* b $",
+            ". . $",
+        ],
+    ])
+    def test_find_shortest_possible_filler_values(self, patterns):
+        assert make_matching_sequence([], *patterns) == ["a", "b"]
+
+    def test_fill_in_wildcard_value_if_empty_symbol_priority(self):
+        assert make_matching_sequence([], "a . c") == ["a", ".", "c"]
+    
+    def test_prefer_wildcard_value_if_empty_symbol_priority(self):
+        assert make_matching_sequence([], "a . c", "a (.|b) c") == ["a", ".", "c"]
+    
+    def test_prefer_highest_symbol_priority_over_wildcard(self):
+        assert make_matching_sequence(
+            [],
+            "a . c",
+            symbol_priority=["X", "a", "c"],
+        ) == ["a", "X", "c"]
+    
+    def test_symbol_priority(self):
+        assert make_matching_sequence(
+            [],
+            "(a|b|c) . .",
+            ". (d|e|f) .",
+            ". . (g|h|i)",
+            symbol_priority=[
+                "b",
+                "a",
+                "c",
+                "e",
+                "d",
+                "f",
+                # NB: G, H and I not specified so should be alphabetically
+                # ordered
+            ],
+        ) == ["b", "e", "g"]
+
+    def test_mixture_of_matched_and_fillled_in_values(self):
+        assert make_matching_sequence(["b"], "a .* c") == ["a", "b", "c"]
+
+    @pytest.mark.parametrize("symbols,patterns,works", [
+        # When no requirements given, should work up to (but not past) the depth limit
+        ([], ["a b c"], True),
+        ([], ["a b c d"], False),
+        # Depth limit should reset when a symbol is matched
+        (
+            ["X"],
+            ["a b c X d e f"],
+            True,
+        ),
+        (
+            ["X"],
+            ["a b c d X e f g"],
+            False,
+        ),
+        # Depth limit should be reset even when wildcard matching is included
+        (
+            ["X"],
+            ["a b c X d e f", ".*"],
+            True,
+        ),
+        (
+            ["X"],
+            ["a b c d X e f g", ".*"],
+            False,
+        ),
+    ])
+    def test_search_depth_limit(self, symbols, patterns, works):
+        if works:
+            make_matching_sequence(symbols, *patterns, depth_limit=3)
+        else:
+            with pytest.raises(ImpossibleSequenceError):
+                make_matching_sequence(symbols, *patterns, depth_limit=3)
+
+    @pytest.mark.parametrize("patterns", [
+        # Pattern shorter than sequence
+        ["a"],
+        ["c"],
+        ["a b b"],
+        # Pattern does not match sequence
+        ["a b c c"],
+        ["a X X c"],
+        # One pattern doesn't match sequence
+        [".*", "c"],
+    ])
+    def test_sequence_not_allowed_by_patterns(self, patterns):
+        with pytest.raises(ImpossibleSequenceError):
+            make_matching_sequence(["a", "b", "b", "c"], *patterns, depth_limit=3)

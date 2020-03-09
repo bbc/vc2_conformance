@@ -2,12 +2,13 @@
 :py:class:`vc2_conformance.symbol_re`: Regular expressions for VC-2 sequences
 =============================================================================
 
-This module contains logic for checking that a series of abstract symbols
-conform to a particular pattern as defined by a regular expression.
+This module contains logic for checking sequences of abstract symbols conform
+to a particular pattern as defined by a regular expression. In addition, it may
+also be used to geneate sequences conforming to such patterns.
 
-The intended usage of this module is to verify whether a sequence of data units
-appearing within a VC-2 sequence conform to the restrictions imposed by the
-VC-2 standard and current level.
+The intended usage of this module is to verify or generate sequences of VC-2
+data units which conform to the restrictions imposed by the VC-2 standard or
+level.
 
 .. note::
     
@@ -17,16 +18,15 @@ VC-2 standard and current level.
     expressions' where a regular expressions may match patterns in any sequence
     of symbols.
 
-Usage
------
+Examples
+--------
 
-The :py:class:`Matcher` object is used to match a sequence of symbols against a
-specified pattern. A symbol is a string containing only alpha-numeric
-characters and underscores.
+In the following pair of examples, :py:class:`~vc2_data_tables.ParseCodes` name
+strings are used as symbols in sequences representing sequences of VC-2 data
+units.
 
-For the application of checking VC-2 sequence contents,
-:py:class:`~vc2_data_tables.ParseCodes` name strings may be used as
-symbols. For example::
+The example below shows how a :py:class:`Matcher` may be used to check that a
+sequence of data units follows a predefined pattern.
 
     >>> from vc2_conformance.symbol_re import Matcher
     
@@ -61,9 +61,40 @@ symbols. For example::
     >>> m.is_complete()
     False
 
+The example below shows how we may use :py:func:`make_matching_sequence` to
+fill-in additional data units in a sequence to make it conform to a particular
+set of patterns.
 
-:py:class:`Matcher` API
------------------------
+    >>> from vc2_conformance.symbol_re import make_matching_sequence
+    
+    >>> # Suppose we want some sequence which contains two high_quality_picture
+    >>> # data units but we don't really care about the rest...
+    >>> desired_sequence = ["high_quality_picture", "high_quality_picture"]
+    
+    >>> # ...and we're required to match the following patterns...
+    >>> required_patterns = [
+    ...     # The VC-2 main specification simply requires that a sequence start
+    ...     # with a sequence_header and end with an end-of-sequence
+    ...     "sequence_header .* end_of_sequence $",
+    ...     # A particular level may force the sequence to begin with a
+    ...     # sequence header and aux data block followed by alternating
+    ...     # sequence headers and pictures.
+    ...     "sequence_header auxiliary_data (sequence_header high_quality_picture)+ end_of_sequence $",
+    ... ]
+    
+    >>> # We can generate a suitable sequence like so:
+    >>> for sym in make_matching_sequence(desired_sequence, *required_patterns):
+    ...     print(sym)
+    sequence_header
+    auxiliary_data
+    sequence_header
+    high_quality_picture
+    sequence_header
+    high_quality_picture
+    end_of_sequence
+
+API
+---
 
 .. autoclass:: Matcher
     :members:
@@ -74,6 +105,9 @@ symbols. For example::
 
 .. autoexc:: SymbolRegexSyntaxError
 
+.. autofunction:: make_matching_sequence
+
+.. autoexc:: ImpossibleSequenceError
 
 Implementation overview
 -----------------------
@@ -102,7 +136,9 @@ regular expression to match sequences directly.
 
 import re
 
-from collections import defaultdict, namedtuple
+from copy import deepcopy
+
+from collections import defaultdict, namedtuple, deque
 
 
 __all__ = [
@@ -110,6 +146,8 @@ __all__ = [
     "SymbolRegexSyntaxError",
     "WILDCARD",
     "END_OF_SEQUENCE",
+    "ImpossibleSequenceError",
+    "make_matching_sequence",
 ]
 
 
@@ -502,7 +540,8 @@ class Matcher(object):
         """
         Return the :py:class:`set` of valid next symbols in the sequence.
         
-        If a wildcard is allowed, :py:data:`WILDCARD` will be returned.
+        If a wildcard is allowed, :py:data:`WILDCARD` will be returned as one
+        of the symbols in addition to any concretely allowed symbols.
         
         If it is valid for the sequence to end at this point,
         :py:data:`END_OF_SEQUENCE` will be in the returned set.
@@ -514,13 +553,177 @@ class Matcher(object):
                     if symbol is not None:
                         valid_symbols.add(symbol)
         
-        # If a wildcard is available, simplify to just that
-        if WILDCARD in valid_symbols:
-            valid_symbols = set([WILDCARD])
-        
         # If we're allowed to end the string here, also include
         # END_OF_SEQUENCE.
         if self.is_complete():
             valid_symbols.add(END_OF_SEQUENCE)
         
         return valid_symbols
+
+
+class ImpossibleSequenceError(Exception):
+    """
+    Thrown whne :py:func:`make_matching_sequence` is unable to find a suitable
+    sequence of symbols.
+    """
+    pass
+
+
+def make_matching_sequence(initial_sequence, *patterns, **kwargs):
+    """
+    Given a sequence of symbols, returns a new sequence based on this which
+    matches the supplied set of patterns. The new sequence will be a copy of
+    the supplied sequence with additional symbols inserted where necessary.
+    
+    Find the shortest sequence of symbols which is matched by the
+    supplied set of regular expressions.
+    
+    Parameters
+    ==========
+    initial_sequence : [symbol, ...]
+        The minimal set of entries which must be included in the sequence, in
+        the order they are required to appear.
+    patterns : str
+        A series of regular expression specificeations (as accepted by
+        :py:class:`Matcher`) which the generated sequence must simultaneously
+        satisfy.
+    depth_limit : int
+        Keyword-only argument specifying the maximum number of non-target data
+        units to try including before giving up. Defaults to 4.
+    symbol_priority : [symbol, ...]
+        Keyword-only argument. If supplied, orders possible symbols from most
+        to least preferable. Though this function will always return a sequence
+        of the shortest possible length, where several equal-length sequences
+        are possible, this argument may be used to influence which is returned.
+        Where some candidate symbols do not appear in the list they will be
+        treated as being at the end of the list (i.e. lowest priority) in
+        alphabetical order.  If this argument is not supplied (or is empty),
+        'wildcard' entries will be filled with the :py:data:`WILDCARD` sentinel
+        rather than a concrete symbol.
+    
+    Returns
+    =======
+    matching_sequence : [symbol, ...]
+        A sequence of symbols which satisfies all of the supplied patterns.
+        This will contain a superset of the sequence in ``initial_sequence``
+        where additional symbols may have been inserted.
+    
+    Raises
+    ======
+    ImpossibleSequenceError
+        Thrown if no sequence of symbols could be found which matches all of
+        the supplied patterns.
+    """
+    # NB: Python 2.x doesn't directly support keyword-only oarguments
+    depth_limit = kwargs.pop("depth_limit", 3)
+    symbol_priority = kwargs.pop("symbol_priority", [])
+    if kwargs:
+        raise TypeError("find_minimal_sequence() got unuexpected keyword argument(s) {}".format(
+            ", ".join(map(repr, kwargs)),
+        ))
+    
+    # Perform a breadth-first search of the pattern space
+    
+    # Queue of candidates to try
+    #     (symbols_so_far, symbols_remaining, matchers, this_depth_limit)
+    # Where:
+    # * symbols_so_far is the symbols of the generated sequence so far
+    # * symbols_remaining is the list of symbols from initial_sequence still to
+    #   included
+    # * matchers is a list of Matcher objects which have matched the
+    #   symbols_so_far
+    # * this_depth_limit is an integer giving the number of search levels
+    #   remaining before giving up.
+    initial_matchers = [Matcher(pattern) for pattern in patterns]
+    queue = deque([
+        ([], initial_sequence, initial_matchers, depth_limit),
+    ])
+    
+    while queue:
+        (
+            symbols_so_far,
+            symbols_remaining,
+            matchers,
+            this_depth_limit,
+        ) = queue.popleft()
+        
+        # Try and match the next required symbool
+        if len(symbols_remaining) == 0:
+            if all(m.is_complete() for m in matchers):
+                # No more symbols to match and found a suitable matching
+                # sequence! We're done.
+                return symbols_so_far
+        else:
+            if all(
+                symbols_remaining[0] in m.valid_next_symbols() or
+                WILDCARD in m.valid_next_symbols()
+                for m in matchers
+            ):
+                # The next symbol is matched by all matchers, move on!
+                new_matchers = deepcopy(matchers)
+                for m in new_matchers:
+                    m.match_symbol(symbols_remaining[0])
+                queue.append((
+                    symbols_so_far + [symbols_remaining[0]],
+                    symbols_remaining[1:],
+                    new_matchers,
+                    depth_limit,  # NB: Reset depth limit when a match is found
+                ))
+                continue
+        
+        # If we reach this point the current symbol in the provided sequence
+        # was not matched by all of the matchers. We must now try to inserting
+        # some other symbol into the sequence and see if it lets us get any
+        # further.
+        
+        if this_depth_limit <= 0:
+            # Depth limit reached, give up on this branch of the search
+            continue
+        
+        # Find the set of candidate symbols which would be accepted by all of
+        # the matchers
+        candidate_next_symbols = set([WILDCARD])
+        for matcher in matchers:
+            symbols = matcher.valid_next_symbols()
+            symbols.discard(END_OF_SEQUENCE)
+            if WILDCARD in symbols and WILDCARD in candidate_next_symbols:
+                candidate_next_symbols.update(symbols)
+            elif WILDCARD in candidate_next_symbols:
+                candidate_next_symbols = symbols
+            elif WILDCARD in symbols:
+                pass
+            else:
+                candidate_next_symbols.intersection_update(symbols)
+        
+        if len(candidate_next_symbols) == 0:
+            # Reached a dead-end (no symbol fits all patterns), give up on this
+            # branch of the search
+            continue
+        
+        # Descend the search into each of the potential next steps. We try
+        # candidates in the order indicated by the symbol_priority argument.
+        if WILDCARD in candidate_next_symbols and len(symbol_priority) > 0:
+            # Substitute wildcard for concrete symbols if possible
+            candidate_next_symbols.remove(WILDCARD)
+            candidate_next_symbols.update(symbol_priority)
+        candidate_symbols = sorted(
+            candidate_next_symbols,
+            key=lambda sym: (
+                (symbol_priority.index(sym), None)
+                if sym in symbol_priority else
+                (len(symbol_priority), sym)
+            )
+        )
+        for candidate_symbol in candidate_symbols:
+            new_matchers = deepcopy(matchers)
+            for m in new_matchers:
+                m.match_symbol(candidate_symbol)
+            queue.append((
+                symbols_so_far + [candidate_symbol],
+                symbols_remaining,
+                new_matchers,
+                this_depth_limit - 1,
+            ))
+            continue
+    
+    raise ImpossibleSequenceError()
