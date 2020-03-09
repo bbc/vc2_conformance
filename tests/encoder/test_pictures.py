@@ -59,7 +59,6 @@ from vc2_conformance.bitstream import (
     ParseInfo,
     Sequence,
     autofill_and_serialise_sequence,
-    AUTO,
 )
 
 from vc2_conformance.decoder.transform_data_syntax import (
@@ -1179,10 +1178,14 @@ class TestMakePictureParseDataUnit(object):
     
     def test_default_pic_num(self, codec_features, natural_picture):
         natural_picture = natural_picture.copy()
-        del natural_picture["pic_num"]
         
+        natural_picture["pic_num"] = 123
         data_unit = make_picture_parse_data_unit(codec_features, natural_picture)
-        assert data_unit["picture_parse"]["picture_header"]["picture_number"] == AUTO
+        assert data_unit["picture_parse"]["picture_header"]["picture_number"] == 123
+        
+        del natural_picture["pic_num"]
+        data_unit = make_picture_parse_data_unit(codec_features, natural_picture)
+        assert "picture_number" not in data_unit["picture_parse"]["picture_header"]
     
     @pytest.mark.parametrize("profile", Profiles)
     def test_minimum_qindex(self, codec_features, natural_picture, profile):
@@ -1318,11 +1321,16 @@ class TestMakeFragmentParseDataUnits(object):
     
     def test_default_pic_num(self, codec_features, natural_picture):
         natural_picture = natural_picture.copy()
-        del natural_picture["pic_num"]
         
+        natural_picture["pic_num"] = 123
         data_units = make_fragment_parse_data_units(codec_features, natural_picture)
         for data_unit in data_units:
-            assert data_unit["fragment_parse"]["fragment_header"]["picture_number"] == AUTO
+            assert data_unit["fragment_parse"]["fragment_header"]["picture_number"] == 123
+        
+        del natural_picture["pic_num"]
+        data_units = make_fragment_parse_data_units(codec_features, natural_picture)
+        for data_unit in data_units:
+            assert "picture_number" not in data_unit["fragment_parse"]["fragment_header"]
     
     def test_minimum_qindex(self, codec_features, natural_picture):
         # Chose a data rate high enough that very little quantisation would
