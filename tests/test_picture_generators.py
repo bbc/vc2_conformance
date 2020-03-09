@@ -310,22 +310,28 @@ def test_xyz_to_native():
     ]
     
     actual = iter(xyz_to_native(vp, pcm, pictures))
-    for _ in pictures:
-        g, b, r = next(actual)
+    for pic_num, _ in enumerate(pictures):
+        picture = next(actual)
+        assert picture["pic_num"] == pic_num
+        
+        g = picture["Y"]
+        b = picture["C1"]
+        r = picture["C2"]
+        
         # Tip of triangle
-        assert r[0, 0] == 255
-        assert g[0, 0] == 255
-        assert b[0, 0] == 255
+        assert r[0][0] == 255
+        assert g[0][0] == 255
+        assert b[0][0] == 255
         
         # Hole in triangle
-        assert r[32, 32] == 0
-        assert g[32, 32] == 0
-        assert b[32, 32] == 0
+        assert r[32][32] == 0
+        assert g[32][32] == 0
+        assert b[32][32] == 0
         
         # Bottom of blue '2'
-        assert r[127, 125] == 0
-        assert g[127, 125] == 0
-        assert b[127, 125] == 255
+        assert r[127][125] == 0
+        assert g[127][125] == 0
+        assert b[127][125] == 255
     assert list(actual) == []
 
 
@@ -533,7 +539,7 @@ class TestMovingSprite(object):
         pictures = iter(moving_sprite(video_parameters, picture_coding_mode, 3))
         
         for rows in top_corner_pixels:
-            y, cb, cr = next(pictures)
+            y = np.array(next(pictures)["Y"])
             
             # Check top-left pixels have expected values
             assert np.array_equal(y[0:2, 0:4*8:8], np.array(rows)*255)
@@ -570,7 +576,11 @@ def test_mid_gray(primaries, transfer_function):
     
     pictures = list(mid_gray(vp, PictureCodingModes.pictures_are_frames))
     assert len(pictures) == 1
-    y, c1, c2 = pictures[0]
+    
+    picture = pictures[0]
+    y = np.array(picture["Y"])
+    c1 = np.array(picture["C1"])
+    c2 = np.array(picture["C2"])
     
     assert np.array_equal(y, np.full(y.shape, 128))
     
@@ -602,7 +612,9 @@ def test_linear_ramps(primaries, transfer_function):
     
     pictures = list(linear_ramps(vp, PictureCodingModes.pictures_are_frames))
     assert len(pictures) == 1
-    g, b, r = pictures[0]
+    g = np.array(pictures[0]["Y"])
+    b = np.array(pictures[0]["C1"])
+    r = np.array(pictures[0]["C2"])
     
     rgb = np.stack([r, g, b], axis=-1) / 255.0
     
@@ -681,6 +693,26 @@ class TestGenericPictureGeneratorBehaviour(object):
     
     @pytest.mark.parametrize("ssm", SourceSamplingModes)
     @pytest.mark.parametrize("pcm", PictureCodingModes)
+    def test_produces_correct_dct_type(self, picture_generator, vp, ssm, pcm):
+        vp["source_sampling"] = ssm
+        
+        for picture in list(picture_generator(vp, pcm)):
+            assert isinstance(picture["Y"], list)
+            assert isinstance(picture["Y"][0], list)
+            assert type(picture["Y"][0][0]) is int
+            
+            assert isinstance(picture["C1"], list)
+            assert isinstance(picture["C1"][0], list)
+            assert type(picture["C1"][0][0]) is int
+            
+            assert isinstance(picture["C2"], list)
+            assert isinstance(picture["C2"][0], list)
+            assert type(picture["C2"][0][0]) is int
+            
+            assert isinstance(picture["pic_num"], int)
+    
+    @pytest.mark.parametrize("ssm", SourceSamplingModes)
+    @pytest.mark.parametrize("pcm", PictureCodingModes)
     def test_produces_whole_number_of_frames(self, picture_generator, vp, ssm, pcm):
         vp["source_sampling"] = ssm
         
@@ -689,6 +721,13 @@ class TestGenericPictureGeneratorBehaviour(object):
             assert len(pictures) == 1
         else:
             assert len(pictures) == 2
+            
+            # Even/odd fields must have even/odd picture numbers
+            assert pictures[0]["pic_num"] % 2 == 0
+            assert pictures[1]["pic_num"] % 2 == 1
+            
+            # Picture numbers must be consecutive
+            assert pictures[1]["pic_num"] == pictures[0]["pic_num"] + 1
     
     @pytest.mark.parametrize("ssm", SourceSamplingModes)
     @pytest.mark.parametrize("pcm", PictureCodingModes)
@@ -697,7 +736,10 @@ class TestGenericPictureGeneratorBehaviour(object):
         vp["source_sampling"] = ssm
         vp["color_diff_format_index"] = cds
         
-        y, c1, c2 = list(picture_generator(vp, pcm))[0]
+        picture = list(picture_generator(vp, pcm))[0]
+        y = np.array(picture["Y"])
+        c1 = np.array(picture["C1"])
+        c2 = np.array(picture["C2"])
         
         dd = compute_dimensions_and_depths(vp, pcm)
         

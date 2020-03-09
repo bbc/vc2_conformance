@@ -10,6 +10,7 @@ from vc2_data_tables import (
     Profiles,
     Levels,
     ParseCodes,
+    PictureCodingModes,
 )
 
 from vc2_conformance.encoder.sequence import make_sequence
@@ -76,14 +77,10 @@ def test_picture_types(profile, fragment_slice_count):
     codec_features["profile"] = profile
     codec_features["fragment_slice_count"] = fragment_slice_count
     
-    y, c1, c2 = next(mid_gray(
+    pictures = list(mid_gray(
         codec_features["video_parameters"],
         codec_features["picture_coding_mode"],
     ))
-    pictures = [
-        {"Y": y.tolist(), "C1": c1.tolist(), "C2": c2.tolist(), "pic_num": pic_num}
-        for pic_num in range(100, 104)
-    ]
     
     seq = make_sequence(codec_features, pictures)
     
@@ -114,16 +111,17 @@ def patch_unconstratined_level_sequence_restrictions():
 
 
 def test_level_sequence_restrictions_obeyed(patch_unconstratined_level_sequence_restrictions):
-    y, c1, c2 = next(mid_gray(
-        MINIMAL_CODEC_FEATURES["video_parameters"],
-        MINIMAL_CODEC_FEATURES["picture_coding_mode"],
-    ))
-    pictures = [
-        {"Y": y.tolist(), "C1": c1.tolist(), "C2": c2.tolist(), "pic_num": pic_num}
-        for pic_num in range(100, 104)
-    ]
+    # Ensure two pictures (2 fields == 1 frame)
+    codec_features = MINIMAL_CODEC_FEATURES.copy()
+    codec_features["picture_coding_mode"] = PictureCodingModes.pictures_are_fields
     
-    seq = make_sequence(MINIMAL_CODEC_FEATURES, pictures)
+    pictures = list(mid_gray(
+        codec_features["video_parameters"],
+        codec_features["picture_coding_mode"],
+    ))
+    assert len(pictures) == 2
+    
+    seq = make_sequence(codec_features, pictures)
     
     assert [
         data_unit["parse_info"]["parse_code"]
@@ -131,10 +129,6 @@ def test_level_sequence_restrictions_obeyed(patch_unconstratined_level_sequence_
     ] == [
         ParseCodes.sequence_header,
         ParseCodes.auxiliary_data,
-        ParseCodes.sequence_header,
-        ParseCodes.high_quality_picture,
-        ParseCodes.sequence_header,
-        ParseCodes.high_quality_picture,
         ParseCodes.sequence_header,
         ParseCodes.high_quality_picture,
         ParseCodes.sequence_header,

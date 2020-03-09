@@ -23,16 +23,11 @@ def picture_generator_to_test_case(picture_generator, codec_features):
         picture_coding_mode=codec_features["picture_coding_mode"],
     )
     
-    for pic_num, (y, c1, c2) in enumerate(picture_generator(
+    for picture in picture_generator(
         codec_features["video_parameters"],
         codec_features["picture_coding_mode"],
-    )):
-        out.pictures.append({
-            "Y": y,
-            "C1": c1,
-            "C2": c2,
-            "pic_num": pic_num,
-        })
+    ):
+        out.pictures.append(picture)
     
     return out
 

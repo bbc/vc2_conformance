@@ -11,8 +11,9 @@ Generators
 ----------
 
 Test sequence generators take the form of Python generator functions which
-yield a series of ``(y, c1, c2)`` tuples containing integer picture component
-values. These must then be encoded by a suitable VC-2 encoder.
+yield a series of ``{"Y": [[int, ...], ...], "C1": [[int, ...], ...], "C2":
+[[int, ...], ...], "pic_num": int}`` dictionaries containing integer picture
+component values. These must then be encoded by a suitable VC-2 encoder.
 
 .. autofunction:: moving_sprite
 
@@ -231,10 +232,27 @@ def progressive_to_pictures(video_parameters, picture_coding_mode, pictures):
 def xyz_to_native(video_parameters, picture_coding_mode, pictures):
     """
     Given a sequence of CIE XYZ pictures as 3D arrays, produce a corresponding
-    sequence of (y, c1, c2) tuples for the specified video format.
+    sequence of dictionaries for the specified video format of the form::
+    
+        {
+            "Y": [[int, ...], ...],
+            "C1": [[int, ...], ...],
+            "C2": [[int, ...], ...],
+            "pic_num": int,
+        }
+    
+    As constructed by the VC-2 pseudocode.
+    
+    Picture numbers are assigned starting from zero.
     """
-    for picture in pictures:
-        yield from_xyz(picture, video_parameters)
+    for pic_num, picture in enumerate(pictures):
+        y, c1, c2 = from_xyz(picture, video_parameters)
+        yield {
+            "Y": y.tolist(),
+            "C1": c1.tolist(),
+            "C2": c2.tolist(),
+            "pic_num": pic_num,
+        }
 
 
 def pipe(next_function):
@@ -472,9 +490,19 @@ def mid_gray(video_parameters, picture_coding_mode):
         1 << (dd["C2"].depth_bits - 1),
     )
     
-    yield (y, c1, c2)
+    yield {
+        "Y": y.tolist(),
+        "C1": c1.tolist(),
+        "C2": c2.tolist(),
+        "pic_num": 0,
+    }
     if picture_coding_mode == PictureCodingModes.pictures_are_fields:
-        yield (y, c1, c2)
+        yield {
+            "Y": y.tolist(),
+            "C1": c1.tolist(),
+            "C2": c2.tolist(),
+            "pic_num": 1,
+        }
 
 
 @pipe(xyz_to_native)
