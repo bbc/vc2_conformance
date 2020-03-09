@@ -1047,7 +1047,7 @@ class TestMakePictureParseDataUnit(object):
             slices_y=7,
             fragment_slice_count=0,
             lossless=False,
-            picture_bytes=100,
+            picture_bytes=500,
             quantization_matrix=None,
         )
     
