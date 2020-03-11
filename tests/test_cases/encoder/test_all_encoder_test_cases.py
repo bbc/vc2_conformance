@@ -1,5 +1,9 @@
 import pytest
 
+import os
+
+import sys
+
 import numpy as np
 
 from vc2_conformance.test_cases import ENCODER_TEST_CASE_GENERATOR_REGISTRY
@@ -9,6 +13,13 @@ from vc2_conformance.file_format import compute_dimensions_and_depths
 from vc2_data_tables import (
     PictureCodingModes,
 )
+
+# Add test root directory to path for sample_codec_features test utility module
+sys.path.append(os.path.join(
+    os.path.dirname(__file__),
+    "..",
+    "..",
+))
 
 from sample_codec_features import MINIMAL_CODEC_FEATURES
 
