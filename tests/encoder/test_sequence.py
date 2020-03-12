@@ -13,6 +13,8 @@ from vc2_data_tables import (
     PictureCodingModes,
 )
 
+from vc2_conformance.symbol_re import ImpossibleSequenceError
+
 from vc2_conformance.encoder.sequence import make_sequence
 
 from vc2_conformance.picture_generators import mid_gray
@@ -148,6 +150,14 @@ def test_custom_sequence_restrictions_obeyed():
         codec_features["video_parameters"],
         codec_features["picture_coding_mode"],
     ))
+    
+    # Should fail to create conflicting sequence
+    with pytest.raises(ImpossibleSequenceError):
+        seq = make_sequence(
+            codec_features,
+            pictures,
+            "end_of_sequence $",
+        )
     
     seq = make_sequence(
         codec_features,
