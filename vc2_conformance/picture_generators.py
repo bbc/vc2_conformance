@@ -23,11 +23,18 @@ component values. These must then be encoded by a suitable VC-2 encoder.
 
 .. autofunction:: linear_ramps
 
+The following function may be used to produce longer sequences by repeating the
+pictures produced by the above generators:
+
+.. autofunction:: repeat_pictures
+
 """
 
 import os
 
 import functools
+
+from copy import deepcopy
 
 from itertools import cycle
 
@@ -60,6 +67,7 @@ __all__ = [
     "static_sprite",
     "mid_gray",
     "linear_ramps",
+    "repeat_pictures",
 ]
 
 
@@ -330,6 +338,17 @@ def read_and_adapt_pointer_sprite(video_parameters):
         sprite = resize(sprite, sprite_width, sprite_height)
     
     return sprite
+
+
+def repeat_pictures(pictures, count):
+    """
+    Repeat the sequence of pictures in an iterable of, renumbering the elements
+    along the way.
+    """
+    for pic_num, picture in enumerate(list(pictures) * count):
+        picture = deepcopy(picture)
+        picture["pic_num"] = pic_num
+        yield picture
 
 
 @pipe(xyz_to_native)

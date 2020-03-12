@@ -4,6 +4,8 @@ import os
 
 import numpy as np
 
+from itertools import cycle
+
 from vc2_data_tables import (
     ColorDifferenceSamplingFormats,
     PictureCodingModes,
@@ -35,6 +37,7 @@ from vc2_conformance.picture_generators import (
     xyz_to_native,
     pipe,
     read_and_adapt_pointer_sprite,
+    repeat_pictures,
     moving_sprite,
     static_sprite,
     mid_gray,
@@ -405,6 +408,37 @@ class TestReadAndAdaptPointerSprite(object):
         assert np.all(np.isclose(rgb[126, 118, :], [0.0, 0.0, 1.0], rtol=0.001))
 
 
+class TestRepeatPictures(object):
+    
+    @pytest.fixture
+    def pictures(self):
+        return [
+            {"Y": [[11]], "C1": [[21]], "C2": [[31]], "pic_num": 0},
+            {"Y": [[12]], "C1": [[22]], "C2": [[32]], "pic_num": 1},
+            {"Y": [[13]], "C1": [[23]], "C2": [[33]], "pic_num": 2},
+        ]
+    
+    def test_zero_repeats(self, pictures):
+        assert list(repeat_pictures(iter(pictures), 0)) == []
+    
+    def test_one_repeat(self, pictures):
+        assert list(repeat_pictures(iter(pictures), 1)) == pictures
+    
+    def test_multiple_repeats(self, pictures):
+        repeated = list(repeat_pictures(iter(pictures), 3))
+        
+        assert len(repeated) == len(pictures) * 3
+        
+        # Check repeated
+        for orig, new in zip(cycle(pictures), repeated):
+            assert orig["Y"] == new["Y"]
+            assert orig["C1"] == new["C1"]
+            assert orig["C2"] == new["C2"]
+        
+        # Check picture numbers consecutive
+        assert [p["pic_num"] for p in repeated] == list(range(len(repeated)))
+
+
 class TestMovingSprite(object):
     
     @pytest.fixture
@@ -666,6 +700,7 @@ class TestGenericPictureGeneratorBehaviour(object):
         static_sprite,
         mid_gray,
         linear_ramps,
+        lambda *a, **kw: repeat_pictures(mid_gray(*a, **kw), 2),
     ])
     def picture_generator(self, request):
         return request.param
@@ -718,16 +753,21 @@ class TestGenericPictureGeneratorBehaviour(object):
         
         pictures = list(picture_generator(vp, pcm))
         if pcm == PictureCodingModes.pictures_are_frames:
-            assert len(pictures) == 1
+            assert len(pictures) >= 1
         else:
-            assert len(pictures) == 2
+            # Must have even number of frames
+            assert len(pictures) >= 2
+            assert (len(pictures) % 2) == 0
             
             # Even/odd fields must have even/odd picture numbers
-            assert pictures[0]["pic_num"] % 2 == 0
-            assert pictures[1]["pic_num"] % 2 == 1
+            for i, picture in enumerate(pictures):
+                assert (picture["pic_num"] % 2) == (i % 2)
             
-            # Picture numbers must be consecutive
-            assert pictures[1]["pic_num"] == pictures[0]["pic_num"] + 1
+        # Picture numbers must be consecutive
+        last_num = pictures[0]["pic_num"]
+        for picture in pictures[1:]:
+            assert picture["pic_num"] == last_num + 1
+            last_num += 1
     
     @pytest.mark.parametrize("ssm", SourceSamplingModes)
     @pytest.mark.parametrize("pcm", PictureCodingModes)
