@@ -342,25 +342,25 @@ def test_to_xyz():
     
     # First row: solid colours
     #                            Wht      Blk    Red     Grn       Blu
-    assert np.array_equal(r[0], [255,      0,    255,      0,        0])
-    assert np.array_equal(g[0], [255, 255, 0, 0,   0, 0, 255, 255,   0, 0])
-    assert np.array_equal(b[0], [255,      0,      0,      0,      255])
+    assert np.allclose(r[0], [255,      0,    255,      0,        0], atol=1)
+    assert np.allclose(g[0], [255, 255, 0, 0,   0, 0, 255, 255,   0, 0], atol=1)
+    assert np.allclose(b[0], [255,      0,      0,      0,      255], atol=1)
     
     # Second row, dimmed R and B channels
     #                            Wht    Blk    Red     Grn     Blu
-    assert np.array_equal(r[1], [128,    0,    128,      0,      0])
-    assert np.array_equal(g[1], [255, 0, 0, 0,   0, 0, 255, 0,   0, 0])
-    assert np.array_equal(b[1], [128,    0,      0,      0,    128])
+    assert np.allclose(r[1], [128,    0,    128,      0,      0], atol=1)
+    assert np.allclose(g[1], [255, 0, 0, 0,   0, 0, 255, 0,   0, 0], atol=1)
+    assert np.allclose(b[1], [128,    0,      0,      0,    128], atol=1)
     
     # Third row: all-white
-    assert np.array_equal(r[2], [255,      255,      255,      255,      255])
-    assert np.array_equal(g[2], [255, 255, 255, 255, 255, 255, 255, 255, 255, 255])
-    assert np.array_equal(b[2], [255,      255,      255,      255,      255])
+    assert np.allclose(r[2], [255,      255,      255,      255,      255], atol=1)
+    assert np.allclose(g[2], [255, 255, 255, 255, 255, 255, 255, 255, 255, 255], atol=1)
+    assert np.allclose(b[2], [255,      255,      255,      255,      255], atol=1)
     
     # Fourth row: all-black
-    assert np.array_equal(r[3], [0,    0,    0,    0,    0])
-    assert np.array_equal(g[3], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-    assert np.array_equal(b[3], [0,    0,    0,    0,    0])
+    assert np.allclose(r[3], [0,    0,    0,    0,    0], atol=1)
+    assert np.allclose(g[3], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], atol=1)
+    assert np.allclose(b[3], [0,    0,    0,    0,    0], atol=1)
 
 
 @pytest.mark.parametrize("luma_offset,luma_excursion", [(0, 255), (64, 876)])
