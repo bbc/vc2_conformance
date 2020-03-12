@@ -139,3 +139,31 @@ def test_level_sequence_restrictions_obeyed(patch_unconstratined_level_sequence_
     
     # Sanity check
     assert serialize_and_decode(seq) == pictures
+
+
+def test_custom_sequence_restrictions_obeyed():
+    codec_features = MINIMAL_CODEC_FEATURES.copy()
+    
+    pictures = list(mid_gray(
+        codec_features["video_parameters"],
+        codec_features["picture_coding_mode"],
+    ))
+    
+    seq = make_sequence(
+        codec_features,
+        pictures,
+        "sequence_header (padding_data high_quality_picture)+ end_of_sequence $",
+    )
+    
+    assert [
+        data_unit["parse_info"]["parse_code"]
+        for data_unit in seq["data_units"]
+    ] == [
+        ParseCodes.sequence_header,
+        ParseCodes.padding_data,
+        ParseCodes.high_quality_picture,
+        ParseCodes.end_of_sequence,
+    ]
+    
+    # Sanity check
+    assert serialize_and_decode(seq) == pictures

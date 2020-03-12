@@ -58,7 +58,7 @@ def make_padding_data_unit():
     )
 
 
-def make_sequence(codec_features, pictures, minimum_qindex=0):
+def make_sequence(codec_features, pictures, *data_unit_patterns, minimum_qindex=0):
     """
     Generate a complete VC-2 bitstream based on the provided set of codec
     features and encoding the specified set of pictures.
@@ -71,6 +71,11 @@ def make_sequence(codec_features, pictures, minimum_qindex=0):
         ``picture_number`` fields will be omitted in the output.
         See :py:mod:`vc2_conformance.encoder.pictures` for details of the
         picture compression process.
+    data_unit_patterns : str
+        Any additional arguments will be interpreted as
+        :py:mod:`vc2_conformance.symbol_re` regular expressions which control
+        the data units produced in the stream. This may be used to cause
+        additional data units (e.g. padding) to be inserted into the stream.
     minimum_qindex : int
         Specifies the minimum quantization index to be used. Must be 0 for
         lossless codecs.
@@ -99,6 +104,7 @@ def make_sequence(codec_features, pictures, minimum_qindex=0):
         "sequence_header .* end_of_sequence",
         # Certain levels may provide additional constraints
         LEVEL_SEQUENCE_RESTRICTIONS[codec_features["level"]].sequence_restriction_regex,
+        *data_unit_patterns,
         symbol_priority=[
             "padding_data",
             "sequence_header",
