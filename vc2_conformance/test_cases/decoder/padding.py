@@ -18,7 +18,7 @@ from vc2_conformance.test_cases import (
     decoder_test_case_generator,
 )
 
-from vc2_conformance.picture_generators import mid_gray
+from vc2_conformance.picture_generators import mid_gray, repeat_pictures
 
 from vc2_conformance.encoder import (
     make_sequence,
@@ -86,13 +86,18 @@ def padding_data(codec_features):
     Where padding data is not permitted by the VC-2 level chosen, no test cases
     will be generated.
     """
-    # Generate a base sequence in which we'll modify the padding data units
+    # Generate a base sequence in which we'll modify the padding data units. We
+    # ensure there are always at least two pictures in the sequences to make
+    # premature termination obvious.
     try:
         base_sequence = make_sequence(
             codec_features,
-            mid_gray(
-                codec_features["video_parameters"],
-                codec_features["picture_coding_mode"],
+            repeat_pictures(
+                mid_gray(
+                    codec_features["video_parameters"],
+                    codec_features["picture_coding_mode"],
+                ),
+                2,
             ),
             # Insert padding data between every data unit
             "sequence_header (padding_data .)* padding_data end_of_sequence $",
