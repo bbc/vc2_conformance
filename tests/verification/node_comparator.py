@@ -200,8 +200,8 @@ class NodeComparator(object):
             if field in ignore_fields:
                 continue
             
-            v1 = getattr(n1, field)
-            v2 = getattr(n2, field)
+            v1 = getattr(n1, field, None)
+            v2 = getattr(n2, field, None)
             
             if isinstance(v1, ast.AST) and isinstance(v2, ast.AST):
                 match = self.compare(v1, v2)

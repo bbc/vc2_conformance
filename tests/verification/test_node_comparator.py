@@ -9,12 +9,16 @@ class TestEquality(object):
     
     def test_types_differ(self):
         n1 = ast.parse("a + b + c")
-        n2 = ast.parse("a+\\\nb-c")
+        n2 = ast.parse("(\\\n      a+b-c\\\n)")
         
         match = NodeComparator().compare(n1, n2)
         assert match.reason == "Nodes have differing types (Add and Sub)"
-        assert match.n1_row_col == (1, 6)
-        assert match.n2_row_col == (2, 1)
+        # In Python 3.8, the Add and Sub nodes ceased to have lineno/col_offset
+        # attributes meaning that we instead can only get the position of the
+        # containing BinOp.
+        #                    Python v<3.8   v>=3.8
+        assert match.n1_row_col in ((1, 6), (1, 0))
+        assert match.n2_row_col in ((2, 9), (2, 6))
     
     def test_non_list_field_differs(self):
         n1 = ast.parse("abc")
@@ -92,7 +96,12 @@ class TestOverides(object):
         # A version which allows names to be swapped for numbers (but not the
         # other way around)
         class MyNC(NodeComparator):
+            # Python v<3.8
             def compare_Name_Num(self, n1, n2):
+                return self.compare_Name_Constant(n1, n2)
+            
+            # Python v>=3.8
+            def compare_Name_Constant(self, n1, n2):
                 return True
         
         n1 = ast.parse("a + b - c")

@@ -57,8 +57,21 @@ class Identical(NodeComparator):
             "decorator_list": (None, ignore_named_decorators("ref_pseudocode")),
         })
     
-    
     def compare_Num_Attribute(self, n1, n2):
+        # 'Num' changed to 'Constant' and 'Attribute' to 'Name' in Python v3.8,
+        # this method is provided for backward compatibility
+        return self.compare_Constant_Attribute(n1, n2)
+    
+    def compare_Num_Name(self, n1, n2):
+        # 'Num' changed to 'Constant' and 'Attribute' to 'Name' in Python v3.8,
+        # this method is provided for backward compatibility
+        return self.compare_Num_Attribute(n1, n2)
+    
+    def compare_Constant_Name(self, n1, n2):
+        # Allowed change no. 3
+        return self.compare_Num_Attribute(n1, n2)
+    
+    def compare_Constant_Attribute(self, n1, n2):
         # Allowed change no. 3
         
         # Resolve the constant used
@@ -77,10 +90,6 @@ class Identical(NodeComparator):
             return True
         else:
             return self.generic_compare(n1, n2)
-    
-    def compare_Num_Name(self, n1, n2):
-        # Allowed change no. 3
-        return self.compare_Num_Attribute(n1, n2)
 
 
 class SerdesChangesOnly(NodeComparator):
