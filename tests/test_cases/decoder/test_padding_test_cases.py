@@ -12,23 +12,15 @@ from vc2_data_tables import (
     Levels,
 )
 
-from io import BytesIO
-
-from vc2_conformance.state import State
-
 from vc2_conformance.bitstream import (
-    Deserialiser,
-    BitstreamReader,
     Sequence,
     DataUnit,
     ParseInfo,
     Padding,
-    parse_sequence,
 )
 
 from vc2_conformance.test_cases.decoder.padding import (
     replace_padding_data,
-    make_dummy_end_of_sequence,
     padding_data,
 )
 
@@ -69,16 +61,6 @@ def test_replace_padding_data():
     assert new_seq["data_units"][0]["padding"]["bytes"] == b"baz"
     assert new_seq["data_units"][1]["padding"]["bytes"] == b"baz"
     assert new_seq["data_units"][2] == orig_seq["data_units"][2]
-
-
-def test_make_dummy_end_of_sequence():
-    # Should deserialise correctly
-    f = BytesIO(make_dummy_end_of_sequence())
-    with Deserialiser(BitstreamReader(f)) as des:
-        parse_sequence(des, State())
-    
-    assert len(des.context["data_units"]) == 1
-    assert des.context["data_units"][0]["parse_info"]["parse_code"] == ParseCodes.end_of_sequence
 
 
 def test_padding_data():
