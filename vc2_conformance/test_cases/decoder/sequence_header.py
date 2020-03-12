@@ -15,7 +15,10 @@ from vc2_conformance.bitstream import SequenceHeader
 
 from vc2_conformance.video_parameters import set_source_defaults
 
-from vc2_conformance.picture_generators import static_sprite
+from vc2_conformance.picture_generators import (
+    static_sprite,
+    repeat_pictures,
+)
 
 from vc2_conformance.encoder import (
     rank_base_video_format_similarity,
@@ -113,3 +116,33 @@ def source_parameters_encodings(codec_features):
                 base_video_format,
             )
         )
+
+
+@decoder_test_case_generator
+def repeated_sequence_headers(codec_features):
+    """
+    This test case ensures that a decoder can handle streams which include more
+    than one sequence header.
+    """
+    try:
+        # Generate a base sequence in which we'll replace the sequence headers
+        # later. We ensure we have at least two pictures to ensure we get
+        # pictures and sequence headers being interleaved.
+        sequence = make_sequence(
+            codec_features,
+            repeat_pictures(
+                static_sprite(
+                    codec_features["video_parameters"],
+                    codec_features["picture_coding_mode"],
+                ),
+                2,
+            ),
+            # Force an extra sequence header between every data unit
+            "(sequence_header .)+"
+        )
+    except ImpossibleSequenceError:
+        # Do not try to force levels which don't support this level of sequence
+        # header interleaving to accept it.
+        return
+    
+    yield sequence

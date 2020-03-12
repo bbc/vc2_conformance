@@ -35,6 +35,7 @@ from vc2_conformance.bitstream import (
 from vc2_conformance.test_cases.decoder import (
     replace_sequence_header_options,
     source_parameters_encodings,
+    repeated_sequence_headers,
 )
 
 # Add test root directory to path for sample_codec_features test utility module
@@ -161,3 +162,25 @@ def test_source_parameters_encodings():
         state_and_params == decoder_states_and_parameters[0]
         for state_and_params in decoder_states_and_parameters[1:]
     )
+
+
+def test_repeated_sequence_headers():
+    codec_features = MINIMAL_CODEC_FEATURES
+    
+    all_sequences = list(repeated_sequence_headers(codec_features))
+    
+    assert len(all_sequences) == 1
+    
+    sequence = all_sequences[0]
+    
+    # All sequence headers must be identical
+    sh_count = 0
+    for data_unit in sequence["data_units"]:
+        if data_unit["parse_info"]["parse_code"] == ParseCodes.sequence_header:
+            sh_count += 1
+            
+            sh = data_unit["sequence_header"]
+            assert sh == sequence["data_units"][0]["sequence_header"]
+    
+    # Multiple sequence headers must be present
+    assert sh_count >= 3
