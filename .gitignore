@@ -10,6 +10,7 @@ local/
 share/
 build/
 dist/
+*.egg-info/
 pip-selfcheck.json
 
 *.pdf
