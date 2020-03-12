@@ -1,7 +1,19 @@
+import sys
+
 from setuptools import setup, find_packages
 
 with open("vc2_conformance/version.py", "r") as f:
     exec(f.read())
+
+install_requires = ["enum34", "bitarray", "sentinels", "six", "vc2_data_tables"]
+
+# Use old versions of libraries which have deprecated Python 2.7 support
+if sys.version[0] == "2":
+    install_requires.append("pillow<7")
+    install_requires.append("numpy<1.17")
+else:
+    install_requires.append("pillow")
+    install_requires.append("numpy")
 
 setup(
     name="vc2_conformance",
@@ -27,7 +39,7 @@ setup(
         "Programming Language :: Python :: 3",
     ],
     keywords="smpte-RP-2042-3 vc2 dirac dirac-pro conformance",
-    install_requires=["enum34", "bitarray", "sentinels", "six", "vc2_data_tables", "numpy", "pillow"],
+    install_requires=install_requires,
     entry_points = {
         'console_scripts': [
             'vc2-bitstream-viewer=vc2_conformance.scripts.vc2_bitstream_viewer:main',
