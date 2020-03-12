@@ -126,14 +126,20 @@ class TestCase(object):
         self.case_name = case_name
     
     
+    @property
+    def name(self):
+        """
+        A human-readable name for this test case
+        """
+        if self.subcase_name is None:
+            return self.case_name
+        else:
+            return "{}[{}]".format(self.case_name, self.subcase_name)
+    
     def __repr__(self):
         return "<{} {}>".format(
             type(self).__name__,
-            (
-                self.case_name
-                if self.subcase_name is None else
-                "{}[{}]".format(self.case_name, self.subcase_name)
-            ),
+            self.name,
         )
     
     def __eq__(self, other):

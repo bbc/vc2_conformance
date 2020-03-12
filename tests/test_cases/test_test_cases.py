@@ -9,9 +9,11 @@ def test_test_case():
     assert t.value == 1234
     
     t.case_name = "my_test_case"
+    assert t.name == "my_test_case"
     assert repr(t) == "<TestCase my_test_case>"
     
     t.subcase_name = "100"
+    assert t.name == "my_test_case[100]"
     assert repr(t) == "<TestCase my_test_case[100]>"
     
     assert t == tc.TestCase(1234, case_name="my_test_case", subcase_name="100")
