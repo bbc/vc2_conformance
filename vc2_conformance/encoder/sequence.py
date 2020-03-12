@@ -22,6 +22,8 @@ from vc2_conformance.bitstream import (
     Sequence,
     DataUnit,
     ParseInfo,
+    Padding,
+    AuxiliaryData,
 )
 
 from vc2_conformance.symbol_re import make_matching_sequence
@@ -49,12 +51,14 @@ def make_end_of_sequence_data_unit():
 def make_auxiliary_data_unit():
     return DataUnit(
         parse_info=ParseInfo(parse_code=ParseCodes.auxiliary_data),
+        auxiliary_data=AuxiliaryData(),
     )
 
 
 def make_padding_data_unit():
     return DataUnit(
         parse_info=ParseInfo(parse_code=ParseCodes.padding_data),
+        padding=Padding(),
     )
 
 
