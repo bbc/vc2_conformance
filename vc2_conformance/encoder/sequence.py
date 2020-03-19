@@ -62,7 +62,7 @@ def make_padding_data_unit():
     )
 
 
-def make_sequence(codec_features, pictures, *data_unit_patterns, minimum_qindex=0):
+def make_sequence(codec_features, pictures, *data_unit_patterns, **kwargs):
     """
     Generate a complete VC-2 bitstream based on the provided set of codec
     features and encoding the specified set of pictures.
@@ -75,14 +75,14 @@ def make_sequence(codec_features, pictures, *data_unit_patterns, minimum_qindex=
         ``picture_number`` fields will be omitted in the output.
         See :py:mod:`vc2_conformance.encoder.pictures` for details of the
         picture compression process.
-    data_unit_patterns : str
+    *data_unit_patterns : str
         Any additional arguments will be interpreted as
         :py:mod:`vc2_conformance.symbol_re` regular expressions which control
         the data units produced in the stream. This may be used to cause
         additional data units (e.g. padding) to be inserted into the stream.
     minimum_qindex : int
-        Specifies the minimum quantization index to be used. Must be 0 for
-        lossless codecs.
+        Keyword-only argument. Default 0. Specifies the minimum quantization
+        index to be used. Must be 0 for lossless codecs.
     
     Returns
     =======
@@ -90,6 +90,9 @@ def make_sequence(codec_features, pictures, *data_unit_patterns, minimum_qindex=
         The VC-2 bitstream sequence, ready for serialization using
         :py:func:`~vc2_conformance.bitstream.vc2_autofill.autofill_and_serialise_sequence`.
     """
+    minimum_qindex = kwargs.pop("minimum_qindex", 0)
+    assert not kwargs, "Unexpected arguments: {}".format(kwargs)
+    
     pictures_only_sequence = Sequence(data_units=[])
     for picture in pictures:
         pictures_only_sequence["data_units"].extend(
@@ -112,7 +115,7 @@ def make_sequence(codec_features, pictures, *data_unit_patterns, minimum_qindex=
         symbol_priority=[
             "padding_data",
             "sequence_header",
-        ],
+        ]
     )
     
     # Functions for producing the necessary data units
