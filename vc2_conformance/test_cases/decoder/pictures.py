@@ -310,9 +310,14 @@ def slice_padding_data(codec_features):
     will be filled with the following (where slice sizes are sufficiently large
     to allow it).
     
-    * Zeros
-    * Non-zero data
+    * All-zeros
+    * All-ones
+    * Alternating ones and zeros
     * A the bits which encode an end-of-sequence data unit (which must be ignored)
+    
+    As an additional side-effect, these tests also verify that a codec can read
+    'beyond' a bounded block as all picture components in turn will be set to a
+    length 0.
     """
     # The values with which to fill padding data
     #
