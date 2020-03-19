@@ -14,6 +14,7 @@ __all__ = [
     "quote",  # shlex.quote
     "string_types",  # (str, ) in Python 3.x or (str, unicode) in Python 2.x
     "gcd",  # math.gcd
+    "zip",  # zip in Python 3.x or itertools.izip in Python 2.x
 ]
 
 import sys
@@ -79,3 +80,8 @@ try:
     from math import gcd  # Python >= 3.5
 except ImportError:
     from fractions import gcd  # Python < 3.5
+
+try:
+    from itertools import izip as zip  # Python 2.x
+except ImportError:
+    zip = zip

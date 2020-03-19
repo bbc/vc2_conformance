@@ -1,5 +1,6 @@
 from vc2_conformance._py2x_compat import *
 
+from itertools import count
 
 def test_zip_longest():
     # Sanity check as only renamed in Py 2.x
@@ -47,3 +48,13 @@ def test_unwrap():
         f_wrapper_wrapper,
         stop=lambda f: f is f_wrapper,
     ) is f_wrapper
+
+
+def test_zip():
+    # Check zip doesn't block on infinite iterators
+    out = list(zip(range(3), zip(count(1), count(2))))
+    assert out == [
+        (0, (1, 2)),
+        (1, (2, 3)),
+        (2, (3, 4)),
+    ]
