@@ -4,6 +4,10 @@ Tests which verify that codecs correctly process pictures in a stream.
 
 from bitarray import bitarray
 
+from itertools import cycle
+
+from copy import deepcopy
+
 from vc2_data_tables import (
     Profiles,
     ParseCodes,
@@ -21,9 +25,8 @@ from vc2_conformance.test_cases import (
 )
 
 from vc2_conformance.picture_generators import (
-    moving_sprite,
     mid_gray,
-    linear_ramps,
+    repeat_pictures,
 )
 
 from vc2_conformance.encoder import (
@@ -298,28 +301,92 @@ def iter_slices_in_sequence(codec_features, sequence):
                         sy = 0
 
 
-#@decoder_test_case_generator
-#def slice_padding_data(codec_features):
-#    """
-#    Picture slices (13.5.3) and (13.5.4) may contain padding bits beyond the
-#    end of the transform coefficients for each picture component. These test
-#    cases check that decoders correctly ignore these values. Padding values
-#    will be filled with the following (where slice sizes are sufficiently large
-#    to allow it).
-#    
-#    * Zeros
-#    * Non-zero data
-#    * A the bits which encode an end-of-sequence data unit (which must be ignored)
-#    """
-#    sequence = make_sequence(
-#        codec_features,
-#        # These pictures encode to all zeros which should give the highest
-#        # possible compression.
-#        mid_gray(
-#            codec_features["video_parameters"],
-#            codec_features["picture_coding_mode"],
-#        ),
-#    )
-#    
-#    # TODO: Use iter_slices_in_sequence and fill_*_slice_padding to generate
-#    # versions with different padding bytes
+@decoder_test_case_generator
+def slice_padding_data(codec_features):
+    """
+    Picture slices (13.5.3) and (13.5.4) may contain padding bits beyond the
+    end of the transform coefficients for each picture component. These test
+    cases check that decoders correctly ignore these values. Padding values
+    will be filled with the following (where slice sizes are sufficiently large
+    to allow it).
+    
+    * Zeros
+    * Non-zero data
+    * A the bits which encode an end-of-sequence data unit (which must be ignored)
+    """
+    # The values with which to fill padding data
+    #
+    # [(filler, byte_align, explanation), ...]
+    filler_values = [
+        (b"\x00", False, "all_zeros"),
+        (b"\xFF", False, "all_ones"),
+        (b"\xAA", False, "alternating_1s_and_0s"),
+        (b"\x55", False, "alternating_0s_and_1s"),
+        (make_dummy_end_of_sequence(), True, "dummy_end_of_sequence"),
+    ]
+    
+    # The picture components expected
+    if codec_features["profile"] == Profiles.high_quality:
+        picture_components = ["Y", "C1", "C2"]
+    elif codec_features["profile"] == Profiles.low_delay:
+        picture_components = ["Y", "C"]
+    
+    # Generate single-frame mid-gray sequences with the specified padding data
+    base_sequence = make_sequence(
+        codec_features,
+        # These pictures encode to all zeros which should give the highest
+        # possible compression.
+        mid_gray(
+            codec_features["video_parameters"],
+            codec_features["picture_coding_mode"],
+        ),
+    )
+    
+    for filler, byte_align, explanation in filler_values:
+        for component in picture_components:
+            sequence = deepcopy(base_sequence)
+            for (state, sx, sy, slice) in iter_slices_in_sequence(
+                codec_features,
+                sequence,
+            ):
+                if codec_features["profile"] == Profiles.high_quality:
+                    # For lossless coding, extend the slice size to ensure some
+                    # padding data is used
+                    if codec_features["lossless"]:
+                        min_length = (
+                            slice["slice_y_length"] +
+                            slice["slice_c1_length"] +
+                            slice["slice_c2_length"] +
+                            8
+                        )
+                    else:
+                        min_length = 0
+                    
+                    fill_hq_slice_padding(
+                        state,
+                        sx,
+                        sy,
+                        slice,
+                        component,
+                        filler,
+                        byte_align,
+                        min_length,
+                    )
+                elif codec_features["profile"] == Profiles.low_delay:
+                    fill_ld_slice_padding(
+                        state,
+                        sx,
+                        sy,
+                        slice,
+                        component,
+                        filler,
+                        byte_align,
+                    )
+    
+            yield TestCase(
+                sequence,
+                "{}_{}".format(
+                    component,
+                    explanation,
+                )
+            )

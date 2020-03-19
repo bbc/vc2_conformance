@@ -10,8 +10,11 @@ from io import BytesIO
 
 from fractions import Fraction
 
+from collections import defaultdict
+
 from vc2_data_tables import (
     Profiles,
+    ParseCodes,
 )
 
 from vc2_conformance.state import State
@@ -23,6 +26,7 @@ from vc2_conformance.bitstream import (
     LDSlice,
     hq_slice,
     ld_slice,
+    autofill_and_serialise_sequence,
 )
 
 from vc2_conformance.picture_generators import (
@@ -48,6 +52,7 @@ from vc2_conformance.test_cases.decoder.pictures import (
     fill_hq_slice_padding,
     fill_ld_slice_padding,
     iter_slices_in_sequence,
+    slice_padding_data,
 )
 
 
@@ -678,3 +683,67 @@ def test_iter_slices_in_sequence(profile, fragment_slice_count):
                 _, sx, sy, _ = next(it)
                 assert exp_sx == sx
                 assert exp_sy == sy
+
+
+@pytest.mark.parametrize("profile,lossless", [
+    (Profiles.high_quality, False),
+    (Profiles.high_quality, True),
+    (Profiles.low_delay, False),
+])
+def test_slice_padding_data(profile, lossless):
+    # Check that the expected padding data for each picture component makes it
+    # into the stream
+    
+    codec_features = MINIMAL_CODEC_FEATURES.copy()
+    codec_features["profile"] = profile
+    codec_features["lossless"] = lossless
+    if lossless:
+        codec_features["picture_bytes"] = 0
+    
+    # The first 10 bytes of padding data for each component
+    # {padding_field_name: set([bitarray, ...]), ...}
+    component_padding_first_16_bits = defaultdict(set)
+    
+    # The number of times "BBCD" appears (byte aligned) in the bitstream
+    end_of_sequence_counts = []
+    
+    def find_slice_padding_bytes(d):
+        if isinstance(d, dict):
+            for key, value in d.items():
+                if key.endswith("_block_padding"):
+                    component_padding_first_16_bits[key].add(value[:16].to01())
+                else:
+                    find_slice_padding_bytes(value)
+        elif isinstance(d, list):
+            for v in d:
+                find_slice_padding_bytes(v)
+    
+    for test_case in slice_padding_data(codec_features):
+        find_slice_padding_bytes(test_case.value)
+        f = BytesIO()
+        
+        autofill_and_serialise_sequence(f, test_case.value)
+        
+        end_of_sequence = b"BBCD" + bytearray([ParseCodes.end_of_sequence])
+        end_of_sequence_counts.append(f.getvalue().count(end_of_sequence))
+    
+    if profile == Profiles.high_quality:
+        components = ["Y", "C1", "C2"]
+    elif profile == Profiles.low_delay:
+        components = ["Y", "C"]
+    
+    # Check that the non-aligned padding values appear as expected
+    for component in components:
+        key = "{}_block_padding".format(component.lower())
+        assert "0000000000000000" in component_padding_first_16_bits[key]
+        assert "1111111111111111" in component_padding_first_16_bits[key]
+        assert "1010101010101010" in component_padding_first_16_bits[key]
+        assert "0101010101010101" in component_padding_first_16_bits[key]
+    
+    # Check the final test cases insert extra (byte aligned!) end-of-sequence
+    # blocks in the padding data (NB: we don't test that they appear in the
+    # right places... but hey...)
+    for count in end_of_sequence_counts[:-len(components)]:
+        assert count == 1
+    for count in end_of_sequence_counts[-len(components):]:
+        assert count > 1
