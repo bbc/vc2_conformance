@@ -29,8 +29,10 @@ from vc2_conformance.test_cases import (
 )
 
 from vc2_conformance.picture_generators import (
+    moving_sprite,
+    static_sprite,
     mid_gray,
-    repeat_pictures,
+    linear_ramps,
 )
 
 from vc2_conformance.picture_encoding import filter_bit_shift
@@ -893,3 +895,77 @@ def dangling_bounded_block_data(codec_features):
                 )
             except UnsatisfiableBlockSizeError as e:
                 pass
+
+
+@decoder_test_case_generator
+def interlace_mode(codec_features):
+    """
+    Static and moving synthetic image sequences which may be used to verify
+    that the interlacing modes are correctly reported to display equipment.
+    
+    See :py:func:`vc2_conformance.picture_generators.moving_sprite` for a
+    description of the still sequence.
+    
+    See :py:func:`vc2_conformance.picture_generators.moving_sprite` for a
+    description of the moving sequence.
+    """
+    yield TestCase(
+        make_sequence(
+            codec_features,
+            static_sprite(
+                codec_features["video_parameters"],
+                codec_features["picture_coding_mode"],
+            ),
+        ),
+        "static_sequence",
+    )
+    
+    yield TestCase(
+        make_sequence(
+            codec_features,
+            moving_sprite(
+                codec_features["video_parameters"],
+                codec_features["picture_coding_mode"],
+            ),
+        ),
+        "moving_sequence",
+    )
+
+
+@decoder_test_case_generator
+def static_grey(codec_features):
+    """
+    A static mid-grey frame.
+    
+    This test image represents the special case of a maximally compressible
+    image where the codec need not represent any transform coefficients
+    explicitly.
+    
+    This test represents an extreme case for lossless (variable bitrate)
+    codecs.
+    """
+    return make_sequence(
+        codec_features,
+        mid_gray(
+            codec_features["video_parameters"],
+            codec_features["picture_coding_mode"],
+        ),
+    )
+
+
+@decoder_test_case_generator
+def static_ramps(codec_features):
+    """
+    A static frame containing linear brightness ramps for white and primary
+    red, green and blue (in that order, from top-to-bottom).
+    
+    This test may be used to check that the correct colour model information
+    has been passed on to the display.
+    """
+    return make_sequence(
+        codec_features,
+        linear_ramps(
+            codec_features["video_parameters"],
+            codec_features["picture_coding_mode"],
+        ),
+    )
