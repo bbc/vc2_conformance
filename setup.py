@@ -5,7 +5,15 @@ from setuptools import setup, find_packages
 with open("vc2_conformance/version.py", "r") as f:
     exec(f.read())
 
-install_requires = ["enum34", "bitarray", "sentinels", "six", "vc2_data_tables"]
+install_requires = [
+    "enum34",
+    "bitarray",
+    "sentinels",
+    "six",
+    "vc2_data_tables",
+    "vc2_bit_widths",
+    "vc2_conformance_data",
+]
 
 # Use old versions of libraries which have deprecated Python 2.7 support
 if sys.version[0] == "2":
