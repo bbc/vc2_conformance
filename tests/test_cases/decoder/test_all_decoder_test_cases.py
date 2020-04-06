@@ -4,6 +4,8 @@ import os
 
 import sys
 
+import json
+
 from io import BytesIO
 
 from vc2_data_tables import Profiles
@@ -66,7 +68,11 @@ from vc2_conformance.decoder import (
 )
 def test_all_decoder_test_cases(codec_features, test_case):
     # Every test case for every basic video mode must produce a valid bitstream
-    # containing pictures with the correct format.
+    # containing pictures with the correct format. Any JSON metadata must also
+    # be seriallisable.
+    
+    # Mustn't crash!
+    json.dumps(test_case.metadata)
     
     def output_picture_callback(picture, video_parameters):
         assert video_parameters == codec_features["video_parameters"]
