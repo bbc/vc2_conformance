@@ -51,7 +51,8 @@ Test cases are assigned a name based on the name of the function which produced
 them. Where a test case generator generates several test cases, these are
 automatically assigned sequential identifiers. Alternatively, test case
 generators may wrap returned test cases in :py:class:`TestCase` objects in
-which custom names are provided.
+which custom names are provided. Additionally, JSON-serialisable metadata may
+be attached to a :py:class:`TestCase`.
 
 .. autoclass:: TestCase
 
@@ -105,7 +106,7 @@ picture_coding_mode : :py:class:`~vc2_data_tables.PictureCodingModes`
 
 class TestCase(object):
     
-    def __init__(self, value, subcase_name=None, case_name=None):
+    def __init__(self, value, subcase_name=None, case_name=None, metadata=None):
         """
         A test case, produced by a test case generator function.
         
@@ -120,10 +121,15 @@ class TestCase(object):
         case_name : str or None
             The name of the test case. If None, the ``case_name`` will be
             populated automatically.
+        metadata : object or None
+            Optional JSON-serialisable metadata associated with this test case.
+            The meaning and formatting of of this metadata is left to the
+            individual test case to define.
         """
         self.value = value
         self.subcase_name = subcase_name
         self.case_name = case_name
+        self.metadata = metadata
     
     
     @property
@@ -147,7 +153,8 @@ class TestCase(object):
             type(self) is type(other) and
             self.value == other.value and
             self.case_name == other.case_name and
-            self.subcase_name == other.subcase_name
+            self.subcase_name == other.subcase_name and
+            self.metadata == other.metadata
         )
 
 
