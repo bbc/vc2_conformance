@@ -17,7 +17,10 @@ from vc2_conformance.symbol_re import ImpossibleSequenceError
 
 from vc2_conformance.encoder.sequence import make_sequence
 
-from vc2_conformance.picture_generators import mid_gray
+from vc2_conformance.picture_generators import (
+    mid_gray,
+    repeat_pictures,
+)
 
 from vc2_conformance.bitstream import autofill_and_serialise_sequence
 
@@ -87,6 +90,32 @@ def test_picture_types(profile, fragment_slice_count):
     seq = make_sequence(codec_features, pictures)
     
     assert serialize_and_decode(seq) == pictures
+
+
+@pytest.mark.parametrize("kwargs,exp_qis", [
+    ({}, [0, 0, 0]),
+    ({"minimum_qindex": 3}, [3, 3, 3]),
+    ({"minimum_qindex": [1, 2, 3]}, [1, 2, 3]),
+])
+def test_minimum_qindex(kwargs, exp_qis):
+    codec_features = MINIMAL_CODEC_FEATURES.copy()
+    
+    pictures = list(repeat_pictures(mid_gray(
+        codec_features["video_parameters"],
+        codec_features["picture_coding_mode"],
+    ), 3))
+    
+    assert len(pictures) == 3
+    
+    seq = make_sequence(codec_features, pictures, **kwargs)
+    
+    qis = []
+    for data_unit in seq["data_units"]:
+        if "picture_parse" in data_unit:
+            tx_data = data_unit["picture_parse"]["wavelet_transform"]["transform_data"]
+            qis.append(tx_data["hq_slices"][0]["qindex"])
+    
+    assert qis == exp_qis
 
 
 @pytest.yield_fixture

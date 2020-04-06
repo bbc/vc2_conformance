@@ -12,7 +12,11 @@ compressed according to the required codec specifications.
 
 from functools import partial
 
+from itertools import repeat
+
 from vc2_data_tables import ParseCodes
+
+from vc2_conformance._py2x_compat import zip
 
 from vc2_conformance.level_constraints import (
     LEVEL_SEQUENCE_RESTRICTIONS,
@@ -80,9 +84,11 @@ def make_sequence(codec_features, pictures, *data_unit_patterns, **kwargs):
         :py:mod:`vc2_conformance.symbol_re` regular expressions which control
         the data units produced in the stream. This may be used to cause
         additional data units (e.g. padding) to be inserted into the stream.
-    minimum_qindex : int
+    minimum_qindex : int or [int, ...]
         Keyword-only argument. Default 0. Specifies the minimum quantization
-        index to be used. Must be 0 for lossless codecs.
+        index to be used. If a list is provided, specifies the minimum
+        quantization index separately for each picture. Must be 0 for lossless
+        codecs.
     
     Returns
     =======
@@ -90,11 +96,14 @@ def make_sequence(codec_features, pictures, *data_unit_patterns, **kwargs):
         The VC-2 bitstream sequence, ready for serialization using
         :py:func:`~vc2_conformance.bitstream.vc2_autofill.autofill_and_serialise_sequence`.
     """
-    minimum_qindex = kwargs.pop("minimum_qindex", 0)
+    minimum_qindices = kwargs.pop("minimum_qindex", 0)
     assert not kwargs, "Unexpected arguments: {}".format(kwargs)
     
+    if not isinstance(minimum_qindices, list):
+        minimum_qindices = repeat(minimum_qindices)
+    
     pictures_only_sequence = Sequence(data_units=[])
-    for picture in pictures:
+    for picture, minimum_qindex in zip(pictures, minimum_qindices):
         pictures_only_sequence["data_units"].extend(
             make_picture_data_units(codec_features, picture, minimum_qindex)
         )
