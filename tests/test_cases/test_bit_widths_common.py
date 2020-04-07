@@ -145,11 +145,11 @@ class TestGetTestPictures(object):
         
         for picture in analysis_luma_pictures + synthesis_luma_pictures:
             assert picture.picture.shape == (32, 128)
-            assert tuple(np.unique(picture.picture)) == (-128, 0, 127)
+            assert tuple(np.unique(picture.picture)) == (0, 128, 255)
             
         for picture in analysis_color_diff_pictures + synthesis_color_diff_pictures:
             assert picture.picture.shape == (16, 64)
-            assert tuple(np.unique(picture.picture)) == (-512, 0, 511)
+            assert tuple(np.unique(picture.picture)) == (0, 512, 1023)
     
     @pytest.mark.parametrize("quantisation_matrix,exp_same", [
         # Use default (for which an optimised version is available)

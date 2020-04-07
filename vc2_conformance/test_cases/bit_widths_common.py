@@ -150,6 +150,7 @@ def get_test_pictures(codec_features, bundle_filename=get_bundle_filename()):
             synthesis_test_patterns,
         )
         
+        # Generate packed test pictures
         analysis_pictures, synthesis_pictures = generate_test_pictures(
             picture_width,
             picture_height,

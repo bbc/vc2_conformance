@@ -638,9 +638,6 @@ def iter_slices_in_sequence(codec_features, sequence):
     """
     Iterate over all of the slices in a sequence.
     
-    Utility for use with :py:class:`fill_hq_slice_padding` and
-    :py:class:`fill_ld_slice_padding`.
-    
     Generates a series of (:py:class:`~vc2_conformance.state.State`, sx, sy,
     :py:class:`~vc2_conformance.bitstream.LDSlice` or
     :py:class:`~vc2_conformance.bitstream.HQSlice`) tuples, one for each slice
