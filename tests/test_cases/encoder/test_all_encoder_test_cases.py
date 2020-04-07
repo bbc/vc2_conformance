@@ -4,6 +4,8 @@ import os
 
 import sys
 
+import json
+
 import numpy as np
 
 from vc2_conformance.test_cases import ENCODER_TEST_CASE_GENERATOR_REGISTRY
@@ -35,6 +37,9 @@ def test_all_encoder_test_cases(test_case):
         test_case.value.video_parameters,
         test_case.value.picture_coding_mode,
     )
+    
+    # Metadata should be serialisable (mustn't crash)
+    json.dumps(test_case.metadata)
     
     last_pic_num = None
     for picture in test_case.value.pictures:

@@ -30,6 +30,13 @@ __all__ = [
 ]
 
 
+class MissingStaticAnalysisError(KeyError):
+    """
+    Exception thrown when a static analysis is not available for the codec
+    configuration used.
+    """
+
+
 def get_bundle_filename():
     """
     Get the filename to use for loading the VC-2 bit widths analysis bundle
@@ -53,8 +60,8 @@ def get_test_pictures(codec_features, bundle_filename=get_bundle_filename()):
     Gets a set of test pictures for a codec with the specified codec
     configuration.
     
-    Raises a KeyError if no static filter analysis is available for the
-    specified codec.
+    Raises a :py:exc:`MissingStaticAnalysisError` if no static filter analysis
+    is available for the specified codec.
     
     Parameters
     ==========
@@ -87,18 +94,21 @@ def get_test_pictures(codec_features, bundle_filename=get_bundle_filename()):
     )
     
     # Load the test pattern specifications
-    (
-        analysis_signal_bounds,
-        synthesis_signal_bounds,
-        analysis_test_patterns,
-        synthesis_test_patterns,
-    ) = bundle_get_static_filter_analysis(
-        bundle_filename,
-        codec_features["wavelet_index"],
-        codec_features["wavelet_index_ho"],
-        codec_features["dwt_depth"],
-        codec_features["dwt_depth_ho"],
-    )
+    try:
+        (
+            analysis_signal_bounds,
+            synthesis_signal_bounds,
+            analysis_test_patterns,
+            synthesis_test_patterns,
+        ) = bundle_get_static_filter_analysis(
+            bundle_filename,
+            codec_features["wavelet_index"],
+            codec_features["wavelet_index_ho"],
+            codec_features["dwt_depth"],
+            codec_features["dwt_depth_ho"],
+        )
+    except KeyError:
+        raise MissingStaticAnalysisError()
     
     all_analysis_pictures = []
     all_synthesis_pictures = []

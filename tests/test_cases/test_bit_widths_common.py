@@ -28,6 +28,7 @@ from sample_codec_features import MINIMAL_CODEC_FEATURES
 from vc2_conformance.test_cases.bit_widths_common import (
     get_bundle_filename,
     get_test_pictures,
+    MissingStaticAnalysisError,
 )
 
 
@@ -108,6 +109,16 @@ class TestGetTestPictures(object):
             ColorDifferenceSamplingFormats.color_4_2_0
         
         return codec_features
+    
+    def test_missing_static_analysis(
+        self,
+        codec_features,
+    ):
+        # Check that the built-in bundle is intact and also that we get some
+        # pictures out of the correct types/sizes
+        codec_features["dwt_depth"] = 99
+        with pytest.raises(MissingStaticAnalysisError):
+            get_test_pictures(codec_features)
     
     @pytest.mark.parametrize("quantisation_matrix", [
         None,

@@ -32,33 +32,27 @@ from vc2_conformance.test_cases.decoder.pictures import (
 )
 
 
-class MissingStaticAnalysisError(KeyError):
-    """
-    Exception thrown when a static analysis is not available for the codec
-    configuration used.
-    """
 
 
 @decoder_test_case_generator
 def signal_range(codec_features):
     """
-    A static frame containing linear brightness ramps for white and primary
-    red, green and blue (in that order, from top-to-bottom).
+    Verify that a decoder has sufficient numerical range to handle extreme
+    input signals.
     
-    This test may be used to check that the correct colour model information
-    has been passed on to the display.
+    Decoder implementers should ensure that no integer clamping or overflows
+    occur while processing these test pictures.
     
-    The generated test cases are provided with 
+    The metadata provided with each test case gives, for each picture, the test
+    points checked by that picture. See
+    :py:class:`vc2_bit_widths.helpers.TestPoint` for details.
     """
-    try:
-        (
-            analysis_luma_pictures,
-            synthesis_luma_pictures,
-            analysis_color_diff_pictures,
-            synthesis_color_diff_pictures,
-        ) = get_test_pictures(codec_features)
-    except KeyError:
-        raise MissingStaticAnalysisError()
+    (
+        analysis_luma_pictures,
+        synthesis_luma_pictures,
+        analysis_color_diff_pictures,
+        synthesis_color_diff_pictures,
+    ) = get_test_pictures(codec_features)
     
     dimensions_and_depths = compute_dimensions_and_depths(
         codec_features["video_parameters"],

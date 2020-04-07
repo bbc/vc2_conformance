@@ -4,36 +4,27 @@ import os
 
 import sys
 
-import logging
+from copy import deepcopy
 
 import numpy as np
 
-from copy import deepcopy
-
-from io import BytesIO
-
 from vc2_data_tables import (
-    Profiles,
+    WaveletFilters,
     PictureCodingModes,
     ColorDifferenceSamplingFormats,
 )
 
 from vc2_conformance.state import State
 
-from vc2_conformance.bitstream import (
-    autofill_and_serialise_sequence,
-)
+from vc2_conformance.picture_encoding import picture_encode
 
-from vc2_conformance.decoder import (
-    init_io,
-    parse_sequence,
-)
+from vc2_conformance.video_parameters import set_coding_parameters
 
 from vc2_conformance.test_cases.bit_widths_common import (
     MissingStaticAnalysisError,
 )
 
-from vc2_conformance.test_cases.decoder.signal_range import (
+from vc2_conformance.test_cases.encoder.signal_range import (
     signal_range,
 )
 
@@ -47,23 +38,8 @@ sys.path.append(os.path.join(
 from sample_codec_features import MINIMAL_CODEC_FEATURES
 
 
-def encode_and_decode(sequence):
-    f = BytesIO()
-    autofill_and_serialise_sequence(f, sequence)
-    f.seek(0)
-    
-    pictures = []
-    state = State(
-        _output_picture_callback=lambda p, vp: pictures.append(p)
-    )
-    init_io(state, f)
-    parse_sequence(state)
-    
-    return pictures
-
-
 class TestSignalRange(object):
-    
+
     @pytest.fixture
     def codec_features(self):
         return deepcopy(MINIMAL_CODEC_FEATURES)
@@ -74,11 +50,6 @@ class TestSignalRange(object):
         with pytest.raises(MissingStaticAnalysisError):
             list(signal_range(codec_features))
     
-    @pytest.mark.parametrize("profile,lossless", [
-        (Profiles.high_quality, False),
-        (Profiles.high_quality, True),
-        (Profiles.low_delay, False),
-    ])
     @pytest.mark.parametrize("picture_coding_mode", PictureCodingModes)
     @pytest.mark.parametrize("color_diff_format_index", [
         ColorDifferenceSamplingFormats.color_4_4_4,
@@ -87,24 +58,19 @@ class TestSignalRange(object):
     def test_works_as_intended(
         self,
         codec_features,
-        profile,
-        lossless,
         picture_coding_mode,
         color_diff_format_index,
     ):
-        codec_features["profile"] = profile
-        if lossless:
-            codec_features["lossless"] = True
-            codec_features["picture_bytes"] = None
-        else:
-            # Allow *plenty* of space to ensure correct QIs can be used
-            codec_features["lossless"] = False
-            codec_features["picture_bytes"] = (8 * 4) * 3 * 2
+        # A simple transform
+        codec_features["wavelet_index"] = WaveletFilters.le_gall_5_3
+        codec_features["wavelet_index_ho"] = WaveletFilters.le_gall_5_3
+        codec_features["dwt_depth"] = 1
+        codec_features["dwt_depth_ho"] = 0
         
         # Check works when force an even number of pictures
         codec_features["picture_coding_mode"] = picture_coding_mode
         
-        # Odd, and differing color depth
+        # Odd bit depths/offsets (Luma 8 bit, color diff, 10 bit)
         vp = codec_features["video_parameters"]
         vp["luma_offset"] = 42
         vp["luma_excursion"] = 255
@@ -115,6 +81,10 @@ class TestSignalRange(object):
             "C1": 10,
             "C2": 10,
         }
+        
+        # Make frame large enough to ensure some blank areas
+        vp["frame_width"] = 48
+        vp["frame_height"] = 32
         
         # Check works when luma/color diff are different sizes
         vp["color_diff_format_index"] = color_diff_format_index
@@ -129,10 +99,10 @@ class TestSignalRange(object):
         ])
         
         # Without going to great lengths we can only really verify that the
-        # test patterns designed to produce min/max responses in the output
-        # produce (clamped) maximal or minimal outputs...
+        # test patterns designed to produce encoded values of the correct
+        # polarity
         for test_case in test_cases:
-            pictures = encode_and_decode(test_case.value)
+            pictures = test_case.value.pictures
             component = test_case.subcase_name
             picture_bit_width = component_bit_widths[component]
             
@@ -141,39 +111,65 @@ class TestSignalRange(object):
             assert len(test_case.metadata) <= len(pictures) <= len(test_case.metadata) + 1
             
             for picture, test_points in zip(pictures, test_case.metadata):
+                # Test pattern pictures should be saturated
+                assert tuple(np.unique(picture[component])) == (
+                    0,
+                    1<<(picture_bit_width-1),
+                    (1<<picture_bit_width) - 1,
+                )
+                
+                # Encode test pattern and get the coefficients for just the
+                # required component
+                state = State(
+                    wavelet_index=codec_features["wavelet_index"],
+                    wavelet_index_ho=codec_features["wavelet_index_ho"],
+                    dwt_depth=codec_features["dwt_depth"],
+                    dwt_depth_ho=codec_features["dwt_depth_ho"],
+                )
+                set_coding_parameters(
+                    state,
+                    codec_features["video_parameters"],
+                    codec_features["picture_coding_mode"],
+                )
+                picture_encode(state, deepcopy(picture))
+                encoded = state["{}_transform".format(component.lower())]
+                
+                # Check polarity w.r.t. test patterns
+                checked = False
                 for test_point in test_points:
                     if (
                         test_point["level"] == 1 and
-                        test_point["array_name"] in ("Input", "Output")
+                        test_point["array_name"] in (
+                            "L''",
+                            "H''",
+                        )
                     ):
+                        checked = True
+                        
                         x = test_point["tx"]
                         y = test_point["ty"]
+                        
+                        level = 1
+                        if test_point["array_name"] == "L''":
+                            if y % 2 == 0:
+                                orient = "LL"
+                                level -= 1
+                            else:
+                                orient = "LH"
+                        else:
+                            if y % 2 == 0:
+                                orient = "HL"
+                            else:
+                                orient = "HH"
+                        y //= 2
+                        
                         maximise = test_point["maximise"]
                         
+                        value = encoded[level][orient][y][x]
+                        
                         if maximise:
-                            assert picture[component][y][x] == (1<<picture_bit_width) - 1
+                            assert value > 0
                         else:
-                            assert picture[component][y][x] == 0
-    
-    def test_warnings(self, codec_features, caplog):
-        # Make it necessary to quantize more than the test patterns otherwise
-        # would by providing far too little space (here we don't provide any
-        # bits for transform coefficients so the QI must be set to zero out all
-        # values)
-        codec_features["profile"] = Profiles.high_quality
-        codec_features["picture_bytes"] = (
-            codec_features["slices_x"] * codec_features["slices_y"] * 4
-        )
-        
-        # Check that warnings are printed
-        caplog.set_level(logging.WARNING)
-        test_cases = list(signal_range(codec_features))
-        assert "WARNING" in caplog.text
-        assert "qindex" in caplog.text
-        
-        # Should have provided test cases for all components
-        assert set(tc.subcase_name for tc in test_cases) == set([
-            "Y",
-            "C1",
-            "C2",
-        ])
+                            assert value < 0
+                
+                assert checked
