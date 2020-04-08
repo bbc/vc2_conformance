@@ -55,6 +55,8 @@ import os
 import re
 import json
 
+import numpy as np
+
 from collections import OrderedDict, namedtuple
 
 from vc2_conformance.vc2_math import intlog2
@@ -245,15 +247,25 @@ def write_picture(picture, video_parameters, picture_coding_mode, file):
     dims_and_depths = compute_dimensions_and_depths(video_parameters, picture_coding_mode)
     
     for component, (width, height, depth_bits, bytes_per_sample) in dims_and_depths.items():
-        shift = (bytes_per_sample*8) - depth_bits
+        # We use native Python integers in a dtype=object array to ensure we
+        # can support arbitrary bit depths.
+        #
+        # NB: we make a copy as we will mutate later.
+        values = np.array(picture[component], dtype=object)
         
-        for row in picture[component]:
-            for value in row:
-                value <<= shift
-                file.write(bytearray(
-                    (value >> (n*8)) & 0xFF
-                    for n in range(bytes_per_sample - 1, -1, -1)
-                ))
+        # Shift up to full width
+        shift = (bytes_per_sample*8) - depth_bits
+        values <<= shift
+        
+        # Write as big-endian representation (NB: this rather explicit
+        # expansion supports arbitrary depth values beyond those natively
+        # supported by Numpy).
+        out = np.zeros((height, width, bytes_per_sample), dtype=np.uint8)
+        for byte in reversed(range(bytes_per_sample)):
+            out[:, :, byte] = values
+            values >>= 8
+        
+        file.write(out.tobytes())
 
 
 def write_metadata(picture, video_parameters, picture_coding_mode, file):
@@ -342,20 +354,21 @@ def read_picture(video_parameters, picture_coding_mode, picture_number, file):
     
     dims_and_depths = compute_dimensions_and_depths(video_parameters, picture_coding_mode)
     for component, (width, height, depth_bits, bytes_per_sample) in dims_and_depths.items():
-        picture[component] = new_array(width, height)
+        data = np.frombuffer(
+            file.read(height * width * bytes_per_sample),
+            dtype=np.uint8,
+        ).reshape(height, width, bytes_per_sample)
+        
+        values = np.zeros((height, width), dtype=object)
+        
+        for byte in range(bytes_per_sample):
+            if byte != 0:
+                values <<= 8
+            values += data[:, :, byte]
         
         shift = (bytes_per_sample*8) - depth_bits
+        values >>= shift
         
-        for row in range(height):
-            row_values = picture[component][row]
-            
-            for col in range(width):
-                value = 0
-                for b in bytearray(file.read(bytes_per_sample)):
-                    value = (value << 8) | b
-                
-                value >>= shift
-                
-                row_values[col] = value
+        picture[component] = values.tolist()
     
     return picture
