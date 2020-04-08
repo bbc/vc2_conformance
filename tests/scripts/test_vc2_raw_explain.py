@@ -147,7 +147,7 @@ def test_explain_component_order_and_sampling(matrix, color_diff_format, expecte
             color_diff_offset=0,
             color_diff_excursion=255,
         ),
-        "Each component consists of 200x50 8 bit (1 byte) values. Values run from 0 (video level 0.00) to 255 (video level 1.00).",
+        "Each component consists of 200x50 8 bit values. Values run from 0 (video level 0.00) to 255 (video level 1.00).",
     ),
     # Components differ in size
     (
@@ -162,10 +162,10 @@ def test_explain_component_order_and_sampling(matrix, color_diff_format, expecte
             color_diff_excursion=255,
         ),
         (
-            "The G component consists of 200x50 8 bit (1 byte) values. "
+            "The G component consists of 200x50 8 bit values. "
             "Values run from 0 (video level 0.00) to 255 (video level 1.00)."
             "\n\n"
-            "The R and B components consist of 100x25 8 bit (1 byte) values. "
+            "The R and B components consist of 100x25 8 bit values. "
             "Values run from 0 (video level 0.00) to 255 (video level 1.00)."
         )
     ),
@@ -182,10 +182,10 @@ def test_explain_component_order_and_sampling(matrix, color_diff_format, expecte
             color_diff_excursion=255,
         ),
         (
-            "The Y component consists of 200x50 8 bit (1 byte) values. "
+            "The Y component consists of 200x50 8 bit values. "
             "Values run from 0 (video level 0.00) to 255 (video level 1.00)."
             "\n\n"
-            "The Cb and Cr components consist of 200x50 8 bit (1 byte) values. "
+            "The Cb and Cr components consist of 200x50 8 bit values. "
             "Values run from 0 (video level -0.50) to 255 (video level 0.50)."
         )
     ),
@@ -202,15 +202,15 @@ def test_explain_component_order_and_sampling(matrix, color_diff_format, expecte
             color_diff_excursion=1023,
         ),
         (
-            "The Y component consists of 200x50 16 bit (2 byte) values "
-            "in big-endian byte order with 10 significant bits "
-            "(most significant bit aligned). "
-            "Values run from 0 (video level 0.00) to 65472 (video level 1.00)."
+            "The Y component consists of 200x50 10 bit values "
+            "stored as 16 bit (2 byte) values (with the 6 most "
+            "significant bits set to 0) in little-endian byte order. "
+            "Values run from 0 (video level 0.00) to 1023 (video level 1.00)."
             "\n\n"
-            "The Cb and Cr components consist of 200x50 16 bit (2 byte) values "
-            "in big-endian byte order with 10 significant bits "
-            "(most significant bit aligned). "
-            "Values run from 0 (video level -0.50) to 65472 (video level 0.50)."
+            "The Cb and Cr components consist of 200x50 10 bit values "
+            "stored as 16 bit (2 byte) values (with the 6 most "
+            "significant bits set to 0) in little-endian byte order. "
+            "Values run from 0 (video level -0.50) to 1023 (video level 0.50)."
         )
     ),
     # Video-range signals
@@ -226,10 +226,10 @@ def test_explain_component_order_and_sampling(matrix, color_diff_format, expecte
             color_diff_excursion=224,
         ),
         (
-            "The Y component consists of 200x50 8 bit (1 byte) values. "
+            "The Y component consists of 200x50 8 bit values. "
             "Values run from 0 (video level -0.07) to 255 (video level 1.09)."
             "\n\n"
-            "The Cb and Cr components consist of 200x50 8 bit (1 byte) values. "
+            "The Cb and Cr components consist of 200x50 8 bit values. "
             "Values run from 0 (video level -0.57) to 255 (video level 0.57)."
         )
     ),
@@ -334,6 +334,65 @@ def write_pictures_to_dir(
         )
 
 
+def assert_plausibly_linear_ramps_image(frame, transfer_function_index):
+    """
+    Asserts that the supplied frame could plausibly contain the linear ramps
+    image.
+    """
+    height, width, _ = frame.shape
+    
+    # Pull out a sample of the color ramps
+    strip_height = height // 4
+    ramps = frame[strip_height // 2::strip_height, :, :] / 255.0
+    
+    ramp_w = ramps[0, :, :]
+    ramp_r = ramps[1, :, :]
+    ramp_g = ramps[2, :, :]
+    ramp_b = ramps[3, :, :]
+    
+    # Check for plausibility.
+    #
+    # * The primaries are not indicated to FFMPEG so we just need to check
+    #   that the chosen primaries are at least "red-ish", "green-ish" and
+    #   "blue-ish" -- we'll have to be super lax about this
+    # * We basically don't even bother to check if the gamma curve has been
+    #   chosen plauisbly. The assumption is that anybody working with a
+    #   gamma curve sufficiently far from sRGB to notice will already know
+    #   what the "wrong" gamma curve looks like and will immediately
+    #   understand what has happened.
+    # * If the color matrix comes in an order not expected by ffmpeg, or
+    #   fundamentally of the wrong type (e.g. RGB vs Y C1 C2) the colours will
+    #   be wildly wrong. Otherwise, the effect of using the wrong matrix
+    #   just adds to the slightly wrong primary colours.
+    #
+    # On the basis of the super-slack requirements for plausibility we
+    # allow the expected values to be quite far off (particularly for very
+    # strong transfer functions)
+    if transfer_function_index in (
+        PresetTransferFunctions.hybrid_log_gamma,
+        PresetTransferFunctions.perceptual_quality,
+    ):
+        atol = 0.35
+    else:
+        atol = 0.15
+    
+    # Left of image should be black
+    assert np.all(np.isclose(ramps[:, 0, :], 0.0, atol=atol))
+    
+    # Right sides of curves should be roughly the right color
+    assert np.isclose(ramp_r[-1, 0], 1.0, atol=atol)
+    assert np.isclose(ramp_r[-1, 1], 0.0, atol=atol)
+    assert np.isclose(ramp_r[-1, 2], 0.0, atol=atol)
+    
+    assert np.isclose(ramp_g[-1, 0], 0.0, atol=atol)
+    assert np.isclose(ramp_g[-1, 1], 1.0, atol=atol)
+    assert np.isclose(ramp_g[-1, 2], 0.0, atol=atol)
+    
+    assert np.isclose(ramp_b[-1, 0], 0.0, atol=atol)
+    assert np.isclose(ramp_b[-1, 1], 0.0, atol=atol)
+    assert np.isclose(ramp_b[-1, 2], 1.0, atol=atol)
+
+
 class TestExampleFFMPEGCommand(object):
 
     @pytest.fixture
@@ -354,9 +413,9 @@ class TestExampleFFMPEGCommand(object):
             top_offset=0,
             left_offset=0,
             luma_offset=0,
-            luma_excursion=255,
-            color_diff_offset=128,
-            color_diff_excursion=255,
+            luma_excursion=1023,
+            color_diff_offset=512,
+            color_diff_excursion=1023,
             color_primaries_index=PresetColorPrimaries.hdtv,
             color_matrix_index=PresetColorMatrices.hdtv,
             transfer_function_index=PresetTransferFunctions.tv_gamma,
@@ -598,35 +657,15 @@ class TestExampleFFMPEGCommand(object):
         
         assert np.isclose(sprite_width/sprite_height, 1.0, atol=0.01)
     
-    @pytest.mark.parametrize("primaries", PresetColorPrimaries)
-    @pytest.mark.parametrize("matrix", PresetColorMatrices)
-    @pytest.mark.parametrize("transfer_function", PresetTransferFunctions)
-    @pytest.mark.parametrize("color_diff_format", ColorDifferenceSamplingFormats)
-    def test_color(
+    def color_plausibility_test(
         self,
         video_parameters,
-        primaries,
-        matrix,
-        transfer_function,
-        color_diff_format,
-        tmpdir,
+        picture_coding_mode,
+        working_dir,
     ):
-        working_dir = str(tmpdir)
-        
-        # Make tall enough and wide enough that colour subsampling doesn't
-        # completely destroy the image
-        video_parameters["frame_width"] = 16
-        video_parameters["frame_height"] = 16
-        
-        video_parameters["color_primaries_index"] = primaries
-        video_parameters["color_matrix_index"] = matrix
-        video_parameters["transfer_function_index"] = transfer_function
-        video_parameters["color_diff_format_index"] = color_diff_format
-        
-        if matrix == PresetColorMatrices.rgb:
-            video_parameters["color_diff_offset"] = 0
-        
-        picture_coding_mode = PictureCodingModes.pictures_are_frames
+        # Check that under the specified set of video parameters,
+        # example_ffmpeg_command either gives plausible FFMPEG settings or
+        # raises UnsupportedPictureFormat.
         
         # Work out the command. This may not be possible due to an unsupported
         # format combination, hence we try this first and then skip the test if
@@ -657,49 +696,82 @@ class TestExampleFFMPEGCommand(object):
         assert len(frames) == 1
         frame = frames[0]
         
-        # Pull out a sample of the color ramps
-        strip_height = video_parameters["frame_height"] // 4
-        ramps = frame[strip_height // 2::strip_height, :, :] / 255.0
+        assert_plausibly_linear_ramps_image(
+            frame,
+            video_parameters["transfer_function_index"],
+        )
+    
+    @pytest.mark.parametrize("primaries", PresetColorPrimaries)
+    @pytest.mark.parametrize("matrix", PresetColorMatrices)
+    @pytest.mark.parametrize("transfer_function", PresetTransferFunctions)
+    @pytest.mark.parametrize("color_diff_format", ColorDifferenceSamplingFormats)
+    def test_color(
+        self,
+        video_parameters,
+        primaries,
+        matrix,
+        transfer_function,
+        color_diff_format,
+        tmpdir,
+    ):
+        # Make tall enough and wide enough that colour subsampling doesn't
+        # completely destroy the image
+        video_parameters["frame_width"] = 16
+        video_parameters["frame_height"] = 16
         
-        ramp_w = ramps[0, :, :]
-        ramp_r = ramps[1, :, :]
-        ramp_g = ramps[2, :, :]
-        ramp_b = ramps[3, :, :]
+        video_parameters["color_primaries_index"] = primaries
+        video_parameters["color_matrix_index"] = matrix
+        video_parameters["transfer_function_index"] = transfer_function
+        video_parameters["color_diff_format_index"] = color_diff_format
         
-        # Check for plausibility.
-        #
-        # * The primaries are not indicated to FFMPEG so we just need to check
-        #   that the chosen primaries are at least "red-ish", "green-ish" and
-        #   "blue-ish" -- we'll have to be super lax about this
-        # * We basically don't even bother to check if the gamma curve has been
-        #   chosen plauisbly. The assumption is that anybody working with a
-        #   gamma curve sufficiently far from sRGB to notice will already know
-        #   what the "wrong" gamma curve looks like and will immediately
-        #   understand what has happened.
-        # * If the color matrix comes in an order not expected by ffmpeg, or
-        #   fundamentally of the wrong type (e.g. RGB vs Y C1 C2) the colours will
-        #   be wildly wrong. Otherwise, the effect of using the wrong matrix
-        #   just adds to the slightly wrong primary colours.
-        #
-        # On the basis of the super-slack requirements for plausibility we
-        # allow the expected values to be quite far off...
-        atol = 0.3
+        if matrix == PresetColorMatrices.rgb:
+            video_parameters["color_diff_offset"] = 0
         
-        # Left of image should be black
-        assert np.all(np.isclose(ramps[:, 0, :], 0.0, atol=atol))
+        picture_coding_mode = PictureCodingModes.pictures_are_frames
         
-        # Right sides of curves should be roughly the right color
-        assert np.isclose(ramp_r[-1, 0], 1.0, atol=atol)
-        assert np.isclose(ramp_r[-1, 1], 0.0, atol=atol)
-        assert np.isclose(ramp_r[-1, 2], 0.0, atol=atol)
+        self.color_plausibility_test(
+            video_parameters,
+            picture_coding_mode,
+            str(tmpdir),
+        )
+    
+    @pytest.mark.parametrize("excursion", [
+        (1<<picture_bit_width) - 1
+        for picture_bit_width in range(1, 16)
+    ])
+    @pytest.mark.parametrize("matrix", [
+        PresetColorMatrices.hdtv,
+        PresetColorMatrices.rgb,
+    ])
+    def test_bit_depth(
+        self,
+        video_parameters,
+        excursion,
+        matrix,
+        tmpdir,
+    ):
+        # Make tall enough and wide enough that colour subsampling doesn't
+        # completely destroy the image
+        video_parameters["frame_width"] = 16
+        video_parameters["frame_height"] = 16
         
-        assert np.isclose(ramp_g[-1, 0], 0.0, atol=atol)
-        assert np.isclose(ramp_g[-1, 1], 1.0, atol=atol)
-        assert np.isclose(ramp_g[-1, 2], 0.0, atol=atol)
+        video_parameters["color_matrix_index"] = matrix
         
-        assert np.isclose(ramp_b[-1, 0], 0.0, atol=atol)
-        assert np.isclose(ramp_b[-1, 1], 0.0, atol=atol)
-        assert np.isclose(ramp_b[-1, 2], 1.0, atol=atol)
+        video_parameters["luma_offset"] = 0
+        video_parameters["luma_excursion"] = excursion
+        video_parameters["color_diff_offset"] = (excursion+1)//2
+        video_parameters["color_diff_excursion"] = excursion
+        
+        if matrix == PresetColorMatrices.rgb:
+            video_parameters["color_diff_offset"] = 0
+        
+        picture_coding_mode = PictureCodingModes.pictures_are_frames
+        
+        self.color_plausibility_test(
+            video_parameters,
+            picture_coding_mode,
+            str(tmpdir),
+        )
 
 
 class TestExampleImageMagickCommand(object):
@@ -798,6 +870,48 @@ class TestExampleImageMagickCommand(object):
         
         assert np.isclose(sprite_width/sprite_height, 1.0, atol=0.01)
     
+    def color_plausibility_test(
+        self,
+        video_parameters,
+        picture_coding_mode,
+        working_dir,
+    ):
+        # Check that under the specified set of video parameters,
+        # example_ffmpeg_command either gives plausible ImageMagick settings or
+        # raises UnsupportedPictureFormat.
+        
+        # Work out the command. This may not be possible due to an unsupported
+        # format combination, hence we try this first and then skip the test if
+        # necessary
+        try:
+            filename = os.path.join(working_dir, "picture_0.raw")
+            convert_command = example_imagemagick_command(
+                filename,
+                video_parameters,
+                picture_coding_mode,
+            ).command
+        except UnsupportedPictureFormat:
+            return
+        
+        # Generate a single frame with horizontal linear color ramps.
+        write_pictures_to_dir(
+            linear_ramps(video_parameters, picture_coding_mode),
+            video_parameters,
+            picture_coding_mode,
+            working_dir,
+        )
+        
+        # Transcode to PNG format frames using ImageMagick
+        subprocess.check_call(shlex.split(convert_command.replace("\\\n", " ")))
+        
+        # Read in PNG
+        frame = self.read_png_picture(filename)
+        
+        assert_plausibly_linear_ramps_image(
+            frame,
+            video_parameters["transfer_function_index"],
+        )
+    
     @pytest.mark.parametrize("primaries", PresetColorPrimaries)
     @pytest.mark.parametrize("matrix", PresetColorMatrices)
     @pytest.mark.parametrize("transfer_function", PresetTransferFunctions)
@@ -828,76 +942,49 @@ class TestExampleImageMagickCommand(object):
         
         picture_coding_mode = PictureCodingModes.pictures_are_frames
         
-        # Work out the command. This may not be possible due to an unsupported
-        # format combination, hence we try this first and then skip the test if
-        # necessary
-        try:
-            filename = os.path.join(working_dir, "picture_0.raw")
-            convert_command = example_imagemagick_command(
-                filename,
-                video_parameters,
-                picture_coding_mode,
-            ).command
-        except UnsupportedPictureFormat:
-            return
-        
-        # Generate a single frame with horizontal linear color ramps.
-        write_pictures_to_dir(
-            linear_ramps(video_parameters, picture_coding_mode),
+        self.color_plausibility_test(
             video_parameters,
             picture_coding_mode,
-            working_dir,
+            str(tmpdir),
         )
+    
+    @pytest.mark.parametrize("excursion", [
+        (1<<picture_bit_width) - 1
+        for picture_bit_width in range(1, 16)
+    ])
+    @pytest.mark.parametrize("matrix", [
+        PresetColorMatrices.hdtv,
+        PresetColorMatrices.rgb,
+    ])
+    def test_bit_depth(
+        self,
+        video_parameters,
+        excursion,
+        matrix,
+        tmpdir,
+    ):
+        # Make tall enough and wide enough that colour subsampling doesn't
+        # completely destroy the image
+        video_parameters["frame_width"] = 16
+        video_parameters["frame_height"] = 16
         
-        # Transcode to PNG format frames using ImageMagick
-        subprocess.check_call(shlex.split(convert_command.replace("\\\n", " ")))
+        video_parameters["color_matrix_index"] = matrix
         
-        # Read in PNG
-        frame = self.read_png_picture(filename)
+        video_parameters["luma_offset"] = 0
+        video_parameters["luma_excursion"] = excursion
+        video_parameters["color_diff_offset"] = (excursion+1)//2
+        video_parameters["color_diff_excursion"] = excursion
         
-        # Pull out a sample of the color ramps
-        strip_height = video_parameters["frame_height"] // 4
-        ramps = frame[strip_height // 2::strip_height, :, :] / 255.0
+        if matrix == PresetColorMatrices.rgb:
+            video_parameters["color_diff_offset"] = 0
         
-        ramp_w = ramps[0, :, :]
-        ramp_r = ramps[1, :, :]
-        ramp_g = ramps[2, :, :]
-        ramp_b = ramps[3, :, :]
+        picture_coding_mode = PictureCodingModes.pictures_are_frames
         
-        # Check for plausibility.
-        #
-        # * The primaries are not indicated to ImageMagick so we just need to
-        #   check that the chosen primaries are at least "red-ish", "green-ish"
-        #   and "blue-ish" -- we'll have to be super lax about this
-        # * We basically don't even bother to check if the gamma curve has been
-        #   chosen plauisbly. The assumption is that anybody working with a
-        #   gamma curve sufficiently far from sRGB to notice will already know
-        #   what the "wrong" gamma curve looks like and will immediately
-        #   understand what has happened.
-        # * If the color matrix comes in an order not expected by ImageMagick, or
-        #   fundamentally of the wrong type (e.g. RGB vs Y C1 C2) the colours will
-        #   be wildly wrong. Otherwise, the effect of using the wrong matrix
-        #   just adds to the slightly wrong primary colours.
-        #
-        # On the basis of the super-slack requirements for plausibility we
-        # allow the expected values to be quite far off...
-        atol = 0.3
-        
-        # Left of image should be black
-        assert np.all(np.isclose(ramps[:, 0, :], 0.0, atol=atol))
-        
-        # Right sides of curves should be roughly the right color
-        assert np.isclose(ramp_r[-1, 0], 1.0, atol=atol)
-        assert np.isclose(ramp_r[-1, 1], 0.0, atol=atol)
-        assert np.isclose(ramp_r[-1, 2], 0.0, atol=atol)
-        
-        assert np.isclose(ramp_g[-1, 0], 0.0, atol=atol)
-        assert np.isclose(ramp_g[-1, 1], 1.0, atol=atol)
-        assert np.isclose(ramp_g[-1, 2], 0.0, atol=atol)
-        
-        assert np.isclose(ramp_b[-1, 0], 0.0, atol=atol)
-        assert np.isclose(ramp_b[-1, 1], 0.0, atol=atol)
-        assert np.isclose(ramp_b[-1, 2], 1.0, atol=atol)
+        self.color_plausibility_test(
+            video_parameters,
+            picture_coding_mode,
+            str(tmpdir),
+        )
 
 
 @pytest.mark.parametrize("explain", [

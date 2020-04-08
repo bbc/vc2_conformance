@@ -166,8 +166,9 @@ def explain_component_sizes(video_parameters, picture_coding_mode):
         ))
     
     for prefix, dd, offset, excursion in explanations:
+        padding_bits = (dd.bytes_per_sample*8) - dd.depth_bits
         out += (
-            "{} {}x{} {} bit ({} byte) values{}{}. "
+            "{} {}x{} {} bit values{}{}. "
             "Values run from 0 (video level {:0.2f}) "
             "to {} (video level {:0.2f})."
             "\n\n"
@@ -175,20 +176,23 @@ def explain_component_sizes(video_parameters, picture_coding_mode):
             prefix,
             dd.width,
             dd.height,
-            8 * dd.bytes_per_sample,
-            dd.bytes_per_sample,
-            " in big-endian byte order" if dd.bytes_per_sample > 1 else "",
+            dd.depth_bits,
             (
-                " with {} significant bits (most significant bit aligned)".format(dd.depth_bits)
+                (
+                    " stored as {} bit ({} byte) values "
+                    "(with the {} most significant bits set to 0)"
+                ).format(
+                    dd.bytes_per_sample * 8,
+                    dd.bytes_per_sample,
+                    padding_bits,
+                    "s" if padding_bits != 1 else "",
+                )
                 if 8 * dd.bytes_per_sample != dd.depth_bits else
                 ""
             ),
+            " in little-endian byte order" if dd.bytes_per_sample > 1 else "",
             int_to_float(0, offset, excursion),
-            (
-                ((2**dd.depth_bits) - 1)
-                <<
-                ((8 * dd.bytes_per_sample) - dd.depth_bits)
-            ),
+            (2**dd.depth_bits) - 1,
             int_to_float((2**dd.depth_bits)-1, offset, excursion),
         )
     
@@ -441,10 +445,14 @@ def example_ffmpeg_command(picture_filename, video_parameters, picture_coding_mo
     
     depth_bits = dimensions_and_depths["Y"].depth_bits
     bytes_per_sample = dimensions_and_depths["Y"].bytes_per_sample
-    if bytes_per_sample == 1:
+    if depth_bits == 8:
+        # No extension required for 8-bit values
         pass
-    elif bytes_per_sample == 2:
-        command.append("16be", "16 bit big-endian values.")
+    elif depth_bits in (9, 10, 12, 14, 16):
+        command.append(
+            "{}le".format(depth_bits),
+            "{} bit little-endian values, LSB-aligned within 16 bit words.",
+        )
     else:
         raise UnsupportedPictureFormat("Unsupported bit depth: {} bits".format(
             dimensions_and_depths["Y"].depth_bits
@@ -580,20 +588,23 @@ def example_imagemagick_command(picture_filename, video_parameters, picture_codi
     #------------------------------------------------------------------------
     
     if (
-        dimensions_and_depths["Y"].bytes_per_sample !=
-        dimensions_and_depths["C1"].bytes_per_sample
+        dimensions_and_depths["Y"].depth_bits !=
+        dimensions_and_depths["C1"].depth_bits
     ):
         raise UnsupportedPictureFormat(
             "Luma and chroma components differ in depth ({} bits and {} bits)".format(
-                8*dimensions_and_depths["Y"].bytes_per_sample,
-                8*dimensions_and_depths["C1"].bytes_per_sample,
+                dimensions_and_depths["Y"].depth_bits,
+                dimensions_and_depths["C1"].depth_bits,
             )
         )
     
-    bytes_per_sample = dimensions_and_depths["Y"].bytes_per_sample
-    if bytes_per_sample == 1:
+    depth_bits = dimensions_and_depths["Y"].depth_bits
+    if depth_bits == 8:
         command.append_linebreak()
-        command.append("-depth 8", "8 bit values.")
+        command.append(
+            "-depth {}".format(depth_bits),
+            "{} bit values.".format(depth_bits),
+        )
     else:
         raise UnsupportedPictureFormat("Unsupported bit depth: {} bits".format(
             dimensions_and_depths["Y"].depth_bits

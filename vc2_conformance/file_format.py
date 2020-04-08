@@ -27,11 +27,11 @@ For example:
 * 10 or 16 bit-per-sample values are stored as two bytes per sample
 * 17, 24 or 32 bit-per-sample values are stored as four bytes per sample
 
-Sample values are MSB aligned and zero padded. For example, 10 bit values will
-be stored left-shifted by 6 places.
+Sample values are LSB aligned and zero padded. For example, 10 bit values will
+be stored as 16 bit values with the most significant 6 bits set to zero.
 
-Multi-byte values are stored with big-endian byte ordering (the first byte of a
-value in the file contains the most significant 8 bits).
+Multi-byte values are stored with little-endian byte ordering (the first byte
+of a value in the file contains the least significant 8 bits).
 
 The dimensions and bit depth of each component is not encoded in the picture
 data file and must be obtained from an associated metadata file.
@@ -253,17 +253,14 @@ def write_picture(picture, video_parameters, picture_coding_mode, file):
         # NB: we make a copy as we will mutate later.
         values = np.array(picture[component], dtype=object)
         
-        # Shift up to full width
-        shift = (bytes_per_sample*8) - depth_bits
-        values <<= shift
-        
-        # Write as big-endian representation (NB: this rather explicit
+        # Write as little-endian representation (NB: this rather explicit
         # expansion supports arbitrary depth values beyond those natively
         # supported by Numpy).
         out = np.zeros((height, width, bytes_per_sample), dtype=np.uint8)
-        for byte in reversed(range(bytes_per_sample)):
-            out[:, :, byte] = values
-            values >>= 8
+        for byte in range(bytes_per_sample):
+            out[:, :, byte] = values & 0xFF
+            if byte != bytes_per_sample - 1:
+                values >>= 8
         
         file.write(out.tobytes())
 
@@ -359,15 +356,15 @@ def read_picture(video_parameters, picture_coding_mode, picture_number, file):
             dtype=np.uint8,
         ).reshape(height, width, bytes_per_sample)
         
+        # We use a dtype=object array so that we can use Python's arbitrary
+        # precision integers in order to support arbitrary bit depths
         values = np.zeros((height, width), dtype=object)
         
-        for byte in range(bytes_per_sample):
-            if byte != 0:
+        # Read little endian (NB, this method supports arbitrary width values)
+        for byte in reversed(range(bytes_per_sample)):
+            if byte != bytes_per_sample - 1:
                 values <<= 8
             values += data[:, :, byte]
-        
-        shift = (bytes_per_sample*8) - depth_bits
-        values >>= shift
         
         picture[component] = values.tolist()
     
