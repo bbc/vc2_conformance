@@ -108,6 +108,8 @@ def lovell():
     """
     return file_format.read(os.path.join(
         os.path.dirname(__file__),
+        "..",
+        "test_images",
         "lovell.raw",
     ))
 

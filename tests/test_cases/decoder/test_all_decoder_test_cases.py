@@ -24,6 +24,7 @@ sys.path.append(os.path.join(
 ))
 
 from sample_codec_features import MINIMAL_CODEC_FEATURES
+from smaller_real_pictures import alternative_real_pictures
 
 from vc2_conformance.state import State
 
@@ -33,57 +34,60 @@ from vc2_conformance.decoder import (
 )
 
 
-@pytest.mark.parametrize(
-    "codec_features,test_case",
-    (
-        (codec_features, test_case)
-        for codec_features in [
-            # High quality
-            CodecFeatures(
-                MINIMAL_CODEC_FEATURES,
-                profile=Profiles.high_quality,
-            ),
-            # Low delay
-            CodecFeatures(
-                MINIMAL_CODEC_FEATURES,
-                profile=Profiles.low_delay,
-            ),
-            # Lossless coding
-            CodecFeatures(
-                MINIMAL_CODEC_FEATURES,
-                profile=Profiles.high_quality,
-                lossless=True,
-                picture_bytes=0,
-            ),
-            # Fragmented pictures
-            CodecFeatures(
-                MINIMAL_CODEC_FEATURES,
-                profile=Profiles.high_quality,
-                fragment_slice_count=2,
-            ),
-        ]
-        for test_case in DECODER_TEST_CASE_GENERATOR_REGISTRY.generate_test_cases(
-            codec_features)
+# NB: Test case generators run during test collection
+with alternative_real_pictures():
+    @pytest.mark.parametrize(
+        "codec_features,test_case",
+        [
+            (codec_features, test_case)
+            for codec_features in [
+                # High quality
+                CodecFeatures(
+                    MINIMAL_CODEC_FEATURES,
+                    profile=Profiles.high_quality,
+                ),
+                # Low delay
+                CodecFeatures(
+                    MINIMAL_CODEC_FEATURES,
+                    profile=Profiles.low_delay,
+                ),
+                # Lossless coding
+                CodecFeatures(
+                    MINIMAL_CODEC_FEATURES,
+                    profile=Profiles.high_quality,
+                    lossless=True,
+                    picture_bytes=0,
+                ),
+                # Fragmented pictures
+                CodecFeatures(
+                    MINIMAL_CODEC_FEATURES,
+                    profile=Profiles.high_quality,
+                    fragment_slice_count=2,
+                ),
+            ]
+            for test_case in DECODER_TEST_CASE_GENERATOR_REGISTRY.generate_test_cases(
+                codec_features
+            )
+        ],
     )
-)
-def test_all_decoder_test_cases(codec_features, test_case):
-    # Every test case for every basic video mode must produce a valid bitstream
-    # containing pictures with the correct format. Any JSON metadata must also
-    # be seriallisable.
-    
-    # Mustn't crash!
-    json.dumps(test_case.metadata)
-    
-    def output_picture_callback(picture, video_parameters):
-        assert video_parameters == codec_features["video_parameters"]
-    
-    state = State(
-        _output_picture_callback=output_picture_callback,
-    )
-    
-    f = BytesIO()
-    autofill_and_serialise_sequence(f, test_case.value)
-    
-    f.seek(0)
-    init_io(state, f)
-    parse_sequence(state)
+    def test_all_decoder_test_cases(codec_features, test_case):
+        # Every test case for every basic video mode must produce a valid bitstream
+        # containing pictures with the correct format. Any JSON metadata must also
+        # be seriallisable.
+        
+        # Mustn't crash!
+        json.dumps(test_case.metadata)
+        
+        def output_picture_callback(picture, video_parameters):
+            assert video_parameters == codec_features["video_parameters"]
+        
+        state = State(
+            _output_picture_callback=output_picture_callback,
+        )
+        
+        f = BytesIO()
+        autofill_and_serialise_sequence(f, test_case.value)
+        
+        f.seek(0)
+        init_io(state, f)
+        parse_sequence(state)

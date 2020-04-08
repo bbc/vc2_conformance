@@ -38,6 +38,10 @@ from copy import deepcopy
 
 from itertools import cycle
 
+from fractions import Fraction
+
+import math
+
 import numpy as np
 
 from PIL import Image
@@ -60,6 +64,8 @@ from vc2_conformance.color_conversion import (
     matmul_colors,
     swap_primaries,
 )
+
+from vc2_conformance_data import NATURAL_PICTURES_FILENAMES
 
 
 __all__ = [
@@ -132,6 +138,58 @@ def resize(im, width, height):
             .resize((width, height), Image.LANCZOS)
         for channel in range(3)
     ], axis=-1)
+
+
+def read_as_xyz_to_fit(filename, width, height, pixel_aspect_ratio=1):
+    """
+    Read a VC-2 raw image (see :py:mod:`vc2_conformance.file_format`) into a
+    floating point CIE XYZ color 3D array, sized to fit the desired picture
+    size, aspect ratio and pixel aspect ratio.
+    
+    Parameters
+    ==========
+    filename : str
+        Filename to read from.
+    width : int
+    height : int
+        Width and height of the desired output image.
+    pixel_aspect_ratio : :py:class:`Fraction`
+        The pixel aspect ratio of the output image.
+    """
+    image, image_video_parameters, image_picture_coding_mode = read_as_xyz(filename)
+    assert image_video_parameters["pixel_aspect_ratio_numer"] == 1
+    assert image_video_parameters["pixel_aspect_ratio_denom"] == 1
+    
+    im_height, im_width, _ = image.shape
+    
+    # Stretch original image to correct for the target pixel aspect ratio
+    if pixel_aspect_ratio.numerator != pixel_aspect_ratio.denominator:
+        im_width *= pixel_aspect_ratio.denominator
+        im_width //= pixel_aspect_ratio.numerator
+    
+    im_aspect = Fraction(im_width, im_height)
+    out_aspect = Fraction(width, height)
+    
+    if im_aspect > out_aspect:
+        # Image wider than output, squash so height fits then crop width
+        im_height = height
+        im_width = int(math.ceil(im_height * im_aspect))
+    else:
+        # Image taller than output, squash so width fits then crop height
+        im_width = width
+        im_height = int(math.ceil(im_width / im_aspect))
+    
+    image = resize(image, im_width, im_height)
+    
+    
+    # Crop to output shape
+    x_excess = im_width - width
+    y_excess = im_height - height
+    return image[
+        y_excess//2:(y_excess//2) + height,
+        x_excess//2:(x_excess//2) + width,
+        :,
+    ]
 
 
 def seconds_to_samples(video_parameters, seconds):
@@ -349,6 +407,33 @@ def repeat_pictures(pictures, count):
         picture = deepcopy(picture)
         picture["pic_num"] = pic_num
         yield picture
+
+
+@pipe(xyz_to_native)
+@pipe(progressive_to_pictures)
+def real_pictures(video_parameters, picture_coding_mode):
+    """
+    A video sequence containing a series of real pictures.
+    
+    This image sequence is provided as an easy visual sanity checking measure
+    for decoders and a basic performance check for encoders.
+    """
+    for filename in NATURAL_PICTURES_FILENAMES:
+        picture = read_as_xyz_to_fit(
+            filename,
+            video_parameters["frame_width"],
+            video_parameters["frame_height"],
+            Fraction(
+                video_parameters["pixel_aspect_ratio_numer"],
+                video_parameters["pixel_aspect_ratio_denom"],
+            ),
+        )
+        
+        # NB: Repeat pictures for interlaced modes so each frame is made up of
+        # two fields containing the same picture content
+        yield picture
+        if video_parameters["source_sampling"] == SourceSamplingModes.interlaced:
+            yield picture
 
 
 @pipe(xyz_to_native)

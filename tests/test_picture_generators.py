@@ -4,7 +4,14 @@ import os
 
 import numpy as np
 
+from fractions import Fraction
+
 from itertools import cycle
+
+from smaller_real_pictures import (
+    TEST_PICTURES_PATHS,
+    replace_real_pictures_with_test_pictures,
+)
 
 from vc2_data_tables import (
     ColorDifferenceSamplingFormats,
@@ -25,10 +32,13 @@ from vc2_conformance.color_conversion import (
 
 from vc2_conformance.file_format import compute_dimensions_and_depths
 
+from vc2_conformance_data import NATURAL_PICTURES_FILENAMES
+
 from vc2_conformance.picture_generators import (
     POINTER_SPRITE_PATH,
     read_as_xyz,
     resize,
+    read_as_xyz_to_fit,
     seconds_to_samples,
     progressive_to_interlaced,
     progressive_to_split_fields,
@@ -38,6 +48,7 @@ from vc2_conformance.picture_generators import (
     pipe,
     read_and_adapt_pointer_sprite,
     repeat_pictures,
+    real_pictures,
     moving_sprite,
     static_sprite,
     mid_gray,
@@ -45,7 +56,7 @@ from vc2_conformance.picture_generators import (
 )
 
 
-def test_image_path():
+def test_sprite_image_path():
     # Indirectly test by checking that the pointer sprite filename is
     # accessible
     assert os.path.isfile(POINTER_SPRITE_PATH)
@@ -101,6 +112,42 @@ def test_resize():
     
     # Crude image similarity check...
     assert np.sum(np.abs(new_image - expected_image)) / expected_image.size < 0.02
+
+
+@pytest.mark.parametrize("filename", TEST_PICTURES_PATHS)
+@pytest.mark.parametrize("width,height", [
+    (160, 160),
+    (190, 160),
+    (160, 190),
+])
+@pytest.mark.parametrize("pixel_aspect_ratio", [
+    Fraction(1, 1),
+    Fraction(4, 3),
+])
+def test_read_as_xyz_to_fit(filename, width, height, pixel_aspect_ratio):
+    image = read_as_xyz_to_fit(filename, width, height, pixel_aspect_ratio)
+    
+    # Test images should be desired shape
+    assert image.shape == (height, width, 3)
+    
+    # Image should contain a single, centered square
+    ys, xs = np.nonzero(np.sum(image, axis=2))
+    
+    # Square is in center
+    cx = np.mean(xs)
+    cy = np.mean(ys)
+    assert np.isclose(cx, width / 2.0, atol=1.0)
+    assert np.isclose(cy, height / 2.0, atol=1.0)
+    
+    # Shape is square given the current pixel aspect ratio
+    sw = np.max(xs) - np.min(xs)
+    sh = np.max(ys) - np.min(ys)
+    shape_aspect_ratio = float(sw) / float(sh)
+    assert np.isclose(
+        shape_aspect_ratio,
+        1.0/pixel_aspect_ratio,
+        atol=0.05,
+    )
 
 
 def test_seconds_to_samples():
@@ -696,13 +743,14 @@ def test_linear_ramps(primaries, transfer_function):
 class TestGenericPictureGeneratorBehaviour(object):
     
     @pytest.fixture(params=[
+        real_pictures,
         moving_sprite,
         static_sprite,
         mid_gray,
         linear_ramps,
         lambda *a, **kw: repeat_pictures(mid_gray(*a, **kw), 2),
     ])
-    def picture_generator(self, request):
+    def picture_generator(self, request, replace_real_pictures_with_test_pictures):
         return request.param
     
     @pytest.fixture
@@ -728,7 +776,7 @@ class TestGenericPictureGeneratorBehaviour(object):
     
     @pytest.mark.parametrize("ssm", SourceSamplingModes)
     @pytest.mark.parametrize("pcm", PictureCodingModes)
-    def test_produces_correct_dct_type(self, picture_generator, vp, ssm, pcm):
+    def test_produces_correct_dict_type(self, picture_generator, vp, ssm, pcm):
         vp["source_sampling"] = ssm
         
         for picture in list(picture_generator(vp, pcm)):
