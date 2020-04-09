@@ -229,7 +229,7 @@ def parse_quantization_matrix(dwt_depth, dwt_depth_ho, value):
     integers. Values are given in ascending order of level and subands are
     ordered as L, LL, H, HL, LH, HH (i.e. bitstream order in (12.4.5.3)).
     """
-    values = filter(None, value.split())
+    values = iter(filter(None, value.split()))
     
     out = {}
     

@@ -47,9 +47,9 @@ REC709 = PrimaryChromacities(
 )
 
 def test_xy_to_xyz():
-    X = 10
-    Y = 20
-    Z = 30
+    X = 10.0
+    Y = 20.0
+    Z = 30.0
     
     x = X / (X + Y + Z)
     y = Y / (X + Y + Z)
