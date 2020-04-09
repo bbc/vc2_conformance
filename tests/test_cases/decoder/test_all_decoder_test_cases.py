@@ -36,58 +36,73 @@ from vc2_conformance.decoder import (
 
 # NB: Test case generators run during test collection
 with alternative_real_pictures():
-    @pytest.mark.parametrize(
-        "codec_features,test_case",
-        [
-            (codec_features, test_case)
-            for codec_features in [
-                # High quality
-                CodecFeatures(
-                    MINIMAL_CODEC_FEATURES,
-                    profile=Profiles.high_quality,
-                ),
-                # Low delay
-                CodecFeatures(
-                    MINIMAL_CODEC_FEATURES,
-                    profile=Profiles.low_delay,
-                ),
-                # Lossless coding
-                CodecFeatures(
-                    MINIMAL_CODEC_FEATURES,
-                    profile=Profiles.high_quality,
-                    lossless=True,
-                    picture_bytes=0,
-                ),
-                # Fragmented pictures
-                CodecFeatures(
-                    MINIMAL_CODEC_FEATURES,
-                    profile=Profiles.high_quality,
-                    fragment_slice_count=2,
-                ),
-            ]
-            for test_case in DECODER_TEST_CASE_GENERATOR_REGISTRY.generate_test_cases(
-                codec_features
-            )
-        ],
-    )
-    def test_all_decoder_test_cases(codec_features, test_case):
-        # Every test case for every basic video mode must produce a valid bitstream
-        # containing pictures with the correct format. Any JSON metadata must also
-        # be seriallisable.
-        
-        # Mustn't crash!
-        json.dumps(test_case.metadata)
-        
-        def output_picture_callback(picture, video_parameters):
-            assert video_parameters == codec_features["video_parameters"]
-        
-        state = State(
-            _output_picture_callback=output_picture_callback,
+    ALL_TEST_CASES = [
+        (
+            codec_features,
+            list(DECODER_TEST_CASE_GENERATOR_REGISTRY.generate_test_cases(
+                codec_features,
+            )),
         )
-        
-        f = BytesIO()
-        autofill_and_serialise_sequence(f, test_case.value)
-        
-        f.seek(0)
-        init_io(state, f)
-        parse_sequence(state)
+        for codec_features in [
+            # High quality
+            CodecFeatures(
+                MINIMAL_CODEC_FEATURES,
+                profile=Profiles.high_quality,
+            ),
+            # Low delay
+            CodecFeatures(
+                MINIMAL_CODEC_FEATURES,
+                profile=Profiles.low_delay,
+            ),
+            # Lossless coding
+            CodecFeatures(
+                MINIMAL_CODEC_FEATURES,
+                profile=Profiles.high_quality,
+                lossless=True,
+                picture_bytes=0,
+            ),
+            # Fragmented pictures
+            CodecFeatures(
+                MINIMAL_CODEC_FEATURES,
+                profile=Profiles.high_quality,
+                fragment_slice_count=2,
+            ),
+        ]
+    ]
+
+
+def test_names_unique():
+    for codec_features, test_cases in ALL_TEST_CASES:
+        names = [tc.name for tc in test_cases]
+        assert len(set(names)) == len(names)
+
+
+@pytest.mark.parametrize(
+    "codec_features,test_case",
+    [
+        (codec_features, test_case)
+        for codec_features, test_cases in ALL_TEST_CASES
+        for test_case in test_cases
+    ],
+)
+def test_all_decoder_test_cases(codec_features, test_case):
+    # Every test case for every basic video mode must produce a valid bitstream
+    # containing pictures with the correct format. Any JSON metadata must also
+    # be seriallisable.
+    
+    # Mustn't crash!
+    json.dumps(test_case.metadata)
+    
+    def output_picture_callback(picture, video_parameters):
+        assert video_parameters == codec_features["video_parameters"]
+    
+    state = State(
+        _output_picture_callback=output_picture_callback,
+    )
+    
+    f = BytesIO()
+    autofill_and_serialise_sequence(f, test_case.value)
+    
+    f.seek(0)
+    init_io(state, f)
+    parse_sequence(state)
