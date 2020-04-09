@@ -8,7 +8,7 @@ import json
 
 from io import BytesIO
 
-from vc2_data_tables import Profiles
+from vc2_data_tables import Profiles, PictureCodingModes
 
 from vc2_conformance.bitstream import autofill_and_serialise_sequence
 
@@ -66,6 +66,11 @@ with alternative_real_pictures():
                 MINIMAL_CODEC_FEATURES,
                 profile=Profiles.high_quality,
                 fragment_slice_count=2,
+            ),
+            # Pictures are fields (above are all frames)
+            CodecFeatures(
+                MINIMAL_CODEC_FEATURES,
+                picture_coding_mode=PictureCodingModes.pictures_are_fields,
             ),
         ]
     ]

@@ -8,6 +8,8 @@ import json
 
 import numpy as np
 
+from vc2_conformance.codec_features import CodecFeatures
+
 from vc2_conformance.test_cases import ENCODER_TEST_CASE_GENERATOR_REGISTRY
 
 from vc2_conformance.file_format import compute_dimensions_and_depths
@@ -30,18 +32,39 @@ from smaller_real_pictures import alternative_real_pictures
 # NB: Test case generators run during test collection so we must replace the
 # pictures with smaller ones (for performance reasons) during tests
 with alternative_real_pictures():
-    ALL_TEST_CASES = list(ENCODER_TEST_CASE_GENERATOR_REGISTRY.generate_test_cases(
-        MINIMAL_CODEC_FEATURES,
-    ))
+    ALL_TEST_CASES = [
+        # ALl tests run for frame and field containing pictures
+        (
+            codec_features,
+            list(ENCODER_TEST_CASE_GENERATOR_REGISTRY.generate_test_cases(
+                codec_features,
+            )),
+        )
+        for codec_features in [
+            CodecFeatures(
+                MINIMAL_CODEC_FEATURES,
+                picture_coding_mode=picture_coding_mode,
+            )
+            for picture_coding_mode in PictureCodingModes
+        ]
+    ]
 
 
 def test_names_unique():
-    names = [tc.name for tc in ALL_TEST_CASES]
-    assert len(set(names)) == len(names)
+    for codec_features, test_cases in ALL_TEST_CASES:
+        names = [tc.name for tc in test_cases]
+        assert len(set(names)) == len(names)
 
 
-@pytest.mark.parametrize("test_case", ALL_TEST_CASES)
-def test_all_encoder_test_cases(test_case):
+@pytest.mark.parametrize(
+    "codec_features,test_case",
+    [
+        (codec_features, test_case)
+        for codec_features, test_cases in ALL_TEST_CASES
+        for test_case in test_cases
+    ],
+)
+def test_all_encoder_test_cases(codec_features, test_case):
     component_dimensions_and_depths = compute_dimensions_and_depths(
         test_case.value.video_parameters,
         test_case.value.picture_coding_mode,
