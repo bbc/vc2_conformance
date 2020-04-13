@@ -75,7 +75,7 @@ The :py:class;`Registry` class implements a registry of test case generators.
 
 from types import GeneratorType
 
-from functools import wraps
+from functools import partial
 
 from collections import namedtuple
 
@@ -158,43 +158,34 @@ class TestCase(object):
         )
 
 
-def normalise_test_case_generator(f):
+def normalise_test_case_generator(f, *args, **kwargs):
     """
-    Decorator which marks a function as a test case generator.
-    
-    The decorated function may be an ordinary function which returns a single
-    test case or a generator function which generates several test cases.
+    Call a test case generator, f, and, regardless of its native output,
+    produces a generator of :py:class:`TestCase` objects.
     
     If the function returns or yields :py:class:`TestCase` objects, their
     :py:attr:`TestCase.case_name` attributes will be populated with the
     function name, if not already defined. If the function returns or generates
     other values, these will be wrapped in :py:class:`TestCase` objects
     automatically.
-    
-    The decorated function will always behave as a generator which generates
-    :py;class:`TestCase` objects.
     """
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        generator = f(*args, **kwargs)
-        
-        is_generator = isinstance(generator, GeneratorType)
-        if not is_generator:
-            generator = [generator]
-        
-        for i, value in enumerate(generator):
-            if not isinstance(value, TestCase):
-                value = TestCase(value)
-            
-            if value.case_name is None:
-                value.case_name = f.__name__
-            
-            if is_generator and value.subcase_name is None:
-                value.subcase_name = str(i)
-            
-            yield value
+    generator = f(*args, **kwargs)
     
-    return wrapper
+    is_generator = isinstance(generator, GeneratorType)
+    if not is_generator:
+        generator = [generator]
+    
+    for i, value in enumerate(generator):
+        if not isinstance(value, TestCase):
+            value = TestCase(value)
+        
+        if value.case_name is None:
+            value.case_name = f.__name__
+        
+        if is_generator and value.subcase_name is None:
+            value.subcase_name = str(i)
+        
+        yield value
 
 
 class Registry(object):
@@ -212,9 +203,7 @@ class Registry(object):
         Returns the (unmodified) function allowing this method to be used as a
         decorator.
         """
-        self._test_case_generators.append(
-            normalise_test_case_generator(f)
-        )
+        self._test_case_generators.append(f)
         return f
     
     def generate_test_cases(self, *args, **kwargs):
@@ -224,8 +213,25 @@ class Registry(object):
         :py:class:`TestCase` objects.
         """
         for test_case_generator in self._test_case_generators:
-            for test_case in test_case_generator(*args, **kwargs):
+            for test_case in normalise_test_case_generator(
+                test_case_generator,
+                *args,
+                **kwargs,
+            ):
                 yield test_case
+    
+    def iter_independent_generators(self, *args, **kwargs):
+        """
+        Produce a series of generator functions which may be called in parallel
+        (e.g. using :py:mod:`multiprocessing`), which generate test cases.
+        """
+        for test_case_generator in self._test_case_generators:
+            yield partial(
+                normalise_test_case_generator,
+                test_case_generator,
+                *args,
+                **kwargs,
+            )
 
 
 ENCODER_TEST_CASE_GENERATOR_REGISTRY = Registry()

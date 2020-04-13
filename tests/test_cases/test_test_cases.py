@@ -29,44 +29,40 @@ def test_test_case():
 class TestNormaliseTestCaseGenerator(object):
 
     def test_returns_value(self):
-        @tc.normalise_test_case_generator
         def foobar(a):
             return a + 1
         
-        assert list(foobar(100)) == [
+        assert list(tc.normalise_test_case_generator(foobar, 100)) == [
             tc.TestCase(101, case_name="foobar"),
         ]
 
     def test_returns_test_case(self):
-        @tc.normalise_test_case_generator
         def foobar(a):
             return tc.TestCase(a + 1, "plus_one")
         
-        assert list(foobar(100)) == [
+        assert list(tc.normalise_test_case_generator(foobar, 100)) == [
             tc.TestCase(101, case_name="foobar", subcase_name="plus_one"),
         ]
 
     def test_yields_value(self):
-        @tc.normalise_test_case_generator
         def foobar(a):
             yield a + 1
             yield a + 2
             yield a + 3
         
-        assert list(foobar(100)) == [
+        assert list(tc.normalise_test_case_generator(foobar, 100)) == [
             tc.TestCase(101, case_name="foobar", subcase_name="0"),
             tc.TestCase(102, case_name="foobar", subcase_name="1"),
             tc.TestCase(103, case_name="foobar", subcase_name="2"),
         ]
 
     def test_yields_testcase(self):
-        @tc.normalise_test_case_generator
         def foobar(a):
             yield tc.TestCase(a + 1, "one")
             yield tc.TestCase(a + 2, "two")
             yield tc.TestCase(a + 3, "three")
         
-        assert list(foobar(100)) == [
+        assert list(tc.normalise_test_case_generator(foobar, 100)) == [
             tc.TestCase(101, case_name="foobar", subcase_name="one"),
             tc.TestCase(102, case_name="foobar", subcase_name="two"),
             tc.TestCase(103, case_name="foobar", subcase_name="three"),
@@ -78,23 +74,62 @@ class TestRegistry(object):
     def test_empty(self):
         r = tc.Registry()
         assert list(r.generate_test_cases("foo", bar=1234)) == []
+        assert list(r.iter_independent_generators("foo", bar=1234)) == []
     
-    def test_normalised_output(self):
-        r = tc.Registry()
+    @pytest.fixture
+    def registry_and_call_counts(self):
+        registry = tc.Registry()
         
-        @r.register_test_case_generator
+        call_counts = {
+            "foo": 0,
+            "bar": 0,
+        }
+        
+        @registry.register_test_case_generator
         def foo(a):
+            call_counts["foo"] += 1
             return a + 1
         
-        @r.register_test_case_generator
+        @registry.register_test_case_generator
         def bar(a):
+            call_counts["bar"] += 1
             yield a + 1
             yield a + 2
             yield a + 3
         
-        assert list(r.generate_test_cases(100)) == [
+        return registry, call_counts
+    
+    @pytest.fixture
+    def registry(self, registry_and_call_counts):
+        return registry_and_call_counts[0]
+    
+    @pytest.fixture
+    def call_counts(self, registry_and_call_counts):
+        return registry_and_call_counts[1]
+    
+    def test_generate_test_cases(self, registry, call_counts):
+        assert list(registry.generate_test_cases(100)) == [
             tc.TestCase(101, case_name="foo"),
             tc.TestCase(101, case_name="bar", subcase_name="0"),
             tc.TestCase(102, case_name="bar", subcase_name="1"),
             tc.TestCase(103, case_name="bar", subcase_name="2"),
         ]
+        
+        assert call_counts == {"foo": 1, "bar": 1}
+    
+    def test_iter_independent_generators(self, registry, call_counts):
+        gens = list(registry.iter_independent_generators(100))
+        assert len(gens) == 2
+        assert call_counts == {"foo": 0, "bar": 0}
+        
+        assert list(gens[0]()) == [
+            tc.TestCase(101, case_name="foo"),
+        ]
+        assert call_counts == {"foo": 1, "bar": 0}
+        
+        assert list(gens[1]()) == [
+            tc.TestCase(101, case_name="bar", subcase_name="0"),
+            tc.TestCase(102, case_name="bar", subcase_name="1"),
+            tc.TestCase(103, case_name="bar", subcase_name="2"),
+        ]
+        assert call_counts == {"foo": 1, "bar": 1}

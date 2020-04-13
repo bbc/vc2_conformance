@@ -53,6 +53,7 @@ setup(
             'vc2-bitstream-viewer=vc2_conformance.scripts.vc2_bitstream_viewer:main',
             'vc2-bitstream-validator=vc2_conformance.scripts.vc2_bitstream_validator:main',
             'vc2-bitstream-generator=vc2_conformance.scripts.vc2_bitstream_generator:main',
+            'vc2-test-case-generator=vc2_conformance.scripts.vc2_test_case_generator:main',
             'vc2-raw-explain=vc2_conformance.scripts.vc2_raw_explain:main',
         ],
     },
