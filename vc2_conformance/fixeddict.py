@@ -90,9 +90,13 @@ so::
        previous_parse_offset: 0
 """
 
+import sys
+
 from collections import OrderedDict
 
 from itertools import chain
+
+from functools import partial
 
 from vc2_conformance._string_utils import indent
 
@@ -208,7 +212,7 @@ class FixedDictKeyError(KeyError):
             self.fixeddict_class.__name__
         )
 
-def fixeddict(name, *entries):
+def fixeddict(name, *entries, **kwargs):
     """
     Create a fixed-entry dictionary.
     
@@ -239,10 +243,23 @@ def fixeddict(name, *entries):
     pretty-printing behaviour (see :py:class:`Entry`) and will also omit any
     entries whose name is prefixed with an underscore (``_``).
     
-    Finally, the class itself will have a static (and read-only) attribute
+    The class itself will have a static (and read-only) attribute
     ``entry_objs`` which is a :py;class:`collections.OrderedDict` mapping from
     entry name to :py:class:`Entry` object in the dictionary.
+    
+    The keyword-only argument, 'module' and 'qualname' may be provided which
+    override the ``__module__`` and ``__qualname__`` values of the returned
+    fixeddict type. (By default the module name is inferred using runtime stack
+    inspection, if possible). These must be set correctly for this type to be
+    picklable.
     """
+    # Extract keyword-only arguments
+    module = kwargs.pop("module", None)
+    qualname = kwargs.pop("qualname", None)
+    assert not kwargs, "Got unexpected keyword arguments: {}".format(
+        ", ".join(kwargs)
+    )
+    
     # Collect the list of Entry instances defined for this class
     # {name: Entry, ...}
     entry_objs = OrderedDict(
@@ -335,8 +352,44 @@ def fixeddict(name, *entries):
     
     __dict__["copy"] = copy
     
+    # Support pickling/unpickling (part 1).
+    #
+    # Dictionaries have their own magic behaviour by default under pickle so we
+    # must explicitly tell pickle how to handle this type.
+    def __getstate__(self):
+        return dict(self)
+    __dict__["__getstate__"] = __getstate__
+    def __setstate__(self, state):
+        self.update(state) 
+    __dict__["__setstate__"] = __setstate__
+    def __reduce__(self):
+        return (
+            type(self),
+            (),
+            self.__getstate__(),
+        )
+    __dict__["__reduce__"] = __reduce__
+    
     cls = type(name, (dict, ), __dict__)
     
     setattr(cls, "entry_objs", entry_objs)
+    
+    # Support pickling/unpickling (part 2)
+    #
+    # Setting the __module__/__qualname__ class attributes tells pickle where
+    # to find this type when unpickling.
+    if module is None:
+        # Detect the module of the caller by inspecting the stack. This is a
+        # bit gross, and won't work under all Python interpreters, but is what
+        # enum.Enum also has to do and if its good enough for the stdlib, its
+        # good enough for this...
+        try:
+            module = sys._getframe(1).f_globals["__name__"]
+        except (AttributeError, ValueError, KeyError):
+            pass
+    if module is not None:
+        setattr(cls, "__module__", module)
+    if qualname is not None:
+        setattr(cls, "__qualname__", qualname)
     
     return cls

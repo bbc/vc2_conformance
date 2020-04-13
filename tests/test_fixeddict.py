@@ -4,6 +4,8 @@ from enum import IntEnum
 
 from vc2_conformance.fixeddict import fixeddict, Entry, FixedDictKeyError
 
+import pickle
+
 
 class TestEntry(object):
     
@@ -75,6 +77,14 @@ MyFixedDict = fixeddict(
     # Hidden value
     Entry("_hidden"),
 )
+
+class OuterClass(object):
+    # A fixeddict nested within another object (used to test pickleability)
+    MyNestedFixedDict = fixeddict(
+        "MyNestedFixedDict",
+        Entry("foo"),
+        qualname="OuterClass.MyNestedFixedDict",
+    )
 
 class TestFixedDict(object):
     
@@ -194,3 +204,15 @@ class TestFixedDict(object):
         d2["age"] = 10
         assert d2["age"] == 10
         assert d1["age"] == 100  # Unchanged
+    
+    def test_pickle(self):
+        d1 = MyFixedDict(name="Anon", age=100)
+        unpickled_d1 = pickle.loads(pickle.dumps(d1))
+        assert d1 == unpickled_d1
+        assert type(d1) is type(unpickled_d1)
+        
+        # Check qualname override works
+        d2 = OuterClass.MyNestedFixedDict(foo=123)
+        unpickled_d2 = pickle.loads(pickle.dumps(d2))
+        assert d2 == unpickled_d2
+        assert type(d2) is type(unpickled_d2)
