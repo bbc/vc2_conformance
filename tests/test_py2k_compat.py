@@ -1,4 +1,8 @@
+import pytest
+
 from vc2_conformance._py2x_compat import *
+
+import os
 
 from itertools import count
 
@@ -58,3 +62,21 @@ def test_zip():
         (1, (2, 3)),
         (2, (3, 4)),
     ]
+
+
+def test_mkdirs(tmpdir):
+    root = str(tmpdir)
+
+    path = os.path.join(root, "foo", "bar")
+    assert not os.path.isdir(path)
+    makedirs(path, exist_ok=False)
+    assert os.path.isdir(path)
+    
+    with pytest.raises(OSError):
+        makedirs(path, exist_ok=False)
+    
+    path = os.path.join(root, "quo", "qux")
+    assert not os.path.isdir(path)
+    makedirs(path, exist_ok=True)
+    assert os.path.isdir(path)
+    makedirs(path, exist_ok=True)

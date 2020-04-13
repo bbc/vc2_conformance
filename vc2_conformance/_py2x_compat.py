@@ -15,7 +15,10 @@ __all__ = [
     "string_types",  # (str, ) in Python 3.x or (str, unicode) in Python 2.x
     "gcd",  # math.gcd
     "zip",  # zip in Python 3.x or itertools.izip in Python 2.x
+    "makedirs",  # Adds 'exist_ok' argument to Python 2.x version
 ]
+
+import os
 
 import sys
 
@@ -85,3 +88,13 @@ try:
     from itertools import izip as zip  # Python 2.x
 except ImportError:
     zip = zip
+
+try:
+    os.makedirs(os.path.dirname(__file__), exist_ok=True)
+    makedirs = os.makedirs
+except TypeError:
+    def makedirs(name, mode=0o777, exist_ok=False):
+        if exist_ok and os.path.isdir(name):
+            return
+        else:
+            os.makedirs(name, mode)
