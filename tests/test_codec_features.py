@@ -2,6 +2,8 @@ import pytest
 
 from itertools import islice
 
+from collections import OrderedDict
+
 from vc2_data_tables import (
     Levels,
     Profiles,
@@ -248,7 +250,7 @@ class TestParseQuantisationMatrix(object):
 class TestReadCodecFeaturesCSV(object):
     
     def test_empty(self):
-        assert read_codec_features_csv([]) == []
+        assert read_codec_features_csv([]) == OrderedDict()
     
     def test_basic_valid(self):
         assert read_codec_features_csv([
@@ -289,8 +291,8 @@ class TestReadCodecFeaturesCSV(object):
             "lossless,                  FALSE,                FALSE",
             "picture_bytes,             1036800,              24",
             "quantization_matrix,       default,              0 0 0 0 0 0 0",
-        ]) == [
-            CodecFeatures(
+        ]) == OrderedDict([
+            ("hd", CodecFeatures(
                 name="hd",
                 level=Levels.unconstrained,
                 profile=Profiles.high_quality,
@@ -308,8 +310,8 @@ class TestReadCodecFeaturesCSV(object):
                 lossless=False,
                 picture_bytes=1036800,
                 quantization_matrix=None,
-            ),
-            CodecFeatures(
+            )),
+            ("column_C", CodecFeatures(
                 name="column_C",
                 level=Levels.unconstrained,
                 profile=Profiles.high_quality,
@@ -352,8 +354,50 @@ class TestReadCodecFeaturesCSV(object):
                     1: {"HL": 0, "LH": 0, "HH": 0},
                     2: {"HL": 0, "LH": 0, "HH": 0},
                 },
-            )
-        ]
+            )),
+        ])
+    
+    def test_duplicate_name(self):
+        with pytest.raises(InvalidCodecFeaturesError, match=r".*Name 'hd'.*"):
+            read_codec_features_csv([
+                "name,                      hd,                 hd",
+                "level,                     unconstrained,      unconstrained",
+                "profile,                   high_quality,       high_quality",
+                "major_version,             3,                  3",
+                "minor_version,             0,                  0",
+                "base_video_format,         hd1080p_50,         hd1080p_50",
+                "picture_coding_mode,       pictures_are_frames,pictures_are_frames",
+                "frame_width,               default,            default",
+                "frame_height,              default,            default",
+                "color_diff_format_index,   default,            default",
+                "source_sampling,           default,            default",
+                "top_field_first,           default,            default",
+                "frame_rate_numer,          default,            default",
+                "frame_rate_denom,          default,            default",
+                "pixel_aspect_ratio_numer,  default,            default",
+                "pixel_aspect_ratio_denom,  default,            default",
+                "clean_width,               default,            default",
+                "clean_height,              default,            default",
+                "left_offset,               default,            default",
+                "top_offset,                default,            default",
+                "luma_offset,               default,            default",
+                "luma_excursion,            default,            default",
+                "color_diff_offset,         default,            default",
+                "color_diff_excursion,      default,            default",
+                "color_primaries_index,     default,            default",
+                "color_matrix_index,        default,            default",
+                "transfer_function_index,   default,            default",
+                "wavelet_index,             haar_with_shift,    haar_with_shift",
+                "wavelet_index_ho,          haar_with_shift,    haar_with_shift",
+                "dwt_depth,                 2,                  2",
+                "dwt_depth_ho,              0,                  0",
+                "slices_x,                  120,                120",
+                "slices_y,                  108,                108",
+                "fragment_slice_count,      0,                  0",
+                "lossless,                  FALSE,              FALSE",
+                "picture_bytes,             1036800,            1036800",
+                "quantization_matrix,       default,            default",
+            ])
     
     def test_missing_row(self):
         with pytest.raises(InvalidCodecFeaturesError, match=r".*quantization_matrix.*"):

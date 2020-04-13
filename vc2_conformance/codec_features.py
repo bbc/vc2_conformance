@@ -25,6 +25,8 @@ from functools import partial
 
 from numbers import Number
 
+from collections import OrderedDict
+
 from vc2_conformance.video_parameters import set_source_defaults
 
 from vc2_data_tables import (
@@ -453,7 +455,7 @@ def read_codec_features_csv(csvfile):
     
     Returns
     =======
-    codec_feature_sets : [:py:class:`CodecFeatures`, ...]
+    codec_feature_sets : OrderedDict([(name, :py:class:`CodecFeatures`), ...])
     
     Raises
     ======
@@ -462,7 +464,7 @@ def read_codec_features_csv(csvfile):
     """
     csv_columns = read_dict_list_csv(csvfile)
     
-    out = []
+    out = OrderedDict()
     
     for i, column in zip(islice(spreadsheet_column_names(), 1, None), csv_columns):
         if not column:
@@ -500,15 +502,23 @@ def read_codec_features_csv(csvfile):
                 )
         
         features = CodecFeatures()
-        out.append(features)
         
         # Create default names for columns where not provided
         if "name" not in column:
             name = "column_{}".format(i)
         else:
             name = column.pop("name")
+        name = name.strip()
         
         features["name"] = name
+        
+        # Check for name uniqueness
+        if name in out:
+            raise InvalidCodecFeaturesError("Name '{}' used more than once".format(
+                name
+            ))
+        
+        out[name] = features
         
         # Parse basic fields
         for field_name, field_type in [

@@ -1,0 +1,66 @@
+# User-defined,,
+name,hd-4-to-1,minimal
+,,
+# (11.2.1),,
+level,unconstrained,unconstrained
+profile,high_quality,high_quality
+major_version,3,3
+minor_version,0,0
+,,
+# (11.1),,
+base_video_format,hd1080p_50,hd1080p_50
+picture_coding_mode,pictures_are_frames,pictures_are_frames
+,,
+# (11.4.3),,
+frame_width,default,8
+frame_height,default,4
+,,
+# (11.4.4),,
+color_diff_format_index,default,color_4_4_4
+,,
+# (11.4.5),,
+source_sampling,default,progressive
+top_field_first,default,TRUE
+,,
+# (11.4.6),,
+frame_rate_numer,default,1
+frame_rate_denom,default,1
+,,
+# (11.4.7),,
+pixel_aspect_ratio_numer,default,1
+pixel_aspect_ratio_denom,default,1
+,,
+# (11.4.8),,
+clean_width,default,8
+clean_height,default,4
+left_offset,default,0
+top_offset,default,0
+,,
+# (11.4.9),,
+luma_offset,default,0
+luma_excursion,default,255
+color_diff_offset,default,128
+color_diff_excursion,default,255
+,,
+# (11.4.10),,
+color_primaries_index,default,hdtv
+color_matrix_index,default,hdtv
+transfer_function_index,default,tv_gamma
+,,
+# (12.4.1) and (12.4.4.1),,
+wavelet_index,le_gall_5_3,haar_with_shift
+wavelet_index_ho,le_gall_5_3,haar_with_shift
+dwt_depth,2,1
+dwt_depth_ho,0,0
+,,
+# (12.4.5.2),,
+slices_x,240,2
+slices_y,135,1
+,,
+"# Between these options, the slice sizes are set",,
+lossless,FALSE,FALSE
+picture_bytes,1296000,24
+fragment_slice_count,0,0
+,,
+# (12.4.5.3),,
+quantization_matrix,default,default
