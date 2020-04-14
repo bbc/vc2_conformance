@@ -216,7 +216,7 @@ def test_from_444_to_420():
         ],
         dtype=float,
     )
-    a_exp = np.array([[1515, 3515, 5515], [1535, 3535, 5535],], dtype=float)
+    a_exp = np.array([[1515, 3515, 5515], [1535, 3535, 5535]], dtype=float)
     assert np.array_equal(
         from_444(a, ColorDifferenceSamplingFormats.color_4_2_0), a_exp
     )
@@ -304,7 +304,7 @@ def test_to_xyz():
     row_3[:, 1] = row_0[2, 1]
     row_3[:, 2] = row_0[2, 2]
 
-    test_picture_xyz = np.stack([row_0, row_1, row_2, row_3,], axis=0)
+    test_picture_xyz = np.stack([row_0, row_1, row_2, row_3], axis=0)
 
     # Colours should come out as expected RGB values in GBR order
     g, b, r = from_xyz(test_picture_xyz, video_parameters,)
@@ -387,7 +387,7 @@ def test_matmul_colors():
 
     old_rgb = np.stack([old_r, old_g, old_b], axis=-1)
 
-    m = np.array([[2, 0, 0], [0, 3, 0], [0, 0, 4],])
+    m = np.array([[2, 0, 0], [0, 3, 0], [0, 0, 4]])
 
     new_rgb = matmul_colors(m, old_rgb)
 
@@ -401,7 +401,7 @@ def test_swap_primaries():
     vp_after = VideoParameters(color_primaries_index=PresetColorPrimaries.uhdtv,)
 
     linear_rgb_before = np.array(
-        [[[0, 0, 0], [0.5, 0.5, 0.5], [1, 1, 1]], [[1, 0, 0], [0, 1, 0], [0, 0, 1]],]
+        [[[0, 0, 0], [0.5, 0.5, 0.5], [1, 1, 1]], [[1, 0, 0], [0, 1, 0], [0, 0, 1]]]
     )
 
     xyz_before = matmul_colors(

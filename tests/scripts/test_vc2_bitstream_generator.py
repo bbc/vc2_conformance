@@ -152,7 +152,7 @@ class TestEvaluateStringsInJSON(object):
 
     def test_error(self):
         with pytest.raises(JSONEvalError) as exc_info:
-            evaluate_strings_in_json({"foo": [1, "1 / 0", 3,]})
+            evaluate_strings_in_json({"foo": [1, "1 / 0", 3]})
 
         assert str(exc_info.value).startswith(
             "Evaluation of '1 / 0' in Sequence['foo'][1] failed: " "ZeroDivisionError:"
@@ -179,7 +179,7 @@ class TestMain(object):
                 {
                     "data_units": [
                         {
-                            "parse_info": {"parse_code": "ParseCodes.sequence_header",},
+                            "parse_info": {"parse_code": "ParseCodes.sequence_header"},
                             "sequence_header": {
                                 "video_parameters": {
                                     "#": "Use a smaller picture size to make serialisation faster.",
@@ -210,9 +210,9 @@ class TestMain(object):
                                 "parse_code": "ParseCodes.high_quality_picture_fragment",
                             },
                             "fragment_parse": {
-                                "fragment_header": {"fragment_slice_count": 0,},
+                                "fragment_header": {"fragment_slice_count": 0},
                                 "transform_parameters": {
-                                    "slice_parameters": {"slices_x": 1, "slices_y": 1,},
+                                    "slice_parameters": {"slices_x": 1, "slices_y": 1},
                                 },
                             },
                         },
@@ -221,7 +221,7 @@ class TestMain(object):
                                 "parse_code": "ParseCodes.high_quality_picture_fragment",
                             },
                             "fragment_parse": {
-                                "fragment_header": {"fragment_slice_count": 1,}
+                                "fragment_header": {"fragment_slice_count": 1}
                             },
                         },
                         "# A further two non-fragmented pictures (checks auto-numbering)",
@@ -236,7 +236,7 @@ class TestMain(object):
                             },
                         },
                         "# That's all!",
-                        {"parse_info": {"parse_code": "ParseCodes.end_of_sequence",},},
+                        {"parse_info": {"parse_code": "ParseCodes.end_of_sequence"}},
                     ],
                 },
                 f,
@@ -354,7 +354,7 @@ class TestMain(object):
                 {
                     "data_units": [
                         {
-                            "parse_info": {"parse_code": "ParseCodes.end_of_sequence",},
+                            "parse_info": {"parse_code": "ParseCodes.end_of_sequence"},
                             "picture_parse": {},
                         },
                     ],
@@ -378,11 +378,7 @@ class TestMain(object):
 
         with open(spec_filename, "w") as f:
             json.dump(
-                {
-                    "data_units": [
-                        {"parse_info": {"parse_code": "ParseCodes.oopsie",},},
-                    ],
-                },
+                {"data_units": [{"parse_info": {"parse_code": "ParseCodes.oopsie"}},],},
                 f,
             )
 
@@ -412,7 +408,7 @@ class TestMain(object):
                                 "parse_code": "ParseCodes.high_quality_picture",
                             },
                         },
-                        {"parse_info": {"parse_code": "ParseCodes.end_of_sequence",},},
+                        {"parse_info": {"parse_code": "ParseCodes.end_of_sequence"}},
                     ],
                 },
                 f,

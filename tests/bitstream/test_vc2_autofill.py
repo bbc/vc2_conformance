@@ -137,7 +137,7 @@ class TestAutofillPictureNumber(object):
 
     @pytest.mark.parametrize(
         "parse_code",
-        [tables.ParseCodes.high_quality_picture, tables.ParseCodes.low_delay_picture,],
+        [tables.ParseCodes.high_quality_picture, tables.ParseCodes.low_delay_picture],
     )
     def test_pictures(self, parse_code):
         seq = Sequence(
@@ -297,7 +297,7 @@ class TestAutofillPictureNumber(object):
 
 
 class TestAutofillParseOffsets(object):
-    @pytest.mark.parametrize("seq", [Sequence(), Sequence(data_units=[]),])
+    @pytest.mark.parametrize("seq", [Sequence(), Sequence(data_units=[])])
     def test_doesnt_crash_on_empty_sequence(self, seq):
         seq_orig = deepcopy(seq)
         assert autofill_parse_offsets(seq) == ([], [])
@@ -305,7 +305,7 @@ class TestAutofillParseOffsets(object):
 
     @pytest.mark.parametrize(
         "parse_code",
-        [tables.ParseCodes.padding_data, tables.ParseCodes.auxiliary_data,],
+        [tables.ParseCodes.padding_data, tables.ParseCodes.auxiliary_data],
     )
     def test_padding_and_aux_data(self, parse_code):
         seq = Sequence(
@@ -346,12 +346,12 @@ class TestAutofillParseOffsets(object):
 
     @pytest.mark.parametrize(
         "parse_code",
-        [tables.ParseCodes.padding_data, tables.ParseCodes.auxiliary_data,],
+        [tables.ParseCodes.padding_data, tables.ParseCodes.auxiliary_data],
     )
     def test_padding_and_aux_data_default_data(self, parse_code):
         # No data given (default (empty) data should be assumed)
         seq = Sequence(
-            data_units=[DataUnit(parse_info=ParseInfo(parse_code=parse_code)),]
+            data_units=[DataUnit(parse_info=ParseInfo(parse_code=parse_code))]
         )
 
         assert autofill_parse_offsets(seq) == ([], [0])

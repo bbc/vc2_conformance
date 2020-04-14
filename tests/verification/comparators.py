@@ -269,14 +269,14 @@ class SerdesChangesOnly(NodeComparator):
         return self.generic_compare(
             n1,
             n2,
-            filter_fields={"body": (None, SerdesChangesOnly.common_body_filters),},
+            filter_fields={"body": (None, SerdesChangesOnly.common_body_filters)},
         )
 
     def compare_With(self, n1, n2):
         return self.generic_compare(
             n1,
             n2,
-            filter_fields={"body": (None, SerdesChangesOnly.common_body_filters),},
+            filter_fields={"body": (None, SerdesChangesOnly.common_body_filters)},
         )
 
     def compare_If(self, n1, n2):

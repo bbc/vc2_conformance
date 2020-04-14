@@ -40,35 +40,35 @@ class TestReadDictListCSV(object):
         assert read_dict_list_csv([]) == []
 
     def test_no_non_comments(self):
-        assert read_dict_list_csv(["#comment,foo,bar", ",also,comment", "",]) == []
+        assert read_dict_list_csv(["#comment,foo,bar", ",also,comment", ""]) == []
 
     def test_single_dict(self):
-        assert read_dict_list_csv(["a,one", "b,two", "c,three",]) == [
-            {"a": "one", "b": "two", "c": "three",}
+        assert read_dict_list_csv(["a,one", "b,two", "c,three"]) == [
+            {"a": "one", "b": "two", "c": "three"}
         ]
 
     def test_multiple_dicts(self):
-        assert read_dict_list_csv(["a,one,ay", "b,two,bee", "c,three,see",]) == [
-            {"a": "one", "b": "two", "c": "three",},
-            {"a": "ay", "b": "bee", "c": "see",},
+        assert read_dict_list_csv(["a,one,ay", "b,two,bee", "c,three,see"]) == [
+            {"a": "one", "b": "two", "c": "three"},
+            {"a": "ay", "b": "bee", "c": "see"},
         ]
 
     def test_comment_rows(self):
         assert read_dict_list_csv(
-            ["#a,comment,row", "a,one", ",another one", "b,two", ",,", "c,three", "",]
-        ) == [{"a": "one", "b": "two", "c": "three",},]
+            ["#a,comment,row", "a,one", ",another one", "b,two", ",,", "c,three", ""]
+        ) == [{"a": "one", "b": "two", "c": "three"}]
 
     def test_missing_entries(self):
-        assert read_dict_list_csv(["a,one,even", "b,two,,odd", "c,three,even",]) == [
-            {"a": "one", "b": "two", "c": "three",},
-            {"a": "even", "c": "even",},
-            {"b": "odd",},
+        assert read_dict_list_csv(["a,one,even", "b,two,,odd", "c,three,even"]) == [
+            {"a": "one", "b": "two", "c": "three"},
+            {"a": "even", "c": "even"},
+            {"b": "odd"},
         ]
 
     def test_strip_whitespace(self):
         assert read_dict_list_csv(
-            [" # a comment ", "a ,one ", " ,an empty row", " b, two", " c , three ",]
-        ) == [{"a": "one", "b": "two", "c": "three",},]
+            [" # a comment ", "a ,one ", " ,an empty row", " b, two", " c , three "]
+        ) == [{"a": "one", "b": "two", "c": "three"}]
 
 
 def test_spreadsheet_column_names():
@@ -92,18 +92,18 @@ class TestParseIntEnum(object):
         assert value == exp
         assert type(value) is type(exp)
 
-    @pytest.mark.parametrize("string", ["", "1", "foo",])
+    @pytest.mark.parametrize("string", ["", "1", "foo"])
     def test_invalid(self, string):
         with pytest.raises(ValueError):
             parse_int_enum(Profiles, string)
 
 
 class TestParseIntEnum(object):
-    @pytest.mark.parametrize("string,exp", [("100", 100), ("123", 123),])
+    @pytest.mark.parametrize("string,exp", [("100", 100), ("123", 123)])
     def test_valid(self, string, exp):
         assert parse_int_at_least(100, string) == exp
 
-    @pytest.mark.parametrize("string", ["", "1", "99", "foo",])
+    @pytest.mark.parametrize("string", ["", "1", "99", "foo"])
     def test_invalid(self, string):
         with pytest.raises(ValueError):
             parse_int_at_least(100, string)
@@ -111,13 +111,13 @@ class TestParseIntEnum(object):
 
 class TestParseBool(object):
     @pytest.mark.parametrize(
-        "string,exp", [("1", True), ("TRue", True), ("0", False), ("FAlse", False),]
+        "string,exp", [("1", True), ("TRue", True), ("0", False), ("FAlse", False)]
     )
     def test_valid(self, string, exp):
         value = parse_bool(string)
         assert value is exp
 
-    @pytest.mark.parametrize("string", ["", "foo", "tar", "2",])
+    @pytest.mark.parametrize("string", ["", "foo", "tar", "2"])
     def test_invalid(self, string):
         with pytest.raises(ValueError):
             parse_bool(string)
@@ -133,7 +133,7 @@ class TestParseQuantisationMatrix(object):
                 "1 2 3 4 5",
                 1,
                 1,
-                {0: {"L": 1}, 1: {"H": 2}, 2: {"HL": 3, "LH": 4, "HH": 5},},
+                {0: {"L": 1}, 1: {"H": 2}, 2: {"HL": 3, "LH": 4, "HH": 5}},
             ),
             # More than one whitespace separator
             ("  123  ", 0, 0, {0: {"LL": 123}}),

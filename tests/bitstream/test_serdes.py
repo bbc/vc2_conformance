@@ -313,7 +313,7 @@ class TestSerDes(object):
 
         assert serdes.context == {
             "value": [123, 321],
-            "child_1": {"value": [1234, 4321], "child_2": {"value": [12345],},},
+            "child_1": {"value": [1234, 4321], "child_2": {"value": [12345]}},
         }
 
     def test_subcontext_list(self):
@@ -340,7 +340,7 @@ class TestSerDes(object):
 
         assert serdes.context == {
             "value": [123, 321],
-            "children": [{"value": [1234, 4321]}, {"value": [12345, 54321]},],
+            "children": [{"value": [1234, 4321]}, {"value": [12345, 54321]}],
         }
 
     def test_subcontext_decorator(self):
@@ -359,7 +359,7 @@ class TestSerDes(object):
 
         assert serdes.context == {
             "value": [123, 321],
-            "child_1": {"value": [1234, 4321], "child_2": {"value": [12345],},},
+            "child_1": {"value": [1234, 4321], "child_2": {"value": [12345]}},
         }
 
     def test_subcontext_incomplete(self):

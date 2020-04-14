@@ -202,7 +202,7 @@ def primary_chromacities_to_matrix(pc):
     #    [ Z ]     [            ] [  0  0 Yb ] [ B ]
 
     relative_m = np.array(
-        [xy_to_xyz(pc.xr, pc.yr), xy_to_xyz(pc.xg, pc.yg), xy_to_xyz(pc.xb, pc.yb),]
+        [xy_to_xyz(pc.xr, pc.yr), xy_to_xyz(pc.xg, pc.yg), xy_to_xyz(pc.xb, pc.yb)]
     ).T
 
     # Also by definition, the white point with chromacity xw, yw, and XYZ Xw,
@@ -547,10 +547,10 @@ COLOR_MATRICES = {
     PresetColorMatrices.sdtv: kr_kb_to_color_matrix(kr=0.2990, kb=0.1140),
     # (ITU-T H.264)
     PresetColorMatrices.reversible: np.array(
-        [[+0.25, +0.50, +0.25], [-0.25, +0.50, -0.25], [+0.50, +0.00, -0.50],]
+        [[+0.25, +0.50, +0.25], [-0.25, +0.50, -0.25], [+0.50, +0.00, -0.50]]
     ),
     # GBR -> Y C1 C2
-    PresetColorMatrices.rgb: np.array([[0, 1, 0], [0, 0, 1], [1, 0, 0],]),
+    PresetColorMatrices.rgb: np.array([[0, 1, 0], [0, 0, 1], [1, 0, 0]]),
     # (ITU-R BT.2020)
     PresetColorMatrices.uhdtv: kr_kb_to_color_matrix(kr=0.2627, kb=0.0593),
 }
@@ -730,7 +730,7 @@ def to_xyz(y, c1, c2, video_parameters):
 
     # Produce a Nx3 matrix with each column containing a Y C1 C2 value.
     yc1c2_cols = np.stack(
-        [y_float.reshape(-1), c1_upsampled.reshape(-1), c2_upsampled.reshape(-1),],
+        [y_float.reshape(-1), c1_upsampled.reshape(-1), c2_upsampled.reshape(-1)],
         axis=0,
     )
 

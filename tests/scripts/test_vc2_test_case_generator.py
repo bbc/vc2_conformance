@@ -165,7 +165,7 @@ def test_check_output_directories_empty(
 
 
 @pytest.mark.parametrize(
-    "name,exp_valid", [("minimal", True), ("minimal-invalid", False),]
+    "name,exp_valid", [("minimal", True), ("minimal-invalid", False)]
 )
 def test_check_codec_features_valid(capsys, name, exp_valid):
     codec_feature_sets = read_codec_features_csv(open(CODEC_FEATURES_CSV))
@@ -234,14 +234,14 @@ def expected_files():
         return (encoder_test_files, decoder_test_files)
 
 
-@pytest.mark.parametrize("extra_args,exp_fail", [([], True), (["--force"], False),])
+@pytest.mark.parametrize("extra_args,exp_fail", [([], True), (["--force"], False)])
 def test_force(
     tmpdir, extra_args, exp_fail,
 ):
     with alternative_real_pictures():
         fn = partial(
             main,
-            [CODEC_FEATURES_CSV, "--output", str(tmpdir), "--codecs", "minimal",]
+            [CODEC_FEATURES_CSV, "--output", str(tmpdir), "--codecs", "minimal"]
             + extra_args,
         )
 
@@ -273,7 +273,7 @@ def test_completeness(
     with alternative_real_pictures() as p:
         assert (
             main(
-                [CODEC_FEATURES_CSV, "--output", str(tmpdir), "--codecs", "minimal",]
+                [CODEC_FEATURES_CSV, "--output", str(tmpdir), "--codecs", "minimal"]
                 + extra_args
             )
             == 0

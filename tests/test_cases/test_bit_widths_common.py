@@ -113,7 +113,7 @@ class TestGetTestPictures(object):
             get_test_pictures(codec_features)
 
     @pytest.mark.parametrize(
-        "quantisation_matrix", [None, {0: {"LL": 0}, 1: {"LH": 0, "HL": 0, "HH": 0},},]
+        "quantisation_matrix", [None, {0: {"LL": 0}, 1: {"LH": 0, "HL": 0, "HH": 0}}]
     )
     @pytest.mark.parametrize(
         "bundle_filename_arg",

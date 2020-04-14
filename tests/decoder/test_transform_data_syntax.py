@@ -48,9 +48,7 @@ class TestLDSlice(object):
         max_y_block_length = slice_bits - 7 - length_bits
 
         state = single_sample_transform_base_state.copy()
-        state.update(
-            {"slice_bytes_numerator": 10, "slice_bytes_denominator": 1,}
-        )
+        state.update({"slice_bytes_numerator": 10, "slice_bytes_denominator": 1})
         ld_slice_bytes = serialise_to_bytes(
             bitstream.LDSlice(slice_y_length=slice_y_length), state, 0, 0,
         )
@@ -68,9 +66,7 @@ class TestLDSlice(object):
 
     def test_qindex_constrained_by_level(self):
         state = single_sample_transform_base_state.copy()
-        state.update(
-            {"slice_bytes_numerator": 1, "slice_bytes_denominator": 1,}
-        )
+        state.update({"slice_bytes_numerator": 1, "slice_bytes_denominator": 1})
         state.update(
             bytes_to_state(
                 serialise_to_bytes(bitstream.LDSlice(qindex=0,), state, 0, 0,)
@@ -87,9 +83,7 @@ class TestLDSlice(object):
 class TestHQSlice(object):
     def test_total_slice_bytes_constraint(self):
         state = single_sample_transform_base_state.copy()
-        state.update(
-            {"slice_prefix_bytes": 10, "slice_size_scaler": 20,}
-        )
+        state.update({"slice_prefix_bytes": 10, "slice_size_scaler": 20})
         hq_slice_bytes = serialise_to_bytes(
             bitstream.HQSlice(slice_y_length=1, slice_c1_length=2, slice_c2_length=3,),
             state,
@@ -106,9 +100,7 @@ class TestHQSlice(object):
 
     def test_qindex_constrained_by_level(self):
         state = single_sample_transform_base_state.copy()
-        state.update(
-            {"slice_prefix_bytes": 0, "slice_size_scaler": 1,}
-        )
+        state.update({"slice_prefix_bytes": 0, "slice_size_scaler": 1})
         hq_slice_bytes = serialise_to_bytes(bitstream.HQSlice(qindex=0), state, 0, 0,)
         state.update(bytes_to_state(hq_slice_bytes))
 
@@ -120,7 +112,7 @@ class TestHQSlice(object):
 
 
 @pytest.mark.parametrize(
-    "dwt_depth,dwt_depth_ho", [(0, 0), (1, 0), (2, 0), (0, 1), (0, 2), (1, 1), (2, 2),]
+    "dwt_depth,dwt_depth_ho", [(0, 0), (1, 0), (2, 0), (0, 1), (0, 2), (1, 1), (2, 2)]
 )
 def test_initialize_wavelet_data(dwt_depth, dwt_depth_ho):
     # This test attempts to ensure that initialize_wavelet_data produces arrays

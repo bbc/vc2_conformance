@@ -216,9 +216,7 @@ def iter_custom_options_dicts(
     if presets is not None:
         for index, values in presets.items():
             if values == tuple(video_parameters[vp_key] for vp_key, _ in parameters):
-                yield dict_type(
-                    {flag_key: True, "index": index,}
-                )
+                yield dict_type({flag_key: True, "index": index})
 
     # Explicitly set the desired value
     out = dict_type({flag_key: True})
@@ -270,7 +268,7 @@ iter_clean_area_options = partial(
     iter_custom_options_dicts,
     dict_type=CleanArea,
     flag_key="custom_clean_area_flag",
-    parameters=["clean_width", "clean_height", "top_offset", "left_offset",],
+    parameters=["clean_width", "clean_height", "top_offset", "left_offset"],
 )
 
 iter_signal_range_options = partial(

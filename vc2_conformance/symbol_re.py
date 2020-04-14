@@ -646,7 +646,7 @@ def make_matching_sequence(initial_sequence, *patterns, **kwargs):
     # * this_depth_limit is an integer giving the number of search levels
     #   remaining before giving up.
     initial_matchers = [Matcher(pattern) for pattern in patterns]
-    queue = deque([([], initial_sequence, initial_matchers, depth_limit),])
+    queue = deque([([], initial_sequence, initial_matchers, depth_limit)])
 
     while queue:
         (

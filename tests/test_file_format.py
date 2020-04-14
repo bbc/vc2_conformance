@@ -179,7 +179,7 @@ def test_read_and_write_convenience_functions(
     write(picture, video_parameters, picture_coding_mode, filename)
 
     # Correct files created
-    assert set(os.listdir(str(tmp_path))) == set(["test_file.raw", "test_file.json",])
+    assert set(os.listdir(str(tmp_path))) == set(["test_file.raw", "test_file.json"])
 
     # Round-trip works
     assert read(filename) == (picture, video_parameters, picture_coding_mode,)

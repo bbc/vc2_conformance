@@ -209,7 +209,7 @@ class TestParseParameters(object):
         }
 
 
-@pytest.mark.parametrize("frame_width,frame_height", [(0, 1000), (1000, 0), (0, 0),])
+@pytest.mark.parametrize("frame_width,frame_height", [(0, 1000), (1000, 0), (0, 0)])
 def test_frame_size_must_not_be_zero(frame_width, frame_height):
     state = bytes_to_state(
         serialise_to_bytes(
@@ -388,7 +388,7 @@ class TestPixelAspectRatio(object):
 
     @pytest.mark.parametrize(
         "numer,denom,exp_fail",
-        [(1, 1, False), (0, 1, True), (1, 0, True), (0, 0, True),],
+        [(1, 1, False), (0, 1, True), (1, 0, True), (0, 0, True)],
     )
     def test_must_not_contain_zeros(self, numer, denom, exp_fail):
         state = bytes_to_state(

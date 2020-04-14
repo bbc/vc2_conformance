@@ -163,7 +163,7 @@ class TestParseSequence(object):
 
     @pytest.mark.parametrize(
         "num_slices_to_send,exp_fail",
-        [(0, True), (1, True), (2, True), (3, True), (4, True), (5, True), (6, False),],
+        [(0, True), (1, True), (2, True), (3, True), (4, True), (5, True), (6, False)],
     )
     def test_incomplete_picture_fragments_at_eos_fails(
         self, num_slices_to_send, exp_fail
@@ -248,7 +248,7 @@ class TestParseSequence(object):
 
     @pytest.mark.parametrize(
         "num_slices_to_send,exp_fail",
-        [(0, True), (1, True), (2, True), (3, True), (4, True), (5, True), (6, False),],
+        [(0, True), (1, True), (2, True), (3, True), (4, True), (5, True), (6, False)],
     )
     def test_picture_and_incomplete_fragment_interleaving_disallowed(
         self, num_slices_to_send, exp_fail
@@ -461,9 +461,9 @@ class TestParseSequence(object):
             # Should get a 4x2 mid-grey frame with 4:2:2 colour difference sampling
             assert args[0] == {
                 "pic_num": 10 + i,
-                "Y": [[128, 128, 128, 128], [128, 128, 128, 128],],
-                "C1": [[128, 128], [128, 128],],
-                "C2": [[128, 128], [128, 128],],
+                "Y": [[128, 128, 128, 128], [128, 128, 128, 128]],
+                "C1": [[128, 128], [128, 128]],
+                "C2": [[128, 128], [128, 128]],
             }
             # Just sanity check the second argument looks like a set of video parameters
             assert args[1]["frame_width"] == 4

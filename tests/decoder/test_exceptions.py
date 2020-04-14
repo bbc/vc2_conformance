@@ -36,7 +36,7 @@ def test_known_wavelet_to_string():
 
 class TestExplainParseCodeSequenceStructureRestrictions(object):
     @pytest.mark.parametrize(
-        "expected_parse_codes", [None, [], [tables.ParseCodes.end_of_sequence],]
+        "expected_parse_codes", [None, [], [tables.ParseCodes.end_of_sequence]]
     )
     def test_expected_end(self, expected_parse_codes):
         assert exceptions.explain_parse_code_sequence_structure_restrictions(
@@ -394,7 +394,7 @@ def test_parse_code_not_allowed_in_profile():
 def test_value_not_allowed_in_level():
     e = exceptions.ValueNotAllowedInLevel(
         level_constrained_values=OrderedDict(
-            [("level", 1), ("foo", "bar"), ("qux", "quo"),]
+            [("level", 1), ("foo", "bar"), ("qux", "quo")]
         ),
         key="base_video_format",
         value=999,
@@ -945,7 +945,7 @@ def test_quantisation_matrix_value_not_allowed_in_level():
         value=999,
         allowed_values=ValueSet((0, 127)),
         level_constrained_values=OrderedDict(
-            [("level", 1), ("custom_quant_matrix", True), ("foo", "bar"),]
+            [("level", 1), ("custom_quant_matrix", True), ("foo", "bar")]
         ),
     )
 

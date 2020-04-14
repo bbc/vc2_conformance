@@ -344,7 +344,7 @@ class TestMakeMatchingSequence(object):
         assert make_matching_sequence([], *patterns) == []
 
     @pytest.mark.parametrize(
-        "patterns", [["a b c$"], ["...$"], [".*"], ["a . . $", ". b . $", ". . c $",],]
+        "patterns", [["a b c$"], ["...$"], [".*"], ["a . . $", ". b . $", ". . c $"]]
     )
     def test_fully_matched_pattern(self, patterns):
         # Patterns which match the test sequence exactly
@@ -358,11 +358,11 @@ class TestMakeMatchingSequence(object):
             # Two options, one shorter
             ["a a? b$"],
             # All patterns together enforce the solution
-            ["a .*", ".* b", ". .",],
+            ["a .*", ".* b", ". ."],
             # Wildcard options first
-            [". .", ".* b", "a .*",],
+            [". .", ".* b", "a .*"],
             # End-of-sequence required
-            ["a .* $", ".* b $", ". . $",],
+            ["a .* $", ".* b $", ". . $"],
         ],
     )
     def test_find_shortest_possible_filler_values(self, patterns):
@@ -403,7 +403,8 @@ class TestMakeMatchingSequence(object):
     @pytest.mark.parametrize(
         "symbols,patterns,works",
         [
-            # When no requirements given, should work up to (but not past) the depth limit
+            # When no requirements given, should work up to (but not past) the depth
+            # limit
             ([], ["a b c"], True),
             ([], ["a b c d"], False),
             # Depth limit should reset when a symbol is matched

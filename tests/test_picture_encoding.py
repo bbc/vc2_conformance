@@ -28,9 +28,9 @@ from vc2_conformance.picture_encoding import (
 
 def test_picture_encode_and_picture_decode_are_inverses():
     original_picture = {
-        "Y": [[1, 2, 3], [101, 102, 103],],
-        "C1": [[4, 5],],
-        "C2": [[6, 7],],
+        "Y": [[1, 2, 3], [101, 102, 103]],
+        "C1": [[4, 5]],
+        "C2": [[6, 7]],
         "pic_num": 123,
     }
     state = {

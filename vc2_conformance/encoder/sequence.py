@@ -112,7 +112,7 @@ def make_sequence(codec_features, pictures, *data_unit_patterns, **kwargs):
         # Certain levels may provide additional constraints
         LEVEL_SEQUENCE_RESTRICTIONS[codec_features["level"]].sequence_restriction_regex,
         *data_unit_patterns,
-        symbol_priority=["padding_data", "sequence_header",]
+        symbol_priority=["padding_data", "sequence_header"]
     )
 
     # Functions for producing the necessary data units

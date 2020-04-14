@@ -108,7 +108,7 @@ minimal_slice_parameters_state = {
 class TestSliceParameters(object):
     @pytest.mark.parametrize(
         "slices_x,slices_y,exp_fail",
-        [(1, 1, False), (0, 1, True), (1, 0, True), (0, 0, True),],
+        [(1, 1, False), (0, 1, True), (1, 0, True), (0, 0, True)],
     )
     def test_number_of_slices_must_be_nonzero(self, slices_x, slices_y, exp_fail):
         state = minimal_slice_parameters_state.copy()
@@ -303,7 +303,7 @@ class TestQuantisationMatrix(object):
             "wavelet_index_ho": tables.WaveletFilters.haar_no_shift,
             "dwt_depth": dwt_depth,
             "dwt_depth_ho": dwt_depth_ho,
-            "_level_constrained_values": {"level": tables.Levels.sub_sd,},
+            "_level_constrained_values": {"level": tables.Levels.sub_sd},
         }
         state.update(
             bytes_to_state(
@@ -335,13 +335,13 @@ class TestQuantisationMatrix(object):
     [
         (
             tables.ParseCodes.high_quality_picture,
-            {"slice_prefix_bytes": 10, "slice_size_scaler": 20,},
-            {"slice_prefix_bytes": 10, "slice_size_scaler": 20,},
+            {"slice_prefix_bytes": 10, "slice_size_scaler": 20},
+            {"slice_prefix_bytes": 10, "slice_size_scaler": 20},
         ),
         (
             tables.ParseCodes.low_delay_picture,
-            {"slice_bytes_numerator": 2, "slice_bytes_denominator": 1,},
-            {"slice_bytes_numerator": 2, "slice_bytes_denominator": 1,},
+            {"slice_bytes_numerator": 2, "slice_bytes_denominator": 1},
+            {"slice_bytes_numerator": 2, "slice_bytes_denominator": 1},
         ),
     ],
 )
@@ -400,7 +400,7 @@ def test_transform_parameters_et_al_level_constraints(
 
 @pytest.mark.parametrize(
     "parse_code",
-    [tables.ParseCodes.low_delay_picture, tables.ParseCodes.high_quality_picture,],
+    [tables.ParseCodes.low_delay_picture, tables.ParseCodes.high_quality_picture],
 )
 def test_whole_picture(parse_code):
     # A sanity check which runs picture decoding for whole pictures and makes

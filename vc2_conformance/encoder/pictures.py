@@ -395,7 +395,7 @@ def transform_and_slice_picture(codec_features, picture):
         for level, orients in sorted(state[transform].items()):
             for orient, coeffs in sorted(
                 orients.items(),
-                key=lambda orient_coeffs: ["L", "LL", "H", "HL", "LH", "HH",].index(
+                key=lambda orient_coeffs: ["L", "LL", "H", "HL", "LH", "HH"].index(
                     orient_coeffs[0]
                 ),
             ):

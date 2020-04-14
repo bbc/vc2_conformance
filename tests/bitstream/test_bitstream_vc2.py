@@ -127,7 +127,7 @@ def test_parse_info(w):
 
 
 @pytest.mark.parametrize(
-    "T,func", [(vc2.AuxiliaryData, vc2.auxiliary_data), (vc2.Padding, vc2.padding),]
+    "T,func", [(vc2.AuxiliaryData, vc2.auxiliary_data), (vc2.Padding, vc2.padding)]
 )
 def test_auxiliary_data_and_padding(w, T, func):
     ad_in = T()

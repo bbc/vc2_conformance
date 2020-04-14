@@ -37,7 +37,7 @@ class TestIgnoreDocstrings(object):
         class MyNC(NodeComparator):
             def compare_FunctionDef(self, n1, n2):
                 return self.generic_compare(
-                    n1, n2, filter_fields={"body": ignore_docstrings,}
+                    n1, n2, filter_fields={"body": ignore_docstrings}
                 )
 
         return MyNC()
@@ -83,7 +83,7 @@ class TestIgnoreLeadingArguments(object):
                 return self.generic_compare(
                     n1,
                     n2,
-                    filter_fields={"args": ignore_leading_arguments("foo", "bar"),},
+                    filter_fields={"args": ignore_leading_arguments("foo", "bar")},
                 )
 
         return MyNC()
@@ -223,7 +223,7 @@ class TestIgnoreCallsTo(object):
         class MyNC(NodeComparator):
             def compare_Module(self, n1, n2):
                 return self.generic_compare(
-                    n1, n2, filter_fields={"body": ignore_calls_to("foo.bar", "baz"),}
+                    n1, n2, filter_fields={"body": ignore_calls_to("foo.bar", "baz")}
                 )
 
         return MyNC()
@@ -250,7 +250,7 @@ class TestIgnoreFirstN(object):
         class MyNC(NodeComparator):
             def compare_Module(self, n1, n2):
                 return self.generic_compare(
-                    n1, n2, filter_fields={"body": ignore_first_n(2),}
+                    n1, n2, filter_fields={"body": ignore_first_n(2)}
                 )
 
         return MyNC()

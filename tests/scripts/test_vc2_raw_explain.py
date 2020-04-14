@@ -497,7 +497,7 @@ class TestExampleFFMPEGCommand(object):
         # The moving_sprite function always moves the sprite right by 8 pixels
         # per field (or 16 pixels per frame) and starts at the top-left corner.
         for frame, expected_pixel_values in zip(
-            frames[:3], [[1, 1, 1, 1, 1, 1], [0, 0, 1, 1, 1, 1], [0, 0, 0, 0, 1, 1],]
+            frames[:3], [[1, 1, 1, 1, 1, 1], [0, 0, 1, 1, 1, 1], [0, 0, 0, 0, 1, 1]]
         ):
             xn = len(expected_pixel_values)  # number of sample points
             xs = 8  # x-axis spacing for sample points
@@ -602,7 +602,7 @@ class TestExampleFFMPEGCommand(object):
 
         assert np.array_equal(frame, expected_frame)
 
-    @pytest.mark.parametrize("pixel_aspect_ratio", [Fraction(1, 1), Fraction(4, 3),])
+    @pytest.mark.parametrize("pixel_aspect_ratio", [Fraction(1, 1), Fraction(4, 3)])
     def test_pixel_aspect_ratio(
         self, video_parameters, pixel_aspect_ratio, tmpdir,
     ):
@@ -730,7 +730,7 @@ class TestExampleFFMPEGCommand(object):
         [(1 << picture_bit_width) - 1 for picture_bit_width in range(1, 16)],
     )
     @pytest.mark.parametrize(
-        "matrix", [PresetColorMatrices.hdtv, PresetColorMatrices.rgb,]
+        "matrix", [PresetColorMatrices.hdtv, PresetColorMatrices.rgb]
     )
     def test_bit_depth(
         self, video_parameters, excursion, matrix, tmpdir,
@@ -795,7 +795,7 @@ class TestExampleImageMagickCommand(object):
         im = Image.open(png_filename)
         return np.array(im)
 
-    @pytest.mark.parametrize("pixel_aspect_ratio", [Fraction(1, 1), Fraction(4, 3),])
+    @pytest.mark.parametrize("pixel_aspect_ratio", [Fraction(1, 1), Fraction(4, 3)])
     def test_pixel_aspect_ratio(
         self, video_parameters, pixel_aspect_ratio, tmpdir,
     ):
@@ -919,7 +919,7 @@ class TestExampleImageMagickCommand(object):
         [(1 << picture_bit_width) - 1 for picture_bit_width in range(1, 16)],
     )
     @pytest.mark.parametrize(
-        "matrix", [PresetColorMatrices.hdtv, PresetColorMatrices.rgb,]
+        "matrix", [PresetColorMatrices.hdtv, PresetColorMatrices.rgb]
     )
     def test_bit_depth(
         self, video_parameters, excursion, matrix, tmpdir,
@@ -947,11 +947,11 @@ class TestExampleImageMagickCommand(object):
 
 
 @pytest.mark.parametrize(
-    "explain", [explain_ffmpeg_command, explain_imagemagick_command,]
+    "explain", [explain_ffmpeg_command, explain_imagemagick_command]
 )
 @pytest.mark.parametrize(
     "matrix,expect_supported",
-    [(PresetColorMatrices.hdtv, True), (PresetColorMatrices.reversible, False),],
+    [(PresetColorMatrices.hdtv, True), (PresetColorMatrices.reversible, False)],
 )
 def test_explain_ffmpeg_and_imagemagick_commands(
     explain, matrix, expect_supported,

@@ -86,12 +86,12 @@ class TestZipLongestRepeatingFinalValue(object):
     def test_multiple_same_length_iterators(self):
         assert list(
             zip_longest_repeating_final_value([1, 2, 3], "abc", [True, False, None],)
-        ) == [(1, "a", True), (2, "b", False), (3, "c", None),]
+        ) == [(1, "a", True), (2, "b", False), (3, "c", None)]
 
     def test_multiple_different_length_iterators(self):
         assert list(
             zip_longest_repeating_final_value([1, 2, 3], "?", [True, False],)
-        ) == [(1, "?", True), (2, "?", False), (3, "?", False),]
+        ) == [(1, "?", True), (2, "?", False), (3, "?", False)]
 
     def test_one_iterator_empty(self):
         assert list(zip_longest_repeating_final_value([1, 2, 3], [],)) == [

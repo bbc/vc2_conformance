@@ -1406,7 +1406,7 @@ class TestMakeFragmentParseDataUnits(object):
 
 
 @pytest.mark.parametrize(
-    "fragment_slice_count,exp_data_units", [(0, 1), (9999, 2), (9999, 2),]
+    "fragment_slice_count,exp_data_units", [(0, 1), (9999, 2), (9999, 2)]
 )
 def test_make_picture_data_units(fragment_slice_count, exp_data_units, lovell):
     picture, video_parameters, picture_coding_mode = lovell
