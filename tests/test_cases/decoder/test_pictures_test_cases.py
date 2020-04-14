@@ -1,5 +1,7 @@
 import pytest
 
+import logging
+
 from bitarray import bitarray
 
 from copy import deepcopy
@@ -1303,7 +1305,7 @@ class TestDanglingBoundedBlockData(object):
 
             assert pictures_with_dangle != pictures_without_dangle
 
-    def test_unsatisifiable_skipped(self):
+    def test_unsatisifiable_skipped(self, caplog):
         # Here we check that degenerate cases (with impractically small small
         # picture/slice sizes) don't crash but rather just skip test cases.
         #
@@ -1321,7 +1323,12 @@ class TestDanglingBoundedBlockData(object):
         codec_features["dwt_depth"] = 0
         codec_features["dwt_depth_ho"] = 0
 
+        caplog.set_level(logging.WARNING)
         test_cases = list(dangling_bounded_block_data(codec_features))
+        assert "[sign_dangling_C1]" in caplog.text
+        assert "[sign_dangling_C2]" in caplog.text
+        assert "[lsb_stop_and_sign_dangling_C1]" in caplog.text
+        assert "[lsb_stop_and_sign_dangling_C2]" in caplog.text
 
         assert set(t.subcase_name for t in test_cases) == set(
             [

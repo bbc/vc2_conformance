@@ -2,6 +2,8 @@
 Tests which verify that codecs correctly process pictures in a stream.
 """
 
+import logging
+
 from bitarray import bitarray
 
 from itertools import cycle, count, islice
@@ -810,7 +812,14 @@ def dangling_bounded_block_data(codec_features):
 
                 yield TestCase(sequence, "{}_{}".format(dangle_type.name, component,))
             except UnsatisfiableBlockSizeError:
-                pass
+                logging.warning(
+                    (
+                        "Slices are too small to generate"
+                        "dangling_bounded_block_data[%s_%s] test case."
+                    ),
+                    dangle_type.name,
+                    component,
+                )
 
 
 @decoder_test_case_generator
