@@ -57,8 +57,8 @@ class TestBitstreamValidator(object):
         """
         Creates a valid bitstream in the file whose name is returned by this
         fixture. This bitstream consists of two small pictures.
-        
-        
+
+
         A minimal bitstream with a pair of 4x4 pixel 4:2:0 8-bit pictures with
         picture numbers 100 and 101.
         """
@@ -180,34 +180,34 @@ class TestBitstreamValidator(object):
                 """
             Conformance error at bit offset 0
             =================================
-            
+
             Unexpectedly encountered the end of the stream.
-            
-            
+
+
             Details
             -------
-            
+
             A VC-2 Stream shall be a concatenation of one or more VC-2 sequences (10.3).
             Sequences shall end with a parse info header with an end of sequence parse code
             (0x10) (10.4.1)
-            
+
             Did the sequence omit a terminating parse info with the end of sequence (0x10)
             parse code?
-            
-            
+
+
             Suggested bitstream viewer commands
             -----------------------------------
-            
+
             To view the offending part of the bitstream:
-            
+
                 vc2-bitstream-viewer {} --offset 0
-            
-            
+
+
             Pseudocode traceback
             --------------------
-            
+
             Most recent call last:
-            
+
             * parse_sequence (10.4.1)
               * parse_info (10.5.1)
                 * read_uint_lit (A.3.4)

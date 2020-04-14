@@ -8,7 +8,7 @@ from fractions import Fraction
 
 from itertools import cycle
 
-from smaller_real_pictures import (
+from smaller_real_pictures import (  # noqa: F401
     TEST_PICTURES_PATHS,
     replace_real_pictures_with_test_pictures,
 )
@@ -25,7 +25,6 @@ from vc2_data_tables import (
 from vc2_conformance.video_parameters import VideoParameters
 
 from vc2_conformance.color_conversion import (
-    to_xyz,
     matmul_colors,
     XYZ_TO_LINEAR_RGB,
 )
@@ -118,8 +117,8 @@ def test_resize():
 
 
 @pytest.mark.parametrize("filename", TEST_PICTURES_PATHS)
-@pytest.mark.parametrize("width,height", [(160, 160), (190, 160), (160, 190),])
-@pytest.mark.parametrize("pixel_aspect_ratio", [Fraction(1, 1), Fraction(4, 3),])
+@pytest.mark.parametrize("width,height", [(160, 160), (190, 160), (160, 190)])
+@pytest.mark.parametrize("pixel_aspect_ratio", [Fraction(1, 1), Fraction(4, 3)])
 def test_read_as_xyz_to_fit(filename, width, height, pixel_aspect_ratio):
     image = read_as_xyz_to_fit(filename, width, height, pixel_aspect_ratio)
 
@@ -688,7 +687,9 @@ class TestGenericPictureGeneratorBehaviour(object):
             lambda *a, **kw: repeat_pictures(mid_gray(*a, **kw), 2),
         ]
     )
-    def picture_generator(self, request, replace_real_pictures_with_test_pictures):
+    def picture_generator(
+        self, request, replace_real_pictures_with_test_pictures,  # noqa: F811
+    ):
         return request.param
 
     @pytest.fixture

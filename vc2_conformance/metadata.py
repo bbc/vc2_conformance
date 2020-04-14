@@ -20,7 +20,7 @@ specification may be labelled as such using a :py:func:`ref_pseudocode`
 decorator::
 
     >>> from vc2_conformance.metadata import ref_pseudocode
-    
+
     >>> @ref_pseudocode
     ... def parse_info(state):
     ...     '''(10.5.1) Read a parse_info header.'''
@@ -42,7 +42,7 @@ Constants in this codebase may be cross-referenced against the spec using
 specification reference as minimal arguments. For example::
 
     >>> from vc2_conformance.metadata import ref_value
-    
+
     >>> PARSE_INFO_PREFIX = ref_value(0x42424344, "10.5.1")
 
 :py:func:`ref_value` returns the argument passed to it unchanged but
@@ -54,7 +54,7 @@ As a convenience, :py:class:`enum.Enum` instances can also be annotated by the
 
     >>> from enum import Enum
     >>> from vc2_conformance.metadata import ref_enum
-    
+
     >>> @ref_enum
     ... class PictureCodingModes(IntEnum):
     ...     '''(11.5) Indices defined in the text. Names are not normative.'''
@@ -143,10 +143,10 @@ document : str
     specification.
 deviation : str or None
     Does the definition of this value deviate from the specification.
-    
+
     If None, this value shoul match the contents of the specification exactly.
     If a string, it should indicate how it differs. Allowed values are:
-    
+
     * ``"inferred_implementation"``: An implementation inferred from the
       specification where no explicit implementation is provided.
     * ``"alternative_implementation"``: An alternative implementation, e.g. for
@@ -154,7 +154,7 @@ deviation : str or None
     * ``"serdes"``: This implementation has been modified to perform
       seriallisation and deseriallisation using the
       :py:mod:`vc2.bitstream.serdes` library.
-    
+
     Functions whose reported deviation is ``None`` or ``"serdes`` will be
     automatically checked against the specification by the testsuite (see
     :py:mod:`verification`).
@@ -163,17 +163,17 @@ name : str or None
 filename : str, None or "auto"
     The filename of the Python source file within this codebase for the
     location where the value being referenced is defined.
-    
+
     If "auto", the location will be determined automatically if possible,
     falling back on the location where 'ref_value' was called.
-    
+
     If None, no value will be recorded.
 lineno : int, None or "auto"
     The line number at which the definition of this value appears.
-    
+
     If "auto", the location will be determined automatically if possible,
     falling back on the line where 'ref_value' was called.
-    
+
     If None, no value will be recorded.
 """
 
@@ -200,11 +200,11 @@ def ref_value(
     """
     Record the fact that the provided Python value should be referenced back to
     the specified specification.
-    
+
     Appends a :py:class:`ReferencedValue` to :py:data:`referenced_values`,
     automatically filling in the document, filename and line number if
     required.
-    
+
     Parameters
     ==========
     value : any
@@ -225,14 +225,14 @@ def ref_value(
     filename : str, None or "auto"
         If "auto", the location will be determined automatically if possible,
         falling back on the location where 'ref_value' was called.
-        
+
         If None, no value will be recorded.
     lineno : int, None or "auto"
         If "auto", the location will be determined automatically if possible,
         falling back on the line where 'ref_value' was called.
-        
+
         If None, no value will be recorded.
-    
+
     Returns
     =======
     Returns the 'value' argument (untouched).
@@ -318,23 +318,23 @@ def ref_pseudocode(*args, **kwargs):
     """
     Decorator for marking instances where VC-2 pseudocode has been transformed
     into Python code.
-    
+
     Takes the same parameters as :py:func:`ref_value`.
-    
+
     Example usage::
-    
+
         @ref_pseudocode
         def parse_info(state):
             ''''(10.5.1) Read a parse_info header.'''
             # ...
-        
+
         @ref_pseudocode("10.5.1", deviation="alternative_implementation")
         def parse_info(state):
             '''Some alternative implementation of parse info.'''
-    
-    
+
+
     .. note::
-    
+
         This decorator is syntactic sugar for passing such functions manually
         to :py:func:`ref_value`. It returns the original function, not a
         wrapper, and so incurrs no runtime penalty.

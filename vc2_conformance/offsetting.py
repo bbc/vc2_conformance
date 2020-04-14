@@ -26,7 +26,7 @@ __all__ = [
 @ref_pseudocode
 def offset_picture(state, current_picture):
     """(15.5) Remove picture value offsets (added during encoding).
-    
+
     Parameters
     ==========
     state : :py:class:`vc2_conformance.state.State`
@@ -58,7 +58,7 @@ def remove_offset_picture(state, current_picture):
 def remove_offset_component(state, comp_data, c):
     """
     Inverse of offset_component (15.5). Centers picture values around zero.
-    
+
     Parameters
     ==========
     state : :py:class:`vc2_conformance.state.State`

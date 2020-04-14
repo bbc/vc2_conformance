@@ -47,12 +47,12 @@ __all__ = [
 def picture_encode(state, current_picture):
     """
     Inverse of picture_decode (15.2).
-    
+
     Parameters
     ==========
     state : :py:class:`vc2_conformance.state.State`
         A state dictionary containing at least:
-        
+
         * ``luma_width``
         * ``luma_height``
         * ``color_diff_width``
@@ -63,13 +63,13 @@ def picture_encode(state, current_picture):
         * ``wavelet_index_ho``
         * ``dwt_depth``
         * ``dwt_depth_ho``
-        
+
         The following entries will be added/replaced with the encoded picture.
-        
+
         * ``y_transform``
         * ``c1_transform``
         * ``c3_transform``
-    
+
     current_picture : {component: [[value, ...], ...], ...}
         The picture to be encoded.
     """
@@ -95,20 +95,20 @@ def forward_wavelet_transform(state, current_picture):
 def dwt(state, picture):
     """
     Discrete Wavelet Transform, inverse of idwt (15.4.1)
-    
+
     Parameters
     ==========
     state : :py:class:`~vc2_conformance.state.State`
         A state dictionary containing at least the following:
-        
+
         * ``wavelet_index``
         * ``wavelet_index_ho``
         * ``dwt_depth``
         * ``dwt_depth_ho``
-    
+
     picture : [[pixel_value, ...], ...]
         The synthesized picture.
-    
+
     Returns
     =======
     coeff_data : {level: {orientation: [[coeff, ...], ...], ...}, ...}
@@ -143,7 +143,7 @@ def dwt(state, picture):
 def h_analysis(state, data):
     """
     Horizontal-only analysis, inverse of h_synthesis (15.4.2).
-    
+
     Returns a tuple (L_data, H_data)
     """
     # Bit shift, if required
@@ -171,7 +171,7 @@ def h_analysis(state, data):
 def vh_analysis(state, data):
     """
     Interleaved vertical and horizontal analysis, inverse of vh_synthesis (15.4.3).
-    
+
     Returns a tuple (LL_data, HL_data, LH_data, HH_data)
     """
     # Bit shift, if required
@@ -239,7 +239,7 @@ def dwt_pad_addition(state, pic, c):
     Inverse of idwt_pad_removal (15.4.5): pads a picture to a size compatible
     with wavelet filtering at the level specified by the provided
     :py:class:`~vc2_conformance.state.State`.
-    
+
     Extra values are obtained by copying the final pixels in the existing rows
     and columns.
     """
@@ -272,7 +272,7 @@ def remove_offset_picture(state, current_picture):
 def remove_offset_component(state, comp_data, c):
     """
     Inverse of offset_component (15.5). Centers picture values around zero.
-    
+
     Parameters
     ==========
     state : :py:class:`vc2_conformance.state.State`

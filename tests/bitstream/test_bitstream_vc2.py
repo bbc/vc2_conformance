@@ -1022,7 +1022,7 @@ class TestLowDelay(object):
     def bitstream(self):
         """
         A hand-made low-delay bitstream containing two slices as follows:
-        
+
         * Slice size: 127/2 bytes, so:
           * Slice 0 will be 63 bytes (504 bits)
           * Slice 1 will be 64 bytes (512 bits)
@@ -1217,7 +1217,7 @@ class TestHighQuality(object):
     def bitstream(self):
         """
         A hand-made high-quality bitstream containing two slices as follows:
-        
+
         * Slice prefixes: 2 bytes long
           * Slice 0 will have prefix bytes 0xDE 0xAD
           * Slice 1 will have prefix bytes 0xBE 0xEF
@@ -1230,7 +1230,7 @@ class TestHighQuality(object):
           * slice 1: all coefficients set to 0 for all components
         * length: Set to be the samllest size large enough to fit the
           coefficients (slice scaler = 3)
-          * slice 0: 
+          * slice 0:
             * Y: Coeffs = 4*16bits = 8 bytes. Length field = 3. Length = 3*3=9 Bytes
             * C1: Coeffs = 8*4bits = 4 bytes. Length field = 2. Length = 2*3=6 Bytes
             * C2: Coeffs = 8*4bits = 4 bytes. Length field = 2. Length = 2*3=6 Bytes

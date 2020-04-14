@@ -122,7 +122,7 @@ def autofill_parse_offsets(sequence):
     Given a :py:class:`~vc2_conformance.bitstream.vc2_fixeddicts.Sequence`,
     find and fill in all next_parse_offset and previous_parse_offset fields
     which are absent or contain the :py:data:`AUTO` sentinel.
-    
+
     In many (but ont all) cases computing these field values is most
     straight-forwardly done post seriallisation. In these cases, fields in the
     sequence will be autofilled with '0'. These fields should then subsequently
@@ -170,7 +170,7 @@ def autofill_parse_offsets_finalize(
     """
     Finalize the autofillling of next and previous parse offsets by directly
     modifying the seriallised bitstream.
-    
+
     Parameters
     ==========
     bitstream_writer : :py:class:`~vc2_conformance.bitstream.BitstreamWriter`
@@ -224,7 +224,7 @@ def autofill_and_serialise_sequence(file, sequence):
     """
     Given a :py:class:`~vc2_conformance.bitstream.vc2_fixeddicts.Sequence` dictionary describing a VC-2 sequence,
     seriallise that into the supplied file.
-    
+
     Parameters
     ==========
     file : file-like object
@@ -235,7 +235,7 @@ def autofill_and_serialise_sequence(file, sequence):
         from :py:data:`vc2_default_values_with_auto`. Supported fields
         containing :py:class:`AUTO` will be autofilled with suitably computed
         values using:
-        
+
         * :py:func:`autofill_picture_number`
         * :py:func:`autofill_parse_offsets`
         * :py:func:`autofill_parse_offsets_finalize`

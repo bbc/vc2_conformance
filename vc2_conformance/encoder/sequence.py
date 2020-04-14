@@ -61,7 +61,7 @@ def make_sequence(codec_features, pictures, *data_unit_patterns, **kwargs):
     """
     Generate a complete VC-2 bitstream based on the provided set of codec
     features and encoding the specified set of pictures.
-    
+
     Parameters
     ==========
     codec_features : :py:class:`~vc2_conformance.codec_features.CodecFeatures`
@@ -80,7 +80,7 @@ def make_sequence(codec_features, pictures, *data_unit_patterns, **kwargs):
         index to be used. If a list is provided, specifies the minimum
         quantization index separately for each picture. Must be 0 for lossless
         codecs.
-    
+
     Returns
     =======
     sequence : :py:class:`vc2_conformance.bitstream.Sequence`

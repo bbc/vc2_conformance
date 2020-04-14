@@ -17,17 +17,17 @@ verified using this module::
     >>> from vc2_conformance._string_utils import wrap_paragraphs
     >>> from vc2_conformance.state import State
     >>> from vc2_conformance.decoder import init_io, parse_sequence, ConformanceError
-    
+
     >>> # Create a callback to be called with picture data whenever a picture
     >>> # is decoded from the bitstream.
     >>> def output_picture_callback(picture, video_parameters):
     >>>     print("A picture was decoded...")
-    
+
     >>> # Create an initial state object ready to read the bitstream
     >>> state = State(_output_picture_callback=output_picture_callback)
     >>> f = open("path/to/bitstream.vc2", "rb")
     >>> init_io(state, f)
-    
+
     >>> # Decode and validate!
     >>> try:
     ...     parse_sequence(state)

@@ -276,7 +276,7 @@ def is_allowed_combination(allowed_values, values):
     values according to the provided constraint table. A valid candidate may
     only contain a subset of the fields defined by the constraints in the
     constraint table.
-    
+
     Parameters
     ==========
     allowed_values: [{key: :py:class:`ValueSet`, ...}, ...]
@@ -302,17 +302,17 @@ def allowed_values_for(allowed_values, key, values={}):
 def read_constraints_from_csv(csv_filename):
     r"""
     Reads a table of constraints from a CSV file.
-    
+
     The CSV file should be arranged with each row describing a particular value
     to be constrained and each column defining an allowed combination of
     values.
-    
+
     Empty rows and rows containing only '#' prefixed values will be skipped.
-    
+
     The first column will be treated as the keys being constrained, remaining
     columns should contain allowed combinations of values. Each of these values
     will be converted into a :py:class:`ValueSet` as follows::
-    
+
     * Values which contain integers will be converted to ``int``
     * Values which contain 'TRUE' or 'FALSE' will be converted to ``bool``
     * Values containing a pair of integers separated by a ``-`` will be treated
@@ -323,7 +323,7 @@ def read_constraints_from_csv(csv_filename):
     * Empty cells will be converted into empty :py:class:`ValueSet`\ s.
     * Cells which contain only a pair of quotes (e.g. ``"``, i.e. ditto) will
       be assigned the same value as the column to their left.
-    
+
     The read constraint table will be returned as a list of dictionaries (one
     per column) as expected by the functions in
     :py:mod:`vc2_conformance._constraint_table`.

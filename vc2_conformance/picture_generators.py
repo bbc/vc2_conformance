@@ -92,7 +92,7 @@ A 128x128 sprite with the following features:
 * Saturated white triangle covering the top-left half of the sprite
 * A black, perfectly circular hole cut out of the middle of the triangle.
 * The letters 'VC-2' in the bottom right half of the sprite on a black
-  background. 
+  background.
 * The letters 'V', 'C', and '2' are printed in saturated primary red, green and
   blue respectively. The hyphen is printed in saturated white.
 * All edges are antialiased
@@ -105,7 +105,7 @@ def read_as_xyz(filename):
     """
     Read a VC-2 raw image (see :py:mod:`vc2_conformance.file_format`) into a
     floating point CIE XYZ color 3D array.
-    
+
     Returns
     =======
     xyz : :py:class:`numpy.array`
@@ -147,7 +147,7 @@ def read_as_xyz_to_fit(filename, width, height, pixel_aspect_ratio=1):
     Read a VC-2 raw image (see :py:mod:`vc2_conformance.file_format`) into a
     floating point CIE XYZ color 3D array, sized to fit the desired picture
     size, aspect ratio and pixel aspect ratio.
-    
+
     Parameters
     ==========
     filename : str
@@ -197,9 +197,9 @@ def seconds_to_samples(video_parameters, seconds):
     """
     Convert a number of seconds into a number of samples (frames for
     progressive video, fields for interlaced video).
-    
+
     Rounds-up to a non-zero, whole number of frames.
-    
+
     Returns a (num_samples, relative_rate) pair. The 'relative_rate' value
     gives the relative sample rate to the frame rate and is 1 for progressive
     and 2 for interlaced formats.
@@ -267,7 +267,7 @@ def progressive_to_pictures(video_parameters, picture_coding_mode, pictures):
     """
     Given a sequence of frames, produce a series of pictures for the current
     source sampling and picture coding modes.
-    
+
     When interlacing is used, successive pictures will be vertically subsampled
     effectively reducing the frame rate by half.
     """
@@ -304,16 +304,16 @@ def xyz_to_native(video_parameters, picture_coding_mode, pictures):
     """
     Given a sequence of CIE XYZ pictures as 3D arrays, produce a corresponding
     sequence of dictionaries for the specified video format of the form::
-    
+
         {
             "Y": [[int, ...], ...],
             "C1": [[int, ...], ...],
             "C2": [[int, ...], ...],
             "pic_num": int,
         }
-    
+
     As constructed by the VC-2 pseudocode.
-    
+
     Picture numbers are assigned starting from zero.
     """
     for pic_num, picture in enumerate(pictures):
@@ -329,30 +329,30 @@ def xyz_to_native(video_parameters, picture_coding_mode, pictures):
 def pipe(next_function):
     """
     Turn a function of the form::
-    
+
         f(video_parameters, iterable) -> iterable
-    
+
     Into a decorator for processing the outputs of video sequence generator
     functions of the form::
-        
+
         g(video_parameters, ...) -> iterable
-    
+
     For example::
-    
+
         >>> def repeat_pictures(video_parameters, picture_coding_mode, iterable):
         ...     for picture in iterable:
         ...         yield picture
         ...         yield picture
-        
+
         >>> @pipe(repeat_pictures)
         ... def picture_generator(video_parameters, picture_coding_mode, num_frames):
         ...     for frame in range(num_frames):
         ...         picture = something(...)
         ...         yield picture
-    
+
     In this example, the ``picture_generator`` generator function will generate a
     series of repeated pictures.
-    
+
     Note that the first argument (``video_parameters``) to the decorated
     function is also passed to ``next_function``.
     """
@@ -376,7 +376,7 @@ def read_and_adapt_pointer_sprite(video_parameters):
     Read the :py:data:`POINTER_SPRITE_PATH` sprite, correcting to match the
     pixel aspect ratio and color primaries specified in the provided
     ``video_parameters``.
-    
+
     Returns a CIE-XYZ image.
     """
     sprite, sprite_video_parameters, _ = read_as_xyz(POINTER_SPRITE_PATH)
@@ -420,7 +420,7 @@ def repeat_pictures(pictures, count):
 def real_pictures(video_parameters, picture_coding_mode):
     """
     A video sequence containing a series of real pictures.
-    
+
     This image sequence is provided as an easy visual sanity checking measure
     for decoders and a basic performance check for encoders.
     """
@@ -447,42 +447,42 @@ def real_pictures(video_parameters, picture_coding_mode):
 def moving_sprite(video_parameters, picture_coding_mode, duration=1.0):
     """
     A video sequence containing a simple moving synthetic image.
-    
+
     This sequence consists of a 128 by 128 pixel sprite (shown below) on a
     black background which traverses the screen from left-to-right moving 16
     pixels to the right every frame (or 8 every field).
-    
+
     .. image:: /_static/test_images/pointer.png
-    
+
     This test sequence may be used to verify that interlacing, pixel aspect
     ratio and frame-rate metadata is being correctly reported by a codec for
     display purposes.
-    
+
     For interlaced formats (see ``scan_format`` (11.4.5)), sequential fields
     will contain the sprite at different horizontal positions, regardless of
     whether pictures are fields or frames (see picture coding mode (11.5)). As
     a result, when frames are viewed as a set of raw interleaved fields, ragged
     edges will be visible.
-    
+
     Conversely, for progressive formats, sequential fields contain alternate
     lines from the same moment in time and when interleaved should produce
     smooth edges, regardless of the picture coding mode.
-    
+
     In the very first field of the sequence, the left edge of the white
     triangle will touch the edge of the frame.  In interlaced formats, the top
     line of white pixels in the sprite will always be located on the top field.
     As a result, the line immediately below should always appear shifted to the
     right when top-field-first field order is used and shifted to the left when
     bottom-field-first order is used (see 'top field first parameter' (11.3)).
-    
+
     The sprite should be square with the white triangle having equal height and
     length and the hypotenuse lying at an angle of 45 degrees. The circular
     cut-out should be a perfect circle. This verifies that the pictures are
     displayed with the correct pixel aspect ratio (11.4.7).
-    
+
     The text in the sprite is provided to check that the correct picture
     orientation has been used.
-    
+
     The colors of the characters 'V', 'C' and '2' are coloured saturated
     primary red, green, and blue for the color primaries used (11.4.10.2). This
     provides a basic verification that the color components have been provided
@@ -530,27 +530,27 @@ def static_sprite(video_parameters, picture_coding_mode):
     """
     A video sequence containing a exactly one frame containing a synthetic
     image.
-    
+
     This sequence consists of a 128 by 128 pixel sprite (shown below) located
     at the top-left corner of the frame on a black background.
-    
+
     .. image:: /_static/test_images/pointer.png
-    
+
     This test sequence may be used to verify that interlacing, pixel aspect
     ratio and frame-rate metadata is being correctly reported by a codec for
     display purposes.
-    
+
     For if incorrect field ordering is specified, edges will appear ragged and
     not smooth.
-    
+
     The sprite should be square with the white triangle having equal height and
     length and the hypotenuse lying at an angle of 45 degrees. The circular
     cut-out should be a perfect circle. This verifies that the pictures are
     displayed with the correct pixel aspect ratio (11.4.7).
-    
+
     The text in the sprite is provided to check that the correct picture
     orientation has been used.
-    
+
     The colors of the characters 'V', 'C' and '2' are coloured saturated
     primary red, green, and blue for the color primaries used (11.4.10.2). This
     provides a basic verification that the color components have been provided
@@ -579,7 +579,7 @@ def static_sprite(video_parameters, picture_coding_mode):
 def mid_gray(video_parameters, picture_coding_mode):
     """
     An video sequence containing exactly one empty mid-gray frame.
-    
+
     'Mid gray' is defined as having each color component set to the integer
     value exactly half-way along its range. The actual color will differ
     depending on the color model used and the signal offsets specified.
@@ -612,14 +612,14 @@ def linear_ramps(video_parameters, picture_coding_mode):
     """
     An video sequence containing exactly one frame with a series of linear
     color ramps.
-    
+
     The frame is split into horizontal bands which contain, top to bottom:
 
     * A black-to-white linear ramp
     * A black-to-red linear ramp
     * A black-to-green linear ramp
     * A black-to-blue linear ramp
-    
+
     This is provided for the purposes of checking that metadata related to
     color is correctly passed through for display purposes.
     """

@@ -20,16 +20,16 @@ def ellipsise(text, context=4, min_length=8):
     Given a string which contains very long sequences of the same character
     (e.g. long mostly constant binary or hex numbers), produce an 'ellipsised'
     version with some of the repeated characters replaced with '...'.
-    
+
     Exactly one shortening operation will be carried out (on the longest run)
     meaning that so long as the original string length is known, it is still
     possible to determine the full length string from the ellipsised version.
-    
+
     For example::
-    
+
         >>> ellipsise("0b10100000000000000000000000000000000000001")
         "0b1010000...00001"
-    
+
     Parameters
     ==========
     text : str
@@ -88,19 +88,19 @@ def ellipsise_lossy(text, max_length=80):
 def table(table_strings, column_sep="  ", indent_prefix="  "):
     """
     Concatenate and lay out a table of strings.
-    
+
     Takes a list-of-lists-of-strings with inner lists representing rows of
     strings.
-    
+
     If all values fit on a single line, produces an aligned 2D layout like so::
-    
+
         123    0    0
           1  123   12
          12    4  123
-    
+
     If any of the values don't fit on to a single line, a flat representation
     is used::
-    
+
         (y=0, x=0):
           multi-line
           string
@@ -147,56 +147,56 @@ def split_into_line_wrap_blocks(text, wrap_indented_blocks=False):
     """
     Split a multi-line string into blocks of text which should be line-wrapped
     independently.
-    
+
     For example given a Python string defined like so::
-    
+
         '''
             A markdown style title
             ======================
-            
+
             This is a string with some initial indentation
             and also some hard line-wraps inserted too. This
             paragraph ought to be line-wrapped as an
             independent unit.
-            
+
             Here's a second paragraph which also ought to be
             line wrapped as its own unit.
-            
+
             * This is a bulleted list
             * Each bullet point should be line wrapped as an
               individual unit (with the wrapping indented
               as shown here).
             * Notice that bullets don't have a newline
               between them like paragraphs to.
-            
+
             1. Numbered lists are also supported.
             2. Here long lines will be line wrapped in much
                the same way as a bulleted list.
-        
+
             Finally:
-        
+
                 An intended block will also remain indented.
                 However, if wrap_indented_blocks is False, the
                 existing linebreaks will be retained (e.g. for
                 markdown-style code blocks). If set to True,
                 the indented block will be line-wrapped.
         '''
-    
+
     This will be split into independently line wrappable segments (as
     described).
-    
+
     Returns
     -------
     blocks : [(first_indent, rest_indent, text), ...]
         A series of wrappable blocks. In each tuple:
-        
+
         * first_indent contains a string which should be used to indent the
           first line of the wrapped block.
         * rest_indent should be a string which should be used to indent all
           subsequent lines in the wrapped block. This will be the same length
           as first_indent.
         * text will be an indentation and newline-free string
-        
+
         An empty block (i.e. ``("", "", "")``) will be included between
         each paragraph in the input so that the output maintains the same
         vertical whitespace profile.
@@ -265,12 +265,12 @@ def wrap_blocks(blocks, width=None, wrap_indented_blocks=False):
     """
     Return a line-wrapped version of a series of text blocks as produced by
     :py:func:`split_into_line_wrap_blocks`.
-    
+
     Expects a list of (first_line_indent, remaining_line_indent, text) tuples
     to output.
-    
+
     If 'width' is None, assumes an infinate line width.
-    
+
     If 'wrap_indented_blocks' is False (the default) indented (markdown-style)
     code blocks will not be line wrapped while other indented blocks (e.g.
     bullets) will be.
@@ -299,9 +299,9 @@ def wrap_paragraphs(text, width=None, wrap_indented_blocks=False):
     Re-wrap a string containing one or more hard-line-wrapped paragraphs,
     bullet points, numbered lists and code blocks (see
     :py:func:`split_into_line_wrap_blocks`).
-    
+
     If 'width' is None, assumes an infinate line width.
-    
+
     If 'wrap_indented_blocks' is False (the default) indented (markdown-style)
     code blocks will not be line wrapped while other indented blocks (e.g.
     bullets) will be.

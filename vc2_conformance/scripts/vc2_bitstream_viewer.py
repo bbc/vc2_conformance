@@ -9,7 +9,7 @@ Complete usage information can be obtained by running ``vc2-bitstream-viewer
 --help``.
 
 .. warning::
-    
+
     This program prioritises correctness over performance. Internally the
     pseudocode from the VC-2 specification is used to drive the bitstream
     parser. As a consequence this program is relatively slow, e.g. taking many
@@ -243,7 +243,7 @@ def format_path_summary(path):
 def format_value_line(offset, raw_bits, label, label_filler="", truncated=False):
     """
     Format a line of output which displays a single value from the bitstream.
-    
+
     Parameters
     ----------
     offset : int
@@ -303,7 +303,7 @@ def format_omission_line(offset, num_bits):
 class BitstreamViewer(object):
     """
     Main commandline application logic.
-    
+
     Construct an instance of this class then call :py:meth:`run` and, later,
     :py:meth:`close`.
     """
@@ -350,7 +350,7 @@ class BitstreamViewer(object):
             bitstream which aren't being printed.
         verbose : int
             Error message verbosity level:
-            
+
             0. Only show the error message.
             1. Show trailing bits in bitstream, bit offset and current
                target.
@@ -531,7 +531,7 @@ class BitstreamViewer(object):
     def _print_value(self, offset, raw_bits, target, value):
         """
         Print a value from the bitstream on stdout.
-        
+
         Parameters
         ==========
         offset : int
@@ -785,7 +785,7 @@ def parse_args(*args, **kwargs):
     """
     Parse a set of command line arguments. Returns a :py:mod:`argparse`
     ``args`` object with the following fields:
-    
+
     * bitstream (str): The filename of the bitstream to read
     * no_status (bool): True if the status line is to be hidden.
     * verbose (int): Verbosity level

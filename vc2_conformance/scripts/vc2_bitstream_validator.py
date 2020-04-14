@@ -259,7 +259,7 @@ def parse_args(*args, **kwargs):
     """
     Parse a set of command line arguments. Returns a :py:mod:`argparse`
     ``args`` object with the following fields:
-    
+
     * bitstream (str): The filename of the bitstream to read
     * no_status (bool): True if the status line is to be hidden.
     * verbose (int): The verbosity level.

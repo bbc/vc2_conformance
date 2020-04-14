@@ -14,29 +14,29 @@ conventions are used:
 
 * When code present in the spec is removed or disabled, it is commented out
   using triple-hash comments like so::
-  
+
         def example_1(a, b):
             # Code as-per the VC-2 spec
             c = a + b
-            
+
             # No need to actually perform wavelet transform
             ### if c > 1:
             ###     wavelet_transform()
             ###     display_picture()
-            
+
             # More code per the spec
             return c
 
 * When code is added, it should be indicated using either a ``## Not in spec``
   double-hash comment::
-  
+
         def example_2(a, b):
             assert b > 0  ## Not in spec
-            
+
             return a / b
-  
+
   Or within a ``## Begin not in spec``, ``## End not in spec`` block::
-  
+
         def example_2(a, b):
             ## Begin not in spec
             if b < 0:
@@ -44,7 +44,7 @@ conventions are used:
             elif b == 0:
                 raise Exception("Can't divide by 'b' when it is 0")
             ## End not in spec
-            
+
             return a / b
 
 To enable the automated verification that implemented functions match the VC-2
@@ -89,7 +89,7 @@ class BadAmendmentCommentError(Exception):
     """
     An unrecognised amendment comment (a comment with two or more hashes) was
     found.
-    
+
     Attributes
     ==========
     comment : str
@@ -112,7 +112,7 @@ class UnmatchedNotInSpecBlockError(Exception):
     """
     An 'End not in spec' amendment comment block was encountered without a
     corresponding 'Begin not in spec' block.
-    
+
     Attributes
     ==========
     row : int
@@ -128,7 +128,7 @@ class UnmatchedNotInSpecBlockError(Exception):
 class UnclosedNotInSpecBlockError(Exception):
     """
     A 'Begin not in spec' amendment comment block was not closed.
-    
+
     Attributes
     ==========
     row : int
@@ -153,15 +153,15 @@ def undo_amendments(source):
     """
     Given a Python source snippet, undo all amendments marked by special
     'amendment comments' (comments starting with ``##`` and ``###``).
-    
+
     The following actions will be taken:
-    
+
     * Disabled code prefixed ``### ...`` (three hashes and a space) will be
       uncommented.
     * Lines ending with a ``## Not in spec`` comment will be commented out.
     * Blocks of code starting with a ``## Begin not in spec`` line and ending
       with a ``## End not in spec`` line will be commented out.
-    
+
     Returns
     =======
     (source, indent_corrections)
@@ -169,7 +169,7 @@ def undo_amendments(source):
         number to an indentation correction. These corrections may be used to
         map column numbers in the new source to column numbers in the old
         source.
-    
+
     Raises
     ======
     :py:exc:`tokenize.TokenError`

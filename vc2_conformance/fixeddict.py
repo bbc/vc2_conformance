@@ -23,13 +23,13 @@ dictionary behaviour but which only allows fields specified in the above list::
     >>> f["custom_dimensiions_flag"] = True
     >>> f["frame_width"] = 1920
     >>> f["frame_height"] = 1080
-    
+
     >>> f["frame_width"]
     1920
-    
+
     >>> f
     FrameSize({"custom_dimensiions_flag": True, "frame_width": 1920, "frame_height": 1080})
-    
+
     >>> f["not_in_fixeddict"] = 123
     Traceback (most recent call last):
       ...
@@ -52,7 +52,7 @@ representation.
     ...     frame_width=1920,
     ...     frame_height=1080,
     ... )
-    
+
     >>> str(fs)
     FrameSize:
       custom_dimensiions_flag: True
@@ -75,7 +75,7 @@ so::
     ...           formatter=Hex(2)),
     ...     Entry("next_parse_offset")
     ...     Entry("previous_parse_offset")
-    
+
     >>> pi = ParseInfo(
     ...     parse_info_prefix=0x42424344,
     ...     parse_code=0x10,
@@ -117,7 +117,7 @@ class Entry(object):
     def __init__(self, name, **kwargs):
         """
         All arguments, except name, are keyword-only.
-        
+
         Parameters
         ==========
         name : str
@@ -134,21 +134,21 @@ class Entry(object):
         enum : :py:class:`Enum`
             A convenience interface which is equivalent to the following
             ``formatter`` argument::
-            
+
                 def enum_formatter(value):
                     try:
                         return str(MyEnum(value).value)
                     except ValueError:
                         return str(value)
-            
+
             And the following ``friendly_formatter`` argument::
-            
+
                 def friendly_enum_formatter(value):
                     try:
                         return MyEnum(value).name
                     except ValueError:
                         return None
-            
+
             If ``formatter`` or ``friendly_formatter`` are provided in addition
             to ``enum``, they will override the functions implicitly defined by
             ``enum``.
@@ -217,38 +217,38 @@ class FixedDictKeyError(KeyError):
 def fixeddict(name, *entries, **kwargs):
     """
     Create a fixed-entry dictionary.
-    
+
     A fixed-entry dictionary is a :py:class:`dict` where only a preset list of
     field names is allowed.
-    
+
     The first argument is the name of the created class, the remaining
     arguments may be strings or :py:class:`Entry` instances describing the
     allowed entries in the dictionary.
-    
+
     Example usage:
-        
+
         >>> ExampleDict = fixeddict(
         ...     "ExampleDict",
         ...     "attr",
         ...     Entry("attr_with_default"),
         ... )
-    
+
     Instances of the dictionary can be created like an ordinary dictionary::
-        
+
         >>> d = ExampleDict(attr=10, attr_with_default=20)
         >>> d["attr"]
         10
         >>> d["attr_with_default"]
         20
-    
+
     The string format of generated dictionaries includes certain
     pretty-printing behaviour (see :py:class:`Entry`) and will also omit any
     entries whose name is prefixed with an underscore (``_``).
-    
+
     The class itself will have a static (and read-only) attribute
     ``entry_objs`` which is a :py;class:`collections.OrderedDict` mapping from
     entry name to :py:class:`Entry` object in the dictionary.
-    
+
     The keyword-only argument, 'module' and 'qualname' may be provided which
     override the ``__module__`` and ``__qualname__`` values of the returned
     fixeddict type. (By default the module name is inferred using runtime stack

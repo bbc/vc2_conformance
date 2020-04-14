@@ -40,7 +40,7 @@ class Identical(NodeComparator):
     """
     Compares two function implementations only allowing the following
     differences:
-    
+
     1. Their docstrings may be different.
     2. A :py:func:`vc2_conformance.metadata.ref_pseudocode` decorator may be
        present in the second function.
@@ -101,7 +101,7 @@ class SerdesChangesOnly(NodeComparator):
     definition and the second a function for use with the
     :py:mod:`vc2_conformance.bitstream.serdes` framework. The following
     differences are allowed:
-    
+
     1. Differing docstrings. (Justification: has no effect on behaviour.)
     2. The addition of a :py:func:`vc2_conformance.metadata.ref_pseudocode`
        decorator to the second function. (Justification: has no effect on

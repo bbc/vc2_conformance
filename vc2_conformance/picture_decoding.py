@@ -75,22 +75,22 @@ def inverse_wavelet_transform(state):
 def idwt(state, coeff_data):
     """
     (15.4.1)
-    
+
     Inverse Discrete Wavelet Transform.
-    
+
     Parameters
     ==========
     state : :py:class:`~vc2_conformance.state.State`
         A state dictionary containing at least the following:
-        
+
         * ``wavelet_index``
         * ``wavelet_index_ho``
         * ``dwt_depth``
         * ``dwt_depth_ho``
-    
+
     coeff_data : {level: {orientation: [[coeff, ...], ...], ...}, ...}
         The complete (power-of-two dimensioned) transform coefficient data.
-    
+
     Returns
     =======
     picture : [[pixel_value, ...], ...]
@@ -287,7 +287,7 @@ def idwt_pad_removal(state, pic, c):
 @ref_pseudocode
 def offset_picture(state, current_picture):
     """(15.5) Remove picture value offsets (added during encoding).
-    
+
     Parameters
     ==========
     state : :py:class:`vc2_conformance.state.State`

@@ -110,7 +110,7 @@ class TestCase(object):
     def __init__(self, value, subcase_name=None, case_name=None, metadata=None):
         """
         A test case, produced by a test case generator function.
-        
+
         Parameters
         ==========
         value : object
@@ -159,7 +159,7 @@ def normalise_test_case_generator(f, *args, **kwargs):
     """
     Call a test case generator, f, and, regardless of its native output,
     produces a generator of :py:class:`TestCase` objects.
-    
+
     If the function returns or yields :py:class:`TestCase` objects, their
     :py:attr:`TestCase.case_name` attributes will be populated with the
     function name, if not already defined. If the function returns or generates
@@ -196,7 +196,7 @@ class Registry(object):
     def register_test_case_generator(self, f):
         """
         Register a test case generator function with this registry.
-        
+
         Returns the (unmodified) function allowing this method to be used as a
         decorator.
         """

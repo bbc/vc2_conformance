@@ -197,11 +197,11 @@ def calculate_coeffs_bits(coeffs):
     """
     Calculate the number of bits required to represent the supplied sequence of
     coefficients using signed exp-golomb coding within a bounded block.
-    
+
     Parameters
     ==========
     coeffs : [int, ...]
-    
+
     Returns
     =======
     num_bits : int
@@ -230,7 +230,7 @@ def calculate_hq_length_field(coeffs, slice_size_scaler):
 def quantize_coeffs(qindex, coeff_values, quant_matrix_values):
     """
     Quantize a set of coefficient values.
-    
+
     Parameters
     ==========
     qindex : int
@@ -240,7 +240,7 @@ def quantize_coeffs(qindex, coeff_values, quant_matrix_values):
     quant_matrix_values : [int, ...]
         For each entry in ``coeff_value``, the corresponding quantization
         matrix value.
-    
+
     Returns
     =======
     quantized_coeff_values : [int, ...]
@@ -269,10 +269,10 @@ def quantize_to_fit(target_size, coeff_sets, align_bits=1, minimum_qindex=0):
     """
     Find the quantisation index necessary to reduce a several sets of transform
     coefficients to total a target length in bits.
-    
+
     Each block of quantized transform coefficients is assumed to be padded to a
     whole multiple of align_bits bits.
-    
+
     Parameters
     ==========
     target_size : int
@@ -288,7 +288,7 @@ def quantize_to_fit(target_size, coeff_sets, align_bits=1, minimum_qindex=0):
     minimum_qindex : int
         If provided, gives the quantization index to start with when trying to
         find a suitable quantization index.
-    
+
     Returns
     =======
     qindex : int
@@ -326,7 +326,7 @@ def transform_and_slice_picture(codec_features, picture):
     according to the :py:class:`~vc2_conformance.codec_features.CodecFeatures`
     dictionary provided. Returns transform coefficients grouped by picture
     slice.
-    
+
     Parameters
     ==========
     codec_features : :py:class:`~vc2_conformance.codec_features.CodecFeatures`
@@ -334,7 +334,7 @@ def transform_and_slice_picture(codec_features, picture):
         The picture to be encoded. This picture will be compressed using a
         simple VC-2 encoder implementation. It does not necessarily produce the
         most high-quality encodings.
-    
+
     Returns
     =======
     slice_coeffs : [[:py:class:`SliceCoeffs`, ...], ...]
@@ -434,7 +434,7 @@ def make_hq_slice(
     """
     Create a :py:class:`vc2_conformance.bitstream.HQSlice` containing the
     provided already-quantized coefficients.
-    
+
     Parameters
     ==========
     y_transform : [int, ...]
@@ -447,7 +447,7 @@ def make_hq_slice(
         value is given in multiples of slice_size_scaler bytes and that this
         total length does not account for the size of the length fields and
         qindex fields also present in the slice.
-        
+
         If None, the ``slice_c2_length`` field will be set to the minimum
         multiple of slice_size_scaler bytes which the ``c2_transform``
         coefficients can fit into.
@@ -478,7 +478,7 @@ def make_ld_slice(y_transform, c_transform, qindex):
     """
     Create a :py:class:`vc2_conformance.bitstream.LDSlice` containing the
     provided already-quantized coefficients.
-    
+
     Parameters
     ==========
     y_transform : [int, ...]
@@ -499,11 +499,11 @@ def make_transform_data_hq_lossless(transform_coeffs):
     """
     Pack transform coefficients into HQ picture slices in a
     :py:class:`TransformData`, computing the required slice_size_scaler.
-    
+
     Parameters
     ==========
     transform_coeffs : [[:py:class:`SliceCoeffs`, ...], ...]
-    
+
     Returns
     =======
     slice_size_scaler : int
@@ -556,7 +556,7 @@ def make_transform_data_hq_lossy(picture_bytes, transform_coeffs, minimum_qindex
     """
     Quantize and pack transform coefficients into HQ picture slices in a
     :py:class:`TransformData`.
-    
+
     Parameters
     ==========
     picture_bytes : int
@@ -571,7 +571,7 @@ def make_transform_data_hq_lossy(picture_bytes, transform_coeffs, minimum_qindex
     minimum_qindex : int
         If provided, gives the quantization index to start with when trying to
         find a suitable quantization index.
-    
+
     Returns
     =======
     slice_size_scaler : int
@@ -650,7 +650,7 @@ def make_transform_data_ld_lossy(picture_bytes, transform_coeffs, minimum_qindex
     """
     Quantize and pack transform coefficients into LD picture slices in a
     :py:class:`TransformData`.
-    
+
     Parameters
     ==========
     picture_bytes : int
@@ -661,7 +661,7 @@ def make_transform_data_ld_lossy(picture_bytes, transform_coeffs, minimum_qindex
     minimum_qindex : int
         If provided, gives the quantization index to start with when trying to
         find a suitable quantization index.
-    
+
     Returns
     =======
     transform_data : :py:class:`vc2_conformance.bitstream.TransformData`
@@ -709,11 +709,11 @@ def make_quant_matrix(codec_features):
     """
     Create a :py:class:`vc2_conformance.bitstream.QuantMatrix` given a set of
     codec features.
-    
+
     Parameters
     ==========
     codec_features : :py:class:`~vc2_conformance.codec_features.CodecFeatures`
-    
+
     Returns
     =======
     quant_matrix : :py:class:`vc2_conformance.bitstream.QuantMatrix`
@@ -753,7 +753,7 @@ def make_extended_transform_parameters(codec_features):
 def make_picture_parse(codec_features, picture, minimum_qindex=0):
     """
     Compress a picture.
-    
+
     Parameters
     ==========
     codec_features : :py:class:`~vc2_conformance.codec_features.CodecFeatures`
@@ -765,7 +765,7 @@ def make_picture_parse(codec_features, picture, minimum_qindex=0):
     minimum_qindex : int
         Specifies the minimum quantization index to be used. Must be 0 for
         lossless codecs.
-    
+
     Returns
     =======
     transform_data : :py:class:`vc2_conformance.bitstream.TransformData`
@@ -834,7 +834,7 @@ def make_picture_parse_data_unit(codec_features, picture, minimum_qindex=0):
     """
     Create a :py:class:`~vc2_conformance.bitstream.DataUnit` object containing
     a (possibly lossily compressed) picture.
-    
+
     Parameters
     ==========
     codec_features : :py:class:`~vc2_conformance.codec_features.CodecFeatures`
@@ -846,7 +846,7 @@ def make_picture_parse_data_unit(codec_features, picture, minimum_qindex=0):
     minimum_qindex : int
         Specifies the minimum quantization index to be used. Must be 0 for
         lossless codecs.
-    
+
     Returns
     =======
     data_unit : :py:class:`vc2_conformance.bitstream.DataUnit`
@@ -871,7 +871,7 @@ def make_fragment_parse_data_units(codec_features, picture, minimum_qindex=0):
     r"""
     Create a seires of :py:class:`~vc2_conformance.bitstream.DataUnit`\ s
     encoding a (possibly lossily compressed) picture.
-    
+
     Parameters
     ==========
     codec_features : :py:class:`~vc2_conformance.codec_features.CodecFeatures`
@@ -883,7 +883,7 @@ def make_fragment_parse_data_units(codec_features, picture, minimum_qindex=0):
     minimum_qindex : int
         Specifies the minimum quantization index to be used. Must be 0 for
         lossless codecs.
-    
+
     Returns
     =======
     fragment_data_units : [:py:class:`vc2_conformance.bitstream.DataUnit`, ...]
@@ -973,14 +973,14 @@ def make_picture_data_units(codec_features, picture, minimum_qindex=0):
     r"""
     Create a seires of one or more :py:class:`~vc2_conformance.bitstream.DataUnit`\ s
     containing a compressed version of the supplied picture.
-    
+
     When ``codec_features["fragment_slice_count"]`` is 0, a single picture
     parse data unit will be produced. otherwise a series of two or more
     fragment parse data units will be produced.
-    
+
     A simple wrapper around :py:func:`make_picture_parse_data_unit` and
     :py:func:`make_fragment_parse_data_units`.
-    
+
     Parameters
     ==========
     codec_features : :py:class:`~vc2_conformance.codec_features.CodecFeatures`
@@ -992,7 +992,7 @@ def make_picture_data_units(codec_features, picture, minimum_qindex=0):
     minimum_qindex : int
         Specifies the minimum quantization index to be used. Must be 0 for
         lossless codecs.
-    
+
     Returns
     =======
     data_units : [:py:class:`vc2_conformance.bitstream.DataUnit`, ...]

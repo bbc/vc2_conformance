@@ -172,7 +172,7 @@ def load_codec_features(csv, name_re):
     """
     Load a set of codec features from the specified CSV, filtering just those
     matching the provided compiled regular expression.
-    
+
     Returns an :py:class:`collections.OrderedDict` of
     :py:class:`vc2_conformance.codec_features.CodecFeatures` objects. Calls
     :py:func:`sys.exit` and prints an error to stderr upon any problems (e.g.
@@ -239,7 +239,7 @@ def check_codec_features_valid(codec_feature_sets):
     Verify that the codec features requested don't themselves violate the spec
     (e.g. violate a level constraint). This is done by generating then
     validating a bitstream containing a single mid-grey frame.
-    
+
     Prints an error to stderr and calls :py:func:`sys.exit` if a problem is
     encountered.
     """
@@ -270,7 +270,7 @@ def check_codec_features_valid(codec_feature_sets):
 def output_encoder_test_case(output_dir, codec_features, test_case):
     """
     Write an encoder test case to disk.
-    
+
     Parameters
     ==========
     output_dir : str
@@ -308,7 +308,7 @@ def output_encoder_test_cases(output_dir, codec_features, generator_function):
 def output_decoder_test_case(output_dir, codec_features, test_case):
     """
     Write a decoder test case to disk.
-    
+
     Parameters
     ==========
     output_dir : str

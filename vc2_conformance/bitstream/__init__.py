@@ -27,12 +27,12 @@ bitstream sequence::
 
     >>> from vc2_conformance.state import State
     >>> from vc2_conformance.bitstream import Deserialiser, BitstreamReader, parse_sequence
-    
+
     >>> with open("/path/to/bitstream.vc2", "rb") as f:
     ...     reader = BitstreamReader(f)
     ...     with Deserialiser(reader) as des:
     ...         parse_sequence(des, State())
-    
+
     >>> # Display in pretty-printed human-readable form
     >>> str(des.context)
     Sequence:
@@ -50,7 +50,7 @@ bitstream sequence::
               major_version: 3
               minor_version: 0
     <...and so on...>
-    
+
     >>> # Deserialised values are kept in a nested dictionary structure which can
     >>> # be accessed as usual:
     >>> des.context["data_units"][0]["parse_info"]["parse_info_prefix"]
@@ -114,7 +114,7 @@ constructed. For example, the following describes a valid bitstream with a
 single HD mid-grey picture::
 
     from vc2_data_tables import ParseCodes, BaseVideoFormats
-    
+
     from vc2_conformance.bitstream import (
         Sequence,
         SequenceHeader,
@@ -122,7 +122,7 @@ single HD mid-grey picture::
         BitstreamWriter,
         autofill_and_serialise_sequence,
     )
-    
+
     seq = Sequence(data_units=[
         DataUnit(
             parse_info=ParseInfo(parse_code=ParseCodes.sequence_header),

@@ -58,7 +58,7 @@ placeholders with a suitable global variables like so::
     new_custom_dimensions_flag = True
     new_frame_width = 1920
     new_frame_height = 1080
-    
+
     frame_size(video_parameters):
         custom_dimensions_flag = write_bool(new_custom_dimensions_flag)
         if(custom_dimensions_flag == True)
@@ -90,7 +90,7 @@ addition to being returned, giving the following pseudocode::
     got_custom_dimensions_flag = None
     got_frame_width = None
     got_frame_height = None
-    
+
     frame_size(video_parameters):
         custom_dimensions_flag = read_bool(got_custom_dimensions_flag)
         if(custom_dimensions_flag == True)
@@ -130,7 +130,7 @@ implementation of :py:class:`SerDes` like so::
 
     >>> from vc2_conformance.bitstream import BitstreamReader, Deserialiser
     >>> reader = BitstreamReader(open("frame_size_snippet.bin", "rb"))
-   
+
     >>> with Deserialiser(reader) as des:
     ...     frame_size(des, {})
     >>> des.context
@@ -149,7 +149,7 @@ similar shape and passed to a :py:class:`Serialiser`::
 
     >>> from vc2_conformance.bitstream import BitstreamWriter, Serialiser
     >>> writer = BitstreamWriter(open("frame_size_snippet.bin", "wb"))
-    
+
     >>> context = {"custom_dimensions_flag": True, "frame_width": 1920, "frame_height": 1080}
     >>> with Serialiser(writer, context) as ser:
     ...     frame_size(ser, {})
@@ -202,7 +202,7 @@ This results in a nested dictionary structure::
 
     >>> with Deserialiser(reader) as des:
     ...     video_parameters = source_parameters(des)
-    
+
     >>> from pprint import pprint
     >>> pprint(des.context)
     {
@@ -236,7 +236,7 @@ For example, here's how the ``parse_info`` header (10.5.1) might be represented:
         Entry("next_parse_offset"),
         Entry("previous_parse_offset"),
     )
-    
+
     @context_type(ParseInfo)
     def parse_info(serdes, state):
         serdes.nbits(4*8, "parse_info_prefix")
@@ -256,7 +256,7 @@ Using the above we can quickly create structures ready for serialisation::
     ...     parse_info(des, {})
 
 We also benefit from improved string formatting when deserialising values::
-    
+
     >>> with Deserialiser(reader) as des:
     ...     parse_info(des, {})
     >>> str(des.context)
@@ -281,7 +281,7 @@ lists. For example::
         serdes.uint("three_values")
 
 When deserialising, the result will look like::
-    
+
     >>> with Deserialiser(reader) as des:
     ...     list_example(des)
     >>> des.context
@@ -319,7 +319,7 @@ serialisation or deserialisation is taking place and any existing value is
 always ignored.
 
 .. note::
-    
+
     It is recommended that by convention computed value target names are
     prefixed or suffixed with an underscore.
 
@@ -349,7 +349,7 @@ value lookup like so::
     ...         "previous_parse_offset": 0,
     ...     },
     ... }
-    
+
     >>> writer = BitstreamWriter(open("frame_size_snippet.bin", "wb"))
     >>> context = ParseInfo(
     ...     parse_code=ParseCodes.end_of_sequence,
@@ -420,10 +420,10 @@ __all__ = [
 class SerDes(object):
     """
     The base serialiser/deserialiser interface and implementation.
-    
+
     This base implementation includes all but the value writing/reading
     features of the serialisation and deserialisation process.
-    
+
     Attributes
     ==========
     io : :py:class:`~.io.BitstreamReader` or :py:class:`~.io.BitstreamWriter`
@@ -503,7 +503,7 @@ class SerDes(object):
         Get a value from the context dictionary, checking that the value has not
         already been accessed and moving on to the next list item for list
         targets.
-        
+
         This method may be overridden to modify values fetched from the context
         dictionary (or to choose default values if a suitable value is
         missing).
@@ -548,12 +548,12 @@ class SerDes(object):
         """
         Reads or writes a boolean (single bit) in a bitstream (as per (A.3.2)
         read_bool()).
-        
+
         Parameters
         ==========
         target : str
             The target for the bit (as a :py:class:`bool`).
-        
+
         Returns
         =======
         value : bool
@@ -564,14 +564,14 @@ class SerDes(object):
         """
         Reads or writes an fixed-length unsigned integer in a bitstream (as
         per (A.3.3) read_nbits()).
-        
+
         Parameters
         ==========
         target : str
             The target for the value (as a :py:class:`int`).
         num_bits : int
             The number of bits in the value.
-        
+
         Returns
         =======
         value : int
@@ -582,14 +582,14 @@ class SerDes(object):
         """
         Reads or writes an fixed-length unsigned integer in a bitstream (as
         per (A.3.4) read_uint_lit()). Not to be confused with :py:meth:`uint`.
-        
+
         Parameters
         ==========
         target : str
             The target for the value (as a :py:class:`int`).
         num_bytes : int
             The number of bytes in the value.
-        
+
         Returns
         =======
         value : int
@@ -602,14 +602,14 @@ class SerDes(object):
         :py:class:`bitarray.bitarray`. This may be a more sensible type for
         holding unpredictably sized non-integer binary values such as padding
         bits.
-        
+
         Parameters
         ==========
         target : str
             The target for the value (as a :py:class:`bitarray.bitarray`).
         num_bits : int
             The number of bits in the value.
-        
+
         Returns
         =======
         value : :py:class:`bitarray.bitarray`
@@ -622,14 +622,14 @@ class SerDes(object):
         bitstream. This is a more convenient alternative to :py:meth:`nbits` or
         :py:meth:`bitarray` when large blocks of data are to be read but not
         treated as integers.
-        
+
         Parameters
         ==========
         target : str
             The target for the value (as a :py:class:`bytes`).
         num_bits : int
             The number of *bytes* (not bits) in the value.
-        
+
         Returns
         =======
         value : :py:class:`bytes`
@@ -640,12 +640,12 @@ class SerDes(object):
         """
         A variable-length, unsigned exp-golomb integer in a bitstream (as per
         (A.4.3) read_uint()).
-        
+
         Parameters
         ==========
         target : str
             The target for the value (as a :py:class:`int`).
-        
+
         Returns
         =======
         value : int
@@ -656,12 +656,12 @@ class SerDes(object):
         """
         A variable-length, signed exp-golomb integer in a bitstream (as per (A.4.4)
         read_sint()).
-        
+
         Parameters
         ==========
         target : str
             The target for the value (as a :py:class:`int`).
-        
+
         Returns
         =======
         value : int
@@ -672,7 +672,7 @@ class SerDes(object):
         """
         Advance in the bitstream to the next whole byte boundary, if not already on
         one (as per (A.2.4) byte_align()).
-        
+
         Parameters
         ==========
         target : str
@@ -687,12 +687,12 @@ class SerDes(object):
         """
         Defines the start of a bounded block (as per (A.4.2)). Must be followed
         by a matching :py:meth:`bounded_block_end`.
-        
+
         See also: :py:meth:`bounded_block`.
-        
+
         Bits beyond the end of the block are always '1'. If a '0' is written
         past the end of the block a :py:exc:`ValueError` will be thrown.
-        
+
         Parameters
         ==========
         length : int
@@ -704,7 +704,7 @@ class SerDes(object):
         """
         Defines the end of a bounded block (as per (A.4.2)). Must be proceeded
         by a matching :py:meth:`bounded_block_begin`.
-        
+
         Parameters
         ==========
         target : str
@@ -718,14 +718,14 @@ class SerDes(object):
     def bounded_block(self, target, length):
         """
         A context manager defining a bounded block (as per (A.4.2)).
-        
+
         See also: :py:meth:`bounded_block_begin`.
-        
+
         Example usage::
-        
+
             with serdes.bounded_block("unused_bits", 100):
                 # ...
-        
+
         Parameters
         ==========
         target : str
@@ -743,9 +743,9 @@ class SerDes(object):
         Declares that the specified target should be treated as a
         :py:class:`list`.  Whenever this target is used in the future, values
         will be read/written sequentially from the list.
-        
+
         This method has no impact on the bitstream.
-        
+
         Parameters
         ==========
         target : str
@@ -772,9 +772,9 @@ class SerDes(object):
     def set_context_type(self, context_type):
         """
         Set (or change) the type of the type of the current context dictionary.
-        
+
         This method has no impact on the bitstream.
-        
+
         Parameters
         ==========
         context_type : :py:class:`dict`-like type
@@ -813,7 +813,7 @@ class SerDes(object):
         Creates and/or enters a context dictionary within the specified
         target of the current context dictionary. Must be followed later by a
         matching :py:meth:`subcontext_leave`.
-        
+
         Parameters
         ==========
         target : str
@@ -849,21 +849,21 @@ class SerDes(object):
         """
         A Python context manager alternative to ;py:meth:`subcontext_enter` and
         ;py:meth:`subcontext_leave`.
-        
+
         Example usage::
-        
+
             >>> with serdes.subcontext("target"):
             ...     # ...
-        
+
         Exactly equivalent to::
-        
+
             >>> serdes.subcontext_enter("target"):
             >>> # ...
             >>> serdes.subcontext_leave():
-        
+
         (But without the possibility of forgetting the
         :py:meth:`subcontext_leave` call).
-        
+
         Parameters
         ==========
         target : str
@@ -879,14 +879,14 @@ class SerDes(object):
         Places a value into the named target in the current context, without
         reading or writing anything into the bitstream. Any existing value in
         the context will be overwritten.
-        
+
         This operation should be used sparingly to embed additional information
         in a context dictionary which might be required to sensibly interpret
         its contents and which cannot be trivially computed from the context
         dictionary. For example, the number of transform coefficients in a
         coded picture depends on numerous computations and table lookups using
         earlier bitstream values.
-        
+
         Parameters
         ==========
         target : str
@@ -901,7 +901,7 @@ class SerDes(object):
         Verify that the current context is 'complete'. That is, every entry in
         the context dict has been used and that every element in any lists has
         been used too.
-        
+
         Raises
         ======
         :py:exc:`~.UnusedTargetError`
@@ -928,7 +928,7 @@ class SerDes(object):
         """
         Verify that all values in the current context have been used and that
         no bounded blocks or nested contexts have been left over.
-        
+
         Raises
         ======
         :py:exc:`~.UnusedTargetError`
@@ -947,20 +947,20 @@ class SerDes(object):
         """
         When used as a context manager, 'verify_complete' is automatically
         called.
-        
+
         Example usage::
-            
+
             >>> with Deserialiser(reader) as serdes:
             ...     frame_size(serdes)
             >>> serdes.context
-        
+
         Exactly equivalent to::
-            
+
             >>> serdes = Deserialiser(reader)
             >>> frame_size(serdes)
             >>> serdes.verify_complete()
             >>> serdes.context
-        
+
         (But without the possibility of foregoing the
         :py:meth:`verify_complete` call.)
         """
@@ -983,13 +983,13 @@ class SerDes(object):
         """
         Produce a 'path' describing the part of the bitstream the parser is
         currently processing.
-        
+
         If 'target' is None, only includes the path of the current nested context
         dictionary. If 'target' is a target name in the current target
         dictionary, the path to the last-used target will be included.
-        
+
         A path might look like::
-        
+
             ['source_parameters', 'frame_size', 'frame_width']
         """
 
@@ -1020,15 +1020,15 @@ class SerDes(object):
         """
         Produce a human-readable description of the part of the bitstream the
         parser is currently processing.
-        
+
         If 'target' is None, prints only the path of the current nested context
         dictionary. If 'target' is a target name in the current target
         dictionary, this will be included in the string.
-        
+
         As a sample, a path might look like the following::
-        
+
             SequenceHeader['source_parameters']['frame_size']['frame_width']
-        
+
         """
         root_type = self.context.__class__.__name__
 
@@ -1041,7 +1041,7 @@ class Deserialiser(SerDes):
     """
     A bitstream deserialiser which creates a context dictionary based on a
     bitstream.
-    
+
     Parameters
     ==========
     io : :py:class:`~.io.BitstreamReader`
@@ -1087,7 +1087,7 @@ class Serialiser(SerDes):
     """
     A bitstream serialiser which, given a populated context dictionary, writes
     the corresponding bitstream.
-    
+
     Parameters
     ==========
     io : :py:class:`~.io.BitstreamWriter`
@@ -1217,14 +1217,14 @@ class MonitoredSerialiser(MonitoredMixin, Serialiser):
     Like :py:class:`Serialiser` but takes a 'monitor' function as the first
     constructor argument. This function will be called every time bitstream
     value has been serialised (written).
-    
+
     Parameters
     ==========
     monitor : callable(ser, target, value)
         A function which will be called after every primitive I/O operation
         completes. This function is passed this :py:class:`MonitoredSerialiser`
         instance and the target name and value of the target just serialised.
-        
+
         This function may be used to inform a user of the current progress of
         serialisation (e.g. using :py:meth:`SerDes.describe_path` or
         :py:data:`SerDes.io`) or to terminate serialisation early (by throwing
@@ -1238,7 +1238,7 @@ class MonitoredDeserialiser(MonitoredMixin, Deserialiser):
     Like :py:class:`Deserialiser` but takes a 'monitor' function as the first
     constructor argument. This function will be called every time bitstream
     value has been deserialised (read).
-    
+
     Parameters
     ==========
     monitor : callable(des, target, value)
@@ -1246,7 +1246,7 @@ class MonitoredDeserialiser(MonitoredMixin, Deserialiser):
         completes. This function is passed this
         :py:class:`MonitoredDeserialiser` instance and the target name and
         value of the target just serialised.
-        
+
         This function may be used to inform a user of the current progress of
         deserialisation (e.g. using :py:meth:`SerDes.context`,
         :py:meth:`SerDes.describe_path` or :py:data:`SerDes.io`) or to
@@ -1260,21 +1260,21 @@ def context_type(dict_type):
     Syntactic sugar. A decorator for :py:class:`SerDes` which uses
     :py:meth:`SerDes.set_context_type` to set the type of the current context
     dict:
-    
+
     Example usage::
-    
+
         @context_type(FrameSize)
         def frame_size(serdes):
             # ...
-    
+
     Exactly equivalent to::
-    
+
         def frame_size(serdes):
             serdes.set_context_type(FrameSize)
             # ...
-    
+
     The wrapped function must take a :py:class:`SerDes` as its first argument.
-    
+
     For introspection purposes, the wrapper function will be given a
     'context_type' attribute holding the passed 'dict_type'.
     """

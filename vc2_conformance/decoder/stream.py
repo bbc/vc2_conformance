@@ -84,9 +84,9 @@ def reset_state(state):
 def parse_sequence(state):
     """
     (10.4.1) Parse a complete VC-2 sequence.
-    
+
     This version of the function has been modified to accept a state dictionary
-    as an argument since the spec 
+    as an argument since the spec
     """
     # (10.4.1) Check that the sequence starts with a sequence_header and ends
     # with and end_of_sequence.
@@ -174,7 +174,7 @@ def parse_sequence(state):
 def output_picture(state, picture, video_parameters):
     """
     (10.4.999) Output a completely decoded picture.
-    
+
     This function's existance is defined by the specification but its behaviour
     is left undefined. In this implementation,
     ``state["_output_picture_callback"]`` is called with the picture and video

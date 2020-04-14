@@ -15,7 +15,7 @@ def real_pictures(codec_features):
     This test case is designed to test correct metadata handling in a codec
     implementation while providing a simple sanity check of overall encoder
     behaviour.
-    
+
     This test sequence consists of a 1 second video sequence as defined by
     :py:class:`vc2_conformance.picture_generators.moving_sprite`. See that
     function's documentation for further details.

@@ -24,7 +24,7 @@ def intlog2_float(n):
     """
     (5.5.3) Implemented as described in the spec, requiring floating point
     arithmetic.
-    
+
     In practice, the alternative implementation in :py:func:`intlog2` should be
     used instead since it does not rely on floating point arithmetic (and is
     therefore faster and has unlimited precision).

@@ -48,10 +48,10 @@ def assert_parse_code_in_sequence(parse_code, matcher, exception_type, *args):
     """
     Check that the specified parse code's name matches the next value in the
     sequence defined by :py:class:`vc2_conformance.symbol_re.Matcher`.
-    
+
     If it does not, ``exception_type`` will be raised with the following
     arguments:
-    
+
     * The ``parse_code`` (as a :py:class:`~vc2_data_tables.ParseCodes`)
     * A list of parse codes (as a
       :py:class:`~vc2_data_tables.ParseCodes`) which would have been
@@ -81,10 +81,10 @@ def assert_parse_code_sequence_ended(matcher, exception_type, *args):
     """
     Check that the specified :py:class:`vc2_conformance.symbol_re.Matcher` has
     reached a valid end for the sequence of parse codes specified.
-    
+
     If the matcher still expects more parse codes, ``exception_type`` will be
     raised with the following arguments:
-    
+
     * The ``parse_code`` will be None
     * A list of parse codes (as a
       :py:class:`~vc2_data_tables.ParseCodes`) which would have been
@@ -111,7 +111,7 @@ def assert_level_constraint(state, key, value):
     :py:data:`vc2_conformance.level_constraints.LEVEL_CONSTRAINTS`. Throws a
     :py;exc:`vc2_conformance.decoder.exceptions.ValueNotAllowedInLevel`
     exception on failure.
-    
+
     Takes the current :py:class:`~vc2_conformance.state.State` instance from
     which the current
     :py:attr:`~vc2_conformance.state.State._level_constrained_values` will be
@@ -139,23 +139,23 @@ def assert_picture_number_incremented_as_expected(state, picture_number_offset):
     ``state["picture_number"]`` and with the
     :py:func:`~vc2_conformance.decoder.io.tell` value just after the value was
     read.
-    
+
     This assertion will check that:
-    
+
     * (12.2), (14.2) Picture numbers in a sequence must increment by 1 and wrap after
       2^32-1 back to zero, throwing :py:exc:`NonConsecutivePictureNumbers` if
       this is not the case.
     * (12.2), (14.2) When coded as fields, the first field in the sequence must
       have an even picture number, throwing
       :py:exc:`EarliestFieldHasOddPictureNumber` if this is not the case.
-    
+
     This assertion also has the following side-effects:
-    
+
     * Sets ``state["_last_picture_number"]`` to ``state["picture_number"]``
     * Sets ``state["_last_picture_number_offset"]`` to the value passed in the
       picture_number_offset argument.
     * Increments ``state["_num_pictures_in_sequence"]``
-    
+
     In the case of fragments (14.2), this assertion should be called only for
     the first fragment in a picture (with fragment_slice_count==0).
     """

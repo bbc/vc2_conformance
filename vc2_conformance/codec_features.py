@@ -122,13 +122,13 @@ def read_dict_list_csv(csvfile):
     """
     Read a CSV whose contents consists of a series of dictionaries whose
     columns define dictionaries of values defined by their rows. For example::
-    
+
         a,one,ay
         b,two,bee
         c,three,see
-    
+
     Would become::
-    
+
         [
             {
                 "a": "one",
@@ -141,7 +141,7 @@ def read_dict_list_csv(csvfile):
                 "c": "see",
             },
         ]
-    
+
     The first column always gives dictionary keys. Rows whose first column is
     empty or contains only a string starting with a ``#`` (hash) character
     are ignored entirely. Leading and trailing whitespace will be stripped.
@@ -311,9 +311,9 @@ class InvalidCodecFeaturesError(ValueError):
 def read_codec_features_csv(csvfile):
     """
     Read a set of :py:class:`CodecFeatures` dictionaries from a CSV file.
-    
+
     The CSV file must be laid out as illustrated below:
-    
+
         ========================= ===================  ===================
         name                      lossy_mode           lossless_mode
         ========================= ===================  ===================
@@ -369,13 +369,13 @@ def read_codec_features_csv(csvfile):
         # (12.4.5.3)
         quantization_matrix       default              default
         ========================= ===================  ===================
-    
+
     Column B onward contain configurations which a codec claims to support.
     Each row defines the value of a particular codec feature (except empty rows
     or rows starting with a ``#`` which are ignored).
-    
+
     The following rows must be defined:
-        
+
     * ``level`` (int or :py:class:`~vc2_data_tables.Levels` name)
     * ``profile`` (int or :py:class:`~vc2_data_tables.Profiles` name)
     * ``major_version`` (int)
@@ -424,46 +424,46 @@ def read_codec_features_csv(csvfile):
     * ``lossless`` (``TRUE`` or ``FALSE``)
     * ``picture_bytes`` (int or absent)
     * ``quantization_matrix`` (whitespace separated ints)
-    
+
     The 'name' row may be used to specify a human-readable name for a
     particular configuration.
-    
+
     Parameters related to video formatting may be set to ``default``. In this
     case, the value specified in the ``base_video_format`` row will be used.
     Otherwise, the base video format will be overridden.
-    
+
     The ``base_video_format`` specified is provided purely as a shorthand for
     entering values into this table. The value specified here may not
     correspond to the ``base_video_format`` value which is encoded into
     bitstreams.
-    
+
     The ``fragment_slice_count`` row, non-zero, indicates fragmented pictures
     should be used and gives the maximum number of slices to include in each
     fragment. If the value is zero, fragmented pictures will not be used.
-    
+
     The ``lossless`` row specifies if (variable length) lossless coding should
     be used. If True, the ``picture_bytes`` field must be left empty. If
     ``lossless`` is set to ``FALSE``, fixed-bitrate lossy compression is used
     with ``picture_bytes`` giving the number of bytes to compress each picture
     into. All slices will have the same size (to within 1 byte).
-    
+
     The ``quantization_matrix`` row may be set to ``default`` to specify tha
     the default quantisation matrix for the wavelet is to be used.
     Alternatively, it may be set to a series of ``dwt_depth + dwt_depth_ho +
     1`` whitespace separated integers. These correspond to the quantisation
     matrix values in bitstream order as defined by the ``quant_matrix``
     pseudocode function (12.4.5.3).
-    
+
     Parameters
     ==========
     csvfile : iterable
         An iterable of lines from a CSV file, e.g. an open :py:class:`file`
         object.
-    
+
     Returns
     =======
     codec_feature_sets : OrderedDict([(name, :py:class:`CodecFeatures`), ...])
-    
+
     Raises
     ======
     :py:exc:`InvalidCodecFeaturesError`

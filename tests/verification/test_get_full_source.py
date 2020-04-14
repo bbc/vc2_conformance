@@ -11,7 +11,7 @@ from verification.get_full_source import get_full_source
 def f():
     return \
         123
-    
+
     # Comment afterwards
 # Comment not in function
 pass  # First non-function line
@@ -31,6 +31,6 @@ def test_get_full_source():
         "def f():\n",
         "    return \\\n",
         "        123\n",
-        "    \n",
+        "\n",
         "    # Comment afterwards\n",
     ]

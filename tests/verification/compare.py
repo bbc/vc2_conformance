@@ -163,10 +163,10 @@ def format_detailed_summary(comparison_error_or_difference):
 class ComparisonError(Exception):
     """
     An error occurred while attempting to compare two function implementations.
-    
+
     Use :py:class:`str` to turn into a human-readable description (including
     source code snippets).
-    
+
     Parameters
     ----------
     message : str
@@ -208,10 +208,10 @@ class Difference(object):
     """
     A description of the difference between a reference function and its
     implementation.
-    
+
     Use :py:class:`str` to turn into a human-readable description (including
     source code snippets).
-    
+
     Parameters
     ----------
     message : str
@@ -260,7 +260,7 @@ def compare_sources(ref_source, imp_source, comparator):
     """
     Compare two Python sources, one containing a reference VC-2 pseudocode
     function and the other containing an implementation.
-    
+
     Parameters
     ==========
     ref_source : str
@@ -272,14 +272,14 @@ def compare_sources(ref_source, imp_source, comparator):
         comparison.
     comparator : :py:class:`verification.node_comparator.NodeComparator`
         The comparator to use to test for equivalence.
-    
+
     Returns
     =======
     True or :py:class:`Difference`
         True is returned if the implementations are equal (according to the
         supplied comparator). Otherwise a :py:class:`Difference` is returned
         enumerating the differences.
-    
+
     Raises
     =======
     :py:exc:`ComparisonError`
@@ -373,7 +373,7 @@ def compare_functions(ref_func, imp_func, comparator):
     """
     Compare two Python functions where one is a reference implementation and
     the other an implementation used in :py:mod:`vc2_conformance`.
-    
+
     Parameters
     ==========
     ref_func : :py:class:`FunctionType`
@@ -385,14 +385,14 @@ def compare_functions(ref_func, imp_func, comparator):
         comparison.
     comparator : :py:class:`verification.node_comparator.NodeComparator`
         The comparator to use to test for equivalence.
-    
+
     Returns
     =======
     True or :py:class:`Difference`
         True is returned if the implementations are equal (according to the
         supplied comparator). Otherwise a :py:class:`Difference` is returned
         enumerating the differences.
-    
+
     Raises
     =======
     :py:exc:`ComparisonError`

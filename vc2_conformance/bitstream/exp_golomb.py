@@ -15,7 +15,7 @@ def exp_golomb_length(value):
     """
     Return the length (in bits) of the unsigned exp-golomb representation of
     value.
-    
+
     An :py:exc:`~.OutOfRangeError` will be raised if
     a negative value is provided.
     """

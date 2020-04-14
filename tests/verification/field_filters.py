@@ -128,10 +128,10 @@ def ignore_first_n(n):
 def unwrap_named_context_managers(*function_names):
     """
     Filter factory for replacing 'with' blocks with their body.
-    
+
     For complete coverage, the following AST node types and fields must be
     filtered:
-    
+
     * :py:class:`ast.Module`, 'body',
     * :py:class:`ast.FunctionDef`, 'body',
     * :py:class:`ast.If`, 'body', 'orelse'
@@ -146,23 +146,23 @@ def unwrap_named_context_managers(*function_names):
       * :py:class:`ast.Try`, 'body', 'orelse, 'finalbody'
       * :py:class:`ast.AsyncFunctionDef`, 'body',
       * :py:class:`ast.AsyncFor`, 'body', 'orelse'
-    
+
     Given a list of AST nodes, substitutes any 'with' block whose
     'context_expr' is a function call whose name matches one of the provided
     names, for its body.
-    
+
     For example, the filter returned by
     ``unwrap_named_context_managers(["foobar"])`` effectively
     transforms::
-    
+
         a = 1
         with foobar(1, 2, 3) as baz:
             b = 2
             c = 3
         d = 4
-    
+
     into::
-    
+
         a = 1
         b = 2
         c = 3

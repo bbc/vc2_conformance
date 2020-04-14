@@ -55,7 +55,7 @@ def from_bit_offset(total_bits):
 class BitstreamReader(object):
     """
     An open file which may be read one bit at a time.
-    
+
     When the end-of-file is encountered, reads will result in a
     :py:exc:`EOFError`.
     """
@@ -99,7 +99,7 @@ class BitstreamReader(object):
     def tell(self):
         """
         Report the current bit-position within the stream.
-        
+
         Returns
         =======
         (bytes, bits)
@@ -112,7 +112,7 @@ class BitstreamReader(object):
     def seek(self, bytes, bits=7):
         """
         Seek to a specific (absolute) position in the file.
-        
+
         Parameters
         ==========
         bytes : int
@@ -154,7 +154,7 @@ class BitstreamReader(object):
     def bits_remaining(self):
         """
         The number of bits left in the current bounded block.
-        
+
         None, if not in a bounded block. Otherwise, the number of unused bits
         remaining in the block. If negative, indicates the number of bits read
         past the end of the block.
@@ -272,7 +272,7 @@ class BitstreamReader(object):
         any bounded blocks we might be in if necessary). May read fewer bits if
         the end-of-file is encountered (but will not throw a :py:exc:`EOFError`
         like other methods of this class).
-        
+
         Intended for the display of error messages (i.e. as the final use of a
         :py:class:`BitstreamReader` instance) only since this method may (or
         may not) exit the current bounded block as a side effect.
@@ -327,7 +327,7 @@ class BitstreamWriter(object):
     def tell(self):
         """
         Report the current bit-position within the stream.
-        
+
         Returns
         =======
         (bytes, bits)
@@ -341,7 +341,7 @@ class BitstreamWriter(object):
         """
         Seek to a specific (absolute) position in the file. Seeking to a given
         byte will overwrite any bits already set in that byte to 0.
-        
+
         Parameters
         ==========
         bytes : int
@@ -399,7 +399,7 @@ class BitstreamWriter(object):
     def bits_remaining(self):
         """
         The number of bits left in the current bounded block.
-        
+
         None, if not in a bounded block. Otherwise, the number of unused bits
         remaining in the block. If negative, indicates the number of bits read
         past the end of the block.
@@ -455,7 +455,7 @@ class BitstreamWriter(object):
     def write_nbits(self, bits, value):
         """
         Write an 'bits'-bit integer. The complement of read_nbits (A.3.3).
-        
+
         Throws an :py:exc:`OutOfRangeError` if the value is too large to fit in
         the requested number of bits.
         """
@@ -470,7 +470,7 @@ class BitstreamWriter(object):
     def write_uint_lit(self, num_bytes, value):
         """
         Write a 'num-bytes' long integer. The complement of read_uint_lit (A.3.4).
-        
+
         Throws an :py:exc:`OutOfRangeError` if the value is too large to fit in
         the requested number of bytes.
         """
@@ -479,7 +479,7 @@ class BitstreamWriter(object):
     def write_bitarray(self, bits, value):
         """
         Write the 'bits' from the :py;class:`bitarray.bitarray` 'value'.
-        
+
         Throws an :py:exc:`OutOfRangeError` if the value is longer than 'bits'.
         The value will be right-hand zero-padded to the required length.
         """
@@ -499,7 +499,7 @@ class BitstreamWriter(object):
         """
         Write the provided :py:class:`bytes` or :py:class:`bytearray` in a python
         bytestring.
-        
+
         If the provided byte string is too long an :py:exc:`OutOfRangeError`
         will be raised. If it is too short, it will be right-hand zero-padded.
         """
@@ -518,7 +518,7 @@ class BitstreamWriter(object):
     def write_uint(self, value):
         """
         Write an unsigned exp-golomb code.
-        
+
         An :py:exc:`OutOfRangeError` will be raised if a negative value is
         provided.
         """

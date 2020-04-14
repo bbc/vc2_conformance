@@ -95,7 +95,7 @@ def lovell():
     """
     A simple 64x64, 8 bit, 4:2:2 sampled test picture, cropped out of a real
     photograph.
-    
+
     This fixture is a tuple (picture, video_parameters, picture_coding_mode) as
     returned by :py:func:`vc2_conformance.file_format.read`.
     """

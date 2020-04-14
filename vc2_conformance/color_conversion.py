@@ -592,7 +592,7 @@ def float_to_int(a, offset, excursion):
     """
     Convert (an array of) float sample values in the nominal range 0 to +1 or
     -0.5 to +0.5 to integers (with the specified offset and excursion).
-    
+
     Values which fall outside the range of the integer representation are
     clipped.
     """
@@ -621,9 +621,9 @@ def from_444(chroma, subsampling):
     """
     Subsample a chroma picture component into the specified
     :py:class:`~vc2_data_tables.ColorDifferenceSamplingFormats`.
-    
+
     .. warning::
-        
+
         This function uses an extremely crude low-pass filter during
         downsampling which is likely to produce aliasing artefacts. As such,
         pictures produced by this function should not be used for anything
@@ -659,9 +659,9 @@ def to_444(chroma, subsampling):
     Given a chroma picture subsampled according to the specified
     :py:class:`~vc2_data_tables.ColorDifferenceSamplingFormats`, return an
     upsampled chroma signal.
-    
+
     .. warning::
-        
+
         This function uses an extremely crude anti-aliasing filter during
         upsampling which is likely to produce artefacts. As such, pictures
         produced by this function should not be used for anything where high
@@ -684,7 +684,7 @@ def to_xyz(y, c1, c2, video_parameters):
     r"""
     Convert a picture from a native VC-2 integer Y C1 C2 format into floating
     point CIE XYZ format.
-    
+
     Parameters
     ==========
     y, c1, c2 : :py:class:`numpy.array`
@@ -693,7 +693,7 @@ def to_xyz(y, c1, c2, video_parameters):
     video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
         The VC-2 parameters describing the video format in use. The following
         fields are required:
-        
+
         * ``color_diff_format_index``
         * ``luma_offset``
         * ``luma_excursion``
@@ -702,7 +702,7 @@ def to_xyz(y, c1, c2, video_parameters):
         * ``color_primaries``
         * ``color_matrix``
         * ``transfer_function``
-    
+
     Returns
     =======
     yxz : :py:class:`numpy.array`
@@ -760,7 +760,7 @@ def from_xyz(xyz, video_parameters):
     """
     Convert a picture from CIE XYZ format into a native VC-2 integer, chroma
     subsampled Y C1 C2 format.
-    
+
     Parameters
     ==========
     yxz : :py:class:`numpy.array`
@@ -769,7 +769,7 @@ def from_xyz(xyz, video_parameters):
     video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
         The VC-2 parameters describing the video format to produce. The following
         fields are required:
-        
+
         * ``color_diff_format_index``
         * ``luma_offset``
         * ``luma_excursion``
@@ -778,7 +778,7 @@ def from_xyz(xyz, video_parameters):
         * ``color_primaries``
         * ``color_matrix``
         * ``transfer_function``
-    
+
     Returns
     =======
     y, c1, c2 : :py:class:`numpy.array`
@@ -844,19 +844,19 @@ def swap_primaries(xyz, video_parameters_before, video_parameters_after):
     Given an image defined in terms of one set of primaries, return a new image
     defined in terms of a different set of primaries but with the same
     numerical R, G and B values under the new set of primaries.
-    
+
     This transformation is useful when an image is defined not by absolute
     colours but rather colors relative to whatever primaries are in use. For
     example, a test pattern designed to show swatches of pure color primaries
     may be given relative to a particular set of primaries but needs to be
     adapted for use with another set of primaries.
-    
+
     Parameters
     ==========
     xyz : :math:`3 \times 3` array (height, width, 3)
     video_parameters_before : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
     video_parameters_after : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
-    
+
     Returns
     =======
     xyz : :math:`3 \times 3` array (height, width, 3)

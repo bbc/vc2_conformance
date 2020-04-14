@@ -41,7 +41,7 @@ def get_bundle_filename():
     """
     Get the filename to use for loading the VC-2 bit widths analysis bundle
     file.
-    
+
     If the ``VC2_BIT_WIDTHS_BUNDLE`` environment variable is set, uses this as
     the bundle file. Otherwise, falls back to
     :py:data:`vc2_conformance_data.STATIC_FILTER_ANALYSIS_BUNDLE_FILENAME`
@@ -59,16 +59,16 @@ def get_test_pictures(codec_features, bundle_filename=get_bundle_filename()):
     """
     Gets a set of test pictures for a codec with the specified codec
     configuration.
-    
+
     Raises a :py:exc:`MissingStaticAnalysisError` if no static filter analysis
     is available for the specified codec.
-    
+
     Parameters
     ==========
     bundle_filename : str
         Filename of the VC-2 bit widths bundle file to read test patterns from.
     codec_features : :py:class:`~vc2_conformance.codec_features.CodecFeatures`
-    
+
     Returns
     =======
     analysis_luma_pictures : [:py:class:`AnalysisPicture`, ...]

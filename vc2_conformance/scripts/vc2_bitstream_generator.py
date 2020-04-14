@@ -44,11 +44,11 @@ from vc2_conformance import vc2_math
 def remove_comments_from_json(obj):
     """
     Given a deserialised JSON value, remove all comments.
-    
+
     In JSON objects, a comment is a value whose key is "#".
-    
+
     In JSON arrays, a comment is a string value starting with "#".
-    
+
     Mutates the object in-place and returns the modified object
     """
     if isinstance(obj, dict):
@@ -92,9 +92,9 @@ def evaluate_strings_in_json(obj, globals={}, locals={}, path=()):
     """
     Evaluate all strings in a JSON deserialised value with the Python
     interpreter.
-    
+
     Mutates values in place (where possible) and returns the evaluated result.
-    
+
     Throws a :py:exc:`JSONEvalError` if evaluation fails.
     """
     if isinstance(obj, dict):
@@ -117,7 +117,7 @@ def parse_args(*args, **kwargs):
     """
     Parse a set of command line arguments. Returns a :py:mod:`argparse`
     ``args`` object with the following fields:
-    
+
     * specification (str): The filename of the bitstream specification to read.
     * bitstream (str): The filename of the bitstream to write.
     * verbose (int): The number of times the --verbose argument was given

@@ -112,10 +112,10 @@ def get_picture_filename_pattern(filename):
 def write(picture, video_parameters, picture_coding_mode, filename):
     """
     Write a picture to a data and metadata file.
-    
+
     Convenience wrapper around :py:func:`write_picture` and
     :py:func:`write_metadata`.
-    
+
     Parameters
     ==========
     picture : {"Y": [[s, ...], ...], "C1": ..., "C2": ..., "pic_num": int}
@@ -137,16 +137,16 @@ def write(picture, video_parameters, picture_coding_mode, filename):
 def read(filename):
     """
     Read a picture from a data and metadata file.
-    
+
     Convenience wrapper around :py:func:`read_picture` and
     :py:func:`read_metadata`.
-    
+
     Parameters
     ==========
     filename : str
         The filename of either the picture data file (.raw) or metadata file
         (.json). The name of the other file will be inferred automatically.
-    
+
     Returns
     =======
     picture : {"Y": [[s, ...], ...], "C1": ..., "C2": ..., "pic_num": int}
@@ -186,12 +186,12 @@ bytes_per_sample : int
 def compute_dimensions_and_depths(video_parameters, picture_coding_mode):
     """
     Compute the dimensions, bit depth and bytes-per-sample of a picture.
-    
+
     Parameters
     ==========
     video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
     picture_coding_mode : :py:class:`~vc2_data_tables.PictureCodingModes`
-    
+
     Returns
     =======
     OrderedDict
@@ -227,7 +227,7 @@ def compute_dimensions_and_depths(video_parameters, picture_coding_mode):
 def write_picture(picture, video_parameters, picture_coding_mode, file):
     """
     Write a decoded picture to a file as a planar image.
-    
+
     Parameters
     ==========
     picture : {"Y": [[s, ...], ...], "C1": ..., "C2": ..., "pic_num": int}
@@ -265,7 +265,7 @@ def write_picture(picture, video_parameters, picture_coding_mode, file):
 def write_metadata(picture, video_parameters, picture_coding_mode, file):
     """
     Write the metadata associated with a decoded picture to a file as JSON.
-    
+
     Parameters
     ==========
     picture : {"Y": [[s, ...], ...], "C1": ..., "C2": ..., "pic_num": int}
@@ -296,12 +296,12 @@ def write_metadata(picture, video_parameters, picture_coding_mode, file):
 def read_metadata(file):
     """
     Read a JSON picture metadata file.
-    
+
     Parameters
     ==========
     file : :py:class:`file`
         A file open for binary reading.
-    
+
     Returns
     =======
     video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
@@ -332,7 +332,7 @@ def read_metadata(file):
 def read_picture(video_parameters, picture_coding_mode, picture_number, file):
     """
     Read a picture from a file.
-    
+
     Parameters
     ==========
     video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
@@ -340,7 +340,7 @@ def read_picture(video_parameters, picture_coding_mode, picture_number, file):
     picture_number : int
     file : :py:class:`file`
         A file open for binary reading.
-    
+
     Returns
     =======
     picture : {"Y": [[s, ...], ...], "C1": ..., "C2": ..., "pic_num": int}

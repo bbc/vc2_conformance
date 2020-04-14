@@ -10,9 +10,9 @@ def pytest_assertrepr_compare(op, left, right):
     """
     Pytest Hook which shows a detailed message when assertions of the following
     form are used::
-    
+
         assert compare_functions(f1, f2, Identical()) is True
-    
+
     """
     if op == "is" and isinstance(left, Difference) and right is True:
         return [

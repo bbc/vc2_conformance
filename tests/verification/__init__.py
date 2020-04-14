@@ -39,11 +39,11 @@ comments' which start with two or more ``#`` characters. For example::
         if b <= 0:
             raise Exception("'b' cannot be zero or negative!")
         ## End not in spec
-        
+
         # For single-line snippets which are not in the standard you can use
         # the following end-of-line amendment comment
         assert b > 0  ## Not in spec
-        
+
         # The following code is part of the standard but is disabled in this
         # example. Even though it is commented out, it will still be checked
         # against the standard. If the standard changes this check ensures that
@@ -51,7 +51,7 @@ comments' which start with two or more ``#`` characters. For example::
         # the suitability of any amendments made.
         ### if do_something(a):
         ###     do_something_else(b)
-        
+
         return a / b
 
 More details of the amendment comment syntax can be found in

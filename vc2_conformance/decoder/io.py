@@ -32,14 +32,14 @@ __all__ = [
 def init_io(state, f):
     """
     (A.2.1) Initialise the io-related variables in state.
-    
+
     This function should be called to initialise the IO-related parts of the
     state dictionary to their initial state as specified by (A.2.1):
-    
+
         ... a decoder is deemed to maintain a copy of the current byte,
         state[current_byte], and an index to the next bit (in the byte) to be
         read, state[next_bit] ...
-    
+
     Parameters
     ----------
     state : :py:class:`~vc2_conformance.state.State`
@@ -55,11 +55,11 @@ def record_bitstream_start(state):
     """
     Not part of spec; used for verifying that repeated sequence_headers are
     byte-for-byte identical (11.1).
-    
+
     This function causes all future bytes read from the bitstream to be logged
     into state["_read_bytes"] until :py:func:`record_bitstream_finish` is
     called.
-    
+
     Because this functionality is only required for recording bytes which are
     part of sequence_headers, recordings must start byte aligned.
     """
@@ -71,7 +71,7 @@ def record_bitstream_start(state):
 def record_bitstream_finish(state):
     """
     See :py:func:`record_bitstream_start`.
-    
+
     Returns
     =======
     bytearray
@@ -93,7 +93,7 @@ def record_bitstream_finish(state):
 def tell(state):
     """
     Not part of spec; used to log bit offsets in the bitstream.
-    
+
     Return a (byte, bit) tuple giving the offset of the next bit to be read in
     the stream.
     """
@@ -108,7 +108,7 @@ def read_byte(state):
     """
     (A.2.2) Load the next byte in the stream into the global state, ready for
     the bits to be read.
-    
+
     By convention, when the end-of-file is reached, ``state["current_byte"]``
     is set to ``None``. This condition must be checked before every read
     operation.

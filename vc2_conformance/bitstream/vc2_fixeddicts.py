@@ -103,7 +103,7 @@ Where a particular fixeddict entry is a list, the value listed in this lookup
 should be treated as the default value to use for list entries.
 
 .. warning::
-    
+
     For default values containing a :py:class:`bitarray.bitarray` or any other
     mutable type, users must take care to copy the default value before
     mutating it.

@@ -244,12 +244,12 @@ def explain_pixel_aspect_ratio(video_parameters, picture_coding_mode):
 class CommandExplainer(object):
     """
     Build up a command line with notes explaining each part.
-    
+
     Parameters
     ==========
     prefix : str
         Optionally add a prefix to the command (e.g. "$ ").
-    
+
     Attributes
     ==========
     command : str
@@ -269,7 +269,7 @@ class CommandExplainer(object):
     def append(self, fragment, note=None, strip=True):
         """
         Append a fragment of text to the end of the command.
-        
+
         Parameters
         ==========
         fragment : str
@@ -328,9 +328,9 @@ def example_ffmpeg_command(picture_filename, video_parameters, picture_coding_mo
     """
     Create a :py:class:`CommandExplainer` defining an FFmpeg ``ffplay`` command
     to play the specified video format.
-    
+
     The resulting commands attempt to achieve the correct:
-    
+
     * Resolution
     * Bit depth
     * Pixel aspect ratio
@@ -339,13 +339,13 @@ def example_ffmpeg_command(picture_filename, video_parameters, picture_coding_mo
     * Interlacing (fields are always converted into frames and, if the
       underlying picture is interlaced, deinterlacing is applied)
     * RGB vs Luma + Chroma representation
-    
+
     In some cases, :py:exc:`UnsupportedPictureFormat` will be raised where the
     format is sufficiently unusual as to be completely unsupported by FFMPEG
     (e.g.  extremely high bit depths or colour subsampling under RGB mode).
-    
+
     Color model parameters are essentially ignored.
-    
+
     Finally, the 'clean area' parameters are ignored completely.
     """
     command = CommandExplainer("$ ")
@@ -550,26 +550,26 @@ def example_imagemagick_command(
     """
     Create a :py:class:`CommandExplainer` defining an ImagMagick ``display``
     command to display a single picture in the raw video format.
-    
+
     The resulting commands attempt to achieve the correct:
-    
+
     * Resolution
     * Colour subsampling mode
     * RGB vs Luma + Color Difference representation
-    
+
     Unfortunately, bit depths greater than 8 bits are unsupported due to
     the unreliability of ImageMagick's handling of 16-bit color.
-    
+
     In some cases, :py:exc:`UnsupportedPictureFormat` will be raised where the
     format is sufficiently unusual as to be completely unsupported by
     ImageMagick (e.g.  extremely high bit depths or colour subsampling under
     RGB mode).
-    
+
     Color model parameters are essentially ignored.
-    
+
     Interlaced pictures (or progressive frames encoded as fields) are not
     (de)interlaced: pictures are shown as-is.
-    
+
     Finally, the 'clean area' parameters are ignored completely.
     """
     command = CommandExplainer("$ ")

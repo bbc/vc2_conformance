@@ -116,14 +116,14 @@ class TestSplitIntoLineWrapBlocks(object):
         assert (
             split_into_line_wrap_blocks(
                 """
-            
+
             Foo, bar.
-            
+
             Baz.
-            
-            
+
+
             Qux!
-            
+
         """
             )
             == [
@@ -141,13 +141,13 @@ class TestSplitIntoLineWrapBlocks(object):
                 """
             Foo, bar,
             baz.
-            
+
             Qux,
             quo,
             qac!
         """
             )
-            == [("", "", "Foo, bar, baz."), ("", "", ""), ("", "", "Qux, quo, qac!"),]
+            == [("", "", "Foo, bar, baz."), ("", "", ""), ("", "", "Qux, quo, qac!")]
         )
 
     def test_markdown_style_titles(self):
@@ -156,10 +156,10 @@ class TestSplitIntoLineWrapBlocks(object):
                 """
             A heading
             =========
-            
+
             A subheading
             ------------
-            
+
             ==== Not an underline!
             ---- Not an underline!
         """
@@ -180,12 +180,12 @@ class TestSplitIntoLineWrapBlocks(object):
             split_into_line_wrap_blocks(
                 """
             Bullets:
-            
+
             * Foo
             * Bar,
               baz.
             * Qux.
-            
+
             The end.
         """
             )
@@ -208,7 +208,7 @@ class TestSplitIntoLineWrapBlocks(object):
             * Bar,
               baz.
             * Qux.
-            
+
             The end.
         """
             )
@@ -226,12 +226,12 @@ class TestSplitIntoLineWrapBlocks(object):
             split_into_line_wrap_blocks(
                 """
             Numbered:
-            
+
             1. Foo
             2. Bar,
                baz.
             100. Qux.
-            
+
             The end.
         """
             )
@@ -254,7 +254,7 @@ class TestSplitIntoLineWrapBlocks(object):
             2. Bar,
                baz.
             100. Qux.
-            
+
             The end.
         """
             )
@@ -283,7 +283,12 @@ class TestSplitIntoLineWrapBlocks(object):
                 (
                     "",
                     "",
-                    "This is a paragraph which containing a 9. It also contains * -- a bullet point in any other setting.",
+                    (
+                        "This is a paragraph which "
+                        "containing a 9. It also "
+                        "contains * -- a bullet "
+                        "point in any other setting."
+                    ),
                 ),
             ]
         )
@@ -293,12 +298,12 @@ class TestSplitIntoLineWrapBlocks(object):
             split_into_line_wrap_blocks(
                 """
             Indentation time:
-            
+
                 Indented block.
-                
+
                 A second
                 one.
-            
+
             The end.
         """,
                 wrap_indented_blocks=True,
@@ -319,12 +324,12 @@ class TestSplitIntoLineWrapBlocks(object):
             split_into_line_wrap_blocks(
                 """
             Indentation time:
-            
+
                 Indented block.
-                
+
                 A second
                 one.
-            
+
             The end.
         """,
                 wrap_indented_blocks=False,
@@ -348,7 +353,7 @@ class TestWrapBlocks(object):
 
     def test_no_wrapping(self):
         assert wrap_blocks(
-            [("", "", "A quick"), ("", "", ""), ("* ", "  ", "Test"),], 40
+            [("", "", "A quick"), ("", "", ""), ("* ", "  ", "Test")], 40
         ) == ("A quick\n" "\n" "* Test")
 
     def test_wrapping(self):
@@ -378,7 +383,7 @@ class TestWrapBlocks(object):
 
     def test_no_wrap_indent_blocks(self):
         assert wrap_blocks(
-            [("  ", "  ", ("Don't wrap me. " * 4).strip()),],
+            [("  ", "  ", ("Don't wrap me. " * 4).strip())],
             40,
             wrap_indented_blocks=False,
         ) == (
@@ -388,7 +393,7 @@ class TestWrapBlocks(object):
 
     def test_wrap_indent_blocks(self):
         assert wrap_blocks(
-            [("  ", "  ", ("Do wrap me. " * 5).strip()),], 40, wrap_indented_blocks=True
+            [("  ", "  ", ("Do wrap me. " * 5).strip())], 40, wrap_indented_blocks=True
         ) == (
             # | -------------- 40 chars ------------ |
             "  Do wrap me. Do wrap me. Do wrap me. Do\n"
@@ -402,24 +407,24 @@ def test_wrap_paragraphs():
             """
         Markdown style title
         ====================
-        
+
         Hello there, this is some text with some hard line wrapping in it. All
         of the key functionality is tested elsewhere.
-        
+
         This is a:
-        
+
         * Sanity check that everything seems to work when put together.
         * A demo...
-        
+
         With some numbered items:
-        
+
         1. One
         2. Two
         3. Three is the longest of the numbers I've been looking at.
-        
+
         Some code
         ---------
-        
+
             int main(int argc, const char *argv) {
                 return 0;
             }

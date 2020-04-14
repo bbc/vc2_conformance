@@ -36,7 +36,7 @@ class Number(object):
     """
     A formatter which uses Python's built-in :py:meth:`str.format` method to
     apply formatting.
-    
+
     Parameters
     ==========
     format_code : str
@@ -69,7 +69,7 @@ class Number(object):
 class Hex(Number):
     """
     Prints numbers in hexadecimal.
-    
+
     Parameters
     ==========
     num_digits : int
@@ -87,7 +87,7 @@ class Hex(Number):
 class Dec(Number):
     """
     Prints numbers in decimal.
-    
+
     Parameters
     ==========
     num_digits : int
@@ -105,7 +105,7 @@ class Dec(Number):
 class Oct(Number):
     """
     Prints numbers in octal.
-    
+
     Parameters
     ==========
     num_digits : int
@@ -123,7 +123,7 @@ class Oct(Number):
 class Bin(Number):
     """
     Prints numbers in binary.
-    
+
     Parameters
     ==========
     num_digits : int
@@ -143,9 +143,9 @@ class Bool(object):
     A formatter for :py:class:`bool` (or bool-castable) objects. For the values
     0, 1, False and True, just shows 'True' or 'False'. For all other values,
     shows also the true value in brackets.
-    
+
     For example::
-    
+
         >>> bool_formatter = Bool()
         >>> bool_formatter(False)
         "False"
@@ -176,7 +176,7 @@ class Bits(object):
     string of the form '0b0101', using
     :py:func:`~vc2_conformance._string_utils.ellipsise` to shorten very long,
     values.
-    
+
     Parameters
     ==========
     prefix : str
@@ -210,7 +210,7 @@ class Bytes(object):
     the form '0xAB_CD_EF', using
     :py:func:`~vc2_conformance._string_utils.ellipsise` to shorten very long,
     values.
-    
+
     Parameters
     ==========
     prefix : str
@@ -280,27 +280,27 @@ class Object(object):
 class List(object):
     """
     A formatter for lists which collapses repeated entries.
-    
+
     Examples::
-        
+
         >>> # Use Python-style notation for repeated entries
         >>> List()([1, 1, 1, 1])
         [1]*4
-        
+
         >>> # Also displays lists with some non-repeated values
         >>> List()([1, 2, 3, 0, 0, 0, 0, 0, 4, 5])
         [1, 2, 3] + [0]*5 + [4, 5]
-        
+
         >>> # A custom formatter may be supplied for formatting the list
         >>> # entries
         >>> List(formatter=Hex())([1, 2, 3, 0, 0, 0])
         [0x1, 0x2, 0x3] + [0x0]*3
-        
+
         >>> # Equality is based on the string formatted value, not the raw
         >>> # value
         >>> List(formatter=Object())([1, 2, 3, 0, 0, 0])
         [<int>]*6
-        
+
         >>> # The minimum run-length before truncation may be overridden
         >>> List(min_run_length=3)([1, 2, 2, 3, 3, 3])
         [1, 2, 2] + [3]*3
@@ -362,21 +362,21 @@ class List(object):
 class MultilineList(object):
     """
     A formatter for lists which displays each value on its own line.
-    
+
     Examples::
-        
+
         >>> MultilineList()(["one", "two", "three"])
         0: one
         1: two
         2: three
-        
+
         >>> # A custom formatter may be supplied for formatting the list
         >>> # entries
         >>> MultilineList(formatter=Hex())([1, 2, 3])
         0: 0x1
         1: 0x2
         2: 0x3
-        
+
         >>> # A heading may be added
         >>> MultilineList(heading="MyList")(["one", "two", "three"])
         MyList

@@ -11,7 +11,7 @@ data units which conform to the restrictions imposed by the VC-2 standard or
 level.
 
 .. note::
-    
+
     In the context of software development the term 'regular expression' is
     often used to refer to just the specific application of string pattern
     matching. This module instead refers to the generalised meaning of 'regular
@@ -29,7 +29,7 @@ The example below shows how a :py:class:`Matcher` may be used to check that a
 sequence of data units follows a predefined pattern.
 
     >>> from vc2_conformance.symbol_re import Matcher
-    
+
     >>> # Checking the sequence of data units within a VC-2 sequence consist of
     >>> # alternating sequence_headers and HQ pictures eventually ending with
     >>> # an end-of-sequence marker.
@@ -46,7 +46,7 @@ sequence of data units follows a predefined pattern.
     True
     >>> m.is_complete()
     True
-    
+
     >>> # If the pattern does not match that specified in the pattern, this
     >>> # will be detected
     >>> m = Matcher("(sequence_header high_quality_picture)* end_of_sequence")
@@ -66,11 +66,11 @@ fill-in additional data units in a sequence to make it conform to a particular
 set of patterns.
 
     >>> from vc2_conformance.symbol_re import make_matching_sequence
-    
+
     >>> # Suppose we want some sequence which contains two high_quality_picture
     >>> # data units but we don't really care about the rest...
     >>> desired_sequence = ["high_quality_picture", "high_quality_picture"]
-    
+
     >>> # ...and we're required to match the following patterns...
     >>> required_patterns = [
     ...     # The VC-2 main specification simply requires that a sequence start
@@ -81,7 +81,7 @@ set of patterns.
     ...     # sequence headers and pictures.
     ...     "sequence_header auxiliary_data (sequence_header high_quality_picture)+ end_of_sequence $",
     ... ]
-    
+
     >>> # We can generate a suitable sequence like so:
     >>> for sym in make_matching_sequence(desired_sequence, *required_patterns):
     ...     print(sym)
@@ -176,16 +176,16 @@ def tokenize_regex(regex_string):
     """
     A generator which tokenizes a sequence regular expression specification
     into (token_type, token_value, offset) 3-tuples.
-    
+
     Token types are:
-    
+
     * ``"string"`` (value is the string)
     * ``"modifier"`` (value is one of ``?*+``)
     * ``"wildcard"`` (value is ``.``)
     * ``"end_of_sequence"`` (value is ``$``)
     * ``"bar"`` (value is ``|``)
     * ``"parenthesis"`` (value is one of ``()``)
-    
+
     Throws a :py:exc:`SymbolRegexSyntaxError` if an invalid character is
     encountered.
     """
@@ -242,14 +242,14 @@ def parse_expression(tokens):
     """
     A recursive-descent parser which parses an Abstract Syntax Tree (AST) from
     the regex specification.
-    
+
     The parsed tokens will be removed from the provided token list. Tokens are
     consumed right-to-left making implementing tight binding of modifiers (i.e.
     '?', '*' and '+') easy.
-    
+
     This function will return as soon as it runs out of tokens or reaches an
     unmatched opening parenthesis.
-    
+
     Returns an AST node: one of :py:class:`Symbol`, :py:class:`Star`,
     :py:class:`Concatenation`, :py:class:`Union` or ``None``.
     """
@@ -336,12 +336,12 @@ def parse_regex(regex_string):
 class NFANode(object):
     """
     A node (a.k.a.) state in a Non-deterministic Finite-state Automaton (NFA).
-    
+
     Attributes
     ==========
     transitions : {symbol: set([:py:class:`NFANode`, ...]), ...}
         The transition rules from this node.
-        
+
         Empty transitions are listed under the symbol ``None`` and are always
         bidirectional.
     """
@@ -352,7 +352,7 @@ class NFANode(object):
     def add_transition(self, dest_node, symbol=None):
         """
         Add a transition rule from this node to the specified destination.
-        
+
         If no symbols is specified, a (bidirectional) empty transition between
         the two nodes will be added.
         """
@@ -459,24 +459,24 @@ class Matcher(object):
     Test whether a sequence of symbols (alpha-numeric strings with underscores,
     e.g. ``"foo"`` or ``"bar_123"``) conforms to a pattern described by a
     regular expression.
-    
+
     :py:meth:`match_symbol` should be called for each symbol in the sequence.
     If ``False`` is returned, the sequence does not match the specified regular
     expression. :py:meth:`valid_next_symbols` may be used to list what symbols
     *would* have been allowed at this stage of the sequence. Once the entire
     sequence has been passed to :py:meth:`match_symbol`, :py:meth:`is_complete`
     should be used to check that a complete pattern has been matched.
-    
+
     Parameters
     ==========
     pattern : str
         The regular expression describing the pattern this :py:class:`Matcher`
         should match.
-        
+
         Regular expressions may be specified with a syntax similar (but
         different to) that used by common string-matching regular expression
         libraries.
-        
+
         * An alpha-numeric-with-underscore expression matches a single instance
           of the specified symbol. For example ``foo_123`` will match the
           symbol ``"foo_123"``.
@@ -500,7 +500,7 @@ class Matcher(object):
           symbols.
         * Parentheses (``(`` and ``)``) may be used to group expressions
           together into a single logical expression.
-        
+
         The expression suffixes bind tightly to their left-hand expression.
         Beyond this, consider operator precedence undefined: be explicit to
         help readability!
@@ -516,7 +516,7 @@ class Matcher(object):
     def match_symbol(self, symbol):
         """
         Attempt to match the next symbol in the sequence.
-        
+
         Returns True if the symbol matched and False otherwise.
         """
         new_states = set()
@@ -547,10 +547,10 @@ class Matcher(object):
     def valid_next_symbols(self):
         """
         Return the :py:class:`set` of valid next symbols in the sequence.
-        
+
         If a wildcard is allowed, :py:data:`WILDCARD` will be returned as one
         of the symbols in addition to any concretely allowed symbols.
-        
+
         If it is valid for the sequence to end at this point,
         :py:data:`END_OF_SEQUENCE` will be in the returned set.
         """
@@ -583,10 +583,10 @@ def make_matching_sequence(initial_sequence, *patterns, **kwargs):
     Given a sequence of symbols, returns a new sequence based on this which
     matches the supplied set of patterns. The new sequence will be a copy of
     the supplied sequence with additional symbols inserted where necessary.
-    
+
     Find the shortest sequence of symbols which is matched by the
     supplied set of regular expressions.
-    
+
     Parameters
     ==========
     initial_sequence : [symbol, ...]
@@ -609,14 +609,14 @@ def make_matching_sequence(initial_sequence, *patterns, **kwargs):
         alphabetical order.  If this argument is not supplied (or is empty),
         'wildcard' entries will be filled with the :py:data:`WILDCARD` sentinel
         rather than a concrete symbol.
-    
+
     Returns
     =======
     matching_sequence : [symbol, ...]
         A sequence of symbols which satisfies all of the supplied patterns.
         This will contain a superset of the sequence in ``initial_sequence``
         where additional symbols may have been inserted.
-    
+
     Raises
     ======
     ImpossibleSequenceError

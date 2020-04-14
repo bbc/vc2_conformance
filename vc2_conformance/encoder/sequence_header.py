@@ -54,15 +54,15 @@ def zip_longest_repeating_final_value(*iterables):
     """
     Like :py:func:`zip`, but if some iterators finish before others, their last
     value is repeated to fill in the missing entries.
-    
+
     For example::
-    
+
         >>> list(zip_longest_repeat_last(
         ...     [1, 2, 3],
         ...     ["a", "b", "c", "d", "e"],
         ... ))
         [(1, "a"), (2, "b"), (3, "c"), (3, "d"), (3, "e")]
-    
+
     If an iterator doesn't produce any values, its missing values will be
     filled with None.
     """
@@ -98,11 +98,11 @@ def iter_custom_options_dicts(
     A generator which enumerates valid sets of VC-2 custom option settings
     which achieve a set of video parameters given a set of base video
     parameters.
-    
+
     Options dictionaries will be generated in ascending order of explicitness.
-    
+
     Example usage::
-    
+
         >>> from functools import partial
         >>> from vc2_data_tables import (
         ...     BASE_VIDEO_FORMAT_PARAMETERS,
@@ -115,7 +115,7 @@ def iter_custom_options_dicts(
         ...     PixelAspectRatio,
         ...     set_source_defaults,
         ... )
-        
+
         >>> iter_pixel_aspect_ratio_options = partial(
         ...     iter_custom_options_dicts,
         ...     dict_type=PixelAspectRatio,
@@ -126,7 +126,7 @@ def iter_custom_options_dicts(
         ...     ],
         ...     PRESET_PIXEL_ASPECT_RATIOS,
         ... )
-        
+
         >>> # In this case, the format matches the default so can use any type
         >>> # of override
         >>> base_video_parameters = set_source_defaults(
@@ -154,7 +154,7 @@ def iter_custom_options_dicts(
           index: 0
           pixel_aspect_ratio_numer: 12
           pixel_aspect_ratio_denom: 11
-        
+
         >>> # In this case, the format doesn't match the base video format so
         >>> # we have to override
         >>> video_parameters = VideoParameters(
@@ -175,7 +175,7 @@ def iter_custom_options_dicts(
           index: 0
           pixel_aspect_ratio_numer: 4
           pixel_aspect_ratio_denom: 3
-    
+
     Parameters
     ==========
     dict_type : :py:class:`~vc2_conformance.fixeddicts.fixeddict` type
@@ -312,7 +312,7 @@ def iter_color_spec_options(base_video_parameters, video_parameters):
     """
     Generates a series of :py:class:`vc2_conformance.bitstream.ColorSpec`
     dictionaries which may be used to achieve the specified video parameters.
-    
+
     Where defaults are permissible, examples will be produced with each flag
     set to both True and False, though not every combination of flags will be
     given.
@@ -371,7 +371,7 @@ def iter_source_parameter_options(base_video_parameters, video_parameters):
     :py:class:`vc2_conformance.bitstream.SourceParameters` dictionaries which
     may be used to set the specified ``video_parameters``, starting from the
     supplied ``base_video_parameters``.
-    
+
     Parameters
     ==========
     base_video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
@@ -381,7 +381,7 @@ def iter_source_parameter_options(base_video_parameters, video_parameters):
     video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
         The :py:class:`~vc2_conformance.video_parameters.VideoParameters`
         representing the desired video parameters to be represented.
-    
+
     Generates
     =========
     source_parameters : :py:class:`vc2_conformance.bitstream.SourceParameters`
@@ -455,7 +455,7 @@ def rank_base_video_format_similarity(video_parameters):
     :py:class:`~vc2_conformance.video_parameters.VideoParameters`, return an
     ordered list of :py:class:`~vc2_data_tables.BaseVideoFormats` with the most
     similar format first and least similar last.
-    
+
     .. note::
         The returned :py:class:`~vc2_data_tables.BaseVideoFormats` will always
         have the same ``top_field_first`` setting.
