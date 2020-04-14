@@ -95,13 +95,9 @@ from vc2_conformance.arrays import width, height
 
 from vc2_conformance.state import State
 
-from vc2_conformance.video_parameters import (
-    set_coding_parameters,
-)
+from vc2_conformance.video_parameters import set_coding_parameters
 
-from vc2_conformance.picture_encoding import (
-    picture_encode,
-)
+from vc2_conformance.picture_encoding import picture_encode
 
 from vc2_conformance.slice_sizes import (
     slice_bytes,
@@ -131,9 +127,7 @@ from vc2_conformance.bitstream import (
     FragmentData,
 )
 
-from vc2_conformance.bitstream.exp_golomb import (
-    signed_exp_golomb_length,
-)
+from vc2_conformance.bitstream.exp_golomb import signed_exp_golomb_length
 
 
 def get_quantization_marix(codec_features):
@@ -149,26 +143,28 @@ def get_quantization_marix(codec_features):
             codec_features["dwt_depth_ho"],
         )
         if transform_details not in QUANTISATION_MATRICES:
-            raise ValueError("No default quantization matrix is available for {}".format(
-                transform_details,
-            ))
+            raise ValueError(
+                "No default quantization matrix is available for {}".format(
+                    transform_details,
+                )
+            )
         return QUANTISATION_MATRICES[transform_details]
     else:
         values = iter(codec_features["quantization_matrix"])
-        
+
         quant_matrix = {}
-        
+
         if codec_features["dwt_depth_ho"] == 0:
             quant_matrix[0] = {}
             quant_matrix[0]["LL"] = next(values)
         else:
             quant_matrix[0] = {}
             quant_matrix[0]["L"] = next(values)
-        
+
         for level in range(1, codec_features["dwt_depth_ho"] + 1):
             quant_matrix[level] = {}
             quant_matrix[level]["H"] = next(values)
-        
+
         for level in range(
             codec_features["dwt_depth_ho"] + 1,
             codec_features["dwt_depth_ho"] + codec_features["dwt_depth"] + 1,
@@ -177,7 +173,7 @@ def get_quantization_marix(codec_features):
             quant_matrix[level]["HL"] = next(values)
             quant_matrix[level]["LH"] = next(values)
             quant_matrix[level]["HH"] = next(values)
-        
+
         return quant_matrix
 
 
@@ -187,7 +183,7 @@ def apply_dc_prediction(band):
     for y in reversed(range(0, height(band))):
         for x in reversed(range(0, width(band))):
             if x > 0 and y > 0:
-                prediction = mean([band[y][x-1], band[y-1][x-1], band[y-1][x]])
+                prediction = mean([band[y][x - 1], band[y - 1][x - 1], band[y - 1][x]])
             elif x > 0 and y == 0:
                 prediction = band[0][x - 1]
             elif x == 0 and y > 0:
@@ -211,7 +207,7 @@ def calculate_coeffs_bits(coeffs):
     num_bits : int
     """
     num_bits = 0
-    
+
     skip_zeros = True
     for coeff in reversed(coeffs):
         if skip_zeros and coeff == 0:
@@ -219,7 +215,7 @@ def calculate_coeffs_bits(coeffs):
         else:
             skip_zeros = False
             num_bits += signed_exp_golomb_length(coeff)
-    
+
     return num_bits
 
 
@@ -227,7 +223,7 @@ def calculate_hq_length_field(coeffs, slice_size_scaler):
     """
     Compute a HQ picture slice length field for a set of coefficients.
     """
-    multiple = 8*slice_size_scaler
+    multiple = 8 * slice_size_scaler
     return (calculate_coeffs_bits(coeffs) + multiple - 1) // multiple
 
 
@@ -250,14 +246,8 @@ def quantize_coeffs(qindex, coeff_values, quant_matrix_values):
     quantized_coeff_values : [int, ...]
     """
     return [
-        forward_quant(
-            coeff_value,
-            max(0, qindex - quant_matrix_value),
-        )
-        for coeff_value, quant_matrix_value in zip(
-            coeff_values,
-            quant_matrix_values,
-        )
+        forward_quant(coeff_value, max(0, qindex - quant_matrix_value),)
+        for coeff_value, quant_matrix_value in zip(coeff_values, quant_matrix_values,)
     ]
 
 
@@ -308,7 +298,7 @@ def quantize_to_fit(target_size, coeff_sets, align_bits=1, minimum_qindex=0):
         values.
     """
     assert target_size >= 0
-    
+
     for qindex in count(minimum_qindex):
         quantized_coeff_sets = [
             quantize_coeffs(
@@ -318,16 +308,14 @@ def quantize_to_fit(target_size, coeff_sets, align_bits=1, minimum_qindex=0):
             )
             for component_coeffs in coeff_sets
         ]
-        
+
         total_length = sum(
             # Round each block's length to whole multiple of align_bits
-            ((
-                calculate_coeffs_bits(quantized_coeffs) +
-                align_bits - 1
-            ) // align_bits) * align_bits
+            ((calculate_coeffs_bits(quantized_coeffs) + align_bits - 1) // align_bits)
+            * align_bits
             for quantized_coeffs in quantized_coeff_sets
         )
-        
+
         if total_length <= target_size:
             return (qindex, quantized_coeff_sets)
 
@@ -371,7 +359,7 @@ def transform_and_slice_picture(codec_features, picture):
     # NB: picture_encode corrupts the supplied picture arrays so a copy is
     # provided here
     picture_encode(state, deepcopy(picture))
-    
+
     # Perform DC prediction
     if codec_features["profile"] == Profiles.low_delay:
         if state["dwt_depth_ho"] == 0:
@@ -382,10 +370,10 @@ def transform_and_slice_picture(codec_features, picture):
             apply_dc_prediction(state["y_transform"][0]["L"])
             apply_dc_prediction(state["c1_transform"][0]["L"])
             apply_dc_prediction(state["c2_transform"][0]["L"])
-    
+
     # Load quantisation matrix
     state["quant_matrix"] = get_quantization_marix(codec_features)
-    
+
     # Divide the picture into slices and collect together transform
     # coefficients in bitstream order (along with associated quantisation
     # matrix values)
@@ -400,23 +388,18 @@ def transform_and_slice_picture(codec_features, picture):
         ]
         for _ in range(state["slices_y"])
     ]
-    
+
     # NB: Iteration order for level and orient are critical here
     for transform in ["y_transform", "c1_transform", "c2_transform"]:
         comp = transform.split("_")[0].upper()
         for level, orients in sorted(state[transform].items()):
             for orient, coeffs in sorted(
                 orients.items(),
-                key=lambda orient_coeffs: [
-                    "L",
-                    "LL",
-                    "H",
-                    "HL",
-                    "LH",
-                    "HH",
-                ].index(orient_coeffs[0])
+                key=lambda orient_coeffs: ["L", "LL", "H", "HL", "LH", "HH",].index(
+                    orient_coeffs[0]
+                ),
             ):
-        
+
                 sxs = [
                     (
                         slice_left(state, sx, comp, level),
@@ -431,7 +414,7 @@ def transform_and_slice_picture(codec_features, picture):
                     )
                     for sy in range(state["slices_y"])
                 ]
-                
+
                 for sy, (y1, y2) in enumerate(sys):
                     for sx, (x1, x2) in enumerate(sxs):
                         for y in range(y1, y2):
@@ -441,17 +424,12 @@ def transform_and_slice_picture(codec_features, picture):
                                 sc.quant_matrix_values.append(
                                     state["quant_matrix"][level][orient]
                                 )
-    
+
     return slice_coeffs
 
 
 def make_hq_slice(
-    y_transform,
-    c1_transform,
-    c2_transform,
-    total_length,
-    qindex,
-    slice_size_scaler=1,
+    y_transform, c1_transform, c2_transform, total_length, qindex, slice_size_scaler=1,
 ):
     """
     Create a :py:class:`vc2_conformance.bitstream.HQSlice` containing the
@@ -484,7 +462,7 @@ def make_hq_slice(
         c2_length = calculate_hq_length_field(c2_transform, slice_size_scaler)
     else:
         c2_length = total_length - y_length - c1_length
-    
+
     return HQSlice(
         qindex=qindex,
         slice_y_length=y_length,
@@ -517,8 +495,6 @@ def make_ld_slice(y_transform, c_transform, qindex):
     )
 
 
-
-
 def make_transform_data_hq_lossless(transform_coeffs):
     """
     Pack transform coefficients into HQ picture slices in a
@@ -536,19 +512,21 @@ def make_transform_data_hq_lossless(transform_coeffs):
     # Initially, the slice_size_scaler is assumed to be 1. If any of the length
     # fields which result are > 255 we will need to revise this, along with all
     # of the length values.
-    transform_data = TransformData(hq_slices=[
-        make_hq_slice(
-            transform_coeffs_slice.Y.coeff_values,
-            transform_coeffs_slice.C1.coeff_values,
-            transform_coeffs_slice.C2.coeff_values,
-            total_length=None,
-            qindex=0,
-            slice_size_scaler=1,
-        )
-        for transform_coeffs_row in transform_coeffs
-        for transform_coeffs_slice in transform_coeffs_row
-    ])
-    
+    transform_data = TransformData(
+        hq_slices=[
+            make_hq_slice(
+                transform_coeffs_slice.Y.coeff_values,
+                transform_coeffs_slice.C1.coeff_values,
+                transform_coeffs_slice.C2.coeff_values,
+                total_length=None,
+                qindex=0,
+                slice_size_scaler=1,
+            )
+            for transform_coeffs_row in transform_coeffs
+            for transform_coeffs_slice in transform_coeffs_row
+        ]
+    )
+
     # Find the minimum slice size scaler possible
     max_length = max(
         max(
@@ -559,18 +537,18 @@ def make_transform_data_hq_lossless(transform_coeffs):
         for hq_slice in transform_data["hq_slices"]
     )
     slice_size_scaler = max(1, (max_length + 254) // 255)
-    
+
     # Adjust slice lengths accordingly
     for hq_slice in transform_data["hq_slices"]:
         hq_slice["slice_y_length"] += slice_size_scaler - 1
         hq_slice["slice_y_length"] //= slice_size_scaler
-        
+
         hq_slice["slice_c1_length"] += slice_size_scaler - 1
         hq_slice["slice_c1_length"] //= slice_size_scaler
-        
+
         hq_slice["slice_c2_length"] += slice_size_scaler - 1
         hq_slice["slice_c2_length"] //= slice_size_scaler
-    
+
     return slice_size_scaler, transform_data
 
 
@@ -601,19 +579,19 @@ def make_transform_data_hq_lossy(picture_bytes, transform_coeffs, minimum_qindex
     """
     slices_x = width(transform_coeffs)
     slices_y = height(transform_coeffs)
-    
+
     # Determine the largest size a slice could be
     num_slices = slices_x * slices_y
     max_slice_bytes = (picture_bytes + num_slices - 1) // num_slices
-    
+
     # Find the smallest slice size scaler which lets this size fit into 8 bits
     slice_size_scaler = (max_slice_bytes + 254) // 255
-    
+
     # Work out the total bitstream space available after slice overheads are
     # accounted for (NB: 4 bytes overhead per slice due to qindex and
     # slice_{y,c1,c2}_length fields).
     total_coeff_bytes = picture_bytes - (num_slices * 4)
-    
+
     # We'll repurpose slice_bytes (13.5.3.2) to compute the number of
     # slice_size_scaler bytes available for transform coefficients in each
     # picture slice. (i.e. it won't compute the size of the slice in bytes but
@@ -625,7 +603,7 @@ def make_transform_data_hq_lossy(picture_bytes, transform_coeffs, minimum_qindex
         slice_bytes_numerator=total_coeff_bytes,
         slice_bytes_denominator=num_slices * slice_size_scaler,
     )
-    
+
     transform_data = TransformData(hq_slices=[])
     for sy, transform_coeffs_row in enumerate(transform_coeffs):
         for sx, transform_coeffs_slice in enumerate(transform_coeffs_row):
@@ -633,24 +611,26 @@ def make_transform_data_hq_lossy(picture_bytes, transform_coeffs, minimum_qindex
             # after all length/qindex fields accounted for. See comment above
             # "state = State(".
             total_length = slice_bytes(state, sx, sy)
-            target_size = 8*slice_size_scaler*total_length
-            
+            target_size = 8 * slice_size_scaler * total_length
+
             # Quantize each slice to fit
             qindex, (y_transform, c1_transform, c2_transform) = quantize_to_fit(
                 target_size,
                 transform_coeffs_slice,
-                8*slice_size_scaler,
+                8 * slice_size_scaler,
                 minimum_qindex,
             )
-            transform_data["hq_slices"].append(make_hq_slice(
-                y_transform,
-                c1_transform,
-                c2_transform,
-                total_length,
-                qindex,
-                slice_size_scaler,
-            ))
-    
+            transform_data["hq_slices"].append(
+                make_hq_slice(
+                    y_transform,
+                    c1_transform,
+                    c2_transform,
+                    total_length,
+                    qindex,
+                    slice_size_scaler,
+                )
+            )
+
     return slice_size_scaler, transform_data
 
 
@@ -693,14 +673,14 @@ def make_transform_data_ld_lossy(picture_bytes, transform_coeffs, minimum_qindex
         slice_bytes_numerator=picture_bytes,
         slice_bytes_denominator=width(transform_coeffs) * height(transform_coeffs),
     )
-    
+
     transform_data = TransformData(ld_slices=[])
     for sy, transform_coeffs_row in enumerate(transform_coeffs):
         for sx, transform_coeffs_slice in enumerate(transform_coeffs_row):
-            target_size = 8*slice_bytes(state, sx, sy)
+            target_size = 8 * slice_bytes(state, sx, sy)
             target_size -= 7  # qindex field
-            target_size -= intlog2(target_size) # slice_y_length field
-            
+            target_size -= intlog2(target_size)  # slice_y_length field
+
             # Interleave color components
             y_coeffs = transform_coeffs_slice.Y
             c_coeffs = ComponentCoeffs(
@@ -713,19 +693,15 @@ def make_transform_data_ld_lossy(picture_bytes, transform_coeffs, minimum_qindex
                     transform_coeffs_slice.C2.quant_matrix_values,
                 ),
             )
-            
+
             # Quantize each slice to fit
             qindex, (y_transform, c_transform) = quantize_to_fit(
-                target_size,
-                [y_coeffs, c_coeffs],
-                minimum_qindex=minimum_qindex,
+                target_size, [y_coeffs, c_coeffs], minimum_qindex=minimum_qindex,
             )
-            transform_data["ld_slices"].append(make_ld_slice(
-                y_transform,
-                c_transform,
-                qindex,
-            ))
-    
+            transform_data["ld_slices"].append(
+                make_ld_slice(y_transform, c_transform, qindex,)
+            )
+
     return transform_data
 
 
@@ -758,19 +734,19 @@ def make_extended_transform_parameters(codec_features):
     possible for the specified codec.
     """
     etp = ExtendedTransformParameters()
-    
+
     if codec_features["wavelet_index"] == codec_features["wavelet_index_ho"]:
         etp["asym_transform_index_flag"] = False
     else:
         etp["asym_transform_index_flag"] = True
-        etp["wavelet_index_ho"]  = codec_features["wavelet_index_ho"]
-    
+        etp["wavelet_index_ho"] = codec_features["wavelet_index_ho"]
+
     if codec_features["dwt_depth_ho"] == 0:
         etp["asym_transform_flag"] = False
     else:
         etp["asym_transform_flag"] = True
-        etp["dwt_depth_ho"]  = codec_features["dwt_depth_ho"]
-    
+        etp["dwt_depth_ho"] = codec_features["dwt_depth_ho"]
+
     return etp
 
 
@@ -797,16 +773,15 @@ def make_picture_parse(codec_features, picture, minimum_qindex=0):
     """
     # Apply transform and split into slices
     transform_coeffs = transform_and_slice_picture(codec_features, picture)
-    
+
     picture_header = PictureHeader()
     if "pic_num" in picture:
         picture_header["picture_number"] = picture["pic_num"]
-    
+
     slice_parameters = SliceParameters(
-        slices_x=codec_features["slices_x"],
-        slices_y=codec_features["slices_y"],
+        slices_x=codec_features["slices_x"], slices_y=codec_features["slices_y"],
     )
-    
+
     # Quantize coefficients as required and set slice_size_scaler (HQ Only) and
     # slice_bytes (LD only)
     if codec_features["profile"] == Profiles.high_quality:
@@ -817,28 +792,24 @@ def make_picture_parse(codec_features, picture, minimum_qindex=0):
             )
         else:
             slice_size_scaler, transform_data = make_transform_data_hq_lossy(
-                codec_features["picture_bytes"],
-                transform_coeffs,
-                minimum_qindex,
+                codec_features["picture_bytes"], transform_coeffs, minimum_qindex,
             )
-        
+
         slice_parameters["slice_prefix_bytes"] = 0
         slice_parameters["slice_size_scaler"] = slice_size_scaler
     elif codec_features["profile"] == Profiles.low_delay:
         assert not codec_features["lossless"]
         transform_data = make_transform_data_ld_lossy(
-            codec_features["picture_bytes"],
-            transform_coeffs,
-            minimum_qindex,
+            codec_features["picture_bytes"], transform_coeffs, minimum_qindex,
         )
-        
+
         slice_bytes_fraction = Fraction(
             codec_features["picture_bytes"],
             codec_features["slices_x"] * codec_features["slices_y"],
         )
         slice_parameters["slice_bytes_numerator"] = slice_bytes_fraction.numerator
         slice_parameters["slice_bytes_denominator"] = slice_bytes_fraction.denominator
-    
+
     transform_parameters = TransformParameters(
         wavelet_index=codec_features["wavelet_index"],
         dwt_depth=codec_features["dwt_depth"],
@@ -846,17 +817,16 @@ def make_picture_parse(codec_features, picture, minimum_qindex=0):
         quant_matrix=make_quant_matrix(codec_features),
     )
     if codec_features["major_version"] >= 3:
-        transform_parameters["extended_transform_parameters"] = \
-            make_extended_transform_parameters(codec_features)
-    
+        transform_parameters[
+            "extended_transform_parameters"
+        ] = make_extended_transform_parameters(codec_features)
+
     wavelet_transform = WaveletTransform(
-        transform_parameters=transform_parameters,
-        transform_data=transform_data,
+        transform_parameters=transform_parameters, transform_data=transform_data,
     )
-    
+
     return PictureParse(
-        picture_header=picture_header,
-        wavelet_transform=wavelet_transform,
+        picture_header=picture_header, wavelet_transform=wavelet_transform,
     )
 
 
@@ -882,20 +852,18 @@ def make_picture_parse_data_unit(codec_features, picture, minimum_qindex=0):
     data_unit : :py:class:`vc2_conformance.bitstream.DataUnit`
     """
     assert codec_features["fragment_slice_count"] == 0
-    
+
     return DataUnit(
-        parse_info=ParseInfo(parse_code=(
-            ParseCodes.high_quality_picture
-            if codec_features["profile"] == Profiles.high_quality else
-            ParseCodes.low_delay_picture
-            if codec_features["profile"] == Profiles.low_delay else
-            None  # Unreachable, unless a new profile is added
-        )),
-        picture_parse=make_picture_parse(
-            codec_features,
-            picture,
-            minimum_qindex,
+        parse_info=ParseInfo(
+            parse_code=(
+                ParseCodes.high_quality_picture
+                if codec_features["profile"] == Profiles.high_quality
+                else ParseCodes.low_delay_picture
+                if codec_features["profile"] == Profiles.low_delay
+                else None  # Unreachable, unless a new profile is added
+            )
         ),
+        picture_parse=make_picture_parse(codec_features, picture, minimum_qindex,),
     )
 
 
@@ -921,44 +889,43 @@ def make_fragment_parse_data_units(codec_features, picture, minimum_qindex=0):
     fragment_data_units : [:py:class:`vc2_conformance.bitstream.DataUnit`, ...]
     """
     assert codec_features["fragment_slice_count"] != 0
-    
+
     # To avoid repeating ourselves, the fragmented picture is assembled from
     # the parts of a ready-made piture_parse.
     picture_parse = make_picture_parse(codec_features, picture, minimum_qindex)
-    
+
     wavelet_transform = picture_parse["wavelet_transform"]
-    
+
     transform_parameters = wavelet_transform["transform_parameters"]
     transform_data = wavelet_transform["transform_data"]
-    
+
     if codec_features["profile"] == Profiles.high_quality:
         parse_code = ParseCodes.high_quality_picture_fragment
         slices_name = "hq_slices"
     elif codec_features["profile"] == Profiles.low_delay:
         parse_code = ParseCodes.low_delay_picture_fragment
         slices_name = "ld_slices"
-    
+
     fragment_data_units = []
-    
+
     # Add the first fragment containing the transform parameters
-    fragment_data_units.append(DataUnit(
-        parse_info=ParseInfo(
-            parse_code=parse_code
-        ),
-        fragment_parse=FragmentParse(
-            fragment_header=FragmentHeader(
-                fragment_data_length=0,
-                fragment_slice_count=0,
+    fragment_data_units.append(
+        DataUnit(
+            parse_info=ParseInfo(parse_code=parse_code),
+            fragment_parse=FragmentParse(
+                fragment_header=FragmentHeader(
+                    fragment_data_length=0, fragment_slice_count=0,
+                ),
+                transform_parameters=transform_parameters,
             ),
-            transform_parameters=transform_parameters,
-        ),
-    ))
-    
+        )
+    )
+
     # A count of how many slices worth of space remain in the current
     # (slice-containing) fragment. Initially set to zero as we don't have any
     # picture containing fragments.
     fragment_slices_remaining = 0
-    
+
     # Add the remaining fragments containing the picture slices
     slice_iterator = iter(transform_data[slices_name])
     for sy in range(codec_features["slices_y"]):
@@ -966,37 +933,39 @@ def make_fragment_parse_data_units(codec_features, picture, minimum_qindex=0):
             # If the current fragment is full, start a new one
             if fragment_slices_remaining == 0:
                 fragment_slices_remaining = codec_features["fragment_slice_count"]
-                fragment_data_units.append(DataUnit(
-                    parse_info=ParseInfo(
-                        parse_code=parse_code
-                    ),
-                    fragment_parse=FragmentParse(
-                        fragment_header=FragmentHeader(
-                            fragment_data_length=0,
-                            # NB: Will be incremented in the next step(s)
-                            fragment_slice_count=0,
-                            fragment_x_offset=sx,
-                            fragment_y_offset=sy,
+                fragment_data_units.append(
+                    DataUnit(
+                        parse_info=ParseInfo(parse_code=parse_code),
+                        fragment_parse=FragmentParse(
+                            fragment_header=FragmentHeader(
+                                fragment_data_length=0,
+                                # NB: Will be incremented in the next step(s)
+                                fragment_slice_count=0,
+                                fragment_x_offset=sx,
+                                fragment_y_offset=sy,
+                            ),
+                            fragment_data=FragmentData(
+                                {
+                                    # NB: Will be populated in the next step(s)
+                                    slices_name: [],
+                                }
+                            ),
                         ),
-                        fragment_data=FragmentData({
-                            # NB: Will be populated in the next step(s)
-                            slices_name: [],
-                        })
-                    ),
-                ))
-            
+                    )
+                )
+
             # Add the slice to the current fragment
             fragment_parse = fragment_data_units[-1]["fragment_parse"]
             fragment_parse["fragment_header"]["fragment_slice_count"] += 1
             fragment_parse["fragment_data"][slices_name].append(next(slice_iterator))
             fragment_slices_remaining -= 1
-    
+
     # Populate picture_number field in fragment headers, if one is provided
     if "pic_num" in picture:
         for data_unit in fragment_data_units:
             fragment_header = data_unit["fragment_parse"]["fragment_header"]
             fragment_header["picture_number"] = picture["pic_num"]
-    
+
     return fragment_data_units
 
 
@@ -1029,14 +998,6 @@ def make_picture_data_units(codec_features, picture, minimum_qindex=0):
     data_units : [:py:class:`vc2_conformance.bitstream.DataUnit`, ...]
     """
     if codec_features["fragment_slice_count"] == 0:
-        return [make_picture_parse_data_unit(
-            codec_features,
-            picture,
-            minimum_qindex,
-        )]
+        return [make_picture_parse_data_unit(codec_features, picture, minimum_qindex,)]
     else:
-        return make_fragment_parse_data_units(
-            codec_features,
-            picture,
-            minimum_qindex,
-        )
+        return make_fragment_parse_data_units(codec_features, picture, minimum_qindex,)

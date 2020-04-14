@@ -48,7 +48,7 @@ def from_bit_offset(total_bits):
     """
     bytes = total_bits // 8
     bits = total_bits % 8
-    
+
     return (bytes, 7 - bits)
 
 
@@ -59,7 +59,7 @@ class BitstreamReader(object):
     When the end-of-file is encountered, reads will result in a
     :py:exc:`EOFError`.
     """
-    
+
     def __init__(self, file):
         """
         Parameters
@@ -67,24 +67,24 @@ class BitstreamReader(object):
         file : A Python 'file' object in binary-read mode.
         """
         self._file = file
-        
+
         # The index of the next bit to read
         self._next_bit = 7
-        
+
         # The current byte index being read
         self._byte_offset = self._file.tell()
-        
+
         # The byte currently being read (or None if at the EOF)
         self._current_byte = None
-        
+
         # None, if not in a bounded block. Otherwise, the number of unused bits
         # remaining in the block. If negative, indicates the number of bits
         # read past the end of the block.
         self._bits_remaining = None
-        
+
         # Load-in the first byte
         self._read_byte()
-    
+
     def _read_byte(self):
         """Internal method. Advance to the next byte. (A.2.2)"""
         byte = self._file.read(1)
@@ -95,7 +95,7 @@ class BitstreamReader(object):
         else:
             self._current_byte = None
             self._next_bit = 7
-    
+
     def tell(self):
         """
         Report the current bit-position within the stream.
@@ -108,7 +108,7 @@ class BitstreamReader(object):
             (MSB) and advancing towards 0 (LSB) as bits are read).
         """
         return (self._byte_offset - 1, self._next_bit)
-    
+
     def seek(self, bytes, bits=7):
         """
         Seek to a specific (absolute) position in the file.
@@ -121,18 +121,18 @@ class BitstreamReader(object):
             The bit offset into the specified byte to start reading from.
         """
         assert 0 <= bits <= 7
-        
+
         # Special case: in a bounded block
         if self._bits_remaining is not None:
             new_offset = to_bit_offset(bytes, bits)
             cur_offset = to_bit_offset(*self.tell())
             delta = new_offset - cur_offset
-            
+
             # Special case: If the seek attemts to move past the end of the
             # bounded block, this is not possible so fail
             if delta > 0 and self._bits_remaining - delta < 0:
                 raise Exception("Cannot seek() past end of bounded block.")
-            
+
             if self._bits_remaining <= 0 and delta == 0:
                 # We're past the end but not moving, don't change the count
                 pass
@@ -145,12 +145,11 @@ class BitstreamReader(object):
                 # We're moving, adjust the remaining bit count accordingly
                 self._bits_remaining -= delta
 
-        
         self._file.seek(bytes)
         self._byte_offset = self._file.tell()
         self._read_byte()
         self._next_bit = bits
-    
+
     @property
     def bits_remaining(self):
         """
@@ -161,7 +160,7 @@ class BitstreamReader(object):
         past the end of the block.
         """
         return self._bits_remaining
-    
+
     def bounded_block_begin(self, length):
         """
         Begin a bounded block of the specified length in bits.
@@ -169,7 +168,7 @@ class BitstreamReader(object):
         if self._bits_remaining is not None:
             raise Exception("Cannot nest bounded blocks")
         self._bits_remaining = length
-    
+
     def bounded_block_end(self):
         """
         Ends the current bounded block. Returns the number of unused bits
@@ -177,12 +176,12 @@ class BitstreamReader(object):
         """
         if self._bits_remaining is None:
             raise Exception("Not in bounded block.")
-        
+
         unused_bits = max(0, self._bits_remaining)
         self._bits_remaining = None
-        
+
         return unused_bits
-    
+
     def read_bit(self):
         """
         Read and return the next bit in the stream. (A.2.3) Reads '1' for
@@ -191,22 +190,22 @@ class BitstreamReader(object):
         # Don't read past the end of the current bounded block
         if self._bits_remaining is not None:
             self._bits_remaining -= 1
-        
+
             # NB: Checked *after* decrement hence <= -1 not <= 0
             if self._bits_remaining <= -1:
                 return 1
-        
+
         if self._current_byte is None:
             raise EOFError()
-        
+
         bit = (self._current_byte >> self._next_bit) & 1
-        
+
         self._next_bit -= 1
         if self._next_bit < 0:
             self._read_byte()
-        
+
         return bit
-    
+
     def read_nbits(self, bits):
         """
         Read an 'bits'-bit unsigned integer (like read_nbits (A.3.3)).
@@ -215,28 +214,28 @@ class BitstreamReader(object):
         for i in range(bits):
             value <<= 1
             value |= self.read_bit()
-        
+
         return value
-    
+
     def read_uint_lit(self, num_bytes):
         """
         Read a 'num-bytes' long integer (like read_uint_lit (A.3.4)).
         """
         return self.read_nbits(num_bytes * 8)
-    
+
     def read_bitarray(self, bits):
         """
         Read 'bits' bits returning the value as a
         :py:class:`bitarray.bitarray`.
         """
         return bitarray(self.read_bit() for _ in range(bits))
-    
+
     def read_bytes(self, num_bytes):
         """
         Read a number of bytes returning a :py:class:`bytes` string.
         """
         return self.read_bitarray(num_bytes * 8).tobytes()
-    
+
     def read_uint(self):
         """
         Read an unsigned exp-golomb code (like read_uint (A.4.3)) and return an
@@ -249,24 +248,24 @@ class BitstreamReader(object):
             else:
                 value <<= 1
                 value += self.read_bit()
-        
+
         value -= 1
-        
+
         return value
-    
+
     def read_sint(self):
         """
         Signed version of :py:meth:`read_uint` (like read_sint (A.4.4)).
         """
         value = self.read_uint()
-        
+
         # Read sign bit
         if value != 0:
             if self.read_bit():
                 value = -value
-        
+
         return value
-    
+
     def try_read_bitarray(self, bits):
         """
         Attempt to read the next 'bits' bits from the bitstream file, leaving
@@ -279,7 +278,7 @@ class BitstreamReader(object):
         may not) exit the current bounded block as a side effect.
         """
         out = bitarray()
-        
+
         try:
             for _ in range(bits):
                 if self.bits_remaining is not None and self.bits_remaining <= 0:
@@ -287,7 +286,7 @@ class BitstreamReader(object):
                 out.append(self.read_bit())
         except EOFError:
             pass
-        
+
         return out
 
 
@@ -295,7 +294,7 @@ class BitstreamWriter(object):
     """
     An open file which may be written one bit at a time.
     """
-    
+
     def __init__(self, file):
         """
         Parameters
@@ -303,28 +302,28 @@ class BitstreamWriter(object):
         file : A Python 'file' object in binary-write mode.
         """
         self._file = file
-        
+
         # The index of the next bit to write
         self._next_bit = 7
-        
+
         # The current byte index being written
         self._byte_offset = self._file.tell()
-        
+
         # The byte currently being write
         self._current_byte = 0
-        
+
         # None, if not in a bounded block. Otherwise, the number of unused bits
         # remaining in the block. If negative, indicates the number of bits
         # read past the end of the block.
         self._bits_remaining = None
-    
+
     def _write_byte(self):
         """Internal method. Write the current byte and start a new one. (A.2.2)"""
         self._file.write(bytearray([self._current_byte]))
         self._current_byte = 0
         self._next_bit = 7
         self._byte_offset += 1
-    
+
     def tell(self):
         """
         Report the current bit-position within the stream.
@@ -337,7 +336,7 @@ class BitstreamWriter(object):
             (MSB) and advancing towards 0 (LSB) as bits are written).
         """
         return (self._byte_offset, self._next_bit)
-    
+
     def seek(self, bytes, bits=7):
         """
         Seek to a specific (absolute) position in the file. Seeking to a given
@@ -351,18 +350,18 @@ class BitstreamWriter(object):
             The bit offset into the specified byte to start writing to.
         """
         assert 0 <= bits <= 7
-        
+
         # Special case: in a bounded block
         if self._bits_remaining is not None:
             new_offset = to_bit_offset(bytes, bits)
             cur_offset = to_bit_offset(*self.tell())
             delta = new_offset - cur_offset
-            
+
             # Special case: If the seek attemts to move past the end of the
             # bounded block, this is not possible so fail
             if delta > 0 and self._bits_remaining - delta < 0:
                 raise Exception("Cannot seek() past end of bounded block.")
-            
+
             if self._bits_remaining <= 0 and delta == 0:
                 # We're past the end but not moving, don't change the count
                 pass
@@ -374,14 +373,14 @@ class BitstreamWriter(object):
             else:
                 # We're moving, adjust the remaining bit count accordingly
                 self._bits_remaining -= delta
-        
+
         self.flush()
-        
+
         self._file.seek(bytes)
         self._byte_offset = self._file.tell()
         self._current_byte = 0
         self._next_bit = bits
-    
+
     def flush(self):
         """
         Ensure all bytes are committed to the file.
@@ -393,9 +392,9 @@ class BitstreamWriter(object):
         if self._next_bit != 7:
             self._file.write(bytearray([self._current_byte]))
             self._file.seek(-1, 1)  # Seek backward 1 byte
-        
+
         self._file.flush()
-    
+
     @property
     def bits_remaining(self):
         """
@@ -406,7 +405,7 @@ class BitstreamWriter(object):
         past the end of the block.
         """
         return self._bits_remaining
-    
+
     def bounded_block_begin(self, length):
         """
         Begin a bounded block of the specified length in bits.
@@ -414,7 +413,7 @@ class BitstreamWriter(object):
         if self._bits_remaining is not None:
             raise Exception("Cannot nest bounded blocks")
         self._bits_remaining = length
-    
+
     def bounded_block_end(self):
         """
         Ends the current bounded block. Returns the number of unused bits
@@ -422,12 +421,12 @@ class BitstreamWriter(object):
         """
         if self._bits_remaining is None:
             raise Exception("Not in bounded block.")
-        
+
         unused_bits = max(0, self._bits_remaining)
         self._bits_remaining = None
-        
+
         return unused_bits
-    
+
     def write_bit(self, value):
         """
         Write a bit into the bitstream. If in a bounded block, raises a
@@ -436,24 +435,23 @@ class BitstreamWriter(object):
         # Don't write past the end of the current bounded block
         if self._bits_remaining is not None:
             self._bits_remaining -= 1
-        
+
             # NB: Checked *after* decrement hence <= -1 not <= 0
             if self._bits_remaining <= -1:
                 if not value:
-                    raise ValueError(
-                        "Cannot write 0s past the end of a bounded block.")
+                    raise ValueError("Cannot write 0s past the end of a bounded block.")
                 return
-        
+
         # Clear the target bit
         self._current_byte &= ~(1 << self._next_bit)
         # Set new value
         if value:
             self._current_byte |= 1 << self._next_bit
-        
+
         self._next_bit -= 1
         if self._next_bit < 0:
             self._write_byte()
-    
+
     def write_nbits(self, bits, value):
         """
         Write an 'bits'-bit integer. The complement of read_nbits (A.3.3).
@@ -462,15 +460,13 @@ class BitstreamWriter(object):
         the requested number of bits.
         """
         if value < 0 or value.bit_length() > bits:
-            raise OutOfRangeError("0b{:b} is {} bits, not {}".format(
-                value,
-                value.bit_length(),
-                bits,
-            ))
-        
-        for i in range(bits-1, -1, -1):
+            raise OutOfRangeError(
+                "0b{:b} is {} bits, not {}".format(value, value.bit_length(), bits,)
+            )
+
+        for i in range(bits - 1, -1, -1):
             self.write_bit((value >> i) & 1)
-    
+
     def write_uint_lit(self, num_bytes, value):
         """
         Write a 'num-bytes' long integer. The complement of read_uint_lit (A.3.4).
@@ -479,7 +475,7 @@ class BitstreamWriter(object):
         the requested number of bytes.
         """
         self.write_nbits(num_bytes * 8, value)
-    
+
     def write_bitarray(self, bits, value):
         """
         Write the 'bits' from the :py;class:`bitarray.bitarray` 'value'.
@@ -488,19 +484,17 @@ class BitstreamWriter(object):
         The value will be right-hand zero-padded to the required length.
         """
         if len(value) > bits:
-            raise OutOfRangeError("0b{} is {} bits, not {}".format(
-                value.to01(),
-                len(value),
-                bits,
-            ))
-        
+            raise OutOfRangeError(
+                "0b{} is {} bits, not {}".format(value.to01(), len(value), bits,)
+            )
+
         for bit in value:
             self.write_bit(bit)
-        
+
         # Zero-pad
         for _ in range(len(value), bits):
             self.write_bit(0)
-    
+
     def write_bytes(self, num_bytes, value):
         """
         Write the provided :py:class:`bytes` or :py:class:`bytearray` in a python
@@ -510,19 +504,17 @@ class BitstreamWriter(object):
         will be raised. If it is too short, it will be right-hand zero-padded.
         """
         if len(value) > num_bytes:
-            raise OutOfRangeError("{} is {} bytes, not {}".format(
-                Bytes()(value),
-                len(value),
-                num_bytes,
-            ))
-        
+            raise OutOfRangeError(
+                "{} is {} bytes, not {}".format(Bytes()(value), len(value), num_bytes,)
+            )
+
         for byte in bytearray(value):
             self.write_nbits(8, byte)
-        
+
         # Zero-pad
         for _ in range(len(value), num_bytes):
             self.write_nbits(8, 0)
-    
+
     def write_uint(self, value):
         """
         Write an unsigned exp-golomb code.
@@ -532,21 +524,21 @@ class BitstreamWriter(object):
         """
         if value < 0:
             raise OutOfRangeError("{} is negative, expected positive".format(value))
-        
+
         value += 1
-        
-        for i in range(value.bit_length()-2, -1, -1):
+
+        for i in range(value.bit_length() - 2, -1, -1):
             self.write_bit(0)
             self.write_bit((value >> i) & 1)
-        
+
         self.write_bit(1)
-    
+
     def write_sint(self, value):
         """
         Signed version of :py:meth:`write_uint`.
         """
         self.write_uint(abs(value))
-        
+
         # Write sign bit
         if value != 0:
             self.write_bit(value < 0)

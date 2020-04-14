@@ -45,9 +45,7 @@ from vc2_data_tables import (
 __all__ = [
     "vc2_fixeddict_nesting",
     "vc2_default_values",
-    
     "ParseInfo",
-    
     "SequenceHeader",
     "ParseParameters",
     "SourceParameters",
@@ -62,27 +60,21 @@ __all__ = [
     "ColorPrimaries",
     "ColorMatrix",
     "TransferFunction",
-    
     "AuxiliaryData",
     "Padding",
-    
     "TransformParameters",
     "ExtendedTransformParameters",
     "SliceParameters",
     "QuantMatrix",
-    
     "PictureHeader",
     "TransformData",
     "WaveletTransform",
     "PictureParse",
-    
     "LDSlice",
     "HQSlice",
-    
     "FragmentHeader",
     "FragmentData",
     "FragmentParse",
-    
     "DataUnit",
     "Sequence",
 ]
@@ -125,19 +117,16 @@ should be treated as the default value to use for list entries.
 ParseInfo = fixeddict(
     "ParseInfo",
     Entry("padding", formatter=Bits()),
-    Entry("parse_info_prefix",
-          friendly_formatter=(lambda prefix:
-              "Correct"
-              if prefix == PARSE_INFO_PREFIX else
-              "INCORRECT"
-          ),
-          formatter=Hex(8)),
-    Entry("parse_code",
-          enum=ParseCodes,
-          formatter=Hex(2)),
+    Entry(
+        "parse_info_prefix",
+        friendly_formatter=(
+            lambda prefix: "Correct" if prefix == PARSE_INFO_PREFIX else "INCORRECT"
+        ),
+        formatter=Hex(8),
+    ),
+    Entry("parse_code", enum=ParseCodes, formatter=Hex(2)),
     Entry("next_parse_offset"),
     Entry("previous_parse_offset"),
-    
     # Computed value: The byte offset of the start of this parse_info block in
     # the bitstream.
     Entry("_offset"),
@@ -187,9 +176,7 @@ FrameSize = fixeddict(
 """
 
 vc2_default_values[FrameSize] = FrameSize(
-    custom_dimensions_flag=False,
-    frame_width=1,
-    frame_height=1,
+    custom_dimensions_flag=False, frame_width=1, frame_height=1,
 )
 
 ColorDiffSamplingFormat = fixeddict(
@@ -217,8 +204,7 @@ ScanFormat = fixeddict(
 """
 
 vc2_default_values[ScanFormat] = ScanFormat(
-    custom_scan_format_flag=False,
-    source_sampling=SourceSamplingModes.progressive,
+    custom_scan_format_flag=False, source_sampling=SourceSamplingModes.progressive,
 )
 
 FrameRate = fixeddict(
@@ -310,8 +296,7 @@ ColorPrimaries = fixeddict(
 """
 
 vc2_default_values[ColorPrimaries] = ColorPrimaries(
-    custom_color_primaries_flag=False,
-    index=PresetColorPrimaries.hdtv,
+    custom_color_primaries_flag=False, index=PresetColorPrimaries.hdtv,
 )
 
 
@@ -325,8 +310,7 @@ ColorMatrix = fixeddict(
 """
 
 vc2_default_values[ColorMatrix] = ColorMatrix(
-    custom_color_matrix_flag=False,
-    index=PresetColorMatrices.hdtv,
+    custom_color_matrix_flag=False, index=PresetColorMatrices.hdtv,
 )
 
 TransferFunction = fixeddict(
@@ -339,8 +323,7 @@ TransferFunction = fixeddict(
 """
 
 vc2_default_values[TransferFunction] = TransferFunction(
-    custom_transfer_function_flag=False,
-    index=PresetTransferFunctions.tv_gamma,
+    custom_transfer_function_flag=False, index=PresetTransferFunctions.tv_gamma,
 )
 
 ColorSpec = fixeddict(
@@ -356,8 +339,7 @@ ColorSpec = fixeddict(
 """
 
 vc2_default_values[ColorSpec] = ColorSpec(
-    custom_color_spec_flag=False,
-    index=PresetColorSpecs.hdtv,
+    custom_color_spec_flag=False, index=PresetColorSpecs.hdtv,
 )
 
 vc2_fixeddict_nesting[ColorSpec] = [ColorPrimaries, ColorMatrix, TransferFunction]
@@ -424,25 +406,17 @@ AuxiliaryData = fixeddict(
 (10.4.4) Auxiliary data block (as per auxiliary_data()).
 """
 
-vc2_default_values[AuxiliaryData] = AuxiliaryData(
-    padding=bitarray(),
-    bytes=b"",
-)
+vc2_default_values[AuxiliaryData] = AuxiliaryData(padding=bitarray(), bytes=b"",)
 
 
 Padding = fixeddict(
-    "Padding",
-    Entry("padding", formatter=Bits()),
-    Entry("bytes", formatter=Bytes()),
+    "Padding", Entry("padding", formatter=Bits()), Entry("bytes", formatter=Bytes()),
 )
 """
 (10.4.5) Padding data block (as per padding()).
 """
 
-vc2_default_values[Padding] = Padding(
-    padding=bitarray(),
-    bytes=b"",
-)
+vc2_default_values[Padding] = Padding(padding=bitarray(), bytes=b"",)
 
 
 ################################################################################
@@ -491,17 +465,14 @@ vc2_default_values[SliceParameters] = SliceParameters(
 )
 
 QuantMatrix = fixeddict(
-    "QuantMatrix",
-    Entry("custom_quant_matrix"),
-    Entry("quant_matrix"),  # [int, ...]
+    "QuantMatrix", Entry("custom_quant_matrix"), Entry("quant_matrix"),  # [int, ...]
 )
 """
 (12.4.5.3) Custom quantisation matrix override defined by ``quant_matrix()``.
 """
 
 vc2_default_values[QuantMatrix] = QuantMatrix(
-    custom_quant_matrix=False,
-    quant_matrix=0,
+    custom_quant_matrix=False, quant_matrix=0,
 )
 
 TransformParameters = fixeddict(
@@ -517,8 +488,7 @@ TransformParameters = fixeddict(
 """
 
 vc2_default_values[TransformParameters] = TransformParameters(
-    wavelet_index=WaveletFilters.haar_with_shift,
-    dwt_depth=0,
+    wavelet_index=WaveletFilters.haar_with_shift, dwt_depth=0,
 )
 
 vc2_fixeddict_nesting[TransformParameters] = [
@@ -538,17 +508,13 @@ vc2_fixeddict_nesting[TransformParameters] = [
 LDSlice = fixeddict(
     "LDSlice",
     Entry("qindex"),
-    
     Entry("slice_y_length"),
-    
     # Transform coefficients (in bitstream order)
     Entry("y_transform", formatter=List()),
     Entry("c_transform", formatter=List()),
-    
     # Unused bits from bounded blocks
     Entry("y_block_padding", formatter=Bits()),
     Entry("c_block_padding", formatter=Bits()),
-    
     # Computed value: The slice coordinates.
     Entry("_sx"),
     Entry("_sy"),
@@ -570,23 +536,18 @@ vc2_default_values[LDSlice] = LDSlice(
 HQSlice = fixeddict(
     "HQSlice",
     Entry("prefix_bytes", formatter=Bytes()),
-    
     Entry("qindex"),
-    
     Entry("slice_y_length"),
     Entry("slice_c1_length"),
     Entry("slice_c2_length"),
-    
     # Transform coefficients (in bitstream order)
     Entry("y_transform", formatter=List()),
     Entry("c1_transform", formatter=List()),
     Entry("c2_transform", formatter=List()),
-    
     # Unused bits from bounded blocks
     Entry("y_block_padding", formatter=Bits()),
     Entry("c1_block_padding", formatter=Bits()),
     Entry("c2_block_padding", formatter=Bits()),
-    
     # Computed value: The slice coordinates.
     Entry("_sx"),
     Entry("_sy"),
@@ -615,23 +576,17 @@ vc2_default_values[HQSlice] = HQSlice(
 ################################################################################
 
 
-PictureHeader = fixeddict(
-    "PictureHeader",
-    Entry("picture_number"),
-)
+PictureHeader = fixeddict("PictureHeader", Entry("picture_number"),)
 """
 (12.2) Picture header information defined by ``picture_header()``.
 """
 
-vc2_default_values[PictureHeader] = PictureHeader(
-    picture_number=0,
-)
+vc2_default_values[PictureHeader] = PictureHeader(picture_number=0,)
 
 TransformData = fixeddict(
     "TransformData",
     Entry("ld_slices", formatter=List(formatter=Object())),  # [LDSlice, ...]
     Entry("hq_slices", formatter=List(formatter=Object())),  # [HQSlice, ...]
-    
     # Computed value: A copy of the State dictionary held when processing this
     # transform data. May be used to work out how the deseriallised values
     # correspond to transform components within the slices above.
@@ -655,9 +610,7 @@ WaveletTransform = fixeddict(
 (12.3) Wavelet parameters and coefficients defined by ``wavelet_transform()``.
 """
 
-vc2_default_values[WaveletTransform] = WaveletTransform(
-    padding=bitarray(),
-)
+vc2_default_values[WaveletTransform] = WaveletTransform(padding=bitarray(),)
 
 vc2_fixeddict_nesting[WaveletTransform] = [TransformParameters, TransformData]
 
@@ -673,8 +626,7 @@ PictureParse = fixeddict(
 """
 
 vc2_default_values[PictureParse] = PictureParse(
-    padding1=bitarray(),
-    padding2=bitarray(),
+    padding1=bitarray(), padding2=bitarray(),
 )
 
 vc2_fixeddict_nesting[PictureParse] = [PictureHeader, WaveletTransform]
@@ -689,8 +641,8 @@ FragmentHeader = fixeddict(
     Entry("picture_number"),
     Entry("fragment_data_length"),
     Entry("fragment_slice_count"),
-    Entry("fragment_x_offset", ),
-    Entry("fragment_y_offset", ),
+    Entry("fragment_x_offset",),
+    Entry("fragment_y_offset",),
 )
 """
 (14.2) Fragment header defined by ``fragment_header()``.
@@ -708,7 +660,6 @@ FragmentData = fixeddict(
     "FragmentData",
     Entry("ld_slices", formatter=List(formatter=Object())),  # LDSlice
     Entry("hq_slices", formatter=List(formatter=Object())),  # HQSlice
-    
     # Computed value: A copy of the State dictionary held when processing this
     # fragment data. May be used to work out how the deseriallised values
     # correspond to transform components within the slices above.
@@ -736,11 +687,14 @@ picture.
 """
 
 vc2_default_values[FragmentParse] = FragmentParse(
-    padding1=bitarray(),
-    padding2=bitarray(),
+    padding1=bitarray(), padding2=bitarray(),
 )
 
-vc2_fixeddict_nesting[FragmentParse] = [FragmentHeader, TransformParameters, FragmentData]
+vc2_fixeddict_nesting[FragmentParse] = [
+    FragmentHeader,
+    TransformParameters,
+    FragmentData,
+]
 
 ################################################################################
 # Sequences

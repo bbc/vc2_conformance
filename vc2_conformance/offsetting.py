@@ -43,10 +43,10 @@ def offset_component(state, comp_data, c):
     """(15.5) Remove picture value offsets from a single component."""
     for y in range(0, height(comp_data)):
         for x in range(0, width(comp_data)):
-            if (c=="Y"):
-                comp_data[y][x] += 2**(state["luma_depth"]-1)
+            if c == "Y":
+                comp_data[y][x] += 2 ** (state["luma_depth"] - 1)
             else:
-                comp_data[y][x] += 2**(state["color_diff_depth"]-1)
+                comp_data[y][x] += 2 ** (state["color_diff_depth"] - 1)
 
 
 def remove_offset_picture(state, current_picture):
@@ -68,7 +68,7 @@ def remove_offset_component(state, comp_data, c):
     """
     for y in range(0, height(comp_data)):
         for x in range(0, width(comp_data)):
-            if (c=="Y"):
-                comp_data[y][x] -= 2**(state["luma_depth"]-1)
+            if c == "Y":
+                comp_data[y][x] -= 2 ** (state["luma_depth"] - 1)
             else:
-                comp_data[y][x] -= 2**(state["color_diff_depth"]-1)
+                comp_data[y][x] -= 2 ** (state["color_diff_depth"] - 1)

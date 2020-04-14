@@ -61,7 +61,7 @@ def assert_parse_code_in_sequence(parse_code, matcher, exception_type, *args):
     * Any additional arguments passed to this function
     """
     parse_code = ParseCodes(parse_code)
-    
+
     if not matcher.match_symbol(parse_code.name):
         expected_parse_codes = []
         expected_end = False
@@ -73,13 +73,8 @@ def assert_parse_code_in_sequence(parse_code, matcher, exception_type, *args):
                 expected_end = True
             elif expected_parse_codes is not None:
                 expected_parse_codes.append(getattr(ParseCodes, parse_code_name))
-        
-        raise exception_type(
-            parse_code,
-            expected_parse_codes,
-            expected_end,
-            *args
-        )
+
+        raise exception_type(parse_code, expected_parse_codes, expected_end, *args)
 
 
 def assert_parse_code_sequence_ended(matcher, exception_type, *args):
@@ -106,7 +101,7 @@ def assert_parse_code_sequence_ended(matcher, exception_type, *args):
                 break
             elif expected_parse_codes is not None:
                 expected_parse_codes.append(getattr(ParseCodes, parse_code_name))
-        
+
         raise exception_type(None, expected_parse_codes, False, *args)
 
 
@@ -123,15 +118,15 @@ def assert_level_constraint(state, key, value):
     created/updated.
     """
     state.setdefault("_level_constrained_values", OrderedDict())
-    
+
     allowed_values = allowed_values_for(
-        LEVEL_CONSTRAINTS,
-        key,
-        state["_level_constrained_values"],
+        LEVEL_CONSTRAINTS, key, state["_level_constrained_values"],
     )
-    
+
     if value not in allowed_values:
-        raise ValueNotAllowedInLevel(state["_level_constrained_values"], key, value, allowed_values)
+        raise ValueNotAllowedInLevel(
+            state["_level_constrained_values"], key, value, allowed_values
+        )
     else:
         state["_level_constrained_values"][key] = value
 
@@ -177,7 +172,7 @@ def assert_picture_number_incremented_as_expected(state, picture_number_offset):
             )
     state["_last_picture_number"] = state["picture_number"]
     state["_last_picture_number_offset"] = picture_number_offset
-    
+
     # (12.2), (14.4) When coded as fields, the first field in the sequence must
     # have an even picture number.
     if state["_picture_coding_mode"] == PictureCodingModes.pictures_are_fields:

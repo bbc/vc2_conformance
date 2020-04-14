@@ -25,38 +25,34 @@ from vc2_conformance.test_cases.decoder.padding import (
 )
 
 # Add test root directory to path for sample_codec_features test utility module
-sys.path.append(os.path.join(
-    os.path.dirname(__file__),
-    "..",
-    "..",
-))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..",))
 
 from sample_codec_features import MINIMAL_CODEC_FEATURES
 
 
 def test_replace_padding_data():
-    orig_seq = Sequence(data_units=[
-        DataUnit(
-            parse_info=ParseInfo(parse_code=ParseCodes.padding_data),
-            padding=Padding(bytes=b"foo"),
-        ),
-        DataUnit(
-            parse_info=ParseInfo(parse_code=ParseCodes.padding_data),
-            padding=Padding(bytes=b"bar"),
-        ),
-        DataUnit(
-            parse_info=ParseInfo(parse_code=ParseCodes.end_of_sequence),
-        ),
-    ])
-    
+    orig_seq = Sequence(
+        data_units=[
+            DataUnit(
+                parse_info=ParseInfo(parse_code=ParseCodes.padding_data),
+                padding=Padding(bytes=b"foo"),
+            ),
+            DataUnit(
+                parse_info=ParseInfo(parse_code=ParseCodes.padding_data),
+                padding=Padding(bytes=b"bar"),
+            ),
+            DataUnit(parse_info=ParseInfo(parse_code=ParseCodes.end_of_sequence),),
+        ]
+    )
+
     orig_seq_copy = deepcopy(orig_seq)
-    
+
     new_seq = replace_padding_data(orig_seq, b"baz")
-    
+
     # Copy returned
     assert new_seq is not orig_seq
     assert orig_seq == orig_seq_copy
-    
+
     # Data as expected
     assert new_seq["data_units"][0]["padding"]["bytes"] == b"baz"
     assert new_seq["data_units"][1]["padding"]["bytes"] == b"baz"
@@ -66,18 +62,21 @@ def test_replace_padding_data():
 def test_padding_data():
     codec_features = MINIMAL_CODEC_FEATURES.copy()
     test_cases = list(padding_data(codec_features))
-    
+
     # The minimal codec feature set should not include any restrictions which
     # prevent padding being included
     assert len(test_cases) == 4
-    
+
     # Several padding data blocks should be included in every sequence
     for test_case in test_cases:
-        assert sum(
-            1
-            for data_unit in test_case.value["data_units"]
-            if data_unit["parse_info"]["parse_code"] == ParseCodes.padding_data
-        ) > 1
+        assert (
+            sum(
+                1
+                for data_unit in test_case.value["data_units"]
+                if data_unit["parse_info"]["parse_code"] == ParseCodes.padding_data
+            )
+            > 1
+        )
 
 
 def test_padding_data_disallowed():

@@ -98,7 +98,7 @@ class ValueSet(object):
     Represents a set of allowed values. May consist of anything from a single
     value, a range of values or a combination of several of these.
     """
-    
+
     def __init__(self, *values_and_ranges):
         """
         Parameters
@@ -106,20 +106,20 @@ class ValueSet(object):
         *values_and_ranges : value, or (lower_value, upper_value)
             Sets the initial set of values and ranges to be matched
         """
-        
+
         # Individual values explicitly included in this value set
         self._values = set()
-        
+
         # A series of (lower_bound, upper_bound) tuples which give *incuslive*
         # ranges of values which are permitted.
         self._ranges = set()
-        
+
         for value_or_range in values_and_ranges:
             if isinstance(value_or_range, tuple):
                 self.add_range(*value_or_range)
             else:
                 self.add_value(value_or_range)
-    
+
     def add_value(self, value):
         """
         Add a single value to the set.
@@ -127,7 +127,7 @@ class ValueSet(object):
         # Don't add duplicates
         if value not in self:
             self._values.add(value)
-    
+
     def add_range(self, lower_bound, upper_bound):
         """
         Add the range of values between the two inclusive bounds to the set.
@@ -136,7 +136,7 @@ class ValueSet(object):
         for value in list(self._values):
             if lower_bound <= value <= upper_bound:
                 self._values.remove(value)
-        
+
         # Combine this range with any existing ranges where possible
         ranges_to_remove = []
         for other_lower_bound, other_upper_bound in self._ranges:
@@ -146,29 +146,29 @@ class ValueSet(object):
                 upper_bound = max(upper_bound, other_upper_bound)
         for lower_upper in ranges_to_remove:
             self._ranges.remove(lower_upper)
-        
+
         self._ranges.add((lower_bound, upper_bound))
-    
+
     def __contains__(self, value):
         """
         Test if a value is a member of this set.
         """
         if value in self._values:
             return True
-        
+
         for lower_bound, upper_bound in self._ranges:
             if lower_bound <= value <= upper_bound:
                 return True
-        
+
         return False
-    
+
     def __eq__(self, other):
         return (
-            not isinstance(other, AnyValue) and
-            self._values == other._values and
-            self._ranges == other._ranges
+            not isinstance(other, AnyValue)
+            and self._values == other._values
+            and self._ranges == other._ranges
         )
-    
+
     def __add__(self, other):
         """
         Combine two :py:class:`ValueSet` objects into a single object
@@ -178,19 +178,19 @@ class ValueSet(object):
             return AnyValue()
         else:
             out = type(self)()
-            
+
             for value in self._values:
                 out.add_value(value)
             for value in other._values:
                 out.add_value(value)
-            
+
             for lower, upper in self._ranges:
                 out.add_range(lower, upper)
             for lower, upper in other._ranges:
                 out.add_range(lower, upper)
-            
+
             return out
-    
+
     def __iter__(self):
         """
         Iterate over the values and (lower_bound, upper_bound) tuples in this
@@ -200,18 +200,15 @@ class ValueSet(object):
             yield value
         for range in self._ranges:
             yield range
-    
+
     def __repr__(self):
-        return "{}({})".format(
-            type(self).__name__,
-            ", ".join(map(repr, self)),
-        )
-    
+        return "{}({})".format(type(self).__name__, ", ".join(map(repr, self)),)
+
     def __str__(self):
         """
         Produce a human-readable description of the permitted values.
         """
-        values_and_ranges = sorted([(v, ) for v in self._values] + list(self._ranges))
+        values_and_ranges = sorted([(v,) for v in self._values] + list(self._ranges))
         if len(values_and_ranges) == 0:
             return "{<no values>}"
         else:
@@ -228,31 +225,31 @@ class AnyValue(ValueSet):
     Like :py:class:`ValueSet` but represents a 'wildcard' set of values which
     contains all possible values.
     """
-    
+
     def __init__(self):
         pass
-    
+
     def add_value(self):
         raise AttributeError("add_value")
-    
+
     def add_range(self):
         raise AttributeError("add_range")
-    
+
     def __contains__(self, value):
         return True
-    
+
     def __eq__(self, other):
         return isinstance(other, AnyValue)
-    
+
     def __add__(self, other):
         return AnyValue()
-    
+
     def __iter__(self):
         raise AttributeError("__iter__")
-    
+
     def __repr__(self):
         return "{}()".format(type(self).__name__)
-    
+
     def __str__(self):
         return "{<any value>}"
 
@@ -263,11 +260,13 @@ def filter_allowed_values(allowed_values, values):
     values in ``values``.
     """
     return [
-        combination for combination in allowed_values
+        combination
+        for combination in allowed_values
         if all(
             key in combination and value in combination[key]
             for key, value in values.items()
-        ) or len(combination) == 0  # Special case: 'catch all' rule
+        )
+        or len(combination) == 0  # Special case: 'catch all' rule
     ]
 
 
@@ -293,10 +292,10 @@ def allowed_values_for(allowed_values, key, values={}):
     ``values``.
     """
     out = ValueSet()
-    
+
     for allowed in filter_allowed_values(allowed_values, values):
         out += allowed.get(key, ValueSet())
-    
+
     return out
 
 
@@ -330,18 +329,17 @@ def read_constraints_from_csv(csv_filename):
     :py:mod:`vc2_conformance._constraint_table`.
     """
     out = []
-    
+
     with open(csv_filename) as f:
         for row in csv.reader(f):
             # Skip empty lines
-            if all(not cell.strip() or cell.strip().startswith("#")
-                   for cell in row):
+            if all(not cell.strip() or cell.strip().startswith("#") for cell in row):
                 continue
-            
+
             # Add extra constraint sets as required
             for _ in range(len(out), len(row) - 1):
                 out.append({})
-            
+
             # Populate this row's values
             key = row[0]
             last_value = ValueSet()
@@ -354,9 +352,11 @@ def read_constraints_from_csv(csv_filename):
                 else:
                     for value_string in column.split(","):
                         values = [
-                            True if s.strip().lower() == "true" else
-                            False if s.strip().lower() == "false" else
-                            int(s)
+                            True
+                            if s.strip().lower() == "true"
+                            else False
+                            if s.strip().lower() == "false"
+                            else int(s)
                             for s in value_string.partition("-")[::2]
                             if s
                         ]
@@ -366,5 +366,5 @@ def read_constraints_from_csv(csv_filename):
                             value.add_range(values[0], values[1])
                 out[i][key] = value
                 last_value = value
-    
+
     return out

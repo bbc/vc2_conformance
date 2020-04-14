@@ -2,13 +2,9 @@
 Generic synthetic test sequences.
 """
 
-from vc2_conformance.test_cases import (
-    encoder_test_case_generator,
-)
+from vc2_conformance.test_cases import encoder_test_case_generator
 
-from vc2_conformance.test_cases.encoder.common import (
-    picture_generator_to_test_case,
-)
+from vc2_conformance.test_cases.encoder.common import picture_generator_to_test_case
 
 from vc2_conformance import picture_generators
 
@@ -25,8 +21,7 @@ def synthetic_moving_sprite(codec_features):
     function's documentation for further details.
     """
     return picture_generator_to_test_case(
-        picture_generators.moving_sprite,
-        codec_features,
+        picture_generators.moving_sprite, codec_features,
     )
 
 
@@ -42,6 +37,5 @@ def synthetic_linear_ramps(codec_features):
     function's documentation for further details.
     """
     return picture_generator_to_test_case(
-        picture_generators.linear_ramps,
-        codec_features,
+        picture_generators.linear_ramps, codec_features,
     )

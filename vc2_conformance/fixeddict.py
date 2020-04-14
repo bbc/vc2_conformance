@@ -113,7 +113,7 @@ class Entry(object):
     Defines advanced properties of of an entry in a :py:func:`fixeddict`
     dictionary.
     """
-    
+
     def __init__(self, name, **kwargs):
         """
         All arguments, except name, are keyword-only.
@@ -154,63 +154,65 @@ class Entry(object):
             ``enum``.
         """
         self.name = name
-        
+
         if "enum" in kwargs:
             enum_type = kwargs.pop("enum")
-            
+
             def enum_formatter(value):
                 try:
                     return str(enum_type(value).value)
                 except ValueError:
                     return str(value)
-            
+
             kwargs.setdefault("formatter", enum_formatter)
-            
+
             def friendly_enum_formatter(value):
                 try:
                     return enum_type(value).name
                 except ValueError:
                     return None
-            
+
             kwargs.setdefault("friendly_formatter", friendly_enum_formatter)
-        
+
         self.formatter = kwargs.pop("formatter", str)
         self.friendly_formatter = kwargs.pop("friendly_formatter", None)
-        
+
         if kwargs:
-            raise TypeError("unexpected keyword arguments: {} for {}".format(
-                ", ".join(kwargs.keys()), self.__class__.__name__))
-    
+            raise TypeError(
+                "unexpected keyword arguments: {} for {}".format(
+                    ", ".join(kwargs.keys()), self.__class__.__name__
+                )
+            )
+
     def to_string(self, value):
         """
         Convert a value to a string according to the specification in this
         :py:class:`Entry`.
         """
         value_string = self.formatter(value)
-        
+
         if self.friendly_formatter is not None:
             friendly_string = self.friendly_formatter(value)
             if friendly_string is not None:
                 value_string = "{} ({})".format(friendly_string, value_string)
-        
+
         return value_string
+
 
 class FixedDictKeyError(KeyError):
     """
     A :py:exc:`KeyError` which also includes information about which fixeddict
     dictionary it was produced by.
     """
-    
+
     def __init__(self, key, fixeddict_class):
         super(FixedDictKeyError, self).__init__(key)
         self.key = key
         self.fixeddict_class = fixeddict_class
-    
+
     def __str__(self):
-        return "{!r} not allowed in {}".format(
-            self.key,
-            self.fixeddict_class.__name__
-        )
+        return "{!r} not allowed in {}".format(self.key, self.fixeddict_class.__name__)
+
 
 def fixeddict(name, *entries, **kwargs):
     """
@@ -256,54 +258,50 @@ def fixeddict(name, *entries, **kwargs):
     # Extract keyword-only arguments
     module = kwargs.pop("module", None)
     qualname = kwargs.pop("qualname", None)
-    assert not kwargs, "Got unexpected keyword arguments: {}".format(
-        ", ".join(kwargs)
-    )
-    
+    assert not kwargs, "Got unexpected keyword arguments: {}".format(", ".join(kwargs))
+
     # Collect the list of Entry instances defined for this class
     # {name: Entry, ...}
     entry_objs = OrderedDict(
         (entry.name, entry)
-        for entry in (
-            arg if isinstance(arg, Entry) else Entry(arg)
-            for arg in entries
-        )
+        for entry in (arg if isinstance(arg, Entry) else Entry(arg) for arg in entries)
     )
-    
+
     # Create all of the methods which will be added to the class
     __dict__ = {}
-    
+
     def __init__(self, *args, **kwargs):
         dict.__init__(self, *args, **kwargs)
-        
+
         # Check for invalid names
         for name in self.keys():
             if name not in entry_objs:
                 raise FixedDictKeyError(name, self.__class__)
-    
+
     __dict__["__init__"] = __init__
-    
-    __dict__["__doc__"] = "{}(...)\n\nA :py:mod:`~vc2_conformance.fixeddict`.\n\nParameters\n==========\n{}\n".format(
-        name,
-        "\n".join(entry.name for entry in entry_objs.values()),
+
+    __dict__[
+        "__doc__"
+    ] = "{}(...)\n\nA :py:mod:`~vc2_conformance.fixeddict`.\n\nParameters\n==========\n{}\n".format(
+        name, "\n".join(entry.name for entry in entry_objs.values()),
     )
-    
+
     def __setitem__(self, key, value):
         if key in entry_objs:
             return dict.__setitem__(self, key, value)
         else:
             raise FixedDictKeyError(key, self.__class__)
-    
+
     __dict__["__setitem__"] = __setitem__
-    
+
     def setdefault(self, key, value):
         if key in entry_objs:
             return dict.setdefault(self, key, value)
         else:
             raise FixedDictKeyError(key, self.__class__)
-    
+
     __dict__["setdefault"] = setdefault
-    
+
     def update(self, E=None, **F):
         # Using the naming convention defined by 'help(dict.setdefault)'
         if E is not None:
@@ -315,9 +313,9 @@ def fixeddict(name, *entries, **kwargs):
                     self[k] = v
         for k in F:
             self[k] = F[k]
-    
+
     __dict__["update"] = update
-    
+
     def __repr__(self):
         return "{}({{{}}})".format(
             self.__class__.__name__,
@@ -325,11 +323,11 @@ def fixeddict(name, *entries, **kwargs):
                 "{!r}: {!r}".format(name, self[name])
                 for name, entry_obj in entry_objs.items()
                 if name in self
-            )
+            ),
         )
-    
+
     __dict__["__repr__"] = __repr__
-    
+
     def __str__(self):
         if len(self) == 0:
             return self.__class__.__name__
@@ -337,43 +335,46 @@ def fixeddict(name, *entries, **kwargs):
             return "{}:\n{}".format(
                 self.__class__.__name__,
                 "\n".join(
-                    indent("{}: {}".format(
-                        name, entry_obj.to_string(self[name])
-                    ))
+                    indent("{}: {}".format(name, entry_obj.to_string(self[name])))
                     for name, entry_obj in entry_objs.items()
                     if name in self and not name.startswith("_")
-                )
+                ),
             )
-    
+
     __dict__["__str__"] = __str__
-    
+
     def copy(self):
         return self.__class__(self)
-    
+
     __dict__["copy"] = copy
-    
+
     # Support pickling/unpickling (part 1).
     #
     # Dictionaries have their own magic behaviour by default under pickle so we
     # must explicitly tell pickle how to handle this type.
     def __getstate__(self):
         return dict(self)
+
     __dict__["__getstate__"] = __getstate__
+
     def __setstate__(self, state):
-        self.update(state) 
+        self.update(state)
+
     __dict__["__setstate__"] = __setstate__
+
     def __reduce__(self):
         return (
             type(self),
             (),
             self.__getstate__(),
         )
+
     __dict__["__reduce__"] = __reduce__
-    
-    cls = type(name, (dict, ), __dict__)
-    
+
+    cls = type(name, (dict,), __dict__)
+
     setattr(cls, "entry_objs", entry_objs)
-    
+
     # Support pickling/unpickling (part 2)
     #
     # Setting the __module__/__qualname__ class attributes tells pickle where
@@ -391,5 +392,5 @@ def fixeddict(name, *entries, **kwargs):
         setattr(cls, "__module__", module)
     if qualname is not None:
         setattr(cls, "__qualname__", qualname)
-    
+
     return cls

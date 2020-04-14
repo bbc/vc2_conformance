@@ -51,22 +51,22 @@ def format_summary(comparison_error_or_difference):
     ref_col = comparison_error_or_difference.ref_col
     imp_row = comparison_error_or_difference.imp_row
     imp_col = comparison_error_or_difference.imp_col
-    
+
     ref_func = comparison_error_or_difference.ref_func
     imp_func = comparison_error_or_difference.imp_func
-    
+
     ref_filename = None
     if ref_func is not None:
         ref_filename, ref_lineno, ref_source = get_full_source(unwrap(ref_func))
         if ref_row is not None:
             ref_row += ref_lineno
-    
+
     imp_filename = None
     if imp_func is not None:
         imp_filename, imp_lineno, imp_source = get_full_source(unwrap(imp_func))
         if imp_row is not None:
             imp_row += imp_lineno
-    
+
     if ref_row is None and imp_row is None:
         return message
     else:
@@ -93,51 +93,70 @@ def format_detailed_summary(comparison_error_or_difference):
     Format a detailed summary showing the original source.
     """
     out = []
-    
+
     ref_func = comparison_error_or_difference.ref_func
     imp_func = comparison_error_or_difference.imp_func
-    
+
     # Fall back on simple summary if functions not provided
     if ref_func is None or imp_func is None:
         return format_summary(comparison_error_or_difference)
-    
+
     message = comparison_error_or_difference.message
     ref_row = comparison_error_or_difference.ref_row
     ref_col = comparison_error_or_difference.ref_col
     imp_row = comparison_error_or_difference.imp_row
     imp_col = comparison_error_or_difference.imp_col
-    
+
     ref_filename, ref_first_lineno, ref_source_lines = get_full_source(unwrap(ref_func))
     imp_filename, imp_first_lineno, imp_source_lines = get_full_source(unwrap(imp_func))
-    
+
     func_names = [ref_func.__name__]
     if ref_func.__name__ != imp_func.__name__:
         func_names.append(imp_func.__name__)
-    
+
     out.append(message)
-    
+
     for impl_name, filename, source_lines, row, col, first_lineno in [
-            ("Reference", ref_filename, ref_source_lines, ref_row, ref_col, ref_first_lineno),
-            ("Implementation", imp_filename, imp_source_lines, imp_row, imp_col, imp_first_lineno)]:
+        (
+            "Reference",
+            ref_filename,
+            ref_source_lines,
+            ref_row,
+            ref_col,
+            ref_first_lineno,
+        ),
+        (
+            "Implementation",
+            imp_filename,
+            imp_source_lines,
+            imp_row,
+            imp_col,
+            imp_first_lineno,
+        ),
+    ]:
         if row is not None:
             out.append("")
             out.append("{} source:".format(impl_name))
             for r in range(row):
                 out.append("    {}".format(source_lines[r]).rstrip())
-            
+
             if col is not None:
                 arrow_col = col
             else:
                 # Extend arrow past indent if no column number given
-                arrow_col = len(source_lines[row-1]) - len(source_lines[row-1].lstrip())
-            out.append("----{}^".format("-"*arrow_col))
-            
-            out.append("{}:{}{}".format(
-                filename,
-                first_lineno + (row - 1),
-                " (col {})".format(col) if col is not None else ""
-            ))
-    
+                arrow_col = len(source_lines[row - 1]) - len(
+                    source_lines[row - 1].lstrip()
+                )
+            out.append("----{}^".format("-" * arrow_col))
+
+            out.append(
+                "{}:{}{}".format(
+                    filename,
+                    first_lineno + (row - 1),
+                    " (col {})".format(col) if col is not None else "",
+                )
+            )
+
     return "\n".join(out)
 
 
@@ -160,11 +179,17 @@ class ComparisonError(Exception):
     ref_func, imp_func : FunctionType or None
         The Python function objects being compared.
     """
-    
-    def __init__(self, message,
-                 ref_row=None, ref_col=None,
-                 imp_row=None, imp_col=None,
-                 ref_func=None, imp_func=None):
+
+    def __init__(
+        self,
+        message,
+        ref_row=None,
+        ref_col=None,
+        imp_row=None,
+        imp_col=None,
+        ref_func=None,
+        imp_func=None,
+    ):
         self.message = message
         self.ref_row = ref_row
         self.ref_col = ref_col
@@ -172,9 +197,9 @@ class ComparisonError(Exception):
         self.imp_col = imp_col
         self.ref_func = ref_func
         self.imp_func = imp_func
-        
+
         super(ComparisonError, self).__init__()
-    
+
     def __str__(self):
         return format_detailed_summary(self)
 
@@ -199,11 +224,17 @@ class Difference(object):
     ref_func, imp_func : FunctionType or None
         The Python function objects being compared.
     """
-    
-    def __init__(self, message,
-                 ref_row=None, ref_col=None,
-                 imp_row=None, imp_col=None,
-                 ref_func=None, imp_func=None):
+
+    def __init__(
+        self,
+        message,
+        ref_row=None,
+        ref_col=None,
+        imp_row=None,
+        imp_col=None,
+        ref_func=None,
+        imp_func=None,
+    ):
         self.message = message
         self.ref_row = ref_row
         self.ref_col = ref_col
@@ -211,19 +242,16 @@ class Difference(object):
         self.imp_col = imp_col
         self.ref_func = ref_func
         self.imp_func = imp_func
-    
+
     def __repr__(self):
-        return "<{} {}>".format(
-            type(self).__name__,
-            format_summary(self),
-        )
-    
+        return "<{} {}>".format(type(self).__name__, format_summary(self),)
+
     def __str__(self):
         return format_detailed_summary(self)
-    
+
     def __bool__(self):  # Py 3.x
         return False
-    
+
     def __nonzero__(self):  # Py 2.x
         return False
 
@@ -268,20 +296,18 @@ def compare_sources(ref_source, imp_source, comparator):
         )
     except UnmatchedNotInSpecBlockError as e:
         raise ComparisonError(
-            "No matching '## Begin not in spec'",
-            imp_row=e.row,
+            "No matching '## Begin not in spec'", imp_row=e.row,
         )
     except UnclosedNotInSpecBlockError as e:
         raise ComparisonError(
-            "'## Begin not in spec' block not closed",
-            imp_row=e.row,
+            "'## Begin not in spec' block not closed", imp_row=e.row,
         )
-    
+
     try:
         ref_ast = ast.parse(ref_source)
     except SyntaxError as e:
         raise ComparisonError(e.msg, ref_row=e.lineno, ref_col=e.offset)
-    
+
     try:
         imp_ast = ast.parse(imp_source)
     except SyntaxError as e:
@@ -290,11 +316,11 @@ def compare_sources(ref_source, imp_source, comparator):
             imp_row=e.lineno,
             imp_col=e.offset + implementation_indent_offsets.get(e.lineno, 0),
         )
-    
+
     match = comparator.compare(ref_ast, imp_ast)
     if match is True:
         return match
-    
+
     message = str(match)
     ref_row = None
     ref_col = None
@@ -302,8 +328,7 @@ def compare_sources(ref_source, imp_source, comparator):
     imp_col = None
     if isinstance(match, NodeTypesDiffer):
         message = "Mismatched {} vs. {}".format(
-            type(match.n1).__name__,
-            type(match.n2).__name__,
+            type(match.n1).__name__, type(match.n2).__name__,
         )
         ref_row, ref_col = match.n1_row_col
         imp_row, imp_col = match.n2_row_col
@@ -315,29 +340,22 @@ def compare_sources(ref_source, imp_source, comparator):
         if len(match.v1) > len(match.v2):
             num = len(match.v1) - len(match.v2)
             message = "{} extra value{} in reference's {}".format(
-                num,
-                "s" if num != 1 else "",
-                match.field,
+                num, "s" if num != 1 else "", match.field,
             )
         else:
             num = len(match.v2) - len(match.v1)
             message = "{} extra value{} in implementation's {}".format(
-                num,
-                "s" if num != 1 else "",
-                match.field,
+                num, "s" if num != 1 else "", match.field,
             )
         ref_row, ref_col = match.n1_row_col
         imp_row, imp_col = match.n2_row_col
     elif isinstance(match, NodeListFieldsDiffer):
         message = "Different {} at index {} ({!r} and {!r})".format(
-            match.field,
-            match.index,
-            match.v1[match.index],
-            match.v2[match.index],
+            match.field, match.index, match.v1[match.index], match.v2[match.index],
         )
         ref_row, ref_col = match.n1_row_col
         imp_row, imp_col = match.n2_row_col
-    
+
     return Difference(
         message=message,
         ref_row=ref_row,
@@ -345,8 +363,8 @@ def compare_sources(ref_source, imp_source, comparator):
         imp_row=imp_row,
         imp_col=(
             imp_col + implementation_indent_offsets.get(imp_row, 0)
-            if imp_row is not None and imp_col is not None else
-            imp_col
+            if imp_row is not None and imp_col is not None
+            else imp_col
         ),
     )
 
@@ -381,7 +399,7 @@ def compare_functions(ref_func, imp_func, comparator):
     """
     ref_source = "".join(get_full_source(unwrap(ref_func))[2])
     imp_source = "".join(get_full_source(unwrap(imp_func))[2])
-    
+
     try:
         match = compare_sources(ref_source, imp_source, comparator)
         if match is not True:

@@ -23,13 +23,9 @@ from vc2_data_tables import (
     WaveletFilters,
 )
 
-from vc2_conformance.level_constraints import (
-    LEVEL_SEQUENCE_RESTRICTIONS,
-)
+from vc2_conformance.level_constraints import LEVEL_SEQUENCE_RESTRICTIONS
 
-from vc2_conformance.bitstream.io import (
-    to_bit_offset,
-)
+from vc2_conformance.bitstream.io import to_bit_offset
 
 
 def known_parse_code_to_string(parse_code):
@@ -40,9 +36,9 @@ def known_parse_code_to_string(parse_code):
         "end of sequence (0x10)"
     """
     return "{} (0x{:02X})".format(
-        ParseCodes(parse_code).name.replace("_", " "),
-        parse_code,
+        ParseCodes(parse_code).name.replace("_", " "), parse_code,
     )
+
 
 def known_profile_to_string(profile):
     """
@@ -51,10 +47,8 @@ def known_profile_to_string(profile):
     
         "high quality (3)"
     """
-    return "{} ({:d})".format(
-        Profiles(profile).name.replace("_", " "),
-        profile,
-    )
+    return "{} ({:d})".format(Profiles(profile).name.replace("_", " "), profile,)
+
 
 def known_wavelet_to_string(wavelet_index):
     """
@@ -64,14 +58,12 @@ def known_wavelet_to_string(wavelet_index):
         "Haar With Shift (4)"
     """
     return "{} ({:d})".format(
-        WaveletFilters(wavelet_index).name.replace("_", " ").title(),
-        wavelet_index,
+        WaveletFilters(wavelet_index).name.replace("_", " ").title(), wavelet_index,
     )
 
+
 def explain_parse_code_sequence_structure_restrictions(
-    actual_parse_code,
-    expected_parse_codes,
-    expected_end,
+    actual_parse_code, expected_parse_codes, expected_end,
 ):
     """
     Produce an sentence explaining how a particular sequence requirement has
@@ -91,21 +83,17 @@ def explain_parse_code_sequence_structure_restrictions(
     """
     return "{} was encountered but {} expected.".format(
         (
-            "The parse code {}".format(
-                known_parse_code_to_string(actual_parse_code),
-            )
-            if actual_parse_code is not None else
-            "No further parse code"
+            "The parse code {}".format(known_parse_code_to_string(actual_parse_code),)
+            if actual_parse_code is not None
+            else "No further parse code"
         ),
         (
             "no further parse code"
-            if expected_end is True else
-            "any parse code"
-            if expected_parse_codes is None else
-            " or ".join(
-                map(known_parse_code_to_string, expected_parse_codes)
-            )
-        )
+            if expected_end is True
+            else "any parse code"
+            if expected_parse_codes is None
+            else " or ".join(map(known_parse_code_to_string, expected_parse_codes))
+        ),
     )
 
 
@@ -113,10 +101,10 @@ class ConformanceError(Exception):
     """
     Base class for all bitstream conformance failiure exceptions.
     """
-    
+
     def __str__(self):
         return wrap_paragraphs(self.explain()).partition("\n")[0]
-    
+
     def explain(self):
         """
         Produce a detailed human readable explanation of the conformance
@@ -129,7 +117,7 @@ class ConformanceError(Exception):
         using :py:func:`str`.
         """
         raise NotImplementedError()
-    
+
     def bitstream_viewer_hint(self):
         """
         Return a set of sample command line arguments for the
@@ -152,7 +140,7 @@ class ConformanceError(Exception):
             
                 {cmd} {file} --offset {offset}
         """
-    
+
     def offending_offset(self):
         """
         If known, return the bit-offset of the offending part of the bitstream.
@@ -165,11 +153,12 @@ class ConformanceError(Exception):
 # Conformance failure exceptions
 ################################################################################
 
+
 class UnexpectedEndOfStream(ConformanceError):
     """
     Reached the end of the stream while attempting to perform read operation.
     """
-    
+
     def explain(self):
         return """
             Unexpectedly encountered the end of the stream.
@@ -188,7 +177,7 @@ class TrailingBytesAfterEndOfSequence(ConformanceError):
     Reached an end of sequence marker but there are bytes still remaining in
     the stream.
     """
-    
+
     def explain(self):
         return """
             Trailing bytes were found following an end-of-sequence parse info
@@ -202,11 +191,11 @@ class BadParseCode(ConformanceError):
     
     The exception argument will contain the received parse code.
     """
-    
+
     def __init__(self, parse_code):
         self.parse_code = parse_code
         super(BadParseCode, self).__init__()
-    
+
     def explain(self):
         return """
             An invalid parse code, 0x{:02X}, was provided to a parse info
@@ -216,7 +205,9 @@ class BadParseCode(ConformanceError):
             
             Perhaps this bitstream conforms to an earlier or later version of the
             VC-2 standard?
-        """.format(self.parse_code)
+        """.format(
+            self.parse_code
+        )
 
 
 class BadParseInfoPrefix(ConformanceError):
@@ -228,11 +219,11 @@ class BadParseInfoPrefix(ConformanceError):
     
     The exception argument will contain the read prefix value.
     """
-    
+
     def __init__(self, parse_info_prefix):
         self.parse_info_prefix = parse_info_prefix
         super(BadParseInfoPrefix, self).__init__()
-    
+
     def explain(self):
         return """
             An invalid prefix, 0x{:08X}, was encountered in a parse info block
@@ -244,8 +235,7 @@ class BadParseInfoPrefix(ConformanceError):
             length? For example, were any unused bits in a picture slice filled
             with the correct number of padding bits (A.4.2)?
         """.format(
-            self.parse_info_prefix,
-            PARSE_INFO_PREFIX,
+            self.parse_info_prefix, PARSE_INFO_PREFIX,
         )
 
 
@@ -266,13 +256,13 @@ class InconsistentNextParseOffset(ConformanceError):
         The actual offset from parse_info_offset of the next parse_info block
         in the stream.
     """
-    
+
     def __init__(self, parse_info_offset, next_parse_offset, true_parse_offset):
         self.parse_info_offset = parse_info_offset
         self.next_parse_offset = next_parse_offset
         self.true_parse_offset = true_parse_offset
         super(InconsistentNextParseOffset, self).__init__()
-    
+
     def explain(self):
         return """
             Incorrect next_parse_offset value in parse info: got {} bytes,
@@ -292,7 +282,7 @@ class InconsistentNextParseOffset(ConformanceError):
             to_bit_offset(self.parse_info_offset + self.true_parse_offset),
             PARSE_INFO_HEADER_BYTES,
         )
-    
+
     def bitstream_viewer_hint(self):
         return """
             To view the erroneous parse info block:
@@ -302,8 +292,10 @@ class InconsistentNextParseOffset(ConformanceError):
             To view the following parse info block:
             
                 {{cmd}} {{file}} --offset {{offset}} --after-context 144
-        """.format(to_bit_offset(self.parse_info_offset))
-    
+        """.format(
+            to_bit_offset(self.parse_info_offset)
+        )
+
     def offending_offset(self):
         return to_bit_offset(self.parse_info_offset)
 
@@ -316,11 +308,11 @@ class MissingNextParseOffset(ConformanceError):
     The parse_code for the offending parse info block is provided as an
     argument.
     """
-    
+
     def __init__(self, parse_code):
         self.parse_code = parse_code
         super(MissingNextParseOffset, self).__init__()
-    
+
     def explain(self):
         return """
             A next_parse_offset value of zero was provided in a {} (parse_code
@@ -344,11 +336,11 @@ class InvalidNextParseOffset(ConformanceError):
     
     The exception argument will contain the offending next_parse_offset value.
     """
-    
+
     def __init__(self, next_parse_offset):
         self.next_parse_offset = next_parse_offset
         super(InvalidNextParseOffset, self).__init__()
-    
+
     def explain(self):
         return """
             Invalid next_parse_offset value {} found in parse info header
@@ -376,11 +368,11 @@ class NonZeroNextParseOffsetAtEndOfSequence(ConformanceError):
     
     The exception argument will contain the offending next_parse_offset value.
     """
-    
+
     def __init__(self, next_parse_offset):
         self.next_parse_offset = next_parse_offset
         super(NonZeroNextParseOffsetAtEndOfSequence, self).__init__()
-    
+
     def explain(self):
         return """
             Non-zero next_parse_offset value, {}, in the parse info at the end
@@ -410,13 +402,15 @@ class InconsistentPreviousParseOffset(ConformanceError):
         The actual byte offset from the last parse_info to the current one in
         the stream.
     """
-    
-    def __init__(self, last_parse_info_offset, previous_parse_offset, true_parse_offset):
+
+    def __init__(
+        self, last_parse_info_offset, previous_parse_offset, true_parse_offset
+    ):
         self.last_parse_info_offset = last_parse_info_offset
         self.previous_parse_offset = previous_parse_offset
         self.true_parse_offset = true_parse_offset
         super(InconsistentPreviousParseOffset, self).__init__()
-    
+
     def explain(self):
         return """
             Incorrect previous_parse_offset value in parse info: got {} bytes,
@@ -442,7 +436,7 @@ class InconsistentPreviousParseOffset(ConformanceError):
             to_bit_offset(self.last_parse_info_offset),
             PARSE_INFO_HEADER_BYTES,
         )
-    
+
     def bitstream_viewer_hint(self):
         return """
             To view the erroneous parse info block:
@@ -452,7 +446,9 @@ class InconsistentPreviousParseOffset(ConformanceError):
             To view the proceeding parse info block:
             
                 {{cmd}} {{file}} --offset {} --after-context 144
-        """.format(to_bit_offset(self.last_parse_info_offset))
+        """.format(
+            to_bit_offset(self.last_parse_info_offset)
+        )
 
 
 class NonZeroPreviousParseOffsetAtStartOfSequence(ConformanceError):
@@ -462,11 +458,11 @@ class NonZeroPreviousParseOffsetAtStartOfSequence(ConformanceError):
     
     The exception argument will contain the offending previous_parse_offset value.
     """
-    
+
     def __init__(self, previous_parse_offset):
         self.previous_parse_offset = previous_parse_offset
         super(NonZeroPreviousParseOffsetAtStartOfSequence, self).__init__()
-    
+
     def explain(self):
         return """
             Non-zero previous_parse_offset, {}, in the parse info at the start
@@ -498,31 +494,35 @@ class SequenceHeaderChangedMidSequence(ConformanceError):
         The bitstream byte-offset and raw bytes for the offending
         sequence_header in the stream.
     """
-    
-    def __init__(self,
-                 last_sequence_header_offset,
-                 last_sequence_header_bytes,
-                 this_sequence_header_offset,
-                 this_sequence_header_bytes):
+
+    def __init__(
+        self,
+        last_sequence_header_offset,
+        last_sequence_header_bytes,
+        this_sequence_header_offset,
+        this_sequence_header_bytes,
+    ):
         self.last_sequence_header_offset = last_sequence_header_offset
         self.last_sequence_header_bytes = last_sequence_header_bytes
         self.this_sequence_header_offset = this_sequence_header_offset
         self.this_sequence_header_bytes = this_sequence_header_bytes
         super(SequenceHeaderChangedMidSequence, self).__init__()
-    
+
     def explain(self):
         first_difference_offset = 0
-        for old, new in zip(bytearray(self.last_sequence_header_bytes),
-                            bytearray(self.this_sequence_header_bytes)):
+        for old, new in zip(
+            bytearray(self.last_sequence_header_bytes),
+            bytearray(self.this_sequence_header_bytes),
+        ):
             if old != new:
                 for i in reversed(range(8)):
-                    if (old & (1<<i)) != (new & (1<<i)):
-                        first_difference_offset += 7-i
+                    if (old & (1 << i)) != (new & (1 << i)):
+                        first_difference_offset += 7 - i
                         break
                 break
             else:
                 first_difference_offset += 8
-        
+
         return """
             Sequence header is not byte-for-byte identical to the previous
             sequence header in the same sequence (11.1).
@@ -546,7 +546,7 @@ class SequenceHeaderChangedMidSequence(ConformanceError):
             to_bit_offset(self.last_sequence_header_offset) + first_difference_offset,
             to_bit_offset(self.this_sequence_header_offset) + first_difference_offset,
         )
-    
+
     def bitstream_viewer_hint(self):
         return """
             To view the previous sequence header
@@ -559,16 +559,16 @@ class SequenceHeaderChangedMidSequence(ConformanceError):
         """.format(
             to_bit_offset(self.last_sequence_header_offset),
             to_bit_offset(
-                self.last_sequence_header_offset +
-                len(self.last_sequence_header_bytes)
-            ) - 1,
+                self.last_sequence_header_offset + len(self.last_sequence_header_bytes)
+            )
+            - 1,
             to_bit_offset(self.this_sequence_header_offset),
             to_bit_offset(
-                self.this_sequence_header_offset +
-                len(self.this_sequence_header_bytes)
-            ) - 1,
+                self.this_sequence_header_offset + len(self.this_sequence_header_bytes)
+            )
+            - 1,
         )
-    
+
     def offending_offset(self):
         return to_bit_offset(self.this_sequence_header_offset)
 
@@ -579,11 +579,11 @@ class BadProfile(ConformanceError):
     
     The exception argument will contain the received profile number.
     """
-    
+
     def __init__(self, profile):
         self.profile = profile
         super(BadProfile, self).__init__()
-    
+
     def explain(self):
         return """
             An invalid profile number, {}, was provided in the parse parameters
@@ -593,7 +593,9 @@ class BadProfile(ConformanceError):
             
             Perhaps this bitstream conforms to an earlier or later version of
             the VC-2 standard?
-        """.format(self.profile)
+        """.format(
+            self.profile
+        )
 
 
 class BadLevel(ConformanceError):
@@ -602,11 +604,11 @@ class BadLevel(ConformanceError):
     
     The exception argument will contain the received level number.
     """
-    
+
     def __init__(self, level):
         self.level = level
         super(BadLevel, self).__init__()
-    
+
     def explain(self):
         return """
             An invalid level number, {}, was provided in the parse parameters
@@ -617,7 +619,9 @@ class BadLevel(ConformanceError):
             
             Perhaps this bitstream conforms to an earlier or later version of
             the VC-2 standard?
-        """.format(self.level)
+        """.format(
+            self.level
+        )
 
 
 class GenericInvalidSequence(ConformanceError):
@@ -635,13 +639,13 @@ class GenericInvalidSequence(ConformanceError):
     :py:attr:`expected_end` is True if it would have been acceptable for the
     sequence to have ended at this point.
     """
-    
+
     def __init__(self, parse_code, expected_parse_codes, expected_end):
         self.parse_code = parse_code
         self.expected_parse_codes = expected_parse_codes
         self.expected_end = expected_end
         super(GenericInvalidSequence, self).__init__()
-    
+
     def explain(self):
         return """
             The current sequence does not match the structure defined for VC-2
@@ -652,12 +656,10 @@ class GenericInvalidSequence(ConformanceError):
             Did the sequence begin with a non-sequence header data unit?
         """.format(
             explain_parse_code_sequence_structure_restrictions(
-                self.parse_code,
-                self.expected_parse_codes,
-                self.expected_end,
+                self.parse_code, self.expected_parse_codes, self.expected_end,
             )
         )
-    
+
     def bitstream_viewer_hint(self):
         return """
             To view the offending part of the bitstream:
@@ -683,14 +685,14 @@ class LevelInvalidSequence(ConformanceError):
     
     :py:attr:`level` is the current VC-2 level.
     """
-    
+
     def __init__(self, parse_code, expected_parse_codes, expected_end, level):
         self.parse_code = parse_code
         self.expected_parse_codes = expected_parse_codes
         self.expected_end = expected_end
         self.level = level
         super(LevelInvalidSequence, self).__init__()
-    
+
     def explain(self):
         return """
             The current sequence does not match the structure required by the
@@ -704,12 +706,10 @@ class LevelInvalidSequence(ConformanceError):
             LEVELS[self.level].standard,
             LEVEL_SEQUENCE_RESTRICTIONS[self.level].sequence_restriction_explanation,
             explain_parse_code_sequence_structure_restrictions(
-                self.parse_code,
-                self.expected_parse_codes,
-                self.expected_end,
+                self.parse_code, self.expected_parse_codes, self.expected_end,
             ),
         )
-    
+
     def bitstream_viewer_hint(self):
         return """
             To view the offending part of the bitstream:
@@ -725,12 +725,12 @@ class ParseCodeNotAllowedInProfile(ConformanceError):
     The offending parse_code and profile combination will be provided in
     :py:attr:`parse_code` and :py;attr:`profile`.
     """
-    
+
     def __init__(self, parse_code, profile):
         self.parse_code = parse_code
         self.profile = profile
         super(ParseCodeNotAllowedInProfile, self).__init__()
-    
+
     def explain(self):
         return """
             The parse code {} is not allowed in the {} profile (C.2).
@@ -756,25 +756,27 @@ class ValueNotAllowedInLevel(ConformanceError):
     The allowed :py:class:`~vc2_conformance._constraint_table.ValueSet` will be
     placed in :py:attr:`allowed_values`.
     """
-    
+
     def __init__(self, level_constrained_values, key, value, allowed_values):
         self.level_constrained_values = level_constrained_values
         self.key = key
         self.value = value
         self.allowed_values = allowed_values
         super(ValueNotAllowedInLevel, self).__init__()
-    
+
     def explain(self):
         level = self.level_constrained_values["level"]
-        
-        return dedent("""
+
+        return dedent(
+            """
             The {} value {} is not allowed by level {}, expected {} ({}).
             
             The restriction above may be more constrained than expected due to
             one of the following previously encountered options:
             
             {}
-        """).format(
+        """
+        ).format(
             self.key,
             self.value,
             level,
@@ -783,7 +785,7 @@ class ValueNotAllowedInLevel(ConformanceError):
             "\n".join(
                 "* {} = {!r}".format(key, value)
                 for key, value in self.level_constrained_values.items()
-            )
+            ),
         )
 
 
@@ -794,11 +796,11 @@ class BadBaseVideoFormat(ConformanceError):
     
     The exception argument will contain the received base video format number.
     """
-    
+
     def __init__(self, base_video_format):
         self.base_video_format = base_video_format
         super(BadBaseVideoFormat, self).__init__()
-    
+
     def explain(self):
         return """
             An invalid base video format, {}, was provided in a sequence header
@@ -808,7 +810,9 @@ class BadBaseVideoFormat(ConformanceError):
             
             Perhaps this bitstream conforms to an earlier or later version of
             the VC-2 standard?
-        """.format(self.base_video_format)
+        """.format(
+            self.base_video_format
+        )
 
 
 class BadPictureCodingMode(ConformanceError):
@@ -817,18 +821,20 @@ class BadPictureCodingMode(ConformanceError):
     
     The exception argument will contain the received picture coding mode value
     """
-    
+
     def __init__(self, picture_coding_mode):
         self.picture_coding_mode = picture_coding_mode
         super(BadPictureCodingMode, self).__init__()
-    
+
     def explain(self):
         return """
             An invalid picture coding mode, {:d}, was provided in a sequence
             header (11.5).
             
             See (11.5) for an enumeration of allowed values.
-        """.format(self.picture_coding_mode)
+        """.format(
+            self.picture_coding_mode
+        )
 
 
 class ZeroPixelFrameSize(ConformanceError):
@@ -837,17 +843,19 @@ class ZeroPixelFrameSize(ConformanceError):
     
     The actual dimensions are specified as arguments.
     """
-    
+
     def __init__(self, frame_width, frame_height):
         self.frame_width = frame_width
         self.frame_height = frame_height
         super(ZeroPixelFrameSize, self).__init__()
-    
+
     def explain(self):
         return """
             An invalid custom frame size, {}x{} was provided containing zero
             pixels (11.4.3).
-        """.format(self.frame_width, self.frame_height)
+        """.format(
+            self.frame_width, self.frame_height
+        )
 
 
 class BadColorDifferenceSamplingFormat(ConformanceError):
@@ -857,18 +865,20 @@ class BadColorDifferenceSamplingFormat(ConformanceError):
     
     The exception argument will contain the index.
     """
-    
+
     def __init__(self, color_diff_format_index):
         self.color_diff_format_index = color_diff_format_index
         super(BadColorDifferenceSamplingFormat, self).__init__()
-    
+
     def explain(self):
         return """
             An invalid colour difference sampling format, {:d}, was provided
             (11.4.4).
             
             See (Table 11.2) for an enumeration of allowed values.
-        """.format(self.color_diff_format_index)
+        """.format(
+            self.color_diff_format_index
+        )
 
 
 class BadSourceSamplingMode(ConformanceError):
@@ -877,17 +887,19 @@ class BadSourceSamplingMode(ConformanceError):
     
     The exception argument will contain the offending mode.
     """
-    
+
     def __init__(self, source_sampling):
         self.source_sampling = source_sampling
         super(BadSourceSamplingMode, self).__init__()
-    
+
     def explain(self):
         return """
             An invalid source sampling mode, {:d}, was provided (11.4.5).
             
             See (11.4.5) for an enumeration of allowed values.
-        """.format(self.source_sampling)
+        """.format(
+            self.source_sampling
+        )
 
 
 class BadPresetFrameRateIndex(ConformanceError):
@@ -896,17 +908,19 @@ class BadPresetFrameRateIndex(ConformanceError):
     
     The exception argument will contain the offending index.
     """
-    
+
     def __init__(self, index):
         self.index = index
         super(BadPresetFrameRateIndex, self).__init__()
-    
+
     def explain(self):
         return """
             An invalid preset frame rate index, {:d}, was provided (11.4.6).
             
             See (Table 11.3) for an enumeration of allowed values.
-        """.format(self.index)
+        """.format(
+            self.index
+        )
 
 
 class FrameRateHasZeroNumerator(ConformanceError):
@@ -916,17 +930,19 @@ class FrameRateHasZeroNumerator(ConformanceError):
     
     The denominator is provided as an argument.
     """
-    
+
     def __init__(self, frame_rate_denom):
         self.frame_rate_denom = frame_rate_denom
         super(FrameRateHasZeroNumerator, self).__init__()
-    
+
     def explain(self):
         return """
             An invalid frame rate, 0/{} fps, was provided (11.4.6).
             
             Frame rates must not be zero.
-        """.format(self.frame_rate_denom)
+        """.format(
+            self.frame_rate_denom
+        )
 
 
 class FrameRateHasZeroDenominator(ConformanceError):
@@ -936,17 +952,19 @@ class FrameRateHasZeroDenominator(ConformanceError):
     
     The numerator is provided as an argument.
     """
-    
+
     def __init__(self, frame_rate_numer):
         self.frame_rate_numer = frame_rate_numer
         super(FrameRateHasZeroDenominator, self).__init__()
-    
+
     def explain(self):
         return """
             An invalid frame rate, {}/0 fps, was provided (11.4.6).
             
             The frame rate specification contains a division by zero.
-        """.format(self.frame_rate_numer)
+        """.format(
+            self.frame_rate_numer
+        )
 
 
 class BadPresetPixelAspectRatio(ConformanceError):
@@ -956,18 +974,20 @@ class BadPresetPixelAspectRatio(ConformanceError):
     
     The exception argument will contain the offending index.
     """
-    
+
     def __init__(self, index):
         self.index = index
         super(BadPresetPixelAspectRatio, self).__init__()
-    
+
     def explain(self):
         return """
             An invalid preset pixel aspect ratio index, {:d}, was provided
             (11.4.7).
             
             See (Table 11.4) for an enumeration of allowed values.
-        """.format(self.index)
+        """.format(
+            self.index
+        )
 
 
 class PixelAspectRatioContainsZeros(ConformanceError):
@@ -976,20 +996,19 @@ class PixelAspectRatioContainsZeros(ConformanceError):
     
     The ratio numerator/denominator is provided.
     """
-    
+
     def __init__(self, pixel_aspect_ratio_numer, pixel_aspect_ratio_denom):
         self.pixel_aspect_ratio_numer = pixel_aspect_ratio_numer
         self.pixel_aspect_ratio_denom = pixel_aspect_ratio_denom
         super(PixelAspectRatioContainsZeros, self).__init__()
-    
+
     def explain(self):
         return """
             An invalid pixel aspect ratio, {}:{}, was provided (11.4.7).
             
             Pixel aspect ratios must be valid ratios (i.e. not contain zeros).
         """.format(
-            self.pixel_aspect_ratio_numer,
-            self.pixel_aspect_ratio_denom,
+            self.pixel_aspect_ratio_numer, self.pixel_aspect_ratio_denom,
         )
 
 
@@ -1001,9 +1020,16 @@ class CleanAreaOutOfRange(ConformanceError):
     The offending clean area width, height, left and top offset will be
     included as exception arguments, followed by the picture width and height.
     """
-    
-    def __init__(self, clean_width, clean_height, left_offset, top_offset,
-                 frame_width, frame_height):
+
+    def __init__(
+        self,
+        clean_width,
+        clean_height,
+        left_offset,
+        top_offset,
+        frame_width,
+        frame_height,
+    ):
         self.clean_width = clean_width
         self.clean_height = clean_height
         self.left_offset = left_offset
@@ -1011,14 +1037,14 @@ class CleanAreaOutOfRange(ConformanceError):
         self.frame_width = frame_width
         self.frame_height = frame_height
         super(CleanAreaOutOfRange, self).__init__()
-    
+
     def explain(self):
         offending_dimensions = []
         if self.clean_width + self.left_offset > self.frame_width:
             offending_dimensions.append("width")
         if self.clean_height + self.top_offset > self.frame_height:
             offending_dimensions.append("height")
-        
+
         return """
             The clean area {} extend{} beyond the frame boundary (11.4.8).
             
@@ -1049,17 +1075,19 @@ class BadPresetSignalRange(ConformanceError):
     
     The exception argument will contain the offending index.
     """
-    
+
     def __init__(self, index):
         self.index = index
         super(BadPresetSignalRange, self).__init__()
-    
+
     def explain(self):
         return """
             An invalid preset signal range index, {:d}, was provided (11.4.9).
             
             See (Table 11.5) for an enumeration of allowed values.
-        """.format(self.index)
+        """.format(
+            self.index
+        )
 
 
 class BadPresetColorSpec(ConformanceError):
@@ -1068,17 +1096,19 @@ class BadPresetColorSpec(ConformanceError):
     
     The exception argument will contain the offending index.
     """
-    
+
     def __init__(self, index):
         self.index = index
         super(BadPresetColorSpec, self).__init__()
-    
+
     def explain(self):
         return """
             An invalid preset color spec index, {:d}, was provided (11.4.10.1).
             
             See (Table 11.6) for an enumeration of allowed values.
-        """.format(self.index)
+        """.format(
+            self.index
+        )
 
 
 class BadPresetColorPrimaries(ConformanceError):
@@ -1087,17 +1117,19 @@ class BadPresetColorPrimaries(ConformanceError):
     
     The exception argument will contain the offending index.
     """
-    
+
     def __init__(self, index):
         self.index = index
         super(BadPresetColorPrimaries, self).__init__()
-    
+
     def explain(self):
         return """
             An invalid color primaries index, {:d}, was provided (11.4.10.2).
             
             See (Table 11.7) for an enumeration of allowed values.
-        """.format(self.index)
+        """.format(
+            self.index
+        )
 
 
 class BadPresetColorMatrix(ConformanceError):
@@ -1106,17 +1138,19 @@ class BadPresetColorMatrix(ConformanceError):
     
     The exception argument will contain the offending index.
     """
-    
+
     def __init__(self, index):
         self.index = index
         super(BadPresetColorMatrix, self).__init__()
-    
+
     def explain(self):
         return """
             An invalid color matrix index, {:d}, was provided (11.4.10.3).
             
             See (Table 11.8) for an enumeration of allowed values.
-        """.format(self.index)
+        """.format(
+            self.index
+        )
 
 
 class BadPresetTransferFunction(ConformanceError):
@@ -1125,17 +1159,19 @@ class BadPresetTransferFunction(ConformanceError):
     
     The exception argument will contain the offending index.
     """
-    
+
     def __init__(self, index):
         self.index = index
         super(BadPresetTransferFunction, self).__init__()
-    
+
     def explain(self):
         return """
             An invalid transfer function index, {:d}, was provided (11.4.10.4).
             
             See (Table 11.9) for an enumeration of allowed values.
-        """.format(self.index)
+        """.format(
+            self.index
+        )
 
 
 class PictureDimensionsNotMultipleOfFrameDimensions(ConformanceError):
@@ -1146,9 +1182,16 @@ class PictureDimensionsNotMultipleOfFrameDimensions(ConformanceError):
     
     The actual dimensions are specified as arguments.
     """
-    
-    def __init__(self, luma_width, luma_height, color_diff_width, color_diff_height,
-                 frame_width, frame_height):
+
+    def __init__(
+        self,
+        luma_width,
+        luma_height,
+        color_diff_width,
+        color_diff_height,
+        frame_width,
+        frame_height,
+    ):
         self.luma_width = luma_width
         self.luma_height = luma_height
         self.color_diff_width = color_diff_width
@@ -1156,7 +1199,7 @@ class PictureDimensionsNotMultipleOfFrameDimensions(ConformanceError):
         self.frame_width = frame_width
         self.frame_height = frame_height
         super(PictureDimensionsNotMultipleOfFrameDimensions, self).__init__()
-    
+
     def explain(self):
         (
             luma_width_message,
@@ -1165,8 +1208,8 @@ class PictureDimensionsNotMultipleOfFrameDimensions(ConformanceError):
             color_diff_height_message,
         ) = (
             " (not a factor of {})".format(frame_dimen)
-            if component_dimen == 0 or (frame_dimen % component_dimen) != 0 else
-            ""
+            if component_dimen == 0 or (frame_dimen % component_dimen) != 0
+            else ""
             for (component_dimen, frame_dimen) in [
                 (self.luma_width, self.frame_width),
                 (self.luma_height, self.frame_height),
@@ -1174,7 +1217,7 @@ class PictureDimensionsNotMultipleOfFrameDimensions(ConformanceError):
                 (self.color_diff_height, self.frame_height),
             ]
         )
-        
+
         return """
             The frame dimensions cannot be evenly divided by the current colour
             difference sampling format and picture coding mode (11.6.2)
@@ -1200,10 +1243,14 @@ class PictureDimensionsNotMultipleOfFrameDimensions(ConformanceError):
         """.format(
             self.frame_width,
             self.frame_height,
-            self.luma_width, luma_width_message,
-            self.luma_height, luma_height_message,
-            self.color_diff_width, color_diff_width_message,
-            self.color_diff_height, color_diff_height_message,
+            self.luma_width,
+            luma_width_message,
+            self.luma_height,
+            luma_height_message,
+            self.color_diff_width,
+            color_diff_width_message,
+            self.color_diff_height,
+            color_diff_height_message,
         )
 
 
@@ -1224,15 +1271,20 @@ class NonConsecutivePictureNumbers(ConformanceError):
     :py:attr:`picture_number` contains the picture number of the offending
     picture in the sequence.
     """
-    
-    def __init__(self, last_picture_number_offset, last_picture_number,
-                 picture_number_offset, picture_number):
+
+    def __init__(
+        self,
+        last_picture_number_offset,
+        last_picture_number,
+        picture_number_offset,
+        picture_number,
+    ):
         self.last_picture_number_offset = last_picture_number_offset
         self.last_picture_number = last_picture_number
         self.picture_number_offset = picture_number_offset
         self.picture_number = picture_number
         super(NonConsecutivePictureNumbers, self).__init__()
-    
+
     def explain(self):
         return """
             Non-consecutive picture number, got {} after {} (12.2) and (14.2).
@@ -1251,7 +1303,7 @@ class NonConsecutivePictureNumbers(ConformanceError):
             to_bit_offset(*self.last_picture_number_offset),
             to_bit_offset(*self.picture_number_offset),
         )
-    
+
     def bitstream_viewer_hint(self):
         return """
             To view the erroneous picture number definition:
@@ -1275,11 +1327,11 @@ class OddNumberOfFieldsInSequence(ConformanceError):
     The actual number of fields/pictures in the offending sequence will be
     included as an argument.
     """
-    
+
     def __init__(self, num_fields_in_sequence):
         self.num_fields_in_sequence = num_fields_in_sequence
         super(OddNumberOfFieldsInSequence, self).__init__()
-    
+
     def explain(self):
         return """
             Sequence contains a non-whole number of frames ({} fields)
@@ -1292,7 +1344,7 @@ class OddNumberOfFieldsInSequence(ConformanceError):
         """.format(
             self.num_fields_in_sequence,
         )
-    
+
     def bitstream_viewer_hint(self):
         return """
             To view the offending part of the bitstream:
@@ -1307,11 +1359,11 @@ class EarliestFieldHasOddPictureNumber(ConformanceError):
     
     The offending picture number will be included as an argument.
     """
-    
+
     def __init__(self, picture_number):
         self.picture_number = picture_number
         super(EarliestFieldHasOddPictureNumber, self).__init__()
-    
+
     def explain(self):
         return """
             First field in sequence has an odd picture number, {} (12.2).
@@ -1331,18 +1383,20 @@ class BadWaveletIndex(ConformanceError):
     
     The exception argument will contain the offending wavelet index
     """
-    
+
     def __init__(self, wavelet_index):
         self.wavelet_index = wavelet_index
         super(BadWaveletIndex, self).__init__()
-    
+
     def explain(self):
         return """
             An invalid wavelet index, {:d}, was provided in the transform
             parameters (12.4.1).
             
             See (Table 12.1) for an enumeration of allowed values.
-        """.format(self.wavelet_index)
+        """.format(
+            self.wavelet_index
+        )
 
 
 class BadHOWaveletIndex(ConformanceError):
@@ -1352,18 +1406,20 @@ class BadHOWaveletIndex(ConformanceError):
     
     The exception argument will contain the offending wavelet index
     """
-    
+
     def __init__(self, wavelet_index_ho):
         self.wavelet_index_ho = wavelet_index_ho
         super(BadHOWaveletIndex, self).__init__()
-    
+
     def explain(self):
         return """
             An invalid horizontal only wavelet index, {:d}, was provided in the
             extended transform parameters (12.4.4.2).
             
             See (Table 12.1) for an enumeration of allowed values.
-        """.format(self.wavelet_index_ho)
+        """.format(
+            self.wavelet_index_ho
+        )
 
 
 class ZeroSlicesInCodedPicture(ConformanceError):
@@ -1372,12 +1428,12 @@ class ZeroSlicesInCodedPicture(ConformanceError):
     
     The exception argument will contain the offending slice counts
     """
-    
+
     def __init__(self, slices_x, slices_y):
         self.slices_x = slices_x
         self.slices_y = slices_y
         super(ZeroSlicesInCodedPicture, self).__init__()
-    
+
     def explain(self):
         return """
             Invalid slice count, {}x{}, specified in slice parameters
@@ -1385,8 +1441,7 @@ class ZeroSlicesInCodedPicture(ConformanceError):
             
             There must be at least one slice in either dimension.
         """.format(
-            self.slices_x,
-            self.slices_y,
+            self.slices_x, self.slices_y,
         )
 
 
@@ -1397,11 +1452,11 @@ class SliceBytesHasZeroDenominator(ConformanceError):
     
     The numerator is provided as an argument.
     """
-    
+
     def __init__(self, slice_bytes_numerator):
         self.slice_bytes_numerator = slice_bytes_numerator
         super(SliceBytesHasZeroDenominator, self).__init__()
-    
+
     def explain(self):
         return """
             Invalid slice bytes count, {}/0, in slice parameters (12.4.5.2).
@@ -1419,12 +1474,12 @@ class SliceBytesIsLessThanOne(ConformanceError):
     
     The offending numerator and denominator is provided as an argument.
     """
-    
+
     def __init__(self, slice_bytes_numerator, slice_bytes_denominator):
         self.slice_bytes_numerator = slice_bytes_numerator
         self.slice_bytes_denominator = slice_bytes_denominator
         super(SliceBytesIsLessThanOne, self).__init__()
-    
+
     def explain(self):
         return """
             Slice bytes count, {}/{}, in slice parameters is less than one
@@ -1432,8 +1487,7 @@ class SliceBytesIsLessThanOne(ConformanceError):
             
             Slices must be at least 1 byte.
         """.format(
-            self.slice_bytes_numerator,
-            self.slice_bytes_denominator,
+            self.slice_bytes_numerator, self.slice_bytes_denominator,
         )
 
 
@@ -1445,14 +1499,14 @@ class NoQuantisationMatrixAvailable(ConformanceError):
     The offending combination of wavelet_index, wavelet_index_ho, dwt_depth,
     and dwt_depth_ho are provided as arguments.
     """
-    
+
     def __init__(self, wavelet_index, wavelet_index_ho, dwt_depth, dwt_depth_ho):
         self.wavelet_index = wavelet_index
         self.wavelet_index_ho = wavelet_index_ho
         self.dwt_depth = dwt_depth
         self.dwt_depth_ho = dwt_depth_ho
         super(NoQuantisationMatrixAvailable, self).__init__()
-    
+
     def explain(self):
         return """
             A default quantisation matrix is not available for current
@@ -1482,17 +1536,18 @@ class QuantisationMatrixValueNotAllowedInLevel(ConformanceError):
     :py:class:`~vc2_conformance._constraint_table.ValueSet`) will be passed as
     arguments along with the current level constraint dictionary.
     """
-    
+
     def __init__(self, value, allowed_values, level_constrained_values):
         self.value = value
         self.allowed_values = allowed_values
         self.level_constrained_values = level_constrained_values
         super(QuantisationMatrixValueNotAllowedInLevel, self).__init__()
-    
+
     def explain(self):
         level = self.level_constrained_values["level"]
-        
-        return dedent("""
+
+        return dedent(
+            """
             Custom quantisation matrix contains a value, {}, outside the
             range {} allowed by the current level, {} ({}).
             
@@ -1500,7 +1555,8 @@ class QuantisationMatrixValueNotAllowedInLevel(ConformanceError):
             one of the following previously encountered options:
             
             {}
-        """).format(
+        """
+        ).format(
             self.value,
             self.allowed_values,
             level,
@@ -1508,7 +1564,7 @@ class QuantisationMatrixValueNotAllowedInLevel(ConformanceError):
             "\n".join(
                 "* {} = {!r}".format(key, value)
                 for key, value in self.level_constrained_values.items()
-            )
+            ),
         )
 
 
@@ -1516,7 +1572,7 @@ class SliceSizeScalerIsZero(ConformanceError):
     """
     (12.4.5.2) A slice_size_scaler value of zero was given.
     """
-    
+
     def explain(self):
         return """
             Slice parameter slice_size_scaler must not be zero (12.4.5.2)
@@ -1531,24 +1587,24 @@ class InvalidSliceYLength(ConformanceError):
     The offending slice_y_length, the number of bytes allowed in the slice and
     the slice coordinates are provided as an argument.
     """
-    
+
     def __init__(self, slice_y_length, slice_bytes, sx, sy):
         self.slice_y_length = slice_y_length
         self.slice_bytes = slice_bytes
         self.sx = sx
         self.sy = sy
         super(InvalidSliceYLength, self).__init__()
-    
+
     def explain(self):
         slice_bits_left = 8 * self.slice_bytes
-        
+
         # Account for qindex
         slice_bits_left -= 7
-        
+
         # Account for length field
         length_bits = intlog2(slice_bits_left)
         slice_bits_left -= length_bits
-        
+
         return """
             Low-delay slice_y_length value, {slice_y_length}, is out of range,
             expected a value no greater than {max_slice_y_length} (13.5.3.1).
@@ -1586,15 +1642,20 @@ class FragmentedPictureRestarted(ConformanceError):
     the incomplete picture and of this fragment header are included as
     arguments along with the number of slices received and remaining.
     """
-    
-    def __init__(self, initial_fragment_offset, this_fragment_offset,
-                 fragment_slices_received, fragment_slices_remaining):
+
+    def __init__(
+        self,
+        initial_fragment_offset,
+        this_fragment_offset,
+        fragment_slices_received,
+        fragment_slices_remaining,
+    ):
         self.initial_fragment_offset = initial_fragment_offset
         self.this_fragment_offset = this_fragment_offset
         self.fragment_slices_received = fragment_slices_received
         self.fragment_slices_remaining = fragment_slices_remaining
         super(FragmentedPictureRestarted, self).__init__()
-    
+
     def explain(self):
         return """
             A picture fragment with fragment_slice_count=0 was encountered
@@ -1617,13 +1678,15 @@ class FragmentedPictureRestarted(ConformanceError):
             self.fragment_slices_received + self.fragment_slices_remaining,
             to_bit_offset(*self.this_fragment_offset),
         )
-    
+
     def bitstream_viewer_hint(self):
         return """
             To view the offending part of the bitstream:
             
                 {{cmd}} {{file}} --from-offset {} --to_offset {{offset}} --show fragment_parse --hide slice
-        """.format(to_bit_offset(*self.initial_fragment_offset))
+        """.format(
+            to_bit_offset(*self.initial_fragment_offset)
+        )
 
 
 class SequenceContainsIncompleteFragmentedPicture(ConformanceError):
@@ -1634,14 +1697,18 @@ class SequenceContainsIncompleteFragmentedPicture(ConformanceError):
     the incomplete picture is included an argument along with the number of
     slices received and remaining.
     """
-    
-    def __init__(self, initial_fragment_offset,
-                 fragment_slices_received, fragment_slices_remaining):
+
+    def __init__(
+        self,
+        initial_fragment_offset,
+        fragment_slices_received,
+        fragment_slices_remaining,
+    ):
         self.initial_fragment_offset = initial_fragment_offset
         self.fragment_slices_received = fragment_slices_received
         self.fragment_slices_remaining = fragment_slices_remaining
         super(SequenceContainsIncompleteFragmentedPicture, self).__init__()
-    
+
     def explain(self):
         return """
             A sequence terminated while {} slice{} still outstanding in a
@@ -1660,13 +1727,15 @@ class SequenceContainsIncompleteFragmentedPicture(ConformanceError):
             self.fragment_slices_received,
             self.fragment_slices_received + self.fragment_slices_remaining,
         )
-    
+
     def bitstream_viewer_hint(self):
         return """
             To view the offending part of the bitstream:
             
                 {{cmd}} {{file}} --from-offset {} --to_offset {{offset}} --show parse_info --show fragment_parse --hide slice
-        """.format(to_bit_offset(*self.initial_fragment_offset))
+        """.format(
+            to_bit_offset(*self.initial_fragment_offset)
+        )
 
 
 class PictureInterleavedWithFragmentedPicture(ConformanceError):
@@ -1679,15 +1748,20 @@ class PictureInterleavedWithFragmentedPicture(ConformanceError):
     included an argument along with the number of slices received and remaining
     for the fragmented picture.
     """
-    
-    def __init__(self, initial_fragment_offset, this_offset,
-                 fragment_slices_received, fragment_slices_remaining):
+
+    def __init__(
+        self,
+        initial_fragment_offset,
+        this_offset,
+        fragment_slices_received,
+        fragment_slices_remaining,
+    ):
         self.initial_fragment_offset = initial_fragment_offset
         self.this_offset = this_offset
         self.fragment_slices_received = fragment_slices_received
         self.fragment_slices_remaining = fragment_slices_remaining
         super(PictureInterleavedWithFragmentedPicture, self).__init__()
-    
+
     def explain(self):
         return """
             A non-fragmented picture was encountered while {} slice{} still
@@ -1707,13 +1781,15 @@ class PictureInterleavedWithFragmentedPicture(ConformanceError):
             self.fragment_slices_received + self.fragment_slices_remaining,
             to_bit_offset(*self.this_offset),
         )
-    
+
     def bitstream_viewer_hint(self):
         return """
             To view the offending part of the bitstream:
             
                 {{cmd}} {{file}} --from-offset {} --to_offset {{offset}} --show parse_info --show fragment_parse --show picture_parse --hide slice
-        """.format(to_bit_offset(*self.initial_fragment_offset))
+        """.format(
+            to_bit_offset(*self.initial_fragment_offset)
+        )
 
 
 class PictureNumberChangedMidFragmentedPicture(ConformanceError):
@@ -1733,15 +1809,20 @@ class PictureNumberChangedMidFragmentedPicture(ConformanceError):
     :py:attr:`picture_number` contains the picture number of the offending
     fragment in the sequence.
     """
-    
-    def __init__(self, last_picture_number_offset, last_picture_number,
-                 picture_number_offset, picture_number):
+
+    def __init__(
+        self,
+        last_picture_number_offset,
+        last_picture_number,
+        picture_number_offset,
+        picture_number,
+    ):
         self.last_picture_number_offset = last_picture_number_offset
         self.last_picture_number = last_picture_number
         self.picture_number_offset = picture_number_offset
         self.picture_number = picture_number
         super(PictureNumberChangedMidFragmentedPicture, self).__init__()
-    
+
     def explain(self):
         return """
             The picture number changed from {} to {} within the same fragmented
@@ -1759,7 +1840,7 @@ class PictureNumberChangedMidFragmentedPicture(ConformanceError):
             to_bit_offset(*self.last_picture_number_offset),
             to_bit_offset(*self.picture_number_offset),
         )
-    
+
     def bitstream_viewer_hint(self):
         return """
             To view the offending part of the bitstream:
@@ -1779,23 +1860,25 @@ class TooManySlicesInFragmentedPicture(ConformanceError):
     included an argument along with the number of slices received, remaining
     and included in the offending fragment.
     """
-    
-    def __init__(self, initial_fragment_offset, this_fragment_offset,
-                 fragment_slices_received, fragment_slices_remaining,
-                 fragment_slice_count):
+
+    def __init__(
+        self,
+        initial_fragment_offset,
+        this_fragment_offset,
+        fragment_slices_received,
+        fragment_slices_remaining,
+        fragment_slice_count,
+    ):
         self.initial_fragment_offset = initial_fragment_offset
         self.this_fragment_offset = this_fragment_offset
         self.fragment_slices_received = fragment_slices_received
         self.fragment_slices_remaining = fragment_slices_remaining
         self.fragment_slice_count = fragment_slice_count
         super(TooManySlicesInFragmentedPicture, self).__init__()
-    
+
     def explain(self):
-        total_slices = (
-            self.fragment_slices_received +
-            self.fragment_slices_remaining
-        )
-        
+        total_slices = self.fragment_slices_received + self.fragment_slices_remaining
+
         return """
             The current fragmented picture contains too many picture slices
             (14.2).
@@ -1812,7 +1895,7 @@ class TooManySlicesInFragmentedPicture(ConformanceError):
             self.fragment_slice_count,
             self.fragment_slices_remaining,
         )
-    
+
     def bitstream_viewer_hint(self):
         return """
             To view the offending part of the bitstream:
@@ -1832,10 +1915,16 @@ class FragmentSlicesNotContiguous(ConformanceError):
     the picture and the offending fragment's header is included an argument
     along with the offending slice coordinates and expected slice coordinates.
     """
-    
-    def __init__(self, initial_fragment_offset, this_fragment_offset,
-                 fragment_x_offset, fragment_y_offset,
-                 expected_fragment_x_offset, expected_fragment_y_offset):
+
+    def __init__(
+        self,
+        initial_fragment_offset,
+        this_fragment_offset,
+        fragment_x_offset,
+        fragment_y_offset,
+        expected_fragment_x_offset,
+        expected_fragment_y_offset,
+    ):
         self.initial_fragment_offset = initial_fragment_offset
         self.this_fragment_offset = this_fragment_offset
         self.fragment_x_offset = fragment_x_offset
@@ -1843,7 +1932,7 @@ class FragmentSlicesNotContiguous(ConformanceError):
         self.expected_fragment_x_offset = expected_fragment_x_offset
         self.expected_fragment_y_offset = expected_fragment_y_offset
         super(FragmentSlicesNotContiguous, self).__init__()
-    
+
     def explain(self):
         return """
             The current picture fragment's slices are non-contiguous (14.2).
@@ -1864,7 +1953,7 @@ class FragmentSlicesNotContiguous(ConformanceError):
             self.fragment_y_offset,
             self.expected_fragment_y_offset,
         )
-    
+
     def bitstream_viewer_hint(self):
         return """
             To view the offending part of the bitstream:

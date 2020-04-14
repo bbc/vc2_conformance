@@ -91,7 +91,9 @@ def set_source_defaults(base_video_format):
     """
     base = BASE_VIDEO_FORMAT_PARAMETERS[base_video_format]
     preset_frame_rates = PRESET_FRAME_RATES[base.frame_rate_index]
-    preset_pixel_aspect_ratios = PRESET_PIXEL_ASPECT_RATIOS[base.pixel_aspect_ratio_index]
+    preset_pixel_aspect_ratios = PRESET_PIXEL_ASPECT_RATIOS[
+        base.pixel_aspect_ratio_index
+    ]
     preset_signal_ranges = PRESET_SIGNAL_RANGES[base.signal_range_index]
     preset_color_spec = PRESET_COLOR_SPECS[base.color_spec_index]
     return VideoParameters(
@@ -117,11 +119,13 @@ def set_source_defaults(base_video_format):
         transfer_function_index=preset_color_spec.transfer_function_index,
     )
 
+
 @ref_pseudocode
 def set_coding_parameters(state, video_parameters, picture_coding_mode):
     """(11.6.1) Set picture coding mode parameter."""
     picture_dimensions(state, video_parameters, picture_coding_mode)
     video_depth(state, video_parameters)
+
 
 @ref_pseudocode
 def picture_dimensions(state, video_parameters, picture_coding_mode):
@@ -130,23 +134,25 @@ def picture_dimensions(state, video_parameters, picture_coding_mode):
     state["luma_height"] = video_parameters["frame_height"]
     state["color_diff_width"] = state["luma_width"]
     state["color_diff_height"] = state["luma_height"]
-    
+
     color_diff_format_index = video_parameters["color_diff_format_index"]
     if color_diff_format_index == ColorDifferenceSamplingFormats.color_4_2_2.value:
         state["color_diff_width"] //= 2
     if color_diff_format_index == ColorDifferenceSamplingFormats.color_4_2_0.value:
         state["color_diff_width"] //= 2
         state["color_diff_height"] //= 2
-    
+
     if picture_coding_mode == PictureCodingModes.pictures_are_fields.value:
         state["luma_height"] //= 2
         state["color_diff_height"] //= 2
+
 
 @ref_pseudocode
 def video_depth(state, video_parameters):
     """(11.6.3) Compute the bits-per-sample for the decoded video."""
     state["luma_depth"] = intlog2(video_parameters["luma_excursion"] + 1)
     state["color_diff_depth"] = intlog2(video_parameters["color_diff_excursion"] + 1)
+
 
 @ref_pseudocode(deviation="inferred_implementation")
 def preset_frame_rate(video_parameters, index):
@@ -155,12 +161,14 @@ def preset_frame_rate(video_parameters, index):
     video_parameters["frame_rate_numer"] = preset.numerator
     video_parameters["frame_rate_denom"] = preset.denominator
 
+
 @ref_pseudocode(deviation="inferred_implementation")
 def preset_pixel_aspect_ratio(video_parameters, index):
     """(11.4.7) Set pixel aspect ratio from preset."""
     preset = PRESET_PIXEL_ASPECT_RATIOS[index]
     video_parameters["pixel_aspect_ratio_numer"] = preset.numerator
     video_parameters["pixel_aspect_ratio_denom"] = preset.denominator
+
 
 @ref_pseudocode(deviation="inferred_implementation")
 def preset_signal_range(video_parameters, index):
@@ -171,20 +179,24 @@ def preset_signal_range(video_parameters, index):
     video_parameters["color_diff_offset"] = preset.color_diff_offset
     video_parameters["color_diff_excursion"] = preset.color_diff_excursion
 
+
 @ref_pseudocode(deviation="inferred_implementation")
 def preset_color_primaries(video_parameters, index):
     """(11.4.10.2) Set the color primaries parameter from a preset."""
     video_parameters["color_primaries_index"] = index
+
 
 @ref_pseudocode(deviation="inferred_implementation")
 def preset_color_matrix(video_parameters, index):
     """(11.4.10.3) Set the color matrix parameter from a preset."""
     video_parameters["color_matrix_index"] = index
 
+
 @ref_pseudocode(deviation="inferred_implementation")
 def preset_transfer_function(video_parameters, index):
     """(11.4.10.4) Set the transfer function parameter from a preset."""
     video_parameters["transfer_function_index"] = index
+
 
 @ref_pseudocode(deviation="inferred_implementation")
 def preset_color_spec(video_parameters, index):

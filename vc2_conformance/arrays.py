@@ -23,10 +23,7 @@ def new_array(width, height, initial_value=None):
     (5.4.2) Makes a 2D array out of nested lists which may be indexed as
     arr[y][x].
     """
-    return [
-        [initial_value] * width
-        for _ in range(height)
-    ]
+    return [[initial_value] * width for _ in range(height)]
 
 
 @ref_pseudocode(deviation="inferred_implementation")
@@ -61,19 +58,19 @@ class column(object):
     (15.4.1) A 1D-array-like view into a column of a (2D) nested list as
     returned by :py:func:`new_array()`.
     """
-    
+
     def __init__(self, a, k):
         self._a = a
         self._k = k
-    
+
     def __getitem__(self, key):
         assert isinstance(key, int)
         return self._a[key][self._k]
-    
+
     def __setitem__(self, key, value):
         assert isinstance(key, int)
         self._a[key][self._k] = value
-    
+
     def __len__(self):
         return len(self._a)
 

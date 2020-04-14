@@ -12,10 +12,7 @@ from vc2_conformance._py2x_compat import zip_longest
 
 def indent(text, prefix="  "):
     """Indent the string 'text' with the prefix string 'prefix'."""
-    return "{}{}".format(
-        prefix,
-        ("\n{}".format(prefix)).join(text.split("\n")),
-    )
+    return "{}{}".format(prefix, ("\n{}".format(prefix)).join(text.split("\n")),)
 
 
 def ellipsise(text, context=4, min_length=8):
@@ -48,7 +45,7 @@ def ellipsise(text, context=4, min_length=8):
     # Special case to avoid handling it later
     if len(text) == 0:
         return text
-    
+
     repeats = []
     num_repeats = 0
     last_char = None
@@ -59,20 +56,18 @@ def ellipsise(text, context=4, min_length=8):
             num_repeats = 1
         repeats.append(num_repeats)
         last_char = char
-    
+
     longest_run_end, longest_run_length = max(
-        enumerate(repeats),
-        key=lambda pos_count: pos_count[1],
+        enumerate(repeats), key=lambda pos_count: pos_count[1],
     )
-    
-    if longest_run_length < (2*context) + min_length:
+
+    if longest_run_length < (2 * context) + min_length:
         # Too short to bother
         return text
     else:
         longest_run_start = longest_run_end - longest_run_length + 1
         return "{}...{}".format(
-            text[:longest_run_start + context],
-            text[longest_run_end - context + 1:],
+            text[: longest_run_start + context], text[longest_run_end - context + 1 :],
         )
 
 
@@ -134,18 +129,19 @@ def table(table_strings, column_sep="  ", indent_prefix="  "):
     else:
         cols = zip_longest(*table_strings)
         col_widths = [max(map(len, filter(None, col))) for col in cols]
-        
+
         return "\n".join(
             column_sep.join(
-                "{:>{}s}".format(s, col_widths[i])
-                for i, s in enumerate(row)
+                "{:>{}s}".format(s, col_widths[i]) for i, s in enumerate(row)
             )
             for row in table_strings
         )
 
+
 RE_HEADING_UNDERLINE = re.compile(r"^[-=]+$")
 RE_BULLET_OR_NUMBER = re.compile(r"^([*]\s+|[0-9]+[.]\s+)(.*)$")
 RE_PREFIX_AND_BLOCK = re.compile(r"^([*]\s+|[0-9]+[.]\s+|\s*)(.*)$")
+
 
 def split_into_line_wrap_blocks(text, wrap_indented_blocks=False):
     """
@@ -207,7 +203,7 @@ def split_into_line_wrap_blocks(text, wrap_indented_blocks=False):
     """
     # Remove common leading whitespace.
     text = dedent(text)
-    
+
     block_lines = [""]
     for line in text.splitlines():
         # Start a new block if we encounter an empty line (between paragraphs)
@@ -218,52 +214,50 @@ def split_into_line_wrap_blocks(text, wrap_indented_blocks=False):
             block_lines.append("")
         elif RE_HEADING_UNDERLINE.match(line):
             block_lines.append("")
-        elif (
-            RE_BULLET_OR_NUMBER.match(line) and (
-                # Don't match asterisks and number-dots midway through
-                # paragraphs -- require that they appear after a blank line or
-                # after another bullet/number.
-                block_lines[-1] == "" or
-                RE_BULLET_OR_NUMBER.match(block_lines[-1])
-            )
+        elif RE_BULLET_OR_NUMBER.match(line) and (
+            # Don't match asterisks and number-dots midway through
+            # paragraphs -- require that they appear after a blank line or
+            # after another bullet/number.
+            block_lines[-1] == ""
+            or RE_BULLET_OR_NUMBER.match(block_lines[-1])
         ):
             block_lines.append("")
         elif not wrap_indented_blocks and re.match(r"^\s+", block_lines[-1]):
             # When block wrapping is disabled, start a new line for every line
             # in the block
             block_lines.append("")
-        
+
         # Retain indentation of first non-empty line in block
         if block_lines[-1].strip() == "":
             block_lines[-1] = line.rstrip() + " "
         else:
             block_lines[-1] += line.strip() + " "
-    
+
     # Remove leading and repeating blank lines
     index = 0
     previous_line_is_blank = True
     while index < len(block_lines):
         is_blank = block_lines[index].strip() == ""
-        
+
         if is_blank and previous_line_is_blank:
             del block_lines[index]
         else:
             index += 1
-        
+
         previous_line_is_blank = is_blank
-    
+
     # Remove trailing blank lines
     while block_lines and block_lines[-1].strip() == "":
         del block_lines[-1]
-    
+
     out = []
     for block_line in block_lines:
         prefix, text = RE_PREFIX_AND_BLOCK.match(block_line).groups((1, 2))
         if len(prefix.strip()) > 0:
-            out.append((prefix, " "*len(prefix), text.rstrip()))
+            out.append((prefix, " " * len(prefix), text.rstrip()))
         else:
             out.append((prefix, prefix, text.rstrip()))
-    
+
     return out
 
 
@@ -282,18 +276,19 @@ def wrap_blocks(blocks, width=None, wrap_indented_blocks=False):
     bullets) will be.
     """
     return "\n".join(
-        first_indent + ("\n" + rest_indent).join(
+        first_indent
+        + ("\n" + rest_indent).join(
             (
                 wrap(text, width - len(first_indent))
                 if (
-                    wrap_indented_blocks or
-                    len(first_indent) == 0 or
-                    first_indent != rest_indent
-                ) else
-                [text]
+                    wrap_indented_blocks
+                    or len(first_indent) == 0
+                    or first_indent != rest_indent
+                )
+                else [text]
             )
-            if width is not None else
-            [text]
+            if width is not None
+            else [text]
         )
         for first_indent, rest_indent, text in blocks
     )

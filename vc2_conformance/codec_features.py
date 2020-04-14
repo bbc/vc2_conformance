@@ -151,12 +151,12 @@ def read_dict_list_csv(csvfile):
         # Skip empty rows
         if len(row) == 0:
             continue
-        
+
         # Skip comment rows or rows with an empty first cell
         key = row[0].strip()
         if not key or key.startswith("#"):
             continue
-        
+
         # Accumulate values
         for i, value in enumerate(row[1:]):
             if i >= len(out):
@@ -164,7 +164,7 @@ def read_dict_list_csv(csvfile):
             value = value.strip()
             if value:
                 out[i][key] = value.strip()
-    
+
     return out
 
 
@@ -191,11 +191,10 @@ def parse_int_enum(int_enum_type, value):
                 number = entry
                 break
         else:
-            raise ValueError("{} is not a valid {}".format(
-                value,
-                int_enum_type.__name__,
-            ))
-    
+            raise ValueError(
+                "{} is not a valid {}".format(value, int_enum_type.__name__,)
+            )
+
     return int_enum_type(number)
 
 
@@ -216,7 +215,7 @@ def parse_bool(value):
     Parse a wide-ish array of CSV-style bool values.
     """
     lower_value = value.lower()
-    
+
     if lower_value in ("1", "true", "t", "y", "yes"):
         return True
     elif lower_value in ("0", "false", "f", "n", "no"):
@@ -232,9 +231,9 @@ def parse_quantization_matrix(dwt_depth, dwt_depth_ho, value):
     ordered as L, LL, H, HL, LH, HH (i.e. bitstream order in (12.4.5.3)).
     """
     values = iter(filter(None, value.split()))
-    
+
     out = {}
-    
+
     try:
         if dwt_depth_ho == 0:
             out[0] = {"LL": int(next(values))}
@@ -249,22 +248,26 @@ def parse_quantization_matrix(dwt_depth, dwt_depth_ho, value):
                 "HH": int(next(values)),
             }
     except StopIteration:
-        raise ValueError("Expected {} values in quantisation matrix.".format(
-            dwt_depth + dwt_depth_ho + 1
-        ))
-    
+        raise ValueError(
+            "Expected {} values in quantisation matrix.".format(
+                dwt_depth + dwt_depth_ho + 1
+            )
+        )
+
     try:
         next(values)
-        raise ValueError("Expected {} values in quantisation matrix.".format(
-            dwt_depth + dwt_depth_ho + 1
-        ))
+        raise ValueError(
+            "Expected {} values in quantisation matrix.".format(
+                dwt_depth + dwt_depth_ho + 1
+            )
+        )
     except StopIteration:
         pass
-    
+
     return out
-    
+
     out = {}
-    
+
     try:
         if dwt_depth_ho == 0:
             out[0] = {"LL": int(next(values))}
@@ -279,18 +282,22 @@ def parse_quantization_matrix(dwt_depth, dwt_depth_ho, value):
                 "HH": int(next(values)),
             }
     except StopIteration:
-        raise ValueError("Expected {} values in quantisation matrix.".format(
-            dwt_depth + dwt_depth_ho + 1
-        ))
-    
+        raise ValueError(
+            "Expected {} values in quantisation matrix.".format(
+                dwt_depth + dwt_depth_ho + 1
+            )
+        )
+
     try:
         next(values)
-        raise ValueError("Expected {} values in quantisation matrix.".format(
-            dwt_depth + dwt_depth_ho + 1
-        ))
+        raise ValueError(
+            "Expected {} values in quantisation matrix.".format(
+                dwt_depth + dwt_depth_ho + 1
+            )
+        )
     except StopIteration:
         pass
-    
+
     return out
 
 
@@ -463,13 +470,13 @@ def read_codec_features_csv(csvfile):
         Raised if the provided CSV contains invalid or incomplete data.
     """
     csv_columns = read_dict_list_csv(csvfile)
-    
+
     out = OrderedDict()
-    
+
     for i, column in zip(islice(spreadsheet_column_names(), 1, None), csv_columns):
         if not column:
             continue
-        
+
         def pop(field_name, parser, *default_):
             """
             Check for the existance of a value in the current column and return
@@ -486,40 +493,34 @@ def read_codec_features_csv(csvfile):
                     return parser(value)
             except KeyError:
                 raise InvalidCodecFeaturesError(
-                    "Missing entry for '{}' in '{}' column".format(
-                        field_name,
-                        name,
-                    )
+                    "Missing entry for '{}' in '{}' column".format(field_name, name,)
                 )
             except ValueError as e:
                 raise InvalidCodecFeaturesError(
                     "Invalid entry for '{}' in '{}' column: {} ({})".format(
-                        field_name,
-                        name,
-                        value,
-                        e,
+                        field_name, name, value, e,
                     )
                 )
-        
+
         features = CodecFeatures()
-        
+
         # Create default names for columns where not provided
         if "name" not in column:
             name = "column_{}".format(i)
         else:
             name = column.pop("name")
         name = name.strip()
-        
+
         features["name"] = name
-        
+
         # Check for name uniqueness
         if name in out:
-            raise InvalidCodecFeaturesError("Name '{}' used more than once".format(
-                name
-            ))
-        
+            raise InvalidCodecFeaturesError(
+                "Name '{}' used more than once".format(name)
+            )
+
         out[name] = features
-        
+
         # Parse basic fields
         for field_name, field_type in [
             ("level", partial(parse_int_enum, Levels)),
@@ -537,17 +538,19 @@ def read_codec_features_csv(csvfile):
             ("lossless", parse_bool),
         ]:
             features[field_name] = pop(field_name, field_type)
-        
-        features["video_parameters"] = set_source_defaults(pop(
-            "base_video_format",
-            partial(parse_int_enum, BaseVideoFormats),
-        ))
-        
+
+        features["video_parameters"] = set_source_defaults(
+            pop("base_video_format", partial(parse_int_enum, BaseVideoFormats),)
+        )
+
         # Parse integer video_parameters fields
         for field_name, field_type in [
             ("frame_width", partial(parse_int_at_least, 1)),
             ("frame_height", partial(parse_int_at_least, 1)),
-            ("color_diff_format_index", partial(parse_int_enum, ColorDifferenceSamplingFormats)),
+            (
+                "color_diff_format_index",
+                partial(parse_int_enum, ColorDifferenceSamplingFormats),
+            ),
             ("source_sampling", partial(parse_int_enum, SourceSamplingModes)),
             ("top_field_first", parse_bool),
             ("frame_rate_numer", partial(parse_int_at_least, 1)),
@@ -564,22 +567,21 @@ def read_codec_features_csv(csvfile):
             ("color_diff_excursion", partial(parse_int_at_least, 1)),
             ("color_primaries_index", partial(parse_int_enum, PresetColorPrimaries)),
             ("color_matrix_index", partial(parse_int_enum, PresetColorMatrices)),
-            ("transfer_function_index", partial(parse_int_enum, PresetTransferFunctions)),
+            (
+                "transfer_function_index",
+                partial(parse_int_enum, PresetTransferFunctions),
+            ),
         ]:
             features["video_parameters"][field_name] = pop(
-                field_name,
-                field_type,
-                features["video_parameters"][field_name],
+                field_name, field_type, features["video_parameters"][field_name],
             )
-        
+
         # Data-rate options
         if features["lossless"]:
             if "picture_bytes" in column:
                 raise InvalidCodecFeaturesError(
                     "Entry provided for 'picture_bytes' when lossless mode "
-                    "specified for '{}' column".format(
-                        name,
-                    )
+                    "specified for '{}' column".format(name,)
                 )
         else:
             # Check size is sufficient
@@ -592,12 +594,11 @@ def read_codec_features_csv(csvfile):
                 # index and slice-size-dependant fixed-length field starting at
                 # 1 bit in length.
                 minimum_picture_bytes = num_slices
-            
+
             features["picture_bytes"] = pop(
-                "picture_bytes",
-                partial(parse_int_at_least, minimum_picture_bytes),
+                "picture_bytes", partial(parse_int_at_least, minimum_picture_bytes),
             )
-        
+
         # Quantisation matrix
         features["quantization_matrix"] = pop(
             "quantization_matrix",
@@ -608,7 +609,7 @@ def read_codec_features_csv(csvfile):
             ),
             None,
         )
-        
+
         # Check default quantisation matrix available if default specified
         if features["quantization_matrix"] is None:
             if (
@@ -619,18 +620,13 @@ def read_codec_features_csv(csvfile):
             ) not in QUANTISATION_MATRICES:
                 raise InvalidCodecFeaturesError(
                     "Default quantisation matrix specified for '{}' column "
-                    "but none is defined.".format(
-                        field_name,
-                        name,
-                    )
+                    "but none is defined.".format(field_name, name,)
                 )
-        
+
         # Check for extraneous rows
         if column:
             raise InvalidCodecFeaturesError(
-                "Unrecognised row(s): {}".format(
-                    ", ".join(set(column)),
-                )
+                "Unrecognised row(s): {}".format(", ".join(set(column)),)
             )
-    
+
     return out

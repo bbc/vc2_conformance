@@ -34,13 +34,9 @@ from vc2_conformance.parse_code_functions import (
     using_dc_prediction,
 )
 
-from vc2_conformance.decoder.exceptions import (
-    InvalidSliceYLength,
-)
+from vc2_conformance.decoder.exceptions import InvalidSliceYLength
 
-from vc2_conformance.decoder.assertions import (
-    assert_level_constraint,
-)
+from vc2_conformance.decoder.assertions import assert_level_constraint
 
 from vc2_conformance.decoder.io import (
     tell,
@@ -75,7 +71,7 @@ def dc_prediction(band):
     for y in range(0, height(band)):
         for x in range(0, width(band)):
             if x > 0 and y > 0:
-                prediction = mean([band[y][x-1], band[y-1][x-1], band[y-1][x]])
+                prediction = mean([band[y][x - 1], band[y - 1][x - 1], band[y - 1][x]])
             elif x > 0 and y == 0:
                 prediction = band[0][x - 1]
             elif x == 0 and y > 0:
@@ -89,22 +85,36 @@ def dc_prediction(band):
 def initialize_wavelet_data(state, comp):
     """(13.2.2) Return a ready-to-fill array of transform data arrays."""
     out = {}
-    
+
     if state["dwt_depth_ho"] == 0:
-        out[0] = {"LL": new_array(subband_width(state, 0, comp),
-                                  subband_height(state, 0, comp))}
+        out[0] = {
+            "LL": new_array(
+                subband_width(state, 0, comp), subband_height(state, 0, comp)
+            )
+        }
     else:
-        out[0] = {"L": new_array(subband_width(state, 0, comp),
-                                 subband_height(state, 0, comp))}
+        out[0] = {
+            "L": new_array(
+                subband_width(state, 0, comp), subband_height(state, 0, comp)
+            )
+        }
         for level in range(1, state["dwt_depth_ho"] + 1):
-            out[level] = {"H": new_array(subband_width(state, level, comp),
-                                         subband_height(state, level, comp))}
-    
-    for level in range(state["dwt_depth_ho"] + 1,
-                       state["dwt_depth_ho"] + state["dwt_depth"] + 1):
-        out[level] = {orient: new_array(subband_width(state, level, comp),
-                                        subband_height(state, level, comp))
-                      for orient in ["HL", "LH", "HH"]}
+            out[level] = {
+                "H": new_array(
+                    subband_width(state, level, comp),
+                    subband_height(state, level, comp),
+                )
+            }
+
+    for level in range(
+        state["dwt_depth_ho"] + 1, state["dwt_depth_ho"] + state["dwt_depth"] + 1
+    ):
+        out[level] = {
+            orient: new_array(
+                subband_width(state, level, comp), subband_height(state, level, comp)
+            )
+            for orient in ["HL", "LH", "HH"]
+        }
     return out
 
 
@@ -140,34 +150,31 @@ def slice(state, sx, sy):
 @ref_pseudocode
 def ld_slice(state, sx, sy):
     """(13.5.3.1)"""
-    slice_bits_left = 8*slice_bytes(state, sx, sy)
-    
+    slice_bits_left = 8 * slice_bytes(state, sx, sy)
+
     qindex = read_nbits(state, 7)
     slice_bits_left -= 7
     # Errata: none of the levels currently restrict the qindex
     #
     # (C.3) The quantisation index may be restricted by some levels
-    assert_level_constraint(state, "qindex", qindex) ## Not in spec
-    
+    assert_level_constraint(state, "qindex", qindex)  ## Not in spec
+
     slice_quantizers(state, qindex)
-    
-    length_bits = intlog2(8*slice_bytes(state, sx, sy)-7)
+
+    length_bits = intlog2(8 * slice_bytes(state, sx, sy) - 7)
     slice_y_length = read_nbits(state, length_bits)
     slice_bits_left -= length_bits
-    
+
     # (13.5.3.1) The slice_y_length is restricted to be within the remaining
     # space in this slice
     ## Begin not in spec
     # NB: slice_bits_left = 8*slice_bytes(state, sx, sy) - 7 - length_bits
     if slice_y_length > slice_bits_left:
         raise InvalidSliceYLength(
-            slice_y_length,
-            slice_bytes(state, sx, sy),
-            sx,
-            sy,
+            slice_y_length, slice_bytes(state, sx, sy), sx, sy,
         )
     ## End not in spec
-    
+
     state["bits_left"] = slice_y_length
     if state["dwt_depth_ho"] == 0:
         slice_band(state, "y_transform", 0, "LL", sx, sy)
@@ -178,12 +185,13 @@ def ld_slice(state, sx, sy):
         slice_band(state, "y_transform", 0, "L", sx, sy)
         for level in range(1, state["dwt_depth_ho"] + 1):
             slice_band(state, "y_transform", level, "H", sx, sy)
-        for level in range(state["dwt_depth_ho"] + 1,
-                           state["dwt_depth_ho"] + state["dwt_depth"] + 1):
+        for level in range(
+            state["dwt_depth_ho"] + 1, state["dwt_depth_ho"] + state["dwt_depth"] + 1
+        ):
             for orient in ["HL", "LH", "HH"]:
                 slice_band(state, "y_transform", level, orient, sx, sy)
     flush_inputb(state)
-    
+
     slice_bits_left -= slice_y_length
     state["bits_left"] = slice_bits_left
     if state["dwt_depth_ho"] == 0:
@@ -195,8 +203,9 @@ def ld_slice(state, sx, sy):
         color_diff_slice_band(state, 0, "L", sx, sy)
         for level in range(1, state["dwt_depth_ho"] + 1):
             color_diff_slice_band(state, level, "H", sx, sy)
-        for level in range(state["dwt_depth_ho"] + 1,
-                           state["dwt_depth_ho"] + state["dwt_depth"] + 1):
+        for level in range(
+            state["dwt_depth_ho"] + 1, state["dwt_depth_ho"] + state["dwt_depth"] + 1
+        ):
             for orient in ["HL", "LH", "HH"]:
                 color_diff_slice_band(state, level, orient, sx, sy)
     flush_inputb(state)
@@ -206,20 +215,20 @@ def ld_slice(state, sx, sy):
 def hq_slice(state, sx, sy):
     """(13.5.4)"""
     byte_offset_start = tell(state)[0]  ## Not in spec
-    
+
     read_uint_lit(state, state["slice_prefix_bytes"])
-    
+
     qindex = read_uint_lit(state, 1)
     # Errata: none of the levels currently restrict the qindex
     #
     # (C.3) The quantisation index may be restricted by some levels
-    assert_level_constraint(state, "qindex", qindex) ## Not in spec
-    
+    assert_level_constraint(state, "qindex", qindex)  ## Not in spec
+
     slice_quantizers(state, qindex)
-    
+
     for transform in ["y_transform", "c1_transform", "c2_transform"]:
         length = state["slice_size_scaler"] * read_uint_lit(state, 1)
-        state["bits_left"] = 8*length
+        state["bits_left"] = 8 * length
         if state["dwt_depth_ho"] == 0:
             slice_band(state, transform, 0, "LL", sx, sy)
             for level in range(1, state["dwt_depth"] + 1):
@@ -229,12 +238,14 @@ def hq_slice(state, sx, sy):
             slice_band(state, transform, 0, "L", sx, sy)
             for level in range(1, state["dwt_depth_ho"] + 1):
                 slice_band(state, transform, level, "H", sx, sy)
-            for level in range(state["dwt_depth_ho"] + 1,
-                               state["dwt_depth_ho"] + state["dwt_depth"] + 1):
+            for level in range(
+                state["dwt_depth_ho"] + 1,
+                state["dwt_depth_ho"] + state["dwt_depth"] + 1,
+            ):
                 for orient in ["HL", "LH", "HH"]:
                     slice_band(state, transform, level, orient, sx, sy)
         flush_inputb(state)
-    
+
     # (C.3) Some levels restrict the total size of HQ slices
     ## Begin not in spec
     byte_offset_end = tell(state)[0]
@@ -262,8 +273,9 @@ def slice_quantizers(state, qindex):
             state["quantizer"][level] = {}
             qval = max(qindex - state["quant_matrix"][level]["H"], 0)
             state["quantizer"][level]["H"] = qval
-        for level in range(state["dwt_depth_ho"] + 1,
-                           state["dwt_depth_ho"] + state["dwt_depth"] + 1):
+        for level in range(
+            state["dwt_depth_ho"] + 1, state["dwt_depth_ho"] + state["dwt_depth"] + 1
+        ):
             state["quantizer"][level] = {}
             for orient in ["HL", "LH", "HH"]:
                 qval = max(qindex - state["quant_matrix"][level][orient], 0)
@@ -274,7 +286,7 @@ def slice_quantizers(state, qindex):
 def slice_band(state, transform, level, orient, sx, sy):
     """(13.5.6.3)"""
     comp = "Y" if transform.startswith("y") else "C1"
-    
+
     # These values evaulated in the loop definition in the spec, moving them
     # here saves a lot of computation
     ## Begin not in spec
@@ -283,7 +295,7 @@ def slice_band(state, transform, level, orient, sx, sy):
     x1 = slice_left(state, sx, comp, level)
     x2 = slice_right(state, sx, comp, level)
     ## End not in spec
-    
+
     ### for y in range(slice_top(state, sy,comp,level), slice_bottom(state, sy,comp,level)):
     ###     for x in range(slice_left(state, sx,comp,level), slice_right(state, sx,comp,level)):
     for y in range(y1, y2):  ## Not in spec
@@ -304,7 +316,7 @@ def color_diff_slice_band(state, level, orient, sx, sy):
     x1 = slice_left(state, sx, "C1", level)
     x2 = slice_right(state, sx, "C1", level)
     ## End not in spec
-    
+
     ### for y in range(slice_top(state,sy,"C1",level), slice_bottom(state,sy,"C1",level)):
     ###     for x in range(slice_left(state,sx,"C1",level), slice_right(state,sx,"C1",level)):
     for y in range(y1, y2):  ## Not in spec

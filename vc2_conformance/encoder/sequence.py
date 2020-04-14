@@ -18,9 +18,7 @@ from vc2_data_tables import ParseCodes
 
 from vc2_conformance._py2x_compat import zip
 
-from vc2_conformance.level_constraints import (
-    LEVEL_SEQUENCE_RESTRICTIONS,
-)
+from vc2_conformance.level_constraints import LEVEL_SEQUENCE_RESTRICTIONS
 
 from vc2_conformance.bitstream import (
     Sequence,
@@ -32,13 +30,9 @@ from vc2_conformance.bitstream import (
 
 from vc2_conformance.symbol_re import make_matching_sequence
 
-from vc2_conformance.encoder.sequence_header import (
-    make_sequence_header_data_unit,
-)
+from vc2_conformance.encoder.sequence_header import make_sequence_header_data_unit
 
-from vc2_conformance.encoder.pictures import (
-    make_picture_data_units,
-)
+from vc2_conformance.encoder.pictures import make_picture_data_units
 
 
 __all__ = [
@@ -47,9 +41,7 @@ __all__ = [
 
 
 def make_end_of_sequence_data_unit():
-    return DataUnit(
-        parse_info=ParseInfo(parse_code=ParseCodes.end_of_sequence),
-    )
+    return DataUnit(parse_info=ParseInfo(parse_code=ParseCodes.end_of_sequence),)
 
 
 def make_auxiliary_data_unit():
@@ -61,8 +53,7 @@ def make_auxiliary_data_unit():
 
 def make_padding_data_unit():
     return DataUnit(
-        parse_info=ParseInfo(parse_code=ParseCodes.padding_data),
-        padding=Padding(),
+        parse_info=ParseInfo(parse_code=ParseCodes.padding_data), padding=Padding(),
     )
 
 
@@ -98,16 +89,16 @@ def make_sequence(codec_features, pictures, *data_unit_patterns, **kwargs):
     """
     minimum_qindices = kwargs.pop("minimum_qindex", 0)
     assert not kwargs, "Unexpected arguments: {}".format(kwargs)
-    
+
     if not isinstance(minimum_qindices, list):
         minimum_qindices = repeat(minimum_qindices)
-    
+
     pictures_only_sequence = Sequence(data_units=[])
     for picture, minimum_qindex in zip(pictures, minimum_qindices):
         pictures_only_sequence["data_units"].extend(
             make_picture_data_units(codec_features, picture, minimum_qindex)
         )
-    
+
     # Fill in all other required bitstream data units
     picture_only_data_unit_names = [
         data_unit["parse_info"]["parse_code"].name
@@ -121,12 +112,9 @@ def make_sequence(codec_features, pictures, *data_unit_patterns, **kwargs):
         # Certain levels may provide additional constraints
         LEVEL_SEQUENCE_RESTRICTIONS[codec_features["level"]].sequence_restriction_regex,
         *data_unit_patterns,
-        symbol_priority=[
-            "padding_data",
-            "sequence_header",
-        ]
+        symbol_priority=["padding_data", "sequence_header",]
     )
-    
+
     # Functions for producing the necessary data units
     #
     # {data_unit_name: fn() -> DataUnit, ...}
@@ -137,13 +125,16 @@ def make_sequence(codec_features, pictures, *data_unit_patterns, **kwargs):
         "padding_data": make_padding_data_unit,
     }
     if pictures_only_sequence["data_units"]:
-        picture_parse_code = pictures_only_sequence["data_units"][0]["parse_info"]["parse_code"]
+        picture_parse_code = pictures_only_sequence["data_units"][0]["parse_info"][
+            "parse_code"
+        ]
         data_unit_makers[picture_parse_code.name] = partial(
-            pictures_only_sequence["data_units"].pop,
-            0,
+            pictures_only_sequence["data_units"].pop, 0,
         )
-    
-    return Sequence(data_units=[
-        data_unit_makers[data_unit_name]()
-        for data_unit_name in required_data_unit_names
-    ])
+
+    return Sequence(
+        data_units=[
+            data_unit_makers[data_unit_name]()
+            for data_unit_name in required_data_unit_names
+        ]
+    )

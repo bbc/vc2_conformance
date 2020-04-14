@@ -10,15 +10,9 @@ def test_empty():
 
 
 def test_no_amendment_comments():
-    source, indent_corrections = undo_amendments(
-        "# Some code\n"
-        "a = b + c\n"
-    )
-    
-    assert source == (
-        "# Some code\n"
-        "a = b + c\n"
-    )
+    source, indent_corrections = undo_amendments("# Some code\n" "a = b + c\n")
+
+    assert source == ("# Some code\n" "a = b + c\n")
     assert indent_corrections == {}
 
 
@@ -35,7 +29,7 @@ def test_disabled_code():
         "    ### a -= 1\n"
         "a += 1\n"
     )
-    
+
     assert source == (
         "# Some code\n"
         "a = b + c\n"
@@ -67,7 +61,7 @@ def test_not_in_spec_line():
         "    foobar()  ##not  in SPEC  at all!\n"
         "b = 2\n"
     )
-    
+
     assert source == (
         "# Some code\n"
         "a = 1\n"
@@ -88,7 +82,7 @@ def test_not_in_spec_block():
         "    ##  end  NOT  in  spec at all either!\n"
         "b = 2\n"
     )
-    
+
     assert source == (
         "# Some code\n"
         "a = 1\n"
@@ -111,7 +105,7 @@ def test_single_hashes_dont_cause_changes():
         "# End not in spec\n"
         "b = 2\n"
     )
-    
+
     assert source == (
         "# Some code\n"
         "a = 1  # Not in spec\n"
@@ -132,7 +126,7 @@ def test_bad_tokenization():
 def test_bad_amendment_comment():
     with pytest.raises(BadAmendmentCommentError):
         undo_amendments("## Not a valid one...")
-    
+
     with pytest.raises(BadAmendmentCommentError):
         undo_amendments("###Space after hashes is required")
 

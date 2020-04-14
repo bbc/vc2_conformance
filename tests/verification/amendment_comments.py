@@ -97,12 +97,12 @@ class BadAmendmentCommentError(Exception):
     row, col : int
         The position in the source where the unrecognised comment starts
     """
-    
+
     def __init__(self, comment, row, col):
         self.comment = comment
         self.row = row
         self.col = col
-        
+
         super(BadAmendmentCommentError, self).__init__(
             "{!r} at line {}, col {}".format(comment, row, col),
         )
@@ -118,13 +118,11 @@ class UnmatchedNotInSpecBlockError(Exception):
     row : int
         The line in the source where the 'end' comment was encounterd
     """
-    
+
     def __init__(self, row):
         self.row = row
-        
-        super(UnmatchedNotInSpecBlockError, self).__init__(
-            "line {}".format(row),
-        )
+
+        super(UnmatchedNotInSpecBlockError, self).__init__("line {}".format(row),)
 
 
 class UnclosedNotInSpecBlockError(Exception):
@@ -136,18 +134,18 @@ class UnclosedNotInSpecBlockError(Exception):
     row : int
         The line in the source where the block was started.
     """
-    
+
     def __init__(self, row):
         self.row = row
-        
-        super(UnclosedNotInSpecBlockError, self).__init__(
-            "line {}".format(row),
-        )
+
+        super(UnclosedNotInSpecBlockError, self).__init__("line {}".format(row),)
 
 
 _RE_DISABLED_COMMENT = re.compile(r"^###(| .*)$")
 _RE_LINE_NOT_IN_SPEC_COMMENT = re.compile(r"^##\s*Not\s+in\s+spec", re.IGNORECASE)
-_RE_BEGIN_NOT_IN_SPEC_COMMENT = re.compile(r"^##\s*Begin\s+not\s+in\s+spec", re.IGNORECASE)
+_RE_BEGIN_NOT_IN_SPEC_COMMENT = re.compile(
+    r"^##\s*Begin\s+not\s+in\s+spec", re.IGNORECASE
+)
 _RE_END_NOT_IN_SPEC_COMMENT = re.compile(r"^##\s*End\s+not\s+in\s+spec", re.IGNORECASE)
 
 
@@ -181,23 +179,23 @@ def undo_amendments(source):
     """
     # Will be mutated as required
     source_lines = source.splitlines(True)
-    
+
     indent_corrections = {}  # {row: offset, ...}
-    
+
     # Disabled lines, to be uncommented.
     disabled_lines = []  # [(row, col, prefix_length), ...]
-    
+
     # Not-in-spec blocks ranges (begin/end comment lines given) to be 'passed
     # out'
     not_in_spec_blocks = []  # [(srow, erow), ...]
-    
+
     # Find the amendment comments in the source
     not_in_spec_stack = []  # [srow, ...]
     readline = partial(next, iter(source_lines))
     for type, string, (srow, scol), (erow, ecol), lineno in tokenize(readline):
         if type == COMMENT:
-            comment_only_line = source_lines[srow-1][:scol].strip() == ""
-            
+            comment_only_line = source_lines[srow - 1][:scol].strip() == ""
+
             if _RE_DISABLED_COMMENT.match(string) and comment_only_line:
                 disabled_lines.append((srow, scol, min(len(string), 4)))
             elif _RE_BEGIN_NOT_IN_SPEC_COMMENT.match(string) and comment_only_line:
@@ -211,19 +209,19 @@ def undo_amendments(source):
                 not_in_spec_blocks.append((srow, srow))
             elif string.startswith("##"):
                 raise BadAmendmentCommentError(string, srow, scol)
-    
+
     if not_in_spec_stack:
         raise UnclosedNotInSpecBlockError(not_in_spec_stack[-1])
-    
+
     # Uncomment triple-hash disabled lines
     for row, col, prefix_length in disabled_lines:
         line = source_lines[row - 1]
-        source_lines[row - 1] = line[:col] + line[col+prefix_length:]
+        source_lines[row - 1] = line[:col] + line[col + prefix_length :]
         indent_corrections[row] = prefix_length
-    
+
     # Comment-out "Not in spec" lines
     for srow, erow in not_in_spec_blocks:
-        for row in range(srow, erow+1):
+        for row in range(srow, erow + 1):
             source_lines[row - 1] = "# " + source_lines[row - 1]
-    
+
     return ("".join(source_lines), indent_corrections)

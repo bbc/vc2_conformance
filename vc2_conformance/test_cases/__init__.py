@@ -88,7 +88,9 @@ __all__ = [
 ]
 
 
-EncoderTestSequence = namedtuple("TestPictureSequence", "pictures,video_parameters,picture_coding_mode")
+EncoderTestSequence = namedtuple(
+    "TestPictureSequence", "pictures,video_parameters,picture_coding_mode"
+)
 """
 A sequence of pictures to be encoded by a VC-2 encoder under test.
 
@@ -105,7 +107,6 @@ picture_coding_mode : :py:class:`~vc2_data_tables.PictureCodingModes`
 
 
 class TestCase(object):
-    
     def __init__(self, value, subcase_name=None, case_name=None, metadata=None):
         """
         A test case, produced by a test case generator function.
@@ -130,8 +131,7 @@ class TestCase(object):
         self.subcase_name = subcase_name
         self.case_name = case_name
         self.metadata = metadata
-    
-    
+
     @property
     def name(self):
         """
@@ -141,20 +141,17 @@ class TestCase(object):
             return self.case_name
         else:
             return "{}[{}]".format(self.case_name, self.subcase_name)
-    
+
     def __repr__(self):
-        return "<{} {}>".format(
-            type(self).__name__,
-            self.name,
-        )
-    
+        return "<{} {}>".format(type(self).__name__, self.name,)
+
     def __eq__(self, other):
         return (
-            type(self) is type(other) and
-            self.value == other.value and
-            self.case_name == other.case_name and
-            self.subcase_name == other.subcase_name and
-            self.metadata == other.metadata
+            type(self) is type(other)
+            and self.value == other.value
+            and self.case_name == other.case_name
+            and self.subcase_name == other.subcase_name
+            and self.metadata == other.metadata
         )
 
 
@@ -170,21 +167,21 @@ def normalise_test_case_generator(f, *args, **kwargs):
     automatically.
     """
     generator = f(*args, **kwargs)
-    
+
     is_generator = isinstance(generator, GeneratorType)
     if not is_generator:
         generator = [generator]
-    
+
     for i, value in enumerate(generator):
         if not isinstance(value, TestCase):
             value = TestCase(value)
-        
+
         if value.case_name is None:
             value.case_name = f.__name__
-        
+
         if is_generator and value.subcase_name is None:
             value.subcase_name = str(i)
-        
+
         yield value
 
 
@@ -205,7 +202,7 @@ class Registry(object):
         """
         self._test_case_generators.append(f)
         return f
-    
+
     def generate_test_cases(self, *args, **kwargs):
         """
         Run every test case generator registered with this registry, passing
@@ -214,12 +211,10 @@ class Registry(object):
         """
         for test_case_generator in self._test_case_generators:
             for test_case in normalise_test_case_generator(
-                test_case_generator,
-                *args,
-                **kwargs,
+                test_case_generator, *args, **kwargs,
             ):
                 yield test_case
-    
+
     def iter_independent_generators(self, *args, **kwargs):
         """
         Produce a series of generator functions which may be called in parallel
@@ -227,10 +222,7 @@ class Registry(object):
         """
         for test_case_generator in self._test_case_generators:
             yield partial(
-                normalise_test_case_generator,
-                test_case_generator,
-                *args,
-                **kwargs,
+                normalise_test_case_generator, test_case_generator, *args, **kwargs,
             )
 
 
@@ -240,7 +232,9 @@ ENCODER_TEST_CASE_GENERATOR_REGISTRY = Registry()
 registered.
 """
 
-encoder_test_case_generator = ENCODER_TEST_CASE_GENERATOR_REGISTRY.register_test_case_generator
+encoder_test_case_generator = (
+    ENCODER_TEST_CASE_GENERATOR_REGISTRY.register_test_case_generator
+)
 """Decorator to use to register all encoder test case generators."""
 
 
@@ -250,7 +244,9 @@ DECODER_TEST_CASE_GENERATOR_REGISTRY = Registry()
 registered.
 """
 
-decoder_test_case_generator = DECODER_TEST_CASE_GENERATOR_REGISTRY.register_test_case_generator
+decoder_test_case_generator = (
+    DECODER_TEST_CASE_GENERATOR_REGISTRY.register_test_case_generator
+)
 """Decorator to use to register all decoder test case generators."""
 
 

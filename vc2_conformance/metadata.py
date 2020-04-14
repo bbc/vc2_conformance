@@ -127,8 +127,7 @@ If not otherwise specified, the specification section numbers refer to.
 
 
 ReferencedValue = namedtuple(
-    "ReferencedValue",
-    "value,section,document,deviation,name,filename,lineno",
+    "ReferencedValue", "value,section,document,deviation,name,filename,lineno",
 )
 """
 A value in this codebase, referenced back to a specification document.
@@ -189,9 +188,15 @@ particular order.
 _metadata_module_filename = inspect.getsourcefile(sys.modules[__name__])
 
 
-def ref_value(value, section=None, document=None,
-              deviation=None, name="auto",
-              filename="auto", lineno="auto"):
+def ref_value(
+    value,
+    section=None,
+    document=None,
+    deviation=None,
+    name="auto",
+    filename="auto",
+    lineno="auto",
+):
     """
     Record the fact that the provided Python value should be referenced back to
     the specified specification.
@@ -233,13 +238,13 @@ def ref_value(value, section=None, document=None,
     Returns the 'value' argument (untouched).
     """
     default_document = DEFAULT_SPECIFICATION
-    
+
     if section is None:
         docstring = getattr(value, "__doc__", "")
         match = re.match(r"\s*\(([^\)]+)\)", docstring)
         if match:
             section = match.group(1)
-            
+
             # Also extract the document name, if present
             submatch = re.match(r"(.*)\s*:\s*([^:]+)$", section)
             if submatch:
@@ -247,25 +252,28 @@ def ref_value(value, section=None, document=None,
                 section = submatch.group(2)
         else:
             raise TypeError("'section' argument omitted and not found in docstring.")
-    
+
     if document is None:
         document = default_document
-    
+
     if name is "auto":
         # First try the __name__ attribute
         name = getattr(value, "__name__", None)
-        
+
         if name is None:
             # Fall back on the name assigned in response to the call to
             # 'ref_value' (crudely extracted)
             for frame_summary in inspect.stack():
                 code = "\n".join(frame_summary[4])
                 if frame_summary[1] != _metadata_module_filename:
-                    match = re.match(r"\s*([^\s]+)\s*=\s*((vc2_conformance\.)?metadata\.)?ref_value", code)
+                    match = re.match(
+                        r"\s*([^\s]+)\s*=\s*((vc2_conformance\.)?metadata\.)?ref_value",
+                        code,
+                    )
                     if match:
                         name = match.group(1)
                     break
-    
+
     if filename == "auto" or lineno == "auto":
         try:
             # First, try using introspection to determine the value's origin
@@ -274,7 +282,7 @@ def ref_value(value, section=None, document=None,
         except (TypeError, IOError):
             auto_filename = None
             auto_lineno = None
-        
+
         if auto_filename is None or auto_lineno is None:
             # Introspection hasn't worked, search up the stack to find the
             # callsite of 'ref_value'.
@@ -284,23 +292,25 @@ def ref_value(value, section=None, document=None,
                 if frame_summary[1] != _metadata_module_filename:
                     auto_filename = frame_summary[1]
                     auto_lineno = frame_summary[2]
-    
+
     if filename == "auto":
         filename = auto_filename
-    
+
     if lineno == "auto":
         lineno = auto_lineno
-    
-    referenced_values.append(ReferencedValue(
-        value=value,
-        section=section,
-        document=document,
-        deviation=deviation,
-        name=name,
-        filename=filename,
-        lineno=lineno,
-    ))
-    
+
+    referenced_values.append(
+        ReferencedValue(
+            value=value,
+            section=section,
+            document=document,
+            deviation=deviation,
+            name=name,
+            filename=filename,
+            lineno=lineno,
+        )
+    )
+
     return value
 
 
@@ -333,9 +343,11 @@ def ref_pseudocode(*args, **kwargs):
         ref_value(*args, **kwargs)
         return args[0]
     else:
+
         def decorator(f):
             ref_value(f, *args, **kwargs)
             return f
+
         return decorator
 
 
@@ -364,10 +376,12 @@ def lookup_by_name(name, filename=None):
     Search :py:data:`referenced_values` for entries whose names (and optionally
     filename) match the provided value.
     """
-    results = list(filter(
-        lambda e: e.name == name and (filename is None or e.filename == filename),
-        referenced_values,
-    ))
+    results = list(
+        filter(
+            lambda e: e.name == name and (filename is None or e.filename == filename),
+            referenced_values,
+        )
+    )
     if len(results) != 1:
         raise ValueError(name)
     else:
@@ -380,15 +394,11 @@ def format_citation(referenced_value):
     :py:class:`ReferencedValue`.
     """
     return "{} ({}{})".format(
-        (
-            referenced_value.name
-            if referenced_value.name is not None else
-            ""
-        ),
+        (referenced_value.name if referenced_value.name is not None else ""),
         (
             "{}: ".format(referenced_value.document)
-            if referenced_value.document != DEFAULT_SPECIFICATION else
-            ""
+            if referenced_value.document != DEFAULT_SPECIFICATION
+            else ""
         ),
         referenced_value.section,
     ).strip()

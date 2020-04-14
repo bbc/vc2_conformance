@@ -21,9 +21,8 @@ def exp_golomb_length(value):
     """
     if value < 0:
         raise OutOfRangeError(value)
-    
-    return (((value + 1).bit_length() - 1) * 2) + 1
 
+    return (((value + 1).bit_length() - 1) * 2) + 1
 
 
 def signed_exp_golomb_length(value):

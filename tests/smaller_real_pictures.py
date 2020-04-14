@@ -10,23 +10,14 @@ import os
 
 from contextlib import contextmanager
 
-from vc2_conformance_data import (
-    NATURAL_PICTURES_FILENAMES,
-)
+from vc2_conformance_data import NATURAL_PICTURES_FILENAMES
 
 # All of these contain a 16x16 pixel white square on a black background.
 TEST_PICTURES_PATHS = [
-    os.path.join(
-        os.path.dirname(__file__),
-        "test_images",
-        filename,
-    )
-    for filename in [
-        "square.raw",
-        "wide.raw",
-        "tall.raw",
-    ]
+    os.path.join(os.path.dirname(__file__), "test_images", filename,)
+    for filename in ["square.raw", "wide.raw", "tall.raw",]
 ]
+
 
 @contextmanager
 def alternative_real_pictures(alternative_paths=TEST_PICTURES_PATHS):
@@ -42,10 +33,10 @@ def alternative_real_pictures(alternative_paths=TEST_PICTURES_PATHS):
         ...     do_something(NATURAL_PICTURES_FILENAMES)
     """
     orig_paths = list(NATURAL_PICTURES_FILENAMES)
-    
+
     del NATURAL_PICTURES_FILENAMES[:]
     NATURAL_PICTURES_FILENAMES.extend(alternative_paths)
-    
+
     try:
         yield NATURAL_PICTURES_FILENAMES
     finally:

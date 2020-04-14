@@ -44,27 +44,29 @@ else:
     # attribute of wrapped functions. This means introspection tools are unable
     # to find the originally wrapped function.
     from functools import wraps as _wraps
-    
+
     def wraps(wrapped, *args, **kwargs):
         def wrapper(f):
             f = _wraps(wrapped, *args, **kwargs)(f)
             f.__wrapped__ = wrapped
             return f
+
         return wrapper
-    
+
     wraps = wraps(_wraps)(wraps)
 
 
 try:
     from inspect import unwrap
 except ImportError:
+
     def unwrap(func, stop=None):
         if stop is None:
             stop = lambda f: False
-        
+
         while hasattr(func, "__wrapped__") and not stop(func):
             func = func.__wrapped__
-        
+
         return func
 
 
@@ -77,7 +79,7 @@ except ImportError:
 try:
     string_types = (str, unicode)
 except NameError:
-    string_types = (str, )
+    string_types = (str,)
 
 try:
     from math import gcd  # Python >= 3.5
@@ -93,6 +95,7 @@ try:
     os.makedirs(os.path.dirname(__file__), exist_ok=True)
     makedirs = os.makedirs
 except TypeError:
+
     def makedirs(name, mode=0o777, exist_ok=False):
         if exist_ok and os.path.isdir(name):
             return

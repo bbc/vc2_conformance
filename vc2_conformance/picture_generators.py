@@ -115,14 +115,14 @@ def read_as_xyz(filename):
     picture_coding_mode : :py:class:`~vc2_data_tables.PictureCodingModes`
     """
     picture, video_parameters, picture_coding_mode = read(filename)
-    
+
     xyz = to_xyz(
         np.array(picture["Y"]),
         np.array(picture["C1"]),
         np.array(picture["C2"]),
         video_parameters,
     )
-    
+
     return xyz, video_parameters, picture_coding_mode
 
 
@@ -133,11 +133,13 @@ def resize(im, width, height):
     # Here we use PIL's resize function with a reasonably high-quality LANCZOS
     # filter. Since PIL only supports single-channel floating point images, we
     # must process each channel separately.
-    return np.stack([
-        Image.fromarray(im[:, :, channel])
-            .resize((width, height), Image.LANCZOS)
-        for channel in range(3)
-    ], axis=-1)
+    return np.stack(
+        [
+            Image.fromarray(im[:, :, channel]).resize((width, height), Image.LANCZOS)
+            for channel in range(3)
+        ],
+        axis=-1,
+    )
 
 
 def read_as_xyz_to_fit(filename, width, height, pixel_aspect_ratio=1):
@@ -159,17 +161,17 @@ def read_as_xyz_to_fit(filename, width, height, pixel_aspect_ratio=1):
     image, image_video_parameters, image_picture_coding_mode = read_as_xyz(filename)
     assert image_video_parameters["pixel_aspect_ratio_numer"] == 1
     assert image_video_parameters["pixel_aspect_ratio_denom"] == 1
-    
+
     im_height, im_width, _ = image.shape
-    
+
     # Stretch original image to correct for the target pixel aspect ratio
     if pixel_aspect_ratio.numerator != pixel_aspect_ratio.denominator:
         im_width *= pixel_aspect_ratio.denominator
         im_width //= pixel_aspect_ratio.numerator
-    
+
     im_aspect = Fraction(im_width, im_height)
     out_aspect = Fraction(width, height)
-    
+
     if im_aspect > out_aspect:
         # Image wider than output, squash so height fits then crop width
         im_height = height
@@ -178,16 +180,15 @@ def read_as_xyz_to_fit(filename, width, height, pixel_aspect_ratio=1):
         # Image taller than output, squash so width fits then crop height
         im_width = width
         im_height = int(math.ceil(im_width / im_aspect))
-    
+
     image = resize(image, im_width, im_height)
-    
-    
+
     # Crop to output shape
     x_excess = im_width - width
     y_excess = im_height - height
     return image[
-        y_excess//2:(y_excess//2) + height,
-        x_excess//2:(x_excess//2) + width,
+        y_excess // 2 : (y_excess // 2) + height,
+        x_excess // 2 : (x_excess // 2) + width,
         :,
     ]
 
@@ -203,19 +204,18 @@ def seconds_to_samples(video_parameters, seconds):
     gives the relative sample rate to the frame rate and is 1 for progressive
     and 2 for interlaced formats.
     """
-    sample_rate = (
-        float(video_parameters["frame_rate_numer"]) /
-        float(video_parameters["frame_rate_denom"])
+    sample_rate = float(video_parameters["frame_rate_numer"]) / float(
+        video_parameters["frame_rate_denom"]
     )
     num_samples = max(1, round(seconds * sample_rate))
-    
+
     if video_parameters["source_sampling"] == SourceSamplingModes.interlaced:
         relative_rate = 2
     else:
         relative_rate = 1
-    
+
     num_samples *= relative_rate
-    
+
     return (num_samples, relative_rate)
 
 
@@ -227,7 +227,7 @@ def progressive_to_interlaced(video_parameters, picture_coding_mode, pictures):
     frame.
     """
     first_row_indices = [0, 1] if video_parameters["top_field_first"] else [1, 0]
-    
+
     for first_row, picture in zip(cycle(first_row_indices), pictures):
         yield picture[first_row::2, :, :]
 
@@ -238,7 +238,7 @@ def progressive_to_split_fields(video_parameters, picture_coding_mode, pictures)
     frame is turned into a pair of successive fields.
     """
     first_row_indices = [0, 1] if video_parameters["top_field_first"] else [1, 0]
-    
+
     for picture in pictures:
         for first_row in first_row_indices:
             yield picture[first_row::2, :, :]
@@ -253,16 +253,13 @@ def interleave_fields(video_parameters, picture_coding_mode, pictures):
     for field_pair in zip(it, it):
         if not video_parameters["top_field_first"]:
             field_pair = field_pair[::-1]
-        
+
         top, bottom = field_pair
-        
-        interleaved = np.empty(
-            (top.shape[0] * 2, top.shape[1], 3),
-            dtype=top.dtype
-        )
+
+        interleaved = np.empty((top.shape[0] * 2, top.shape[1], 3), dtype=top.dtype)
         interleaved[0::2, :, :] = top
         interleaved[1::2, :, :] = bottom
-        
+
         yield interleaved
 
 
@@ -276,22 +273,30 @@ def progressive_to_pictures(video_parameters, picture_coding_mode, pictures):
     """
     pictures_are_frames = picture_coding_mode == PictureCodingModes.pictures_are_frames
     progressive = video_parameters["source_sampling"] == SourceSamplingModes.progressive
-    
+
     if pictures_are_frames:
         if progressive:
             pass  # Nothing to do
         else:  # interlaced
             # Interlace and combine two fields to a picture
-            pictures = progressive_to_interlaced(video_parameters, picture_coding_mode, pictures)
-            pictures = interleave_fields(video_parameters, picture_coding_mode, pictures)
+            pictures = progressive_to_interlaced(
+                video_parameters, picture_coding_mode, pictures
+            )
+            pictures = interleave_fields(
+                video_parameters, picture_coding_mode, pictures
+            )
     else:  # pictures are fields
         if progressive:
             # Split each frame across two pictures
-            pictures = progressive_to_split_fields(video_parameters, picture_coding_mode, pictures)
+            pictures = progressive_to_split_fields(
+                video_parameters, picture_coding_mode, pictures
+            )
         else:  # interlaced
             # Interlaced, one field per picture
-            pictures = progressive_to_interlaced(video_parameters, picture_coding_mode, pictures)
-    
+            pictures = progressive_to_interlaced(
+                video_parameters, picture_coding_mode, pictures
+            )
+
     return pictures
 
 
@@ -351,20 +356,18 @@ def pipe(next_function):
     Note that the first argument (``video_parameters``) to the decorated
     function is also passed to ``next_function``.
     """
+
     @functools.wraps(next_function)
     def decorator(video_sequence_generator):
         @functools.wraps(video_sequence_generator)
         def wrapper(video_parameters, picture_coding_mode, *args, **kwargs):
             iterator = video_sequence_generator(
-                video_parameters,
-                picture_coding_mode,
-                *args,
-                **kwargs
+                video_parameters, picture_coding_mode, *args, **kwargs
             )
             return next_function(video_parameters, picture_coding_mode, iterator)
-        
+
         return wrapper
-    
+
     return decorator
 
 
@@ -377,24 +380,27 @@ def read_and_adapt_pointer_sprite(video_parameters):
     Returns a CIE-XYZ image.
     """
     sprite, sprite_video_parameters, _ = read_as_xyz(POINTER_SPRITE_PATH)
-    
+
     # This sprite has been designed with the intention that 'white', 'red',
     # 'green', and 'blue' in the sprite's color model should be transformed
     # into the native primaries of the output format. As a consequence, we swap
     # the color primaries here.
     sprite = swap_primaries(sprite, sprite_video_parameters, video_parameters)
-    
+
     sprite_width = sprite_video_parameters["frame_width"]
     sprite_height = sprite_video_parameters["frame_height"]
     assert sprite_video_parameters["pixel_aspect_ratio_numer"] == 1
     assert sprite_video_parameters["pixel_aspect_ratio_denom"] == 1
-    
+
     # Make sprite square under all pixel aspect ratios
-    if video_parameters["pixel_aspect_ratio_numer"] != video_parameters["pixel_aspect_ratio_denom"]:
+    if (
+        video_parameters["pixel_aspect_ratio_numer"]
+        != video_parameters["pixel_aspect_ratio_denom"]
+    ):
         sprite_width *= video_parameters["pixel_aspect_ratio_denom"]
         sprite_width //= video_parameters["pixel_aspect_ratio_numer"]
         sprite = resize(sprite, sprite_width, sprite_height)
-    
+
     return sprite
 
 
@@ -428,7 +434,7 @@ def real_pictures(video_parameters, picture_coding_mode):
                 video_parameters["pixel_aspect_ratio_denom"],
             ),
         )
-        
+
         # NB: Repeat pictures for interlaced modes so each frame is made up of
         # two fields containing the same picture content
         yield picture
@@ -483,11 +489,11 @@ def moving_sprite(video_parameters, picture_coding_mode, duration=1.0):
     to the display system and decoded correctly.
     """
     sprite = read_and_adapt_pointer_sprite(video_parameters)
-    
+
     frame_width = video_parameters["frame_width"]
     frame_height = video_parameters["frame_height"]
     sprite_height, sprite_width, _ = sprite.shape
-    
+
     # Generate frames
     num_samples, relative_rate = seconds_to_samples(video_parameters, duration)
     x_step_size = 16 // relative_rate
@@ -496,25 +502,25 @@ def moving_sprite(video_parameters, picture_coding_mode, duration=1.0):
         # sprite to fit
         sw = min(frame_width, sprite_width)
         sh = min(frame_height, sprite_height)
-        
+
         # Clip sprite at edge of screen
         sx = 0
         if px < 0:
             sw += px
             sx -= px
             px -= px
-        
+
         # Clip sprite at right edge of screen
         if px + sw > frame_width:
             sw -= (px + sw) - frame_width
             # Special case: picture is off edge of display. Sould only occur
             # with absurdly small (e.g. < 8 px wide) frame sizes.
             sw = max(0, sw)
-        
+
         # Blit the sprite onto an otherwise empty frame
         picture = np.zeros((frame_height, frame_width, 3))
-        picture[:sh, px:px+sw, :] = sprite[:sh, sx:sx + sw, :]
-        
+        picture[:sh, px : px + sw, :] = sprite[:sh, sx : sx + sw, :]
+
         yield picture
 
 
@@ -551,20 +557,20 @@ def static_sprite(video_parameters, picture_coding_mode):
     to the display system and decoded correctly.
     """
     sprite = read_and_adapt_pointer_sprite(video_parameters)
-    
+
     frame_width = video_parameters["frame_width"]
     frame_height = video_parameters["frame_height"]
     sprite_height, sprite_width, _ = sprite.shape
-    
+
     # For bizarre, tiny picture formats too small for the sprite, clip the
     # sprite to fit
     sw = min(frame_width, sprite_width)
     sh = min(frame_height, sprite_height)
-    
+
     # Blit the sprite onto an otherwise empty frame
     picture = np.zeros((frame_height, frame_width, 3))
     picture[:sh, :sw, :] = sprite[:sh, :sw, :]
-    
+
     yield picture
     if video_parameters["source_sampling"] == SourceSamplingModes.interlaced:
         yield picture
@@ -578,22 +584,13 @@ def mid_gray(video_parameters, picture_coding_mode):
     value exactly half-way along its range. The actual color will differ
     depending on the color model used and the signal offsets specified.
     """
-    
+
     dd = compute_dimensions_and_depths(video_parameters, picture_coding_mode)
-    
-    y = np.full(
-        (dd["Y"].height, dd["Y"].width),
-        1 << (dd["Y"].depth_bits - 1),
-    )
-    c1 = np.full(
-        (dd["C1"].height, dd["C1"].width),
-        1 << (dd["C1"].depth_bits - 1),
-    )
-    c2 = np.full(
-        (dd["C2"].height, dd["C2"].width),
-        1 << (dd["C2"].depth_bits - 1),
-    )
-    
+
+    y = np.full((dd["Y"].height, dd["Y"].width), 1 << (dd["Y"].depth_bits - 1),)
+    c1 = np.full((dd["C1"].height, dd["C1"].width), 1 << (dd["C1"].depth_bits - 1),)
+    c2 = np.full((dd["C2"].height, dd["C2"].width), 1 << (dd["C2"].depth_bits - 1),)
+
     yield {
         "Y": y.tolist(),
         "C1": c1.tolist(),
@@ -626,24 +623,23 @@ def linear_ramps(video_parameters, picture_coding_mode):
     This is provided for the purposes of checking that metadata related to
     color is correctly passed through for display purposes.
     """
-    
+
     width = video_parameters["frame_width"]
     height = video_parameters["frame_height"]
-    
+
     ramps_rgb = np.zeros((4, width, 3))
-    
+
     ramps_rgb[0, :, :] = np.repeat(np.linspace(0.0, 1.0, width), 3).reshape(-1, 3)
     ramps_rgb[1, :, 0] = np.linspace(0.0, 1.0, width)
     ramps_rgb[2, :, 1] = np.linspace(0.0, 1.0, width)
     ramps_rgb[3, :, 2] = np.linspace(0.0, 1.0, width)
-    
+
     ramps_xyz = matmul_colors(
-        LINEAR_RGB_TO_XYZ[video_parameters["color_primaries_index"]],
-        ramps_rgb,
+        LINEAR_RGB_TO_XYZ[video_parameters["color_primaries_index"]], ramps_rgb,
     )
-    
-    frame_xyz = np.repeat(ramps_xyz, (height+3) // 4, axis=0)[:height, :, :]
-    
+
+    frame_xyz = np.repeat(ramps_xyz, (height + 3) // 4, axis=0)[:height, :, :]
+
     yield frame_xyz
     if video_parameters["source_sampling"] == SourceSamplingModes.interlaced:
         yield frame_xyz

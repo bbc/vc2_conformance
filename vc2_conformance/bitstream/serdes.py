@@ -433,7 +433,7 @@ class SerDes(object):
     cur_context : dict or None
         The context dictionary currently being populated.
     """
-    
+
     def __init__(self, io, context=None):
         """
         Parameters
@@ -444,25 +444,25 @@ class SerDes(object):
             The initial context dictionary.
         """
         self.io = io
-        
+
         # The current context dictionary.
         # {target_name: value, ...}
         self.cur_context = context if context is not None else {}
-        
+
         # Logs which target names have already been used. Initially an empty
         # dictionary.
-        # 
+        #
         # When a non-list target is used, a corresponding entry is set to True in
         # this dictionary. Re-use of a target is prevented by checking that the
         # required target does not already appear in this dictionary.
-        # 
+        #
         # When :py:attr:`declare_list` is used, the corresponding entry in
         # context_indices is set to to 0. Subsequent uses of that target should
         # increment the counter.
         #
         # {target_name: True or int, ...}
         self._cur_context_indices = {}
-        
+
         # Whenever :py:meth:`subcontext_enter` is used, the current
         # self.cur_context and self._cur_context_indices dictionaries and the
         # specified target name are pushed onto their respective stacks. The
@@ -470,7 +470,7 @@ class SerDes(object):
         self._context_stack = []  # [<context dict>, ...]
         self._context_indices_stack = []  # [<context_indices dict>, ...]
         self._target_stack = []  # [str, ...]
-    
+
     def _set_context_value(self, target, value):
         """
         Add a value to a context dictionary, checking that the value has not
@@ -489,7 +489,7 @@ class SerDes(object):
             # Case: This target has been declared as a list.
             i = self._cur_context_indices[target]
             self._cur_context_indices[target] += 1
-            
+
             target_list = self.cur_context[target]
             if len(target_list) == i:
                 # List is being filled for the first time
@@ -497,7 +497,7 @@ class SerDes(object):
             else:
                 # List already exists and we're updating it.
                 target_list[i] = value
-    
+
     def _get_context_value(self, target):
         """
         Get a value from the context dictionary, checking that the value has not
@@ -523,7 +523,7 @@ class SerDes(object):
                 return self.cur_context[target][i]
             else:
                 raise ListTargetExhaustedError(self.describe_path(target))
-    
+
     def _setdefault_context_value(self, target, default):
         """
         Attempt to get a value (or next value, for lists) for a particular
@@ -543,7 +543,7 @@ class SerDes(object):
             if i == len(self.cur_context[target]):
                 self.cur_context[target].append(default)
             return self.cur_context[target][i]
-        
+
     def bool(self, target):
         """
         Reads or writes a boolean (single bit) in a bitstream (as per (A.3.2)
@@ -559,7 +559,7 @@ class SerDes(object):
         value : bool
         """
         raise NotImplementedError()
-    
+
     def nbits(self, target, num_bits):
         """
         Reads or writes an fixed-length unsigned integer in a bitstream (as
@@ -577,7 +577,7 @@ class SerDes(object):
         value : int
         """
         raise NotImplementedError()
-    
+
     def uint_lit(self, target, num_bytes):
         """
         Reads or writes an fixed-length unsigned integer in a bitstream (as
@@ -595,7 +595,7 @@ class SerDes(object):
         value : int
         """
         raise NotImplementedError()
-    
+
     def bitarray(self, target, num_bits):
         """
         Reads or writes an fixed-length string of bits from the bitstream as a
@@ -615,7 +615,7 @@ class SerDes(object):
         value : :py:class:`bitarray.bitarray`
         """
         raise NotImplementedError()
-    
+
     def bytes(self, target, num_bytes):
         """
         Reads or writes an fixed-length :py:class:`bytes` string from the
@@ -635,7 +635,7 @@ class SerDes(object):
         value : :py:class:`bytes`
         """
         raise NotImplementedError()
-    
+
     def uint(self, target):
         """
         A variable-length, unsigned exp-golomb integer in a bitstream (as per
@@ -651,7 +651,7 @@ class SerDes(object):
         value : int
         """
         raise NotImplementedError()
-    
+
     def sint(self, target, num_bits):
         """
         A variable-length, signed exp-golomb integer in a bitstream (as per (A.4.4)
@@ -667,7 +667,7 @@ class SerDes(object):
         value : int
         """
         raise NotImplementedError()
-    
+
     def byte_align(self, target):
         """
         Advance in the bitstream to the next whole byte boundary, if not already on
@@ -682,7 +682,7 @@ class SerDes(object):
         _, bits = self.io.tell()
         num_bits = 0 if bits == 7 else (bits + 1)
         self.bitarray(target, num_bits)
-        
+
     def bounded_block_begin(self, length):
         """
         Defines the start of a bounded block (as per (A.4.2)). Must be followed
@@ -699,7 +699,7 @@ class SerDes(object):
             The length of the bounded block in bits
         """
         self.io.bounded_block_begin(length)
-        
+
     def bounded_block_end(self, target):
         """
         Defines the end of a bounded block (as per (A.4.2)). Must be proceeded
@@ -713,7 +713,7 @@ class SerDes(object):
         """
         num_bits = self.io.bounded_block_end()
         self.bitarray(target, num_bits)
-    
+
     @contextmanager
     def bounded_block(self, target, length):
         """
@@ -737,7 +737,7 @@ class SerDes(object):
         self.bounded_block_begin(length)
         yield
         self.bounded_block_end(target)
-    
+
     def declare_list(self, target):
         """
         Declares that the specified target should be treated as a
@@ -754,7 +754,7 @@ class SerDes(object):
         if target in self._cur_context_indices:
             # Target has already been used or delcared
             raise ReusedTargetError(self.describe_path(target))
-        
+
         if target not in self.cur_context:
             # Target not yet defined in context; create a new empty list
             self.cur_context[target] = []
@@ -763,10 +763,12 @@ class SerDes(object):
             if not isinstance(self.cur_context[target], list):
                 raise ListTargetContainsNonListError(
                     "{} contains {!r} (which is not a list)".format(
-                        self.describe_path(target), self.cur_context[target]))
-        
+                        self.describe_path(target), self.cur_context[target]
+                    )
+                )
+
         self._cur_context_indices[target] = 0
-    
+
     def set_context_type(self, context_type):
         """
         Set (or change) the type of the type of the current context dictionary.
@@ -784,13 +786,13 @@ class SerDes(object):
         # Only replace the type if necessary to avoid unnecessary copying.
         if type(self.cur_context) is not context_type:
             self.cur_context = context_type(self.cur_context)
-            
+
             # Replace the reference to this context in its parent context
             if self._context_stack:
                 parent_context = self._context_stack[-1]
                 parent_target = self._target_stack[-1]
                 parent_target_index = self._context_indices_stack[-1][parent_target]
-                
+
                 if parent_target_index is True:
                     # The child context is in a normal target in the parent context
                     # dict
@@ -799,11 +801,13 @@ class SerDes(object):
                     # The child context is in a list target in the parent context dict
                     # (NB: The parent_target_index value is the *next* index in the
                     # list, hence being decremented by one here).
-                    parent_context[parent_target][parent_target_index-1] = self.cur_context
+                    parent_context[parent_target][
+                        parent_target_index - 1
+                    ] = self.cur_context
             else:
                 # Context stack is empty so there must be no parent to update!
                 pass
-    
+
     def subcontext_enter(self, target):
         """
         Creates and/or enters a context dictionary within the specified
@@ -819,15 +823,15 @@ class SerDes(object):
         # Insert the new context into the current context at the
         # specified token
         new_context = self._setdefault_context_value(target, {})
-        
+
         # Push the old context onto the stack
         self._context_stack.append(self.cur_context)
         self._context_indices_stack.append(self._cur_context_indices)
         self._target_stack.append(target)
-        
+
         self.cur_context = new_context
         self._cur_context_indices = {}
-    
+
     def subcontext_leave(self):
         """
         Leaves the current nested context dictionary entered by
@@ -835,11 +839,11 @@ class SerDes(object):
         unused entries, throwing an appropriate exception if not.
         """
         self._verify_context_is_complete()
-        
+
         self.cur_context = self._context_stack.pop()
         self._cur_context_indices = self._context_indices_stack.pop()
         self._target_stack.pop()
-    
+
     @contextmanager
     def subcontext(self, target):
         """
@@ -869,7 +873,7 @@ class SerDes(object):
         self.subcontext_enter(target)
         yield
         self.subcontext_leave()
-    
+
     def computed_value(self, target, value):
         """
         Places a value into the named target in the current context, without
@@ -891,7 +895,7 @@ class SerDes(object):
             The value to be stored.
         """
         self._set_context_value(target, value)
-    
+
     def _verify_context_is_complete(self):
         """
         Verify that the current context is 'complete'. That is, every entry in
@@ -914,9 +918,12 @@ class SerDes(object):
                 elif index != len(value):
                     # Target was used and was a list, but not all entries were
                     # used!
-                    raise UnusedTargetError("{}[{!r}][{}:{}]".format(
-                        self.describe_path(), target, index, len(value)))
-    
+                    raise UnusedTargetError(
+                        "{}[{!r}][{}:{}]".format(
+                            self.describe_path(), target, index, len(value)
+                        )
+                    )
+
     def verify_complete(self):
         """
         Verify that all values in the current context have been used and that
@@ -929,13 +936,13 @@ class SerDes(object):
         :py:exc:`~.UnclosedBoundedBlockError`
         """
         self._verify_context_is_complete()
-        
+
         if self._context_stack:
             raise UnclosedNestedContextError(self.describe_path())
-        
+
         if self.io.bits_remaining is not None:
             raise UnclosedBoundedBlockError()
-    
+
     def __enter__(self):
         """
         When used as a context manager, 'verify_complete' is automatically
@@ -958,12 +965,12 @@ class SerDes(object):
         :py:meth:`verify_complete` call.)
         """
         return self
-    
+
     def __exit__(self, exc_type, exc_value, traceback):
         # Don't bother checking validity if an exception was thrown anyway
         if exc_type is None:
             self.verify_complete()
-    
+
     @property
     def context(self):
         """Get the top-level context dictionary."""
@@ -971,7 +978,7 @@ class SerDes(object):
             return self._context_stack[0]
         else:
             return self.cur_context
-    
+
     def path(self, target=None):
         """
         Produce a 'path' describing the part of the bitstream the parser is
@@ -985,7 +992,7 @@ class SerDes(object):
         
             ['source_parameters', 'frame_size', 'frame_width']
         """
-        
+
         full_context_stack = list(self._context_stack)
         full_context_indices_stack = list(self._context_indices_stack)
         full_target_stack = list(self._target_stack)
@@ -993,22 +1000,22 @@ class SerDes(object):
             full_context_stack += [self.cur_context]
             full_context_indices_stack += [self._cur_context_indices]
             full_target_stack += [target]
-        
+
         out = []
-        
-        for context, context_indices, target in zip(full_context_stack,
-                                                    full_context_indices_stack,
-                                                    full_target_stack):
+
+        for context, context_indices, target in zip(
+            full_context_stack, full_context_indices_stack, full_target_stack
+        ):
             out.append(target)
-            
+
             index = context_indices.get(target, True)
             if index is not True and index != 0:
                 # NB: context_indices includes the index of the first unused
                 # index, hence being decremented by one here.
                 out.append(index - 1)
-        
+
         return out
-    
+
     def describe_path(self, target=None):
         """
         Produce a human-readable description of the part of the bitstream the
@@ -1024,9 +1031,10 @@ class SerDes(object):
         
         """
         root_type = self.context.__class__.__name__
-        
-        return "{}{}".format(root_type, "".join(
-            "[{!r}]".format(p) for p in self.path(target)))
+
+        return "{}{}".format(
+            root_type, "".join("[{!r}]".format(p) for p in self.path(target))
+        )
 
 
 class Deserialiser(SerDes):
@@ -1038,37 +1046,37 @@ class Deserialiser(SerDes):
     ==========
     io : :py:class:`~.io.BitstreamReader`
     """
-    
+
     def bool(self, target):
         value = bool(self.io.read_bit())
         self._set_context_value(target, value)
         return value
-    
+
     def nbits(self, target, num_bits):
         value = self.io.read_nbits(num_bits)
         self._set_context_value(target, value)
         return value
-    
+
     def uint_lit(self, target, num_bytes):
         value = self.io.read_uint_lit(num_bytes)
         self._set_context_value(target, value)
         return value
-    
+
     def bitarray(self, target, num_bits):
         value = self.io.read_bitarray(num_bits)
         self._set_context_value(target, value)
         return value
-    
+
     def bytes(self, target, num_bytes):
         value = self.io.read_bytes(num_bytes)
         self._set_context_value(target, value)
         return value
-    
+
     def uint(self, target):
         value = self.io.read_uint()
         self._set_context_value(target, value)
         return value
-    
+
     def sint(self, target):
         value = self.io.read_sint()
         self._set_context_value(target, value)
@@ -1085,11 +1093,11 @@ class Serialiser(SerDes):
     io : :py:class:`~.io.BitstreamWriter`
     context : dict
     """
-    
+
     def __init__(self, io, context=None, default_values={}):
         super(Serialiser, self).__init__(io, context)
         self.default_values = default_values
-    
+
     def _get_context_value(self, target):
         """
         Get a value from the context dictionary, checking that the value has not
@@ -1101,42 +1109,44 @@ class Serialiser(SerDes):
         except (KeyError, ListTargetExhaustedError):
             # Fall back on default value if provided
             context_type = type(self.cur_context)
-            if (context_type in self.default_values and
-                    target in self.default_values[context_type]):
+            if (
+                context_type in self.default_values
+                and target in self.default_values[context_type]
+            ):
                 return self.default_values[context_type][target]
             else:
                 raise
-    
+
     def bool(self, target):
         value = self._get_context_value(target)
         self.io.write_bit(value)
         return bool(value)
-    
+
     def nbits(self, target, num_bits):
         value = self._get_context_value(target)
         self.io.write_nbits(num_bits, value)
         return value
-    
+
     def uint_lit(self, target, num_bytes):
         value = self._get_context_value(target)
         self.io.write_uint_lit(num_bytes, value)
         return value
-    
+
     def bitarray(self, target, num_bits):
         value = self._get_context_value(target)
         self.io.write_bitarray(num_bits, value)
         return value
-    
+
     def bytes(self, target, num_bytes):
         value = self._get_context_value(target)
         self.io.write_bytes(num_bytes, value)
         return value
-    
+
     def uint(self, target):
         value = self._get_context_value(target)
         self.io.write_uint(value)
         return value
-    
+
     def sint(self, target):
         value = self._get_context_value(target)
         self.io.write_sint(value)
@@ -1151,7 +1161,7 @@ class MonitoredMixin(object):
     serialisation/deserialisation to be monitored or even terminated early
     (with an exception).
     """
-    
+
     def __init__(self, monitor, *args, **kwargs):
         """
         Parameters
@@ -1165,37 +1175,37 @@ class MonitoredMixin(object):
         """
         super(MonitoredMixin, self).__init__(*args, **kwargs)
         self.monitor = monitor
-    
+
     def bool(self, target):
         value = super(MonitoredMixin, self).bool(target)
         self.monitor(self, target, value)
         return value
-    
+
     def nbits(self, target, num_bits):
         value = super(MonitoredMixin, self).nbits(target, num_bits)
         self.monitor(self, target, value)
         return value
-    
+
     def uint_lit(self, target, num_bytes):
         value = super(MonitoredMixin, self).uint_lit(target, num_bytes)
         self.monitor(self, target, value)
         return value
-    
+
     def bitarray(self, target, num_bits):
         value = super(MonitoredMixin, self).bitarray(target, num_bits)
         self.monitor(self, target, value)
         return value
-    
+
     def bytes(self, target, num_bytes):
         value = super(MonitoredMixin, self).bytes(target, num_bytes)
         self.monitor(self, target, value)
         return value
-    
+
     def uint(self, target):
         value = super(MonitoredMixin, self).uint(target)
         self.monitor(self, target, value)
         return value
-    
+
     def sint(self, target):
         value = super(MonitoredMixin, self).sint(target)
         self.monitor(self, target, value)
@@ -1268,12 +1278,15 @@ def context_type(dict_type):
     For introspection purposes, the wrapper function will be given a
     'context_type' attribute holding the passed 'dict_type'.
     """
+
     def wrap(f):
         @wraps(f)
         def wrapper(serdes, *args, **kwargs):
             serdes.set_context_type(dict_type)
             return f(serdes, *args, **kwargs)
+
         wrapper.context_type = dict_type
         wrapper.__wrapped__ = f
         return wrapper
+
     return wrap

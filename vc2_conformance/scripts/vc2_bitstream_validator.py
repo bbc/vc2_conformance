@@ -42,9 +42,7 @@ from vc2_conformance.decoder import (
 
 from vc2_conformance.bitstream import to_bit_offset
 
-from vc2_conformance._py2x_compat import (
-    get_terminal_size,
-)
+from vc2_conformance._py2x_compat import get_terminal_size
 
 
 def format_pseudocode_traceback(tb):
@@ -54,7 +52,7 @@ def format_pseudocode_traceback(tb):
     being called.
     """
     calls = []
-    
+
     for frame_summary in tb:
         filename = frame_summary[0]
         function_name = frame_summary[2]
@@ -63,15 +61,13 @@ def format_pseudocode_traceback(tb):
             calls.append(metadata.format_citation(refval))
         except ValueError:
             pass
-    
+
     return "\n".join(
-        "{}* {}".format("  "*num, call)
-        for num, call in enumerate(calls)
+        "{}* {}".format("  " * num, call) for num, call in enumerate(calls)
     )
 
 
 class BitstreamValidator(object):
-    
     def __init__(self, filename, show_status, verbose, output_filename):
         """
         Parameters
@@ -90,13 +86,13 @@ class BitstreamValidator(object):
         self._show_status = show_status
         self._verbose = verbose
         self._output_filename = output_filename
-        
+
         # The index to use in the filename of the next decoded picture
         self._next_picture_index = 0
-        
+
         # Is the status line currently visible
         self._status_line_visible = False
-        
+
     def run(self):
         try:
             self._file = open(self._filename, "rb")
@@ -108,17 +104,19 @@ class BitstreamValidator(object):
             # exceptions *except* due to file-related issues.
             self._print_error(str(e))
             return 1
-        
+
         self._state = State(_output_picture_callback=self._output_picture)
         init_io(self._state, self._file)
-        
+
         if self._show_status:
             self._update_status_line("Starting bitstream validation...")
-        
+
         try:
             parse_sequence(self._state)
             self._hide_status_line()
-            print("No errors found in bitstream. Verify decoded pictures to confirm conformance.")
+            print(
+                "No errors found in bitstream. Verify decoded pictures to confirm conformance."
+            )
             return 0
         except ConformanceError as e:
             # Bitstream failed validation
@@ -132,89 +130,88 @@ class BitstreamValidator(object):
             self._hide_status_line()
             self._print_error(
                 "internal error in bitstream validator: {}: {} "
-                "(probably a bug in this program)".format(
-                    type(e).__name__,
-                    str(e),
-                )
+                "(probably a bug in this program)".format(type(e).__name__, str(e),)
             )
             return 3
-    
+
     def _output_picture(self, picture, video_parameters):
-        filename = self._output_filename%(self._next_picture_index, )
+        filename = self._output_filename % (self._next_picture_index,)
         self._next_picture_index += 1
-        
+
         write(
-            picture,
-            video_parameters,
-            self._state["_picture_coding_mode"],
-            filename,
+            picture, video_parameters, self._state["_picture_coding_mode"], filename,
         )
-        
+
         if self._show_status:
             self._update_status_line("Decoded picture written to {}".format(filename))
-    
+
     def _update_status_line(self, message):
         """
         Display/update the status line indicating the progress of the decoding
         process.
         """
         self._status_line_visible = True
-        
-        percent = int(round(
-            (tell(self._state)[0] * 100.0) /
-            (self._filesize_bytes or 1)
-        ))
-        
+
+        percent = int(
+            round((tell(self._state)[0] * 100.0) / (self._filesize_bytes or 1))
+        )
+
         line = "[{:3d}%] {}".format(percent, message)
-        
+
         # Ensure stdout is fully displayed before doing anything to the status
         # line.
         sys.stdout.flush()
-        
-        sys.stderr.write((
-            "\033[2K"  # Clear to end of line
-            "\033[s"  # Save cursor position
-            "{}"
-            "\033[u"  # Restore cursor position
-        ).format(line))
+
+        sys.stderr.write(
+            (
+                "\033[2K"  # Clear to end of line
+                "\033[s"  # Save cursor position
+                "{}"
+                "\033[u"  # Restore cursor position
+            ).format(line)
+        )
         sys.stderr.flush()
-    
+
     def _hide_status_line(self):
         """If the status line is visible, hide it."""
         if self._status_line_visible:
             self._status_line_visible = False
-            
+
             # Ensure stdout is fully displayed before doing anything to the
             # status line.
             sys.stdout.flush()
-            
+
             sys.stderr.write("\033[2K")  # Clear to end of line
             sys.stderr.flush()
-    
+
     def _print_conformance_error(self, exception, tb):
         """
         Display detailed information from a ConformanceError on stdout.
         """
         terminal_width = get_terminal_size()[0]
-        
+
         summary, _, details = wrap_paragraphs(exception.explain()).partition("\n")
-        
+
         offending_offset = exception.offending_offset()
         if offending_offset is None:
             offending_offset = to_bit_offset(*tell(self._state))
-        
+
         title = "Conformance error at bit offset {}".format(offending_offset)
-        
-        bitstream_viewer_hint = dedent(exception.bitstream_viewer_hint()).strip().format(
-            cmd="vc2-bitstream-viewer",
-            file=quote(self._filename),
-            offset=offending_offset,
+
+        bitstream_viewer_hint = (
+            dedent(exception.bitstream_viewer_hint())
+            .strip()
+            .format(
+                cmd="vc2-bitstream-viewer",
+                file=quote(self._filename),
+                offset=offending_offset,
+            )
         )
-        
+
         out = ""
-        
+
         out += title + "\n"
-        out += ("="*len(title)) + "\n"
+        out += ("=" * len(title)) + "\n"
         out += "\n"
         out += wrap_paragraphs(summary, terminal_width) + "\n"
         out += "\n"
@@ -237,21 +234,21 @@ class BitstreamValidator(object):
         out += "Most recent call last:\n"
         out += "\n"
         out += format_pseudocode_traceback(tb) + "\n"
-        
+
         print(out)
-    
+
     def _print_error(self, message):
         """
         Print an error message to stderr.
         """
         # Avoid interleaving with stdout (and make causality clearer)
         sys.stdout.flush()
-        
+
         # Display the traceback
         if self._verbose >= 1:
             if sys.exc_info()[0] is not None:
                 traceback.print_exc()
-        
+
         # Display the message
         prog = os.path.basename(sys.argv[0])
         message = "{}: error: {}".format(prog, message)
@@ -268,33 +265,45 @@ def parse_args(*args, **kwargs):
     * verbose (int): The verbosity level.
     * output (str): The output picture filename pattern.
     """
-    parser = ArgumentParser(description="""
+    parser = ArgumentParser(
+        description="""
         Validate a bitstream's conformance with the VC-2 specifications.
-    """)
-    
-    parser.add_argument("bitstream",
+    """
+    )
+
+    parser.add_argument(
+        "bitstream",
         help="""
             The filename of the bitstream to validate.
-        """
+        """,
     )
-    
+
     parser.add_argument(
-        "--no-status", "--quiet", "-q", action="store_true", default=False,
+        "--no-status",
+        "--quiet",
+        "-q",
+        action="store_true",
+        default=False,
         help="""
             Do not display a status line on stderr while validating the
             bitstream.
         """,
     )
-    
+
     parser.add_argument(
-        "--verbose", "-v", action="count", default=0,
+        "--verbose",
+        "-v",
+        action="count",
+        default=0,
         help="""
             Show full Python stack-traces on failure.
         """,
     )
-    
+
     parser.add_argument(
-        "--output", "-o", default="picture_%d.raw",
+        "--output",
+        "-o",
+        default="picture_%d.raw",
         help="""
             The filename pattern for decoded picture data and metadata. The
             supplied pattern should a 'printf' style template with (e.g.) '%%d'
@@ -306,20 +315,20 @@ def parse_args(*args, **kwargs):
             metadata file. (Default: %(default)s).
         """,
     )
-    
+
     args = parser.parse_args(*args, **kwargs)
-    
+
     try:
-        args.output%(0, )
+        args.output % (0,)
     except TypeError as e:
         parser.error("--output is not a valid printf template: {}".format(e))
-    
+
     return args
 
 
 def main(*args, **kwargs):
     args = parse_args(*args, **kwargs)
-    
+
     validator = BitstreamValidator(
         filename=args.bitstream,
         show_status=not args.no_status,

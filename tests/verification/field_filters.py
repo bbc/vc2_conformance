@@ -19,11 +19,12 @@ def cascade(*filters):
     Given a series of (comptaible) field filter functions, return a new
     function which applies each filter in turn.
     """
+
     def filter(lst):
         for f in filters:
             lst = f(lst)
         return lst
-    
+
     return filter
 
 
@@ -33,8 +34,7 @@ def ignore_docstrings(body):
     leading strings (i.e. all docstrings).
     """
     return dropwhile(
-        lambda e: isinstance(e, ast.Expr) and isinstance(e.value, ast.Str),
-        body,
+        lambda e: isinstance(e, ast.Expr) and isinstance(e.value, ast.Str), body,
     )
 
 
@@ -43,14 +43,15 @@ def ignore_leading_arguments(*expected_arg_names):
     Filter factory for filtering the 'args' field of :py:class:`ast.arguments`
     to remove an expected set of argument names from the start.
     """
+
     def filter(args):
         arg_names = tuple(map(argument_to_str, args))
-        
-        if arg_names[:len(expected_arg_names)] == expected_arg_names:
-            return args[len(expected_arg_names):]
+
+        if arg_names[: len(expected_arg_names)] == expected_arg_names:
+            return args[len(expected_arg_names) :]
         else:
             return args
-    
+
     return filter
 
 
@@ -60,14 +61,15 @@ def ignore_leading_call_arguments(*expected_arg_names):
     remove leading arguments which consist of the provided list of variable
     names.
     """
+
     def filter(args):
         arg_names = tuple(map(name_to_str, args))
-        
-        if arg_names[:len(expected_arg_names)] == expected_arg_names:
-            return args[len(expected_arg_names):]
+
+        if arg_names[: len(expected_arg_names)] == expected_arg_names:
+            return args[len(expected_arg_names) :]
         else:
             return args
-    
+
     return filter
 
 
@@ -76,17 +78,19 @@ def ignore_named_decorators(*ignored_decorator_names):
     Filter factory for filtering any of the named decorators from the
     ``decorator_list`` field of :py:class:`ast.FunctionDef` nodes.
     """
+
     def filter(decorator_list):
         return [
             decorator
             for decorator in decorator_list
             if (
                 name_to_str(decorator.func)
-                if isinstance(decorator, ast.Call) else
-                name_to_str(decorator)
-            ) not in ignored_decorator_names
+                if isinstance(decorator, ast.Call)
+                else name_to_str(decorator)
+            )
+            not in ignored_decorator_names
         ]
-    
+
     return filter
 
 
@@ -95,16 +99,17 @@ def ignore_calls_to(*ignored_function_names):
     Filter factory for filtering of function expressions for any of the named
     functions from a list of statements.
     """
+
     def filter(nodes):
         return [
             node
             for node in nodes
             if (
-                not (isinstance(node, ast.Expr) and isinstance(node.value, ast.Call)) or
-                name_to_str(node.value.func) not in ignored_function_names
+                not (isinstance(node, ast.Expr) and isinstance(node.value, ast.Call))
+                or name_to_str(node.value.func) not in ignored_function_names
             )
         ]
-    
+
     return filter
 
 
@@ -113,9 +118,10 @@ def ignore_first_n(n):
     Filter factory for a filter which removes the first 'n' entries from a
     list.
     """
+
     def filter(lst):
         return lst[n:]
-    
+
     return filter
 
 
@@ -162,10 +168,11 @@ def unwrap_named_context_managers(*function_names):
         c = 3
         d = 4
     """
+
     def filter(body):
         nodes_to_unwrap = list(body)
         out = []
-        
+
         while nodes_to_unwrap:
             node = nodes_to_unwrap.pop(0)
             if isinstance(node, ast.With):
@@ -178,7 +185,7 @@ def unwrap_named_context_managers(*function_names):
                     else:
                         matches = False
                         break
-                
+
                 if matches:
                     for child in reversed(node.body):
                         nodes_to_unwrap.insert(0, child)
@@ -186,7 +193,7 @@ def unwrap_named_context_managers(*function_names):
                     out.append(node)
             else:
                 out.append(node)
-        
+
         return out
-    
+
     return filter

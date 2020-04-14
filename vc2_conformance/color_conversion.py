@@ -137,10 +137,7 @@ __all__ = [
 ################################################################################
 
 
-PrimaryChromacities = namedtuple(
-    "PrimaryChromacities",
-    "xw,yw,xr,yr,xg,yg,xb,yb",
-)
+PrimaryChromacities = namedtuple("PrimaryChromacities", "xw,yw,xr,yr,xg,yg,xb,yb",)
 """
 A specification of a set of colour primaries in terms of whitepoint (xw, yx)
 and red (xr, yr), green (xg, yg) and blue (xb, yb) chromacities. Colours are
@@ -158,11 +155,11 @@ def xy_to_xyz(x, y):
     #    x = X / (X + Y + Z)    and    y = Y / (X + Y + Z)
     #
     # So, by simple rearrangement:
-    
+
     Y = 1.0
-    X = (x/y) * Y
-    Z = ((1.0-x-y)/y) * Y
-    
+    X = (x / y) * Y
+    Z = ((1.0 - x - y) / y) * Y
+
     return (X, Y, Z)
 
 
@@ -203,13 +200,11 @@ def primary_chromacities_to_matrix(pc):
     #    [ X ]     [            ] [ Yr  0  0 ] [ R ]
     #    [ Y ]  =  [ relative_m ] [  0 Yg  0 ] [ G ]
     #    [ Z ]     [            ] [  0  0 Yb ] [ B ]
-    
-    relative_m = np.array([
-        xy_to_xyz(pc.xr, pc.yr),
-        xy_to_xyz(pc.xg, pc.yg),
-        xy_to_xyz(pc.xb, pc.yb),
-    ]).T
-    
+
+    relative_m = np.array(
+        [xy_to_xyz(pc.xr, pc.yr), xy_to_xyz(pc.xg, pc.yg), xy_to_xyz(pc.xb, pc.yb),]
+    ).T
+
     # Also by definition, the white point with chromacity xw, yw, and XYZ Xw,
     # Yw, Zw is the colour produced by RGB [1, 1, 1]:
     #
@@ -227,7 +222,7 @@ def primary_chromacities_to_matrix(pc):
     #    [ relative_m ]   [ Yw ]  =  [ Yg ]
     #    [            ]   [ Zw ]     [ Yb ]
     #
-    # By defining the luminance of the whitepoint, Yw, to be 1.0, we can 
+    # By defining the luminance of the whitepoint, Yw, to be 1.0, we can
     # find Xw and Zw from xw and yw:
     #
     #    [            ]-1 [ xw/yw        ]     [ Yr ]     [       ]
@@ -236,26 +231,21 @@ def primary_chromacities_to_matrix(pc):
     #
     # This equation now contains no unknowns other than Yr, Yg and Yb which we
     # can now solve for and together refer to as 'scale':
-    
-    scale = np.matmul(
-        np.linalg.inv(relative_m),
-        xy_to_xyz(pc.xw, pc.yw),
-    )
-    
+
+    scale = np.matmul(np.linalg.inv(relative_m), xy_to_xyz(pc.xw, pc.yw),)
+
     # We can now apply this to relative_m to get the matrix m:
-    
-    m = np.matmul(
-        relative_m,
-        np.diag(scale),
-    )
-    
+
+    m = np.matmul(relative_m, np.diag(scale),)
+
     return m
 
 
 LINEAR_RGB_TO_XYZ = {
     PresetColorPrimaries.hdtv:
-        # (ITU-R BT.709)
-        primary_chromacities_to_matrix(PrimaryChromacities(
+    # (ITU-R BT.709)
+    primary_chromacities_to_matrix(
+        PrimaryChromacities(
             xw=0.3127,
             yw=0.3290,
             xr=0.640,
@@ -264,10 +254,12 @@ LINEAR_RGB_TO_XYZ = {
             yg=0.600,
             xb=0.150,
             yb=0.060,
-        )),
+        )
+    ),
     PresetColorPrimaries.sdtv_525:
-        # (ITU-R BT.601)
-        primary_chromacities_to_matrix(PrimaryChromacities(
+    # (ITU-R BT.601)
+    primary_chromacities_to_matrix(
+        PrimaryChromacities(
             xw=0.3127,
             yw=0.3290,
             xr=0.630,
@@ -276,10 +268,12 @@ LINEAR_RGB_TO_XYZ = {
             yg=0.595,
             xb=0.155,
             yb=0.070,
-        )),
+        )
+    ),
     PresetColorPrimaries.sdtv_625:
-        # (ITU-R BT.601)
-        primary_chromacities_to_matrix(PrimaryChromacities(
+    # (ITU-R BT.601)
+    primary_chromacities_to_matrix(
+        PrimaryChromacities(
             xw=0.3127,
             yw=0.3290,
             xr=0.640,
@@ -288,13 +282,15 @@ LINEAR_RGB_TO_XYZ = {
             yg=0.600,
             xb=0.150,
             yb=0.060,
-        )),
+        )
+    ),
     PresetColorPrimaries.d_cinema:
-        # (SMPTE ST 428-1)
-        np.eye(3),
+    # (SMPTE ST 428-1)
+    np.eye(3),
     PresetColorPrimaries.uhdtv:
-        # (ITU-R BT.2020)
-        primary_chromacities_to_matrix(PrimaryChromacities(
+    # (ITU-R BT.2020)
+    primary_chromacities_to_matrix(
+        PrimaryChromacities(
             xw=0.3127,
             yw=0.3290,
             xr=0.708,
@@ -303,7 +299,8 @@ LINEAR_RGB_TO_XYZ = {
             yg=0.797,
             xb=0.131,
             yb=0.046,
-        )),
+        )
+    ),
 }
 r"""
 For each set of colour primaries in
@@ -311,9 +308,7 @@ For each set of colour primaries in
 which converts from linear RGB into CIE XYZ.
 """
 
-XYZ_TO_LINEAR_RGB = {
-    key: np.linalg.inv(m) for key, m in LINEAR_RGB_TO_XYZ.items()
-}
+XYZ_TO_LINEAR_RGB = {key: np.linalg.inv(m) for key, m in LINEAR_RGB_TO_XYZ.items()}
 """
 For each set of colour primaries in
 :py:class:`~vc2_data_tables.PresetColorPrimaries`, a :math:`3 \times 3` matrix
@@ -336,14 +331,14 @@ def tv_gamma_transfer_function(l):
     """
     alpha = 1.09929682680944
     beta = 0.018053968510807
-    
+
     # NB: In case of undershoot (l < 0), np.power produces a warning here. The
     # effected values will be overwritten later however so this can be ignored.
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         e = alpha * np.power(l, 0.45) - (alpha - 1)
     e = np.where(l < beta, 4.5 * l, e)
-    
+
     return e
 
 
@@ -353,14 +348,14 @@ def tv_gamma_inverse_transfer_function(e):
     """
     alpha = 1.09929682680944
     beta = 0.018053968510807
-    
+
     # NB: In case of undershoot (l < 0), np.power produces a warning here. The
     # effected values will be overwritten later however so this can be ignored.
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        l = np.power((e + 0.099) / alpha, 1/0.45)
+        l = np.power((e + 0.099) / alpha, 1 / 0.45)
     l = np.where(e < tv_gamma_transfer_function(beta), e / 4.5, l)
-    
+
     return l
 
 
@@ -373,23 +368,15 @@ def extended_gamut_transfer_function(l):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         e = 1.099 * np.power(l, 0.45) - 0.099
-    
-    e = np.where(
-        l < 0.018,
-        4.5 * l,
-        e,
-    )
-    
+
+    e = np.where(l < 0.018, 4.5 * l, e,)
+
     # NB: In case of undershoot (-4 * l < 0), the effected value will not be
     # used
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        e = np.where(
-            l < -0.0045,
-            -(1.099 * np.power(-4 * l, 0.45) - 0.099)/4,
-            e,
-        )
-    
+        e = np.where(l < -0.0045, -(1.099 * np.power(-4 * l, 0.45) - 0.099) / 4, e,)
+
     return e
 
 
@@ -406,10 +393,10 @@ def d_cinema_transfer_function(l):
     """
     peak_luminance = 52.37  # cd/m^2
     reference_luminance = 48.0  # cd/m^2
-    
+
     # Clamp 'l' at 0 as not defined in case of undershoots
-    e = np.power((reference_luminance * np.maximum(l, 0)) / peak_luminance, (1/2.6))
-    
+    e = np.power((reference_luminance * np.maximum(l, 0)) / peak_luminance, (1 / 2.6))
+
     return e
 
 
@@ -418,17 +405,17 @@ def pq_transfer_function(l):
     The Optical-Eelectical Transfer Function (OETF) for Dolby Perceptual
     Quantizer (PQ) (ITU-R BT.2100-2).
     """
-    m1 = 2610.0/16384.0
-    m2 = 2523.0/4096.0 * 128
-    c1 = 3424.0/4096.0
-    c2 = 2413.0/4096.0 * 32.0
-    c3 = 2392.0/4096.0 * 32.0
-    
+    m1 = 2610.0 / 16384.0
+    m2 = 2523.0 / 4096.0 * 128
+    c1 = 3424.0 / 4096.0
+    c2 = 2413.0 / 4096.0 * 32.0
+    c3 = 2392.0 / 4096.0 * 32.0
+
     # Clamp 'l' at 0 as not defined in case of undershoots
     l_m1 = np.power(np.maximum(l, 0), m1)
-    
-    e = np.power((c1 + c2*l_m1) / (1 + c3*l_m1), m2)
-    
+
+    e = np.power((c1 + c2 * l_m1) / (1 + c3 * l_m1), m2)
+
     return e
 
 
@@ -437,22 +424,18 @@ def hlg_transfer_function(l):
     The Hybrid Log Gamma (HLG) transfer function (ITU-R BT.2100-2).
     """
     a = 0.17883277
-    b = 1 - 4*a
-    c = 0.5 - a*np.log(4*a)
-    
+    b = 1 - 4 * a
+    c = 0.5 - a * np.log(4 * a)
+
     # NB: In case of undershoot (l < 0), np.log produces a warning here. The
     # effected values will be overwritten later however so this can be ignored.
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        e = a * np.log(12*l - b) + c
-    
+        e = a * np.log(12 * l - b) + c
+
     # Clamp 'l' at 0 as not defined in case of undershoots
-    e = np.where(
-        l <= 1/12.0,
-        np.sqrt(3 * np.maximum(l, 0)),
-        e,
-    )
-    
+    e = np.where(l <= 1 / 12.0, np.sqrt(3 * np.maximum(l, 0)), e,)
+
     return e
 
 
@@ -512,9 +495,9 @@ def kr_kb_to_color_matrix(kr, kb):
     #     Kr + Kg + Kb = 1
     #
     # So:
-    
+
     kg = 1 - kr - kb
-    
+
     # Conceptually raw colour difference signals are then given as:
     #
     #     Cb_conceptual = B' - Y'
@@ -547,38 +530,29 @@ def kr_kb_to_color_matrix(kr, kb):
     #        = (0.5 R' - (Kg / 2(1-Kr)) G' - (Kb / 2(1-Kr)) B')
     #
     # Given these we can now directly construct the color matrix:
-    
-    return np.array([
-        [kr, kg, kb],
-        [-kr / (2*(1-kb)), -kg / (2*(1-kb)), 0.5],
-        [0.5, -kg / (2*(1-kr)), -kb / (2*(1-kr))],
-    ])
+
+    return np.array(
+        [
+            [kr, kg, kb],
+            [-kr / (2 * (1 - kb)), -kg / (2 * (1 - kb)), 0.5],
+            [0.5, -kg / (2 * (1 - kr)), -kb / (2 * (1 - kr))],
+        ]
+    )
 
 
 COLOR_MATRICES = {
     # (ITU-R BT.709)
-    PresetColorMatrices.hdtv:
-        kr_kb_to_color_matrix(kr=0.2126, kb=0.0722),
+    PresetColorMatrices.hdtv: kr_kb_to_color_matrix(kr=0.2126, kb=0.0722),
     # (ITU-R BT.601)
-    PresetColorMatrices.sdtv:
-        kr_kb_to_color_matrix(kr=0.2990, kb=0.1140),
+    PresetColorMatrices.sdtv: kr_kb_to_color_matrix(kr=0.2990, kb=0.1140),
     # (ITU-T H.264)
-    PresetColorMatrices.reversible:
-        np.array([
-            [+0.25, +0.50, +0.25],
-            [-0.25, +0.50, -0.25],
-            [+0.50, +0.00, -0.50],
-        ]),
+    PresetColorMatrices.reversible: np.array(
+        [[+0.25, +0.50, +0.25], [-0.25, +0.50, -0.25], [+0.50, +0.00, -0.50],]
+    ),
     # GBR -> Y C1 C2
-    PresetColorMatrices.rgb:
-        np.array([
-            [0, 1, 0],
-            [0, 0, 1],
-            [1, 0, 0],
-        ]),
+    PresetColorMatrices.rgb: np.array([[0, 1, 0], [0, 0, 1], [1, 0, 0],]),
     # (ITU-R BT.2020)
-    PresetColorMatrices.uhdtv:
-        kr_kb_to_color_matrix(kr=0.2627, kb=0.0593),
+    PresetColorMatrices.uhdtv: kr_kb_to_color_matrix(kr=0.2627, kb=0.0593),
 }
 r"""
 For each colour matrix supported by VC-2, a :math:`3 \times 3` matrix which
@@ -586,9 +560,7 @@ transforms from non-linear RGB (:math:`E_R E_G E_B`) to Y C1 C2.
 """
 
 
-INVERSE_COLOR_MATRICES = {
-    key: np.linalg.inv(m) for key, m in COLOR_MATRICES.items()
-}
+INVERSE_COLOR_MATRICES = {key: np.linalg.inv(m) for key, m in COLOR_MATRICES.items()}
 """
 For each colour matrix supported by VC-2, a :math:`3 \times 3` matrix which
 transforms from Y C1 C2 to non-linear RGB (:math:`E_R E_G E_B`).
@@ -625,14 +597,14 @@ def float_to_int(a, offset, excursion):
     clipped.
     """
     a = np.array(a, dtype=float)
-    
+
     # Scale/offset
     a = (a * excursion) + offset
-    
+
     # Convert to expected integer format/range
     a = np.round(a).astype(int)
-    a = np.clip(a, 0, (2**(intlog2(excursion + 1))) - 1)
-    
+    a = np.clip(a, 0, (2 ** (intlog2(excursion + 1))) - 1)
+
     return a
 
 
@@ -657,28 +629,28 @@ def from_444(chroma, subsampling):
         pictures produced by this function should not be used for anything
         where high fidelity is required.
     """
-    
+
     if subsampling == ColorDifferenceSamplingFormats.color_4_4_4:
         return chroma
     elif subsampling == ColorDifferenceSamplingFormats.color_4_2_2:
         h, w = chroma.shape
         new_chroma = np.empty((h, w // 2), dtype=chroma.dtype)
-        
+
         new_chroma[:, :] = chroma[:, 0::2]
         new_chroma[:, :] += chroma[:, 1::2]
         new_chroma /= 2.0
-        
+
         return new_chroma
     elif subsampling == ColorDifferenceSamplingFormats.color_4_2_0:
         h, w = chroma.shape
         new_chroma = np.empty((h // 2, w // 2), dtype=chroma.dtype)
-        
+
         new_chroma[:, :] = chroma[0::2, 0::2]
         new_chroma[:, :] += chroma[0::2, 1::2]
         new_chroma[:, :] += chroma[1::2, 0::2]
         new_chroma[:, :] += chroma[1::2, 1::2]
         new_chroma /= 4.0
-        
+
         return new_chroma
 
 
@@ -701,7 +673,6 @@ def to_444(chroma, subsampling):
         return np.repeat(chroma, 2, axis=1)
     elif subsampling == ColorDifferenceSamplingFormats.color_4_2_0:
         return np.repeat(np.repeat(chroma, 2, axis=1), 2, axis=0)
-
 
 
 ################################################################################
@@ -740,9 +711,7 @@ def to_xyz(y, c1, c2, video_parameters):
     """
     # Convert each component into floating point, 0 - +1 or -0.5 - +0.5 form
     y_float = int_to_float(
-        y,
-        video_parameters["luma_offset"],
-        video_parameters["luma_excursion"],
+        y, video_parameters["luma_offset"], video_parameters["luma_excursion"],
     )
     c1_float = int_to_float(
         c1,
@@ -754,39 +723,36 @@ def to_xyz(y, c1, c2, video_parameters):
         video_parameters["color_diff_offset"],
         video_parameters["color_diff_excursion"],
     )
-    
+
     # Upsample to 4:4:4
     c1_upsampled = to_444(c1_float, video_parameters["color_diff_format_index"])
     c2_upsampled = to_444(c2_float, video_parameters["color_diff_format_index"])
-    
+
     # Produce a Nx3 matrix with each column containing a Y C1 C2 value.
-    yc1c2_cols = np.stack([
-        y_float.reshape(-1),
-        c1_upsampled.reshape(-1),
-        c2_upsampled.reshape(-1),
-    ], axis=0)
-    
+    yc1c2_cols = np.stack(
+        [y_float.reshape(-1), c1_upsampled.reshape(-1), c2_upsampled.reshape(-1),],
+        axis=0,
+    )
+
     # Convert to non-linear RGB
     inverse_color_matrix = INVERSE_COLOR_MATRICES[
         video_parameters["color_matrix_index"]
     ]
     eregeb_cols = np.matmul(inverse_color_matrix, yc1c2_cols)
-    
+
     # Convert to linear RGB
     inverse_transfer_function = INVERSE_TRANSFER_FUNCTIONS[
         video_parameters["transfer_function_index"]
     ]
     linear_rgb_cols = inverse_transfer_function(eregeb_cols)
-    
+
     # Convert to CIE XYZ
-    rgb_to_xyz_matrix = LINEAR_RGB_TO_XYZ[
-        video_parameters["color_primaries_index"]
-    ]
+    rgb_to_xyz_matrix = LINEAR_RGB_TO_XYZ[video_parameters["color_primaries_index"]]
     xyz_cols = np.matmul(rgb_to_xyz_matrix, linear_rgb_cols)
-    
+
     # Convert to 3D array of XYZ values
-    xyz = xyz_cols.T.reshape(y.shape + (3, ))
-    
+    xyz = xyz_cols.T.reshape(y.shape + (3,))
+
     return xyz
 
 
@@ -822,41 +788,33 @@ def from_xyz(xyz, video_parameters):
     """
     # Convert to columns of XYZ values
     xyz_cols = xyz.reshape(-1, 3).T
-    
+
     # Convert to linear RGB
-    xyz_to_rgb_matrix = XYZ_TO_LINEAR_RGB[
-        video_parameters["color_primaries_index"]
-    ]
+    xyz_to_rgb_matrix = XYZ_TO_LINEAR_RGB[video_parameters["color_primaries_index"]]
     linear_rgb_cols = np.matmul(xyz_to_rgb_matrix, xyz_cols)
-    
+
     # Convert to non-linear RGB
-    transfer_function = TRANSFER_FUNCTIONS[
-        video_parameters["transfer_function_index"]
-    ]
+    transfer_function = TRANSFER_FUNCTIONS[video_parameters["transfer_function_index"]]
     eregeb_cols = transfer_function(linear_rgb_cols)
-    
+
     # Convert to Y C1 C2
-    color_matrix = COLOR_MATRICES[
-        video_parameters["color_matrix_index"]
-    ]
+    color_matrix = COLOR_MATRICES[video_parameters["color_matrix_index"]]
     yc1c2_cols = np.matmul(color_matrix, eregeb_cols)
-    
+
     # Convert to 3D
     yc1c2 = yc1c2_cols.T.reshape(xyz.shape)
-    
+
     # Color subsample
     y = yc1c2[:, :, 0]
     c1 = yc1c2[:, :, 1]
     c2 = yc1c2[:, :, 2]
-    
+
     c1_subsampled = from_444(c1, video_parameters["color_diff_format_index"])
     c2_subsampled = from_444(c2, video_parameters["color_diff_format_index"])
-    
+
     # Convert to integer ranges
     y_int = float_to_int(
-        y,
-        video_parameters["luma_offset"],
-        video_parameters["luma_excursion"],
+        y, video_parameters["luma_offset"], video_parameters["luma_excursion"],
     )
     c1_int = float_to_int(
         c1_subsampled,
@@ -868,7 +826,7 @@ def from_xyz(xyz, video_parameters):
         video_parameters["color_diff_offset"],
         video_parameters["color_diff_excursion"],
     )
-    
+
     return (y_int, c1_int, c2_int)
 
 
@@ -878,10 +836,7 @@ def matmul_colors(matrix, array):
     triple in the first array has been multiplied by the specified :math:`3
     \times 3` matrix.
     """
-    return np.matmul(
-        matrix,
-        array.reshape(-1, 3).T,
-    ).T.reshape(array.shape)
+    return np.matmul(matrix, array.reshape(-1, 3).T,).T.reshape(array.shape)
 
 
 def swap_primaries(xyz, video_parameters_before, video_parameters_after):
@@ -912,7 +867,7 @@ def swap_primaries(xyz, video_parameters_before, video_parameters_after):
     linear_rgb_after_to_xyz = LINEAR_RGB_TO_XYZ[
         video_parameters_after["color_primaries_index"]
     ]
-    
+
     m = np.matmul(linear_rgb_after_to_xyz, xyz_to_linear_rgb_before)
-    
+
     return matmul_colors(m, xyz)

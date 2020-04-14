@@ -27,7 +27,6 @@ from vc2_conformance.arrays import (
 __all__ = [
     "picture_decode",
     "inverse_wavelet_transform",
-    
     "idwt",
     "h_synthesis",
     "vh_synthesis",
@@ -38,9 +37,7 @@ __all__ = [
     "lift3",
     "lift4",
     "SYNTHESIS_LIFTING_FUNCTION_TYPES",
-    
     "idwt_pad_removal",
-    
     "offset_picture",
     "offset_component",
     "clip_picture",
@@ -66,12 +63,13 @@ def inverse_wavelet_transform(state):
     state["current_picture"]["C1"] = idwt(state, state["c1_transform"])
     state["current_picture"]["C2"] = idwt(state, state["c2_transform"])
     for c in ["Y", "C1", "C2"]:
-        idwt_pad_removal(state, state["current_picture"][c], c )
+        idwt_pad_removal(state, state["current_picture"][c], c)
 
 
 ################################################################################
 # Inverse (Synthesis) Discrete Wavelet Transform
 ################################################################################
+
 
 @ref_pseudocode
 def idwt(state, coeff_data):
@@ -98,17 +96,23 @@ def idwt(state, coeff_data):
     picture : [[pixel_value, ...], ...]
         The synthesized picture.
     """
-    if (state["dwt_depth_ho"] == 0):
+    if state["dwt_depth_ho"] == 0:
         DC_band = coeff_data[0]["LL"]
     else:
         DC_band = coeff_data[0]["L"]
     for n in range(1, state["dwt_depth_ho"] + 1):
         new_DC_band = h_synthesis(state, DC_band, coeff_data[n]["H"])
         DC_band = new_DC_band
-    for n in range(state["dwt_depth_ho"] + 1,
-                   state["dwt_depth_ho"] + state["dwt_depth"] + 1):
-        new_DC_band = vh_synthesis(state, DC_band, coeff_data[n]["HL"],
-                                   coeff_data[n]["LH"],coeff_data[n]["HH"])
+    for n in range(
+        state["dwt_depth_ho"] + 1, state["dwt_depth_ho"] + state["dwt_depth"] + 1
+    ):
+        new_DC_band = vh_synthesis(
+            state,
+            DC_band,
+            coeff_data[n]["HL"],
+            coeff_data[n]["LH"],
+            coeff_data[n]["HH"],
+        )
         DC_band = new_DC_band
     return DC_band
 
@@ -117,52 +121,53 @@ def idwt(state, coeff_data):
 def h_synthesis(state, L_data, H_data):
     """(15.4.2) Horizontal-only synthesis."""
     synth = new_array(2 * width(L_data), height(L_data))
-    
+
     # Interleave transform data (as expected by synthesis routine)
     for y in range(0, (height(synth))):
-        for x in range(0, (width(synth)//2)):
-            synth[y][2*x] = L_data[y][x]
-            synth[y][(2*x) + 1] = H_data[y][x]
-    
+        for x in range(0, (width(synth) // 2)):
+            synth[y][2 * x] = L_data[y][x]
+            synth[y][(2 * x) + 1] = H_data[y][x]
+
     # Synthesis
     for y in range(0, height(synth)):
         oned_synthesis(row(synth, y), state["wavelet_index_ho"])
-    
+
     # Bit shift, if required
     shift = filter_bit_shift(state)
     if shift > 0:
         for y in range(0, height(synth)):
             for x in range(0, width(synth)):
                 synth[y][x] = (synth[y][x] + (1 << (shift - 1))) >> shift
-    
+
     return synth
+
 
 @ref_pseudocode
 def vh_synthesis(state, LL_data, HL_data, LH_data, HH_data):
     """(15.4.3) Interleaved vertical and horizontal synthesis."""
     synth = new_array(2 * width(LL_data), 2 * height(LL_data))
-    
+
     # Interleave transform data (as expected by synthesis routine)
-    for y in range(0, (height(synth)//2)):
-        for x in range(0, (width(synth)//2)):
-            synth[2*y][2*x] = LL_data[y][x]
-            synth[2*y][2*x + 1] = HL_data[y][x]
-            synth[2*y + 1][2*x] = LH_data[y][x]
-            synth[2*y + 1][2*x + 1] = HH_data[y][x]
-    
+    for y in range(0, (height(synth) // 2)):
+        for x in range(0, (width(synth) // 2)):
+            synth[2 * y][2 * x] = LL_data[y][x]
+            synth[2 * y][2 * x + 1] = HL_data[y][x]
+            synth[2 * y + 1][2 * x] = LH_data[y][x]
+            synth[2 * y + 1][2 * x + 1] = HH_data[y][x]
+
     # Synthesis
     for x in range(0, width(synth)):
         oned_synthesis(column(synth, x), state["wavelet_index"])
     for y in range(0, height(synth)):
         oned_synthesis(row(synth, y), state["wavelet_index_ho"])
-    
+
     # Bit shift, if required
     shift = filter_bit_shift(state)
     if shift > 0:
         for y in range(0, height(synth)):
             for x in range(0, width(synth)):
                 synth[y][x] = (synth[y][x] + (1 << (shift - 1))) >> shift
-    
+
     return synth
 
 
@@ -170,7 +175,7 @@ def vh_synthesis(state, LL_data, HL_data, LH_data, HH_data):
 def oned_synthesis(A, filter_index):
     """(15.4.4.1) and (15.4.4.3). Acts in-place on 'A'"""
     filter_params = LIFTING_FILTERS[filter_index]
-    
+
     for stage in filter_params.stages:
         lift_fn = SYNTHESIS_LIFTING_FUNCTION_TYPES[stage.lift_type]
         lift_fn(A, stage.L, stage.D, stage.taps, stage.S)
@@ -186,61 +191,61 @@ def filter_bit_shift(state):
 @ref_pseudocode
 def lift1(A, L, D, taps, S):
     """(15.4.4.1) Update even, add odd."""
-    for n in range(0, (len(A)//2)):
+    for n in range(0, (len(A) // 2)):
         sum = 0
         for i in range(D, L + D):
-            pos = 2*(n + i) - 1
+            pos = 2 * (n + i) - 1
             pos = min(pos, len(A) - 1)
             pos = max(pos, 1)
-            sum += taps[i-D]* A[pos]
-        if S>0:
-            sum += (1<<(S - 1))
-        A[2*n] += (sum >> S)
+            sum += taps[i - D] * A[pos]
+        if S > 0:
+            sum += 1 << (S - 1)
+        A[2 * n] += sum >> S
 
 
 @ref_pseudocode
 def lift2(A, L, D, taps, S):
     """(15.4.4.1) Update even, subtract odd."""
-    for n in range(0, (len(A)//2)):
+    for n in range(0, (len(A) // 2)):
         sum = 0
         for i in range(D, L + D):
-            pos = 2*(n + i) - 1
+            pos = 2 * (n + i) - 1
             pos = min(pos, len(A) - 1)
             pos = max(pos, 1)
-            sum += taps[i-D] * A[pos]
-        if S>0:
-            sum += (1<<(S - 1))
-        A[2*n] -= (sum >> S)
+            sum += taps[i - D] * A[pos]
+        if S > 0:
+            sum += 1 << (S - 1)
+        A[2 * n] -= sum >> S
 
 
 @ref_pseudocode
 def lift3(A, L, D, taps, S):
     """(15.4.4.1) Update odd, add even."""
-    for n in range(0, (len(A)//2)):
+    for n in range(0, (len(A) // 2)):
         sum = 0
         for i in range(D, L + D):
-            pos = 2*(n + i)
+            pos = 2 * (n + i)
             pos = min(pos, len(A) - 2)
             pos = max(pos, 0)
-            sum += taps[i-D] * A[pos]
-        if S>0:
-            sum += (1<<(S - 1))
-        A[2*n + 1] += (sum >> S)
+            sum += taps[i - D] * A[pos]
+        if S > 0:
+            sum += 1 << (S - 1)
+        A[2 * n + 1] += sum >> S
 
 
 @ref_pseudocode
 def lift4(A, L, D, taps, S):
     """(15.4.4.1) Update odd, subtract even."""
-    for n in range(0, (len(A)//2)):
+    for n in range(0, (len(A) // 2)):
         sum = 0
         for i in range(D, L + D):
-            pos = 2*(n + i)
+            pos = 2 * (n + i)
             pos = min(pos, len(A) - 2)
             pos = max(pos, 0)
-            sum += taps[i-D] * A[pos]
-        if S>0:
-            sum += (1<<(S - 1))
-        A[2*n + 1] -= (sum >> S)
+            sum += taps[i - D] * A[pos]
+        if S > 0:
+            sum += 1 << (S - 1)
+        A[2 * n + 1] -= sum >> S
 
 
 SYNTHESIS_LIFTING_FUNCTION_TYPES = {
@@ -259,16 +264,17 @@ wavelet synthesis.
 # Padding removal
 ################################################################################
 
+
 @ref_pseudocode
 def idwt_pad_removal(state, pic, c):
     """(15.4.5)"""
-    if(c == "Y"):
+    if c == "Y":
         width = state["luma_width"]
         height = state["luma_height"]
-    elif((c == "C1") or (c == "C2")):
+    elif (c == "C1") or (c == "C2"):
         width = state["color_diff_width"]
         height = state["color_diff_height"]
-    
+
     delete_rows_after(pic, height)
     delete_columns_after(pic, width)
 
@@ -298,10 +304,10 @@ def offset_component(state, comp_data, c):
     """(15.5) Remove picture value offsets from a single component."""
     for y in range(0, height(comp_data)):
         for x in range(0, width(comp_data)):
-            if (c=="Y"):
-                comp_data[y][x] += 2**(state["luma_depth"]-1)
+            if c == "Y":
+                comp_data[y][x] += 2 ** (state["luma_depth"] - 1)
             else:
-                comp_data[y][x] += 2**(state["color_diff_depth"]-1)
+                comp_data[y][x] += 2 ** (state["color_diff_depth"] - 1)
 
 
 @ref_pseudocode
@@ -316,8 +322,15 @@ def clip_component(state, comp_data, c):
     """(15.5)"""
     for y in range(0, height(comp_data)):
         for x in range(0, width(comp_data)):
-            if (c=="Y"):
-                comp_data[y][x] = clip(comp_data[y][x], -(2**(state["luma_depth"]-1)), 2**(state["luma_depth"]-1) -1)
+            if c == "Y":
+                comp_data[y][x] = clip(
+                    comp_data[y][x],
+                    -(2 ** (state["luma_depth"] - 1)),
+                    2 ** (state["luma_depth"] - 1) - 1,
+                )
             else:
-                comp_data[y][x] = clip(comp_data[y][x], -(2**(state["color_diff_depth"]-1)), 2**(state["color_diff_depth"]-1) -1)
-
+                comp_data[y][x] = clip(
+                    comp_data[y][x],
+                    -(2 ** (state["color_diff_depth"] - 1)),
+                    2 ** (state["color_diff_depth"] - 1) - 1,
+                )

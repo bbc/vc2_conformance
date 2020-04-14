@@ -69,11 +69,11 @@ class NodeComparator(object):
     The :py:meth:`compare` method of instances of this class may be used to
     recursively compare two AST nodes.
     """
-    
+
     def __init__(self):
         # A stack of ast.AST nodes which are currently being visited.
         self._node_stack = []
-    
+
     def get_row_col(self):
         """
         Find the current row and column offsets for the tokens currently being
@@ -86,7 +86,7 @@ class NodeComparator(object):
                 n1_lineno = n1.lineno
                 n1_col_offset = n1.col_offset
                 break
-        
+
         n2_lineno = None
         n2_col_offset = None
         for _, n2 in reversed(self._node_stack):
@@ -94,9 +94,9 @@ class NodeComparator(object):
                 n2_lineno = n2.lineno
                 n2_col_offset = n2.col_offset
                 break
-        
+
         return ((n1_lineno, n1_col_offset), (n2_lineno, n2_col_offset))
-    
+
     def compare(self, n1, n2):
         """
         Recursively compare two AST nodes.
@@ -128,30 +128,35 @@ class NodeComparator(object):
         """
         try:
             self._node_stack.append((n1, n2))
-            
+
             compare_same = getattr(self, "compare_{}".format(type(n1).__name__), None)
             if type(n1) is type(n2) and compare_same is not None:
                 return compare_same(n1, n2)
-            
-            compare_n1_n2 = getattr(self, "compare_{}_{}".format(
-                type(n1).__name__,
-                type(n2).__name__,
-            ), None)
+
+            compare_n1_n2 = getattr(
+                self,
+                "compare_{}_{}".format(type(n1).__name__, type(n2).__name__,),
+                None,
+            )
             if compare_n1_n2 is not None:
                 return compare_n1_n2(n1, n2)
-            
-            compare_n1_any = getattr(self, "compare_{}_ANY".format(type(n1).__name__), None)
+
+            compare_n1_any = getattr(
+                self, "compare_{}_ANY".format(type(n1).__name__), None
+            )
             if compare_n1_any is not None:
                 return compare_n1_any(n1, n2)
-            
-            compare_any_n2 = getattr(self, "compare_ANY_{}".format(type(n2).__name__), None)
+
+            compare_any_n2 = getattr(
+                self, "compare_ANY_{}".format(type(n2).__name__), None
+            )
             if compare_any_n2 is not None:
                 return compare_any_n2(n1, n2)
-            
+
             return self.generic_compare(n1, n2)
         finally:
             self._node_stack.pop()
-    
+
     def generic_compare(self, n1, n2, ignore_fields=[], filter_fields={}):
         """
         Base implementation of recurisive comparison of two AST nodes.
@@ -195,14 +200,14 @@ class NodeComparator(object):
         if type(n1) is not type(n2):
             n1_row_col, n2_row_col = self.get_row_col()
             return NodeTypesDiffer(n1, n1_row_col, n2, n2_row_col)
-        
+
         for field in n1._fields:
             if field in ignore_fields:
                 continue
-            
+
             v1 = getattr(n1, field, None)
             v2 = getattr(n2, field, None)
-            
+
             if isinstance(v1, ast.AST) and isinstance(v2, ast.AST):
                 match = self.compare(v1, v2)
                 if not match:
@@ -218,21 +223,26 @@ class NodeComparator(object):
                         v1 = list(fn1(v1))
                     if fn2 is not None:
                         v2 = list(fn2(v2))
-                
+
                 if len(v1) != len(v2):
                     # Give line number of last child element so that when
                     # printing up-to-and-including the reported numbers the
                     # complete set of elements are visible
                     n1_row_col, n2_row_col = self.get_row_col()
-                    if len(v1) and hasattr(v1[-1], "lineno") and hasattr(v1[-1], "col_offset"):
+                    if (
+                        len(v1)
+                        and hasattr(v1[-1], "lineno")
+                        and hasattr(v1[-1], "col_offset")
+                    ):
                         n1_row_col = (v1[-1].lineno, v1[-1].col_offset)
-                    if len(v2) and hasattr(v2[-1], "lineno") and hasattr(v2[-1], "col_offset"):
+                    if (
+                        len(v2)
+                        and hasattr(v2[-1], "lineno")
+                        and hasattr(v2[-1], "col_offset")
+                    ):
                         n2_row_col = (v2[-1].lineno, v2[-1].col_offset)
                     return NodeFieldLengthsDiffer(
-                        n1, n1_row_col,
-                        n2, n2_row_col,
-                        field,
-                        v1, v2,
+                        n1, n1_row_col, n2, n2_row_col, field, v1, v2,
                     )
                 else:
                     for i, (e1, e2) in enumerate(zip(v1, v2)):
@@ -244,16 +254,13 @@ class NodeComparator(object):
                             if e1 != e2:
                                 n1_row_col, n2_row_col = self.get_row_col()
                                 return NodeListFieldsDiffer(
-                                    n1, n1_row_col,
-                                    n2, n2_row_col,
-                                    field, i,
-                                    v1, v2,
+                                    n1, n1_row_col, n2, n2_row_col, field, i, v1, v2,
                                 )
             else:
                 if v1 != v2:
                     n1_row_col, n2_row_col = self.get_row_col()
                     return NodeFieldsDiffer(n1, n1_row_col, n2, n2_row_col, field)
-        
+
         return True
 
 
@@ -275,20 +282,20 @@ class NodesDiffer(object):
         A string describing how the two nodes differ with a human-readable
         message.
     """
-    
+
     def __init__(self, n1, n1_row_col, n2, n2_row_col, reason=None):
         self.n1 = n1
         self.n1_row_col = n1_row_col
         self.n2 = n2
         self.n2_row_col = n2_row_col
         self.reason = reason
-    
+
     def __bool__(self):  # Py 3.x
         return False
-    
+
     def __nonzero__(self):  # Py 2.x
         return False
-    
+
     def __repr__(self):
         return "<{}{}>".format(
             type(self).__name__,
@@ -300,13 +307,15 @@ class NodeTypesDiffer(NodesDiffer):
     """
     A pair of nodes have different types.
     """
-    
+
     def __init__(self, n1, n1_row_col, n2, n2_row_col):
         super(NodeTypesDiffer, self).__init__(
-            n1, n1_row_col, n2, n2_row_col,
+            n1,
+            n1_row_col,
+            n2,
+            n2_row_col,
             "Nodes have differing types ({} and {})".format(
-                type(n1).__name__,
-                type(n2).__name__,
+                type(n1).__name__, type(n2).__name__,
             ),
         )
 
@@ -320,18 +329,17 @@ class NodeFieldsDiffer(NodesDiffer):
     field : str
         The field name where the AST nodes differ.
     """
-    
+
     def __init__(self, n1, n1_row_col, n2, n2_row_col, field):
         self.field = field
-        
+
         super(NodeFieldsDiffer, self).__init__(
-            n1, n1_row_col, n2, n2_row_col,
+            n1,
+            n1_row_col,
+            n2,
+            n2_row_col,
             "Node {!r} fields differ: n1.{} == {!r} and n2.{} == {!r}".format(
-                field,
-                field,
-                getattr(n1, field),
-                field,
-                getattr(n2, field),
+                field, field, getattr(n1, field), field, getattr(n2, field),
             ),
         )
 
@@ -348,18 +356,19 @@ class NodeFieldLengthsDiffer(NodesDiffer):
     v1, v2 : list
         The values of the fields (after any filtering has taken place).
     """
-    
+
     def __init__(self, n1, n1_row_col, n2, n2_row_col, field, v1, v2):
         self.field = field
         self.v1 = v1
         self.v2 = v2
-        
+
         super(NodeFieldLengthsDiffer, self).__init__(
-            n1, n1_row_col, n2, n2_row_col,
+            n1,
+            n1_row_col,
+            n2,
+            n2_row_col,
             "Node {!r} fields have different lengths ({} and {})".format(
-                self.field,
-                len(self.v1),
-                len(self.v2),
+                self.field, len(self.v1), len(self.v2),
             ),
         )
 
@@ -377,19 +386,19 @@ class NodeListFieldsDiffer(NodesDiffer):
     v1, v2 : list
         The values of the fields (after any filtering has taken place).
     """
-    
+
     def __init__(self, n1, n1_row_col, n2, n2_row_col, field, index, v1, v2):
         self.field = field
         self.index = index
         self.v1 = v1
         self.v2 = v2
-        
+
         super(NodeListFieldsDiffer, self).__init__(
-            n1, n1_row_col, n2, n2_row_col,
+            n1,
+            n1_row_col,
+            n2,
+            n2_row_col,
             "Node {!r} fields have a differing entry at index {} ({!r} and {!r})".format(
-                self.field,
-                self.index,
-                self.v1[self.index],
-                self.v2[self.index],
+                self.field, self.index, self.v1[self.index], self.v2[self.index],
             ),
         )

@@ -192,27 +192,29 @@ def tokenize_regex(regex_string):
     # Remove newline characters which have special behaviour in Python re
     # library
     regex_string = regex_string.replace("\n", " ").replace("\r", " ")
-    
+
     offset = 0
     while True:
         # Skip whitespace
         ws_match = re.match(r"^\s*", regex_string)
-        regex_string = regex_string[ws_match.end():]
+        regex_string = regex_string[ws_match.end() :]
         offset += ws_match.end()
-        
+
         # Special case: End of string
         if not regex_string:
             break
-        
+
         # Process token
         t_match = TOKEN_REGEX.match(regex_string)
         if not t_match:
-            raise SymbolRegexSyntaxError("Unexpected text at position {}".format(offset))
+            raise SymbolRegexSyntaxError(
+                "Unexpected text at position {}".format(offset)
+            )
         [(token_type, token_value)] = [
             (t, v) for t, v in t_match.groupdict().items() if v is not None
         ]
         yield (token_type, token_value, offset)
-        regex_string = regex_string[t_match.end():]
+        regex_string = regex_string[t_match.end() :]
         offset += t_match.end()
 
 
@@ -253,23 +255,27 @@ def parse_expression(tokens):
     """
     ast = None
     modifier = None
-    
+
     while tokens and tokens[-1][0:2] != ("parenthesis", "("):
         # Special case: reached a modifier: just set a flag
         if tokens[-1][0] == "modifier":
             if modifier is not None:
-                raise SymbolRegexSyntaxError("Multiple modifiers at position {}".format(tokens[-1][2]))
+                raise SymbolRegexSyntaxError(
+                    "Multiple modifiers at position {}".format(tokens[-1][2])
+                )
             modifier = tokens.pop(-1)[1]
             continue
-        
+
         # Special case: reached a union
         if tokens[-1][0] == "bar":
             if modifier is not None:
-                raise SymbolRegexSyntaxError("Modifier before '|' at position {}".format(tokens[-1][2]))
+                raise SymbolRegexSyntaxError(
+                    "Modifier before '|' at position {}".format(tokens[-1][2])
+                )
             tokens.pop(-1)
             ast = Union(parse_expression(tokens), ast)
             continue
-        
+
         # Grab the next expression from the token list
         if tokens[-1][0:2] == ("parenthesis", ")"):
             tokens.pop(-1)
@@ -285,7 +291,7 @@ def parse_expression(tokens):
         elif tokens[-1][0] == "end_of_sequence":
             tokens.pop(-1)
             next_ast = Symbol(END_OF_SEQUENCE)
-        
+
         # Apply the modifier (as required)
         if modifier == "*":
             next_ast = Star(next_ast)
@@ -294,19 +300,21 @@ def parse_expression(tokens):
         elif modifier == "?":
             next_ast = Union(next_ast, None)
         modifier = None
-        
+
         # Add the expression to the AST
         if ast is None:
             ast = next_ast
         else:
             ast = Concatenation(next_ast, ast)
-    
+
     if modifier is not None:
         if tokens:
-            raise SymbolRegexSyntaxError("Modifier before '(' at position {}".format(tokens[-1][2]))
+            raise SymbolRegexSyntaxError(
+                "Modifier before '(' at position {}".format(tokens[-1][2])
+            )
         else:
             raise SymbolRegexSyntaxError("Modifier at start of expression")
-    
+
     return ast
 
 
@@ -317,11 +325,11 @@ def parse_regex(regex_string):
     :py:class:`Concatenation` and :py:class:`Union` objects.
     """
     tokens = list(tokenize_regex(regex_string))
-    
+
     ast = parse_expression(tokens)
     if tokens:
         raise SymbolRegexSyntaxError("Unmatched parentheses")
-    
+
     return ast
 
 
@@ -337,10 +345,10 @@ class NFANode(object):
         Empty transitions are listed under the symbol ``None`` and are always
         bidirectional.
     """
-    
+
     def __init__(self):
         self.transitions = defaultdict(set)
-    
+
     def add_transition(self, dest_node, symbol=None):
         """
         Add a transition rule from this node to the specified destination.
@@ -354,7 +362,7 @@ class NFANode(object):
             dest_node.transitions[symbol].add(self)
         else:
             self.transitions[symbol].add(dest_node)
-    
+
     def equivalent_nodes(self):
         """
         Iterate over the set of :py:class:`NFANode` nodes connected to this one
@@ -365,12 +373,12 @@ class NFANode(object):
         while to_visit:
             node = to_visit.pop()
             yield node
-            
+
             for other in node.transitions.get(None, []):
                 if other not in visited:
                     to_visit.append(other)
                     visited.add(other)
-    
+
     def follow(self, symbol):
         """
         Iterate over the :py:class:`NFANode`s reachable from this node
@@ -389,11 +397,11 @@ class NFA(object):
     A Non-deterministic Finite-state Automaton (NFA) with a labelled 'start'
     and 'final' state.
     """
-    
+
     def __init__(self, start=None, final=None):
         self.start = start or NFANode()
         self.final = final or NFANode()
-    
+
     @classmethod
     def from_ast(cls, ast):
         """
@@ -406,14 +414,14 @@ class NFA(object):
         elif isinstance(ast, Symbol):
             nfa = cls()
             nfa.start.add_transition(nfa.final, ast.symbol)
-            
+
             return nfa
         elif isinstance(ast, Concatenation):
             nfa_a = cls.from_ast(ast.a)
             nfa_b = cls.from_ast(ast.b)
-            
+
             nfa_a.final.add_transition(nfa_b.start)
-            
+
             return cls(nfa_a.start, nfa_b.final)
         elif isinstance(ast, Symbol):
             nfa = cls()
@@ -421,28 +429,28 @@ class NFA(object):
             return nfa
         elif isinstance(ast, Union):
             nfa = cls()
-            
+
             nfa_a = cls.from_ast(ast.a)
             nfa_b = cls.from_ast(ast.b)
-            
+
             nfa.start.add_transition(nfa_a.start)
             nfa.start.add_transition(nfa_b.start)
-            
+
             nfa_a.final.add_transition(nfa.final)
             nfa_b.final.add_transition(nfa.final)
-            
+
             return nfa
         elif isinstance(ast, Star):
             nfa = cls()
-            
+
             sub_nfa = cls.from_ast(ast.expr)
-            
+
             nfa.start.add_transition(nfa.final)
             nfa.start.add_transition(sub_nfa.start)
-            
+
             sub_nfa.final.add_transition(sub_nfa.start)
             sub_nfa.final.add_transition(nfa.final)
-            
+
             return nfa
 
 
@@ -497,14 +505,14 @@ class Matcher(object):
         Beyond this, consider operator precedence undefined: be explicit to
         help readability!
     """
-    
+
     def __init__(self, pattern):
         # This object explicitly executes the NFA of the provided regular
         # expression. The 'cur_states' set holds the set of states we've
         # reached in the NFA.
         self.nfa = NFA.from_ast(parse_regex(pattern))
         self.cur_states = set([self.nfa.start])
-    
+
     def match_symbol(self, symbol):
         """
         Attempt to match the next symbol in the sequence.
@@ -515,13 +523,13 @@ class Matcher(object):
         for nfa in self.cur_states:
             new_states.update(nfa.follow(symbol))
             new_states.update(nfa.follow(WILDCARD))
-        
+
         if not new_states:
             return False
-        
+
         self.cur_states = new_states
         return True
-    
+
     def is_complete(self):
         """
         Is it valid for the sequence to terminate at this point?
@@ -533,9 +541,9 @@ class Matcher(object):
             # ...or is explicit end-of-sequence marker
             if list(nfa.follow(END_OF_SEQUENCE)):
                 return True
-        
+
         return False
-    
+
     def valid_next_symbols(self):
         """
         Return the :py:class:`set` of valid next symbols in the sequence.
@@ -552,12 +560,12 @@ class Matcher(object):
                 for symbol in equivalent_nfa.transitions:
                     if symbol is not None:
                         valid_symbols.add(symbol)
-        
+
         # If we're allowed to end the string here, also include
         # END_OF_SEQUENCE.
         if self.is_complete():
             valid_symbols.add(END_OF_SEQUENCE)
-        
+
         return valid_symbols
 
 
@@ -566,6 +574,7 @@ class ImpossibleSequenceError(Exception):
     Thrown whne :py:func:`make_matching_sequence` is unable to find a suitable
     sequence of symbols.
     """
+
     pass
 
 
@@ -618,12 +627,14 @@ def make_matching_sequence(initial_sequence, *patterns, **kwargs):
     depth_limit = kwargs.pop("depth_limit", 3)
     symbol_priority = kwargs.pop("symbol_priority", [])
     if kwargs:
-        raise TypeError("find_minimal_sequence() got unuexpected keyword argument(s) {}".format(
-            ", ".join(map(repr, kwargs)),
-        ))
-    
+        raise TypeError(
+            "find_minimal_sequence() got unuexpected keyword argument(s) {}".format(
+                ", ".join(map(repr, kwargs)),
+            )
+        )
+
     # Perform a breadth-first search of the pattern space
-    
+
     # Queue of candidates to try
     #     (symbols_so_far, symbols_remaining, matchers, this_depth_limit)
     # Where:
@@ -635,10 +646,8 @@ def make_matching_sequence(initial_sequence, *patterns, **kwargs):
     # * this_depth_limit is an integer giving the number of search levels
     #   remaining before giving up.
     initial_matchers = [Matcher(pattern) for pattern in patterns]
-    queue = deque([
-        ([], initial_sequence, initial_matchers, depth_limit),
-    ])
-    
+    queue = deque([([], initial_sequence, initial_matchers, depth_limit),])
+
     while queue:
         (
             symbols_so_far,
@@ -646,7 +655,7 @@ def make_matching_sequence(initial_sequence, *patterns, **kwargs):
             matchers,
             this_depth_limit,
         ) = queue.popleft()
-        
+
         # Try and match the next required symbool
         if len(symbols_remaining) == 0:
             if all(m.is_complete() for m in matchers):
@@ -655,31 +664,33 @@ def make_matching_sequence(initial_sequence, *patterns, **kwargs):
                 return symbols_so_far
         else:
             if all(
-                symbols_remaining[0] in m.valid_next_symbols() or
-                WILDCARD in m.valid_next_symbols()
+                symbols_remaining[0] in m.valid_next_symbols()
+                or WILDCARD in m.valid_next_symbols()
                 for m in matchers
             ):
                 # The next symbol is matched by all matchers, move on!
                 new_matchers = deepcopy(matchers)
                 for m in new_matchers:
                     m.match_symbol(symbols_remaining[0])
-                queue.append((
-                    symbols_so_far + [symbols_remaining[0]],
-                    symbols_remaining[1:],
-                    new_matchers,
-                    depth_limit,  # NB: Reset depth limit when a match is found
-                ))
+                queue.append(
+                    (
+                        symbols_so_far + [symbols_remaining[0]],
+                        symbols_remaining[1:],
+                        new_matchers,
+                        depth_limit,  # NB: Reset depth limit when a match is found
+                    )
+                )
                 continue
-        
+
         # If we reach this point the current symbol in the provided sequence
         # was not matched by all of the matchers. We must now try to inserting
         # some other symbol into the sequence and see if it lets us get any
         # further.
-        
+
         if this_depth_limit <= 0:
             # Depth limit reached, give up on this branch of the search
             continue
-        
+
         # Find the set of candidate symbols which would be accepted by all of
         # the matchers
         candidate_next_symbols = set([WILDCARD])
@@ -694,12 +705,12 @@ def make_matching_sequence(initial_sequence, *patterns, **kwargs):
                 pass
             else:
                 candidate_next_symbols.intersection_update(symbols)
-        
+
         if len(candidate_next_symbols) == 0:
             # Reached a dead-end (no symbol fits all patterns), give up on this
             # branch of the search
             continue
-        
+
         # Descend the search into each of the potential next steps. We try
         # candidates in the order indicated by the symbol_priority argument.
         if WILDCARD in candidate_next_symbols and len(symbol_priority) > 0:
@@ -710,20 +721,22 @@ def make_matching_sequence(initial_sequence, *patterns, **kwargs):
             candidate_next_symbols,
             key=lambda sym: (
                 (symbol_priority.index(sym), None)
-                if sym in symbol_priority else
-                (len(symbol_priority), sym)
-            )
+                if sym in symbol_priority
+                else (len(symbol_priority), sym)
+            ),
         )
         for candidate_symbol in candidate_symbols:
             new_matchers = deepcopy(matchers)
             for m in new_matchers:
                 m.match_symbol(candidate_symbol)
-            queue.append((
-                symbols_so_far + [candidate_symbol],
-                symbols_remaining,
-                new_matchers,
-                this_depth_limit - 1,
-            ))
+            queue.append(
+                (
+                    symbols_so_far + [candidate_symbol],
+                    symbols_remaining,
+                    new_matchers,
+                    this_depth_limit - 1,
+                )
+            )
             continue
-    
+
     raise ImpossibleSequenceError()

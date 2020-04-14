@@ -21,18 +21,17 @@ def get_full_source(func):
     # NB: Source lines specified don't include trailing comments
     truncated_source_lines, first_lineno = inspect.getsourcelines(func)
     last_lineno = first_lineno + len(truncated_source_lines)
-    
+
     filename = inspect.getsourcefile(func)
-    
+
     lines = list(open(filename, "r"))
-    full_source_lines = (
-        lines[first_lineno - 1: last_lineno - 1] +
-        list(takewhile(
+    full_source_lines = lines[first_lineno - 1 : last_lineno - 1] + list(
+        takewhile(
             # Include all trailing blank lines and all trailing indented
             # comment-only lines.
             lambda line: re.match(r"^(\s+(#.*))|(\s*)$", line),
-            lines[last_lineno - 1:],
-        ))
+            lines[last_lineno - 1 :],
+        )
     )
-    
+
     return (filename, first_lineno, full_source_lines)

@@ -87,6 +87,7 @@ __all__ = [
     "write_picture",
 ]
 
+
 def get_metadata_and_picture_filenames(filename):
     """
     Given either the filename of a saved picture (.raw) or metadata file
@@ -99,16 +100,13 @@ def get_metadata_and_picture_filenames(filename):
         "{}.raw".format(base_name),
     )
 
+
 def get_picture_filename_pattern(filename):
     """
     Given the filename of a picture file (*.raw), return a version with the
     number replaced with '%d'.
     """
-    return re.sub(
-        r"(.*)_[0-9]+\.raw",
-        r"\1_%d.raw",
-        filename,
-    )
+    return re.sub(r"(.*)_[0-9]+\.raw", r"\1_%d.raw", filename,)
 
 
 def write(picture, video_parameters, picture_coding_mode, filename):
@@ -128,10 +126,10 @@ def write(picture, video_parameters, picture_coding_mode, filename):
         (.json). The name of the other file will be inferred automatically.
     """
     metadata_filename, picture_filename = get_metadata_and_picture_filenames(filename)
-    
+
     with open(metadata_filename, "wb") as f:
         write_metadata(picture, video_parameters, picture_coding_mode, f)
-    
+
     with open(picture_filename, "wb") as f:
         write_picture(picture, video_parameters, picture_coding_mode, f)
 
@@ -156,28 +154,20 @@ def read(filename):
     picture_coding_mode : :py:class:`~vc2_data_tables.PictureCodingModes`
     """
     metadata_filename, picture_filename = get_metadata_and_picture_filenames(filename)
-    
+
     with open(metadata_filename, "rb") as f:
-        (
-            video_parameters,
-            picture_coding_mode,
-            picture_number,
-        ) = read_metadata(f)
-    
+        (video_parameters, picture_coding_mode, picture_number,) = read_metadata(f)
+
     with open(picture_filename, "rb") as f:
         picture = read_picture(
-            video_parameters,
-            picture_coding_mode,
-            picture_number,
-            f,
+            video_parameters, picture_coding_mode, picture_number, f,
         )
-    
+
     return (picture, video_parameters, picture_coding_mode)
 
 
 DimensionsAndDepths = namedtuple(
-    "DimensionsAndDepths",
-    "width,height,depth_bits,bytes_per_sample",
+    "DimensionsAndDepths", "width,height,depth_bits,bytes_per_sample",
 )
 """
 A set of picture component dimensions and bit depths.
@@ -211,9 +201,9 @@ def compute_dimensions_and_depths(video_parameters, picture_coding_mode):
     """
     state = State()
     set_coding_parameters(state, video_parameters, picture_coding_mode)
-    
+
     out = OrderedDict()
-    
+
     for component in ["Y", "C1", "C2"]:
         if component == "Y":
             width = state["luma_width"]
@@ -223,12 +213,14 @@ def compute_dimensions_and_depths(video_parameters, picture_coding_mode):
             width = state["color_diff_width"]
             height = state["color_diff_height"]
             depth_bits = state["color_diff_depth"]
-        
+
         bytes_per_sample = (depth_bits + 7) // 8  # Round up to whole number of bytes
         bytes_per_sample = 1 << intlog2(bytes_per_sample)  # Round up to power of two
-        
-        out[component] = DimensionsAndDepths(width, height, depth_bits, bytes_per_sample)
-    
+
+        out[component] = DimensionsAndDepths(
+            width, height, depth_bits, bytes_per_sample
+        )
+
     return out
 
 
@@ -244,15 +236,20 @@ def write_picture(picture, video_parameters, picture_coding_mode, file):
     file : :py:class:`file`
         A file open for binary writing.
     """
-    dims_and_depths = compute_dimensions_and_depths(video_parameters, picture_coding_mode)
-    
-    for component, (width, height, depth_bits, bytes_per_sample) in dims_and_depths.items():
+    dims_and_depths = compute_dimensions_and_depths(
+        video_parameters, picture_coding_mode
+    )
+
+    for (
+        component,
+        (width, height, depth_bits, bytes_per_sample),
+    ) in dims_and_depths.items():
         # We use native Python integers in a dtype=object array to ensure we
         # can support arbitrary bit depths.
         #
         # NB: we make a copy as we will mutate later.
         values = np.array(picture[component], dtype=object)
-        
+
         # Write as little-endian representation (NB: this rather explicit
         # expansion supports arbitrary depth values beyond those natively
         # supported by Numpy).
@@ -261,7 +258,7 @@ def write_picture(picture, video_parameters, picture_coding_mode, file):
             out[:, :, byte] = values & 0xFF
             if byte != bytes_per_sample - 1:
                 values >>= 8
-        
+
         file.write(out.tobytes())
 
 
@@ -277,22 +274,23 @@ def write_metadata(picture, video_parameters, picture_coding_mode, file):
     file : :py:class:`file`
         A file open for binary writing.
     """
-    
+
     # Conversion below is necessary under Python 2.x where IntEnum values are
     # not correctly serialised as integers but instead into invalid JSON.
-    file.write(json.dumps(
-        {
-            "video_parameters": {
-                key: int(value) if (
-                    isinstance(value, int) and
-                    not isinstance(value, bool)
-                ) else value
-                for key, value in video_parameters.items()
-            },
-            "picture_coding_mode": int(picture_coding_mode),
-            "picture_number": str(picture["pic_num"]),
-        }
-    ).encode("utf-8"))
+    file.write(
+        json.dumps(
+            {
+                "video_parameters": {
+                    key: int(value)
+                    if (isinstance(value, int) and not isinstance(value, bool))
+                    else value
+                    for key, value in video_parameters.items()
+                },
+                "picture_coding_mode": int(picture_coding_mode),
+                "picture_number": str(picture["pic_num"]),
+            }
+        ).encode("utf-8")
+    )
 
 
 def read_metadata(file):
@@ -311,9 +309,9 @@ def read_metadata(file):
     picture_number : int
     """
     metadata = json.loads(file.read().decode("utf-8"))
-    
+
     video_parameters = VideoParameters(metadata["video_parameters"])
-    
+
     # Convert back into native types
     for name, int_enum_type in [
         ("color_diff_format_index", ColorDifferenceSamplingFormats),
@@ -323,11 +321,11 @@ def read_metadata(file):
         ("transfer_function_index", PresetTransferFunctions),
     ]:
         video_parameters[name] = int_enum_type(video_parameters[name])
-    
+
     picture_coding_mode = PictureCodingModes(metadata["picture_coding_mode"])
-    
+
     picture_number = int(metadata["picture_number"])
-    
+
     return (video_parameters, picture_coding_mode, picture_number)
 
 
@@ -348,24 +346,28 @@ def read_picture(video_parameters, picture_coding_mode, picture_number, file):
     picture : {"Y": [[s, ...], ...], "C1": ..., "C2": ..., "pic_num": int}
     """
     picture = {"pic_num": picture_number}
-    
-    dims_and_depths = compute_dimensions_and_depths(video_parameters, picture_coding_mode)
-    for component, (width, height, depth_bits, bytes_per_sample) in dims_and_depths.items():
+
+    dims_and_depths = compute_dimensions_and_depths(
+        video_parameters, picture_coding_mode
+    )
+    for (
+        component,
+        (width, height, depth_bits, bytes_per_sample),
+    ) in dims_and_depths.items():
         data = np.frombuffer(
-            file.read(height * width * bytes_per_sample),
-            dtype=np.uint8,
+            file.read(height * width * bytes_per_sample), dtype=np.uint8,
         ).reshape(height, width, bytes_per_sample)
-        
+
         # We use a dtype=object array so that we can use Python's arbitrary
         # precision integers in order to support arbitrary bit depths
         values = np.zeros((height, width), dtype=object)
-        
+
         # Read little endian (NB, this method supports arbitrary width values)
         for byte in reversed(range(bytes_per_sample)):
             if byte != bytes_per_sample - 1:
                 values <<= 8
             values += data[:, :, byte]
-        
+
         picture[component] = values.tolist()
-    
+
     return picture

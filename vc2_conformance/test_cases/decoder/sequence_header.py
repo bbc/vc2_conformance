@@ -28,9 +28,7 @@ from vc2_conformance.encoder import (
 
 
 def replace_sequence_header_options(
-    sequence,
-    base_video_format,
-    source_parameters,
+    sequence, base_video_format, source_parameters,
 ):
     r"""
     Replace the :py:class:`~vc2_data_tables.BaseVideoFormats` and
@@ -48,9 +46,8 @@ def replace_sequence_header_options(
             sequence_header = data_unit["sequence_header"]
             sequence_header["base_video_format"] = base_video_format
             sequence_header["video_parameters"] = deepcopy(source_parameters)
-    
-    return sequence
 
+    return sequence
 
 
 @decoder_test_case_generator
@@ -69,52 +66,49 @@ def source_parameters_encodings(codec_features):
     base_sequence = make_sequence(
         codec_features,
         static_sprite(
-            codec_features["video_parameters"],
-            codec_features["picture_coding_mode"],
+            codec_features["video_parameters"], codec_features["picture_coding_mode"],
         ),
     )
-    
+
     base_video_formats = rank_base_video_format_similarity(
         codec_features["video_parameters"],
     )
-    
+
     # Try using every possible setting of all custom override flags, starting
     # with the mostly closely matched base video format available.
     best_base_video_format = base_video_formats[0]
-    source_parameter_sets = list(iter_source_parameter_options(
-        set_source_defaults(best_base_video_format),
-        codec_features["video_parameters"],
-    ))
+    source_parameter_sets = list(
+        iter_source_parameter_options(
+            set_source_defaults(best_base_video_format),
+            codec_features["video_parameters"],
+        )
+    )
     for i, source_parameters in enumerate(source_parameter_sets):
         yield TestCase(
             replace_sequence_header_options(
-                base_sequence,
-                best_base_video_format,
-                source_parameters,
+                base_sequence, best_base_video_format, source_parameters,
             ),
             "custom_flags_combination_{}_of_{}_base_video_format_{:d}".format(
-                i + 1,
-                len(source_parameter_sets),
-                best_base_video_format,
-            )
+                i + 1, len(source_parameter_sets), best_base_video_format,
+            ),
         )
-    
+
     # Try using all of the other base video formats (and using as few custom
     # overrides as possible to ensure the base format is supported correctly).
     for base_video_format in sorted(base_video_formats[1:]):
-        source_parameters = next(iter(iter_source_parameter_options(
-            set_source_defaults(base_video_format),
-            codec_features["video_parameters"],
-        )))
+        source_parameters = next(
+            iter(
+                iter_source_parameter_options(
+                    set_source_defaults(base_video_format),
+                    codec_features["video_parameters"],
+                )
+            )
+        )
         yield TestCase(
             replace_sequence_header_options(
-                base_sequence,
-                base_video_format,
-                source_parameters,
+                base_sequence, base_video_format, source_parameters,
             ),
-            "base_video_format_{:d}".format(
-                base_video_format,
-            )
+            "base_video_format_{:d}".format(base_video_format,),
         )
 
 
@@ -138,11 +132,11 @@ def repeated_sequence_headers(codec_features):
                 2,
             ),
             # Force an extra sequence header between every data unit
-            "(sequence_header .)+"
+            "(sequence_header .)+",
         )
     except ImpossibleSequenceError:
         # Do not try to force levels which don't support this level of sequence
         # header interleaving to accept it.
         return
-    
+
     yield sequence

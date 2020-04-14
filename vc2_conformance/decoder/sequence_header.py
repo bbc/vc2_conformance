@@ -24,9 +24,7 @@ from vc2_data_tables import (
     PresetTransferFunctions,
 )
 
-from vc2_conformance.level_constraints import (
-    LEVEL_SEQUENCE_RESTRICTIONS,
-)
+from vc2_conformance.level_constraints import LEVEL_SEQUENCE_RESTRICTIONS
 
 from vc2_conformance.video_parameters import (
     set_source_defaults,
@@ -102,39 +100,47 @@ __all__ = [
 def sequence_header(state):
     """(11.1)"""
     byte_align(state)
-    
+
     # Record this sequence_header as it appears in the bitstream
     ## Begin not in spec
     this_sequence_header_offset = tell(state)[0]
     record_bitstream_start(state)
     ## End not in spec
-    
+
     parse_parameters(state)
-    
+
     base_video_format = read_uint(state)
-    
+
     # (11.4.1) Check base video format is supported
-    assert_in_enum(base_video_format, BaseVideoFormats, BadBaseVideoFormat) ## Not in spec
-    
+    ## Begin not in spec
+    assert_in_enum(base_video_format, BaseVideoFormats, BadBaseVideoFormat)
+    ## End not in spec
+
     # (C.3) Check level allows this base format
-    assert_level_constraint(state, "base_video_format", base_video_format) ## Not in spec
-    
+    ## Begin not in spec
+    assert_level_constraint(state, "base_video_format", base_video_format)
+    ## End not in spec
+
     video_parameters = source_parameters(state, base_video_format)
-    
+
     picture_coding_mode = read_uint(state)
-    
+
     # The picture coding mode is used in various assertions about other parts
     # of the bitstream and so is captured here.
     state["_picture_coding_mode"] = picture_coding_mode  ## Not in spec
-    
+
     # (11.5) Ensure picture coding mode is valid
-    assert_in_enum(picture_coding_mode, PictureCodingModes, BadPictureCodingMode) ## Not in spec
-    
+    ## Begin not in spec
+    assert_in_enum(picture_coding_mode, PictureCodingModes, BadPictureCodingMode)
+    ## End not in spec
+
     # (C.3) Check level allows this picture coding mode
-    assert_level_constraint(state, "picture_coding_mode", picture_coding_mode) ## Not in spec
-    
+    ## Begin not in spec
+    assert_level_constraint(state, "picture_coding_mode", picture_coding_mode)
+    ## End not in spec
+
     set_coding_parameters(state, video_parameters, picture_coding_mode)
-    
+
     # Errata: The spec only says the frame_height must be an integer multiple
     # of the color_diff_height but, in addition, the luma_height should be a
     # multiple and the color_diff_width should be a multiple of
@@ -144,15 +150,16 @@ def sequence_header(state):
     ## Begin not in spec
     if (
         # Prevent divide-by-zero in tests below
-        state["luma_height"] == 0 or
-        state["luma_width"] == 0 or
-        state["color_diff_height"] == 0 or
-        state["color_diff_width"] == 0 or
+        state["luma_height"] == 0
+        or state["luma_width"] == 0
+        or state["color_diff_height"] == 0
+        or state["color_diff_width"] == 0
+        or
         # Actually check multiples
-        video_parameters["frame_height"] % state["luma_height"] != 0 or
-        video_parameters["frame_width"] % state["luma_width"] != 0 or
-        video_parameters["frame_height"] % state["color_diff_height"] != 0 or
-        video_parameters["frame_width"] % state["color_diff_width"] != 0
+        video_parameters["frame_height"] % state["luma_height"] != 0
+        or video_parameters["frame_width"] % state["luma_width"] != 0
+        or video_parameters["frame_height"] % state["color_diff_height"] != 0
+        or video_parameters["frame_width"] % state["color_diff_width"] != 0
     ):
         raise PictureDimensionsNotMultipleOfFrameDimensions(
             state["luma_width"],
@@ -163,7 +170,7 @@ def sequence_header(state):
             video_parameters["frame_height"],
         )
     ## End not in spec
-    
+
     # (11.1) Check that the this sequence_header is byte-for-byte identical
     # with the previous sequence_header in the sequence
     ## Begin not in spec
@@ -179,7 +186,7 @@ def sequence_header(state):
     state["_last_sequence_header_bytes"] = this_sequence_header_bytes
     state["_last_sequence_header_offset"] = this_sequence_header_offset
     ## End not in spec
-    
+
     return video_parameters
 
 
@@ -187,19 +194,19 @@ def sequence_header(state):
 def parse_parameters(state):
     """(11.2.1)"""
     this_parse_parameters_offset = tell(state)  ## Not in spec
-    
+
     state["major_version"] = read_uint(state)
     state["minor_version"] = read_uint(state)
-    
+
     state["profile"] = read_uint(state)
     # (C.2) Profile must be a supported value
-    assert_in_enum(state["profile"], Profiles, BadProfile) ## Not in spec
-    
+    assert_in_enum(state["profile"], Profiles, BadProfile)  ## Not in spec
+
     state["level"] = read_uint(state)
-    
+
     # (C.3) Level must be a supported value
-    assert_in_enum(state["level"], Levels, BadLevel) ## Not in spec
-    
+    assert_in_enum(state["level"], Levels, BadLevel)  ## Not in spec
+
     # (C.3) Levels may constrain the order and choice of data units in a
     # sequence. See the various level standards documents (e.g. ST 2042-2) for
     # details.
@@ -213,7 +220,7 @@ def parse_parameters(state):
         # machine accordingly.
         assert state["_level_sequence_matcher"].match_symbol("sequence_header")
     ## End not in spec
-    
+
     # (C.3) Levels may constrain the allowed profiles and versions
     ## Begin not in spec
     assert_level_constraint(state, "level", state["level"])
@@ -221,6 +228,7 @@ def parse_parameters(state):
     assert_level_constraint(state, "major_version", state["major_version"])
     assert_level_constraint(state, "minor_version", state["minor_version"])
     ## End not in spec
+
 
 @ref_pseudocode
 def source_parameters(state, base_video_format):
@@ -242,28 +250,33 @@ def frame_size(state, video_parameters):
     """(11.4.3)"""
     custom_dimensions_flag = read_bool(state)
     # (C.3) Check level allows this value
-    assert_level_constraint(state, "custom_dimensions_flag", custom_dimensions_flag) ## Not in spec
-    
+    ## Begin not in spec
+    assert_level_constraint(state, "custom_dimensions_flag", custom_dimensions_flag)
+    ## End not in spec
+
     if custom_dimensions_flag:
         video_parameters["frame_width"] = read_uint(state)
         # (C.3) Check level allows this value
-        assert_level_constraint(state, "frame_width", video_parameters["frame_width"]) ## Not in spec
-        
+        ## Begin not in spec
+        assert_level_constraint(state, "frame_width", video_parameters["frame_width"])
+        ## End not in spec
+
         video_parameters["frame_height"] = read_uint(state)
         # (C.3) Check level allows this value
-        assert_level_constraint(state, "frame_height", video_parameters["frame_height"]) ## Not in spec
-        
+        ## Begin not in spec
+        assert_level_constraint(state, "frame_height", video_parameters["frame_height"])
+        ## End not in spec
+
         # Errata: spec doesn't prevent zero-pixel pictures
         #
         # (11.4.3) Frames must be at least one pixel wide and tall
         ## Begin not in spec
         if (
-            video_parameters["frame_width"] == 0 or
-            video_parameters["frame_height"] == 0
+            video_parameters["frame_width"] == 0
+            or video_parameters["frame_height"] == 0
         ):
             raise ZeroPixelFrameSize(
-                video_parameters["frame_width"],
-                video_parameters["frame_height"],
+                video_parameters["frame_width"], video_parameters["frame_height"],
             )
         ## End not in spec
 
@@ -273,11 +286,15 @@ def color_diff_sampling_format(state, video_parameters):
     """(11.4.4)"""
     custom_color_diff_format_flag = read_bool(state)
     # (C.3) Check level allows custom color difference sampling
-    assert_level_constraint(state, "custom_color_diff_format_flag", custom_color_diff_format_flag) ## Not in spec
-    
+    ## Begin not in spec
+    assert_level_constraint(
+        state, "custom_color_diff_format_flag", custom_color_diff_format_flag
+    )
+    ## End not in spec
+
     if custom_color_diff_format_flag:
         video_parameters["color_diff_format_index"] = read_uint(state)
-        
+
         # (11.4.4) Index shall be a known value
         ## Begin not in spec
         assert_in_enum(
@@ -286,7 +303,7 @@ def color_diff_sampling_format(state, video_parameters):
             BadColorDifferenceSamplingFormat,
         )
         ## End not in spec
-        
+
         # (C.3) Check level allows this value
         ## Begin not in spec
         assert_level_constraint(
@@ -302,11 +319,13 @@ def scan_format(state, video_parameters):
     """(11.4.5)"""
     custom_scan_format_flag = read_bool(state)
     # (C.3) Check level allows custom scan formats
-    assert_level_constraint(state, "custom_scan_format_flag", custom_scan_format_flag) ## Not in spec
-    
+    ## Begin not in spec
+    assert_level_constraint(state, "custom_scan_format_flag", custom_scan_format_flag)
+    ## End not in spec
+
     if custom_scan_format_flag:
         video_parameters["source_sampling"] = read_uint(state)
-        
+
         # (11.4.5) Mode be a known value
         ## Begin not in spec
         assert_in_enum(
@@ -315,13 +334,11 @@ def scan_format(state, video_parameters):
             BadSourceSamplingMode,
         )
         ## End not in spec
-        
+
         # (C.3) Check level allows this value
         ## Begin not in spec
         assert_level_constraint(
-            state,
-            "source_sampling",
-            video_parameters["source_sampling"],
+            state, "source_sampling", video_parameters["source_sampling"],
         )
         ## End not in spec
 
@@ -331,35 +348,33 @@ def frame_rate(state, video_parameters):
     """(11.4.6)"""
     custom_frame_rate_flag = read_bool(state)
     # (C.3) Check level allows custom frame rates
-    assert_level_constraint(state, "custom_frame_rate_flag", custom_frame_rate_flag) ## Not in spec
-    
+    ## Begin not in spec
+    assert_level_constraint(state, "custom_frame_rate_flag", custom_frame_rate_flag)
+    ## End not in spec
+
     if custom_frame_rate_flag:
         index = read_uint(state)
-        
+
         # (C.3) Check level allows the specified preset
-        assert_level_constraint(state, "frame_rate_index", index) ## Not in spec
-        
+        assert_level_constraint(state, "frame_rate_index", index)  ## Not in spec
+
         if index == 0:
             video_parameters["frame_rate_numer"] = read_uint(state)
             # (C.3) Check level allows the specified numerator
             ## Begin not in spec
             assert_level_constraint(
-                state,
-                "frame_rate_numer",
-                video_parameters["frame_rate_numer"],
+                state, "frame_rate_numer", video_parameters["frame_rate_numer"],
             )
             ## End not in spec
-            
+
             video_parameters["frame_rate_denom"] = read_uint(state)
             # (C.3) Check level allows the specified denominator
             ## Begin not in spec
             assert_level_constraint(
-                state,
-                "frame_rate_denom",
-                video_parameters["frame_rate_denom"],
+                state, "frame_rate_denom", video_parameters["frame_rate_denom"],
             )
             ## End not in spec
-            
+
             # Errata: spec doesn't prevent divide-by-zero in custom frame rate
             # fractions.
             #
@@ -368,7 +383,7 @@ def frame_rate(state, video_parameters):
             if video_parameters["frame_rate_denom"] == 0:
                 raise FrameRateHasZeroDenominator(video_parameters["frame_rate_numer"])
             ## End not in spec
-            
+
             # Errata: spec doesn't prevent 0 fps
             #
             # (11.4.6) frame_rate_numer must not be zero (i.e. 0 fps)
@@ -376,11 +391,13 @@ def frame_rate(state, video_parameters):
             if video_parameters["frame_rate_numer"] == 0:
                 raise FrameRateHasZeroNumerator(video_parameters["frame_rate_denom"])
             ## End not in spec
-            
+
         else:
             # (11.4.6) Frame rate preset must be a known value
-            assert_in_enum(index, PresetFrameRates, BadPresetFrameRateIndex) ## Not in spec
-            
+            ## Begin not in spec
+            assert_in_enum(index, PresetFrameRates, BadPresetFrameRateIndex)
+            ## End not in spec
+
             preset_frame_rate(video_parameters, index)
 
 
@@ -389,13 +406,19 @@ def pixel_aspect_ratio(state, video_parameters):
     """(11.4.7)"""
     custom_pixel_aspect_ratio_flag = read_bool(state)
     # (C.3) Check level allows custom pixel aspect ratio
-    assert_level_constraint(state, "custom_pixel_aspect_ratio_flag", custom_pixel_aspect_ratio_flag) ## Not in spec
-    
+    ## Begin not in spec
+    assert_level_constraint(
+        state, "custom_pixel_aspect_ratio_flag", custom_pixel_aspect_ratio_flag
+    )
+    ## End not in spec
+
     if custom_pixel_aspect_ratio_flag:
         index = read_uint(state)
         # (C.3) Check level allows the specified preset
-        assert_level_constraint(state, "pixel_aspect_ratio_index", index) ## Not in spec
-        
+        ## Begin not in spec
+        assert_level_constraint(state, "pixel_aspect_ratio_index", index)
+        ## End not in spec
+
         if index == 0:
             video_parameters["pixel_aspect_ratio_numer"] = read_uint(state)
             # (C.3) Check level allows the specified numerator
@@ -406,7 +429,7 @@ def pixel_aspect_ratio(state, video_parameters):
                 video_parameters["pixel_aspect_ratio_numer"],
             )
             ## End not in spec
-            
+
             video_parameters["pixel_aspect_ratio_denom"] = read_uint(state)
             # (C.3) Check level allows the specified denominator
             ## Begin not in spec
@@ -416,14 +439,14 @@ def pixel_aspect_ratio(state, video_parameters):
                 video_parameters["pixel_aspect_ratio_denom"],
             )
             ## End not in spec
-            
+
             # Errata: spec fails to require ratio to be non-zero on either side
             #
             # (11.4.7) ratio must not contain zeros
             ## Begin not in spec
             if (
-                video_parameters["pixel_aspect_ratio_numer"] == 0 or
-                video_parameters["pixel_aspect_ratio_denom"] == 0
+                video_parameters["pixel_aspect_ratio_numer"] == 0
+                or video_parameters["pixel_aspect_ratio_denom"] == 0
             ):
                 raise PixelAspectRatioContainsZeros(
                     video_parameters["pixel_aspect_ratio_numer"],
@@ -432,8 +455,10 @@ def pixel_aspect_ratio(state, video_parameters):
             ## End not in spec
         else:
             # (11.4.7) Pixel aspect ratio preset must be a known value
-            assert_in_enum(index, PresetPixelAspectRatios, BadPresetPixelAspectRatio) ## Not in spec
-            
+            ## Begin not in spec
+            assert_in_enum(index, PresetPixelAspectRatios, BadPresetPixelAspectRatio)
+            ## End not in spec
+
             preset_pixel_aspect_ratio(video_parameters, index)
 
 
@@ -442,36 +467,43 @@ def clean_area(state, video_parameters):
     """(11.4.8)"""
     custom_clean_area_flag = read_bool(state)
     # (C.3) Check level allows custom clean area
-    assert_level_constraint(state, "custom_clean_area_flag", custom_clean_area_flag) ## Not in spec
-    
+    ## Begin not in spec
+    assert_level_constraint(state, "custom_clean_area_flag", custom_clean_area_flag)
+    ## End not in spec
+
     if custom_clean_area_flag:
         video_parameters["clean_width"] = read_uint(state)
         # (C.3) Check level allows this width
-        assert_level_constraint(state, "clean_width", video_parameters["clean_width"]) ## Not in spec
-        
+        ## Begin not in spec
+        assert_level_constraint(state, "clean_width", video_parameters["clean_width"])
+        ## End not in spec
+
         video_parameters["clean_height"] = read_uint(state)
         # (C.3) Check level allows this height
-        assert_level_constraint(state, "clean_height", video_parameters["clean_height"]) ## Not in spec
-        
+        ## Begin not in spec
+        assert_level_constraint(state, "clean_height", video_parameters["clean_height"])
+        ## End not in spec
+
         video_parameters["left_offset"] = read_uint(state)
         # (C.3) Check level allows this offset
-        assert_level_constraint(state, "left_offset", video_parameters["left_offset"]) ## Not in spec
-        
+        ## Begin not in spec
+        assert_level_constraint(state, "left_offset", video_parameters["left_offset"])
+        ## End not in spec
+
         video_parameters["top_offset"] = read_uint(state)
         # (C.3) Check level allows this offset
-        assert_level_constraint(state, "top_offset", video_parameters["top_offset"]) ## Not in spec
-        
+        ## Begin not in spec
+        assert_level_constraint(state, "top_offset", video_parameters["top_offset"])
+        ## End not in spec
+
     # (11.4.8) The clean area is restricted to being within the existing
     # picture area
     ## Begin not in spec
     if not (
-            video_parameters["clean_width"] +
-            video_parameters["left_offset"] <=
-            video_parameters["frame_width"]
-            and
-            video_parameters["clean_height"] +
-            video_parameters["top_offset"] <=
-            video_parameters["frame_height"]
+        video_parameters["clean_width"] + video_parameters["left_offset"]
+        <= video_parameters["frame_width"]
+        and video_parameters["clean_height"] + video_parameters["top_offset"]
+        <= video_parameters["frame_height"]
     ):
         raise CleanAreaOutOfRange(
             video_parameters["clean_width"],
@@ -489,33 +521,55 @@ def signal_range(state, video_parameters):
     """(11.4.9)"""
     custom_signal_range_flag = read_bool(state)
     # (C.3) Check level allows custom signal range
-    assert_level_constraint(state, "custom_signal_range_flag", custom_signal_range_flag) ## Not in spec
-    
+    ## Begin not in spec
+    assert_level_constraint(state, "custom_signal_range_flag", custom_signal_range_flag)
+    ## End not in spec
+
     if custom_signal_range_flag:
         index = read_uint(state)
         # (C.3) Check level allows the specified preset
-        assert_level_constraint(state, "custom_signal_range_index", index) ## Not in spec
-        
+        ## Begin not in spec
+        assert_level_constraint(state, "custom_signal_range_index", index)
+        ## End not in spec
+
         if index == 0:
             video_parameters["luma_offset"] = read_uint(state)
             # (C.3) Check level allows this offset
-            assert_level_constraint(state, "luma_offset", video_parameters["luma_offset"]) ## Not in spec
-            
+            ## Begin not in spec
+            assert_level_constraint(
+                state, "luma_offset", video_parameters["luma_offset"]
+            )
+            ## End not in spec
+
             video_parameters["luma_excursion"] = read_uint(state)
             # (C.3) Check level allows this excursion
-            assert_level_constraint(state, "luma_excursion", video_parameters["luma_excursion"]) ## Not in spec
-            
+            ## Begin not in spec
+            assert_level_constraint(
+                state, "luma_excursion", video_parameters["luma_excursion"]
+            )
+            ## End not in spec
+
             video_parameters["color_diff_offset"] = read_uint(state)
             # (C.3) Check level allows this offset
-            assert_level_constraint(state, "color_diff_offset", video_parameters["color_diff_offset"]) ## Not in spec
-            
+            ## Begin not in spec
+            assert_level_constraint(
+                state, "color_diff_offset", video_parameters["color_diff_offset"]
+            )
+            ## End not in spec
+
             video_parameters["color_diff_excursion"] = read_uint(state)
             # (C.3) Check level allows this excursion
-            assert_level_constraint(state, "color_diff_excursion", video_parameters["color_diff_excursion"]) ## Not in spec
+            ## Begin not in spec
+            assert_level_constraint(
+                state, "color_diff_excursion", video_parameters["color_diff_excursion"]
+            )
+            ## End not in spec
         else:
             # (11.4.9) Signal range preset must be a known value
-            assert_in_enum(index, PresetSignalRanges, BadPresetSignalRange) ## Not in spec
-            
+            ## Begin not in spec
+            assert_in_enum(index, PresetSignalRanges, BadPresetSignalRange)
+            ## End not in spec
+
             preset_signal_range(video_parameters, index)
 
 
@@ -524,19 +578,21 @@ def color_spec(state, video_parameters):
     """(11.4.10.1)"""
     custom_color_spec_flag = read_bool(state)
     # (C.3) Check level allows custom colour specs
-    assert_level_constraint(state, "custom_color_spec_flag", custom_color_spec_flag) ## Not in spec
-    
+    ## Begin not in spec
+    assert_level_constraint(state, "custom_color_spec_flag", custom_color_spec_flag)
+    ## End not in spec
+
     if custom_color_spec_flag:
         index = read_uint(state)
-        
+
         # (11.4.10.1) Index should be a supported value
-        assert_in_enum(index, PresetColorSpecs, BadPresetColorSpec) ## Not in spec
-        
+        assert_in_enum(index, PresetColorSpecs, BadPresetColorSpec)  ## Not in spec
+
         # (C.3) Check level allows the specified preset
-        assert_level_constraint(state, "custom_color_spec_index", index) ## Not in spec
-        
+        assert_level_constraint(state, "custom_color_spec_index", index)  ## Not in spec
+
         preset_color_spec(video_parameters, index)
-        
+
         if index == 0:
             color_primaries(state, video_parameters)
             color_matrix(state, video_parameters)
@@ -548,18 +604,26 @@ def color_primaries(state, video_parameters):
     """(11.4.10.2)"""
     custom_color_primaries_flag = read_bool(state)
     # (C.3) Check level allows custom colour primaries
-    assert_level_constraint(state, "custom_color_primaries_flag", custom_color_primaries_flag) ## Not in spec
-    
+    ## Begin not in spec
+    assert_level_constraint(
+        state, "custom_color_primaries_flag", custom_color_primaries_flag
+    )
+    ## End not in spec
+
     if custom_color_primaries_flag:
         index = read_uint(state)
-        
+
         # (11.4.10.2) Index should be a supported value
-        assert_in_enum(index, PresetColorPrimaries, BadPresetColorPrimaries) ## Not in spec
-        
+        ## Begin not in spec
+        assert_in_enum(index, PresetColorPrimaries, BadPresetColorPrimaries)
+        ## End not in spec
+
         # (C.3) Check level allows the specified preset
-        assert_level_constraint(state, "custom_color_primaries_index", index) ## Not in spec
-        
-        preset_color_primaries(video_parameters,index)
+        ## Begin not in spec
+        assert_level_constraint(state, "custom_color_primaries_index", index)
+        ## End not in spec
+
+        preset_color_primaries(video_parameters, index)
 
 
 @ref_pseudocode
@@ -567,17 +631,21 @@ def color_matrix(state, video_parameters):
     """(11.4.10.3)"""
     custom_color_matrix_flag = read_bool(state)
     # (C.3) Check level allows custom colour matrices
-    assert_level_constraint(state, "custom_color_matrix_flag", custom_color_matrix_flag) ## Not in spec
-    
+    ## Begin not in spec
+    assert_level_constraint(state, "custom_color_matrix_flag", custom_color_matrix_flag)
+    ## End not in spec
+
     if custom_color_matrix_flag:
         index = read_uint(state)
-        
+
         # (11.4.10.3) Index should be a supported value
-        assert_in_enum(index, PresetColorMatrices, BadPresetColorMatrix) ## Not in spec
-        
+        assert_in_enum(index, PresetColorMatrices, BadPresetColorMatrix)  ## Not in spec
+
         # (C.3) Check level allows the specified preset
-        assert_level_constraint(state, "custom_color_matrix_index", index) ## Not in spec
-        
+        ## Begin not in spec
+        assert_level_constraint(state, "custom_color_matrix_index", index)
+        ## End not in spec
+
         preset_color_matrix(video_parameters, index)
 
 
@@ -586,15 +654,23 @@ def transfer_function(state, video_parameters):
     """(11.4.10.4)"""
     custom_transfer_function_flag = read_bool(state)
     # (C.3) Check level allows custom transfer functions
-    assert_level_constraint(state, "custom_transfer_function_flag", custom_transfer_function_flag) ## Not in spec
-    
+    ## Begin not in spec
+    assert_level_constraint(
+        state, "custom_transfer_function_flag", custom_transfer_function_flag
+    )
+    ## End not in spec
+
     if custom_transfer_function_flag:
         index = read_uint(state)
-        
+
         # (11.4.10.3) Index should be a supported value
-        assert_in_enum(index, PresetTransferFunctions, BadPresetTransferFunction) ## Not in spec
-        
+        ## Begin not in spec
+        assert_in_enum(index, PresetTransferFunctions, BadPresetTransferFunction)
+        ## End not in spec
+
         # (C.3) Check level allows the specified preset
-        assert_level_constraint(state, "custom_transfer_function_index", index) ## Not in spec
-        
-        preset_transfer_function(video_parameters ,index)
+        ## Begin not in spec
+        assert_level_constraint(state, "custom_transfer_function_index", index)
+        ## End not in spec
+
+        preset_transfer_function(video_parameters, index)

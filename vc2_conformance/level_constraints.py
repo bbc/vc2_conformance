@@ -27,9 +27,7 @@ from vc2_conformance._constraint_table import (
     ValueSet,
 )
 
-from vc2_data_tables.csv_readers import (
-    read_lookup_from_csv,
-)
+from vc2_data_tables.csv_readers import read_lookup_from_csv
 
 from vc2_data_tables import (
     Levels,
@@ -84,10 +82,9 @@ describing the restrictions on sequences imposed by each VC-2 level.
 """
 
 
-LEVEL_CONSTRAINTS = read_constraints_from_csv(os.path.join(
-    os.path.dirname(__file__),
-    "level_constraints.csv",
-))
+LEVEL_CONSTRAINTS = read_constraints_from_csv(
+    os.path.join(os.path.dirname(__file__), "level_constraints.csv",)
+)
 """
 A :py:mod:`vc2_conformance._constraint_table` table of constraints which apply
 due to levels. Keys correspond to partiuclar bitstream values in sequence

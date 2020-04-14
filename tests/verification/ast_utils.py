@@ -11,22 +11,21 @@ def name_to_str(attr_or_name):
     :py:class:`ast.Name`, made up entirely of simple constants, return a string
     containing the dot-separated name.
     """
-    if (isinstance(attr_or_name, ast.Subscript) and
-            isinstance(attr_or_name.slice, ast.Index) and
-            isinstance(attr_or_name.slice.value, (ast.Num, ast.Str))):
+    if (
+        isinstance(attr_or_name, ast.Subscript)
+        and isinstance(attr_or_name.slice, ast.Index)
+        and isinstance(attr_or_name.slice.value, (ast.Num, ast.Str))
+    ):
         return "{}[{!r}]".format(
             name_to_str(attr_or_name.value),
             (
                 attr_or_name.slice.value.s
-                if isinstance(attr_or_name.slice.value, ast.Str) else
-                attr_or_name.slice.value.n
+                if isinstance(attr_or_name.slice.value, ast.Str)
+                else attr_or_name.slice.value.n
             ),
         )
     elif isinstance(attr_or_name, ast.Attribute):
-        return "{}.{}".format(
-            name_to_str(attr_or_name.value),
-            attr_or_name.attr,
-        )
+        return "{}.{}".format(name_to_str(attr_or_name.value), attr_or_name.attr,)
     elif isinstance(attr_or_name, ast.Name):
         return attr_or_name.id
     else:

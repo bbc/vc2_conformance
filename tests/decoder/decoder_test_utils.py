@@ -16,7 +16,7 @@ def serialise_to_bytes(context, state=None, *args):
     # type
     func_name = bitstream.fixeddict_to_pseudocode_function[type(context)]
     func = getattr(bitstream, func_name)
-    
+
     f = BytesIO()
     w = bitstream.BitstreamWriter(f)
     with bitstream.Serialiser(w, context, bitstream.vc2_default_values) as ser:
@@ -41,12 +41,12 @@ def populate_parse_offsets(sequence, state=None):
     """
     state = state.copy() if state is not None else State()
     w = bitstream.BitstreamWriter(BytesIO())
-    
+
     # This function seriallises the provided sequence using a
     # MonitoredSerialiser to log the offsets at which the parse_info headers
     # are written.
     parse_info_offsets = []
-    
+
     def capture_parse_info_offsets(serdes, target, value):
         if target == "parse_info_prefix":
             # NB: Offset reported is at the end of the parse_info_prefix so the
@@ -54,27 +54,24 @@ def populate_parse_offsets(sequence, state=None):
             next_byte, next_bit = w.tell()
             assert next_bit == 7
             parse_info_offsets.append(next_byte - 4)
-    
+
     with bitstream.MonitoredSerialiser(
-        capture_parse_info_offsets,
-        w,
-        sequence,
-        bitstream.vc2_default_values,
+        capture_parse_info_offsets, w, sequence, bitstream.vc2_default_values,
     ) as serdes:
         bitstream.parse_sequence(serdes, state)
-    
+
     # Retrospectively update the parse_info offsets in-place
     for i in range(len(sequence["data_units"])):
         if i == 0:
             sequence["data_units"][i]["parse_info"]["previous_parse_offset"] = 0
         else:
             sequence["data_units"][i]["parse_info"]["previous_parse_offset"] = (
-                parse_info_offsets[i] - parse_info_offsets[i-1]
+                parse_info_offsets[i] - parse_info_offsets[i - 1]
             )
-        
+
         if i == len(sequence["data_units"]) - 1:
             sequence["data_units"][i]["parse_info"]["next_parse_offset"] = 0
         else:
             sequence["data_units"][i]["parse_info"]["next_parse_offset"] = (
-                parse_info_offsets[i+1] - parse_info_offsets[i]
+                parse_info_offsets[i + 1] - parse_info_offsets[i]
             )

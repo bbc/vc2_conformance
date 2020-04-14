@@ -5,13 +5,9 @@ arithmetic.
 
 import logging
 
-from vc2_conformance.file_format import (
-    compute_dimensions_and_depths,
-)
+from vc2_conformance.file_format import compute_dimensions_and_depths
 
-from vc2_conformance.encoder import (
-    make_sequence,
-)
+from vc2_conformance.encoder import make_sequence
 
 from vc2_conformance.picture_generators import (
     mid_gray,
@@ -28,11 +24,7 @@ from vc2_conformance.test_cases import (
     decoder_test_case_generator,
 )
 
-from vc2_conformance.test_cases.decoder.pictures import (
-    iter_slices_in_sequence,
-)
-
-
+from vc2_conformance.test_cases.decoder.pictures import iter_slices_in_sequence
 
 
 @decoder_test_case_generator
@@ -65,12 +57,11 @@ def signal_range(codec_features):
             codec_features["name"],
         )
         return
-    
+
     dimensions_and_depths = compute_dimensions_and_depths(
-        codec_features["video_parameters"],
-        codec_features["picture_coding_mode"],
+        codec_features["video_parameters"], codec_features["picture_coding_mode"],
     )
-    
+
     for component, analysis_test_pictures, synthesis_test_pictures in [
         ("Y", analysis_luma_pictures, synthesis_luma_pictures),
         ("C1", analysis_color_diff_pictures, synthesis_color_diff_pictures),
@@ -82,20 +73,21 @@ def signal_range(codec_features):
             test_pictures = analysis_test_pictures
         else:
             test_pictures = synthesis_test_pictures
-        
+
         # Generate an initially empty set of mid-grey pictures
-        one_gray_frame = list(mid_gray(
-            codec_features["video_parameters"],
-            codec_features["picture_coding_mode"],
-        ))
-        pictures = list(repeat_pictures(
-            one_gray_frame,
-            (
-                (len(test_pictures) + len(one_gray_frame) - 1)
-                // len(one_gray_frame)
-            ),
-        ))
-        
+        one_gray_frame = list(
+            mid_gray(
+                codec_features["video_parameters"],
+                codec_features["picture_coding_mode"],
+            )
+        )
+        pictures = list(
+            repeat_pictures(
+                one_gray_frame,
+                ((len(test_pictures) + len(one_gray_frame) - 1) // len(one_gray_frame)),
+            )
+        )
+
         # Fill-in the test patterns
         minimum_qindices = []
         for test_picture, picture in zip(test_pictures, pictures):
@@ -106,20 +98,15 @@ def signal_range(codec_features):
                 minimum_qindices.append(test_picture.quantisation_index)
         while len(minimum_qindices) < len(pictures):
             minimum_qindices.append(0)
-        
+
         # Extract the testpoints in JSON-serialisable form
-        metadata = [
-            [tp._asdict() for tp in p.test_points]
-            for p in test_pictures
-        ]
-        
+        metadata = [[tp._asdict() for tp in p.test_points] for p in test_pictures]
+
         # Encode
         sequence = make_sequence(
-            codec_features,
-            pictures,
-            minimum_qindex=minimum_qindices,
+            codec_features, pictures, minimum_qindex=minimum_qindices,
         )
-        
+
         # Check the desired qindex could be used (should only ever fail for
         # absurdly low bitrate configurations).
         num_unexpected_qindices = 0
@@ -130,16 +117,14 @@ def signal_range(codec_features):
                 expected_qindex = next(expected_qindex_iter, 0)
             if slice["qindex"] != expected_qindex:
                 num_unexpected_qindices += 1
-        
+
         if num_unexpected_qindices > 0:
             logging.warning(
                 "Could not assign the required qindex to %d picture slices "
                 "for signal range test case. Peak signal levels may be reduced.",
                 num_unexpected_qindices,
             )
-        
+
         yield TestCase(
-            sequence,
-            component,
-            metadata=metadata,
+            sequence, component, metadata=metadata,
         )

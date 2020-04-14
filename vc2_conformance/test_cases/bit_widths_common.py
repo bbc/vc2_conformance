@@ -49,7 +49,7 @@ def get_bundle_filename():
     quantisation matrix.
     """
     default_filename = STATIC_FILTER_ANALYSIS_BUNDLE_FILENAME
-    
+
     # NB, Also uses the default if the environment variable is present but
     # empty
     return os.environ.get("VC2_BIT_WIDTHS_BUNDLE", "") or default_filename
@@ -81,18 +81,19 @@ def get_test_pictures(codec_features, bundle_filename=get_bundle_filename()):
     if codec_features["quantization_matrix"] is not None:
         quantisation_matrix = codec_features["quantization_matrix"]
     else:
-        quantisation_matrix = QUANTISATION_MATRICES[(
-            codec_features["wavelet_index"],
-            codec_features["wavelet_index_ho"],
-            codec_features["dwt_depth"],
-            codec_features["dwt_depth_ho"],
-        )]
-    
+        quantisation_matrix = QUANTISATION_MATRICES[
+            (
+                codec_features["wavelet_index"],
+                codec_features["wavelet_index_ho"],
+                codec_features["dwt_depth"],
+                codec_features["dwt_depth_ho"],
+            )
+        ]
+
     dimensions_and_depths = compute_dimensions_and_depths(
-        codec_features["video_parameters"],
-        codec_features["picture_coding_mode"],
+        codec_features["video_parameters"], codec_features["picture_coding_mode"],
     )
-    
+
     # Load the test pattern specifications
     try:
         (
@@ -109,14 +110,14 @@ def get_test_pictures(codec_features, bundle_filename=get_bundle_filename()):
         )
     except KeyError:
         raise MissingStaticAnalysisError()
-    
+
     all_analysis_pictures = []
     all_synthesis_pictures = []
     for component in ["Y", "C1"]:
         picture_bit_width = dimensions_and_depths[component].depth_bits
         picture_width = dimensions_and_depths[component].width
         picture_height = dimensions_and_depths[component].height
-        
+
         # ...using optimised synthesis test patterns if available...
         try:
             synthesis_test_patterns = bundle_get_optimised_synthesis_test_patterns(
@@ -130,7 +131,7 @@ def get_test_pictures(codec_features, bundle_filename=get_bundle_filename()):
             )
         except KeyError:
             pass
-        
+
         # Determine the maximum quantisation index which may be usefully used for
         # the codec configuration specified
         concrete_analysis_bounds, concrete_synthesis_bounds = evaluate_filter_bounds(
@@ -143,10 +144,9 @@ def get_test_pictures(codec_features, bundle_filename=get_bundle_filename()):
             picture_bit_width,
         )
         max_quantisation_index = quantisation_index_bound(
-            concrete_analysis_bounds,
-            quantisation_matrix,
+            concrete_analysis_bounds, quantisation_matrix,
         )
-        
+
         # Find the worst-case quantisation index for the synthesis test patterns
         _, synthesis_test_pattern_outputs = evaluate_test_pattern_outputs(
             codec_features["wavelet_index"],
@@ -159,7 +159,7 @@ def get_test_pictures(codec_features, bundle_filename=get_bundle_filename()):
             analysis_test_patterns,
             synthesis_test_patterns,
         )
-        
+
         # Generate packed test pictures
         analysis_pictures, synthesis_pictures = generate_test_pictures(
             picture_width,
@@ -169,10 +169,10 @@ def get_test_pictures(codec_features, bundle_filename=get_bundle_filename()):
             synthesis_test_patterns,
             synthesis_test_pattern_outputs,
         )
-        
+
         all_analysis_pictures.append(analysis_pictures)
         all_synthesis_pictures.append(synthesis_pictures)
-    
+
     return (
         all_analysis_pictures[0],
         all_synthesis_pictures[0],

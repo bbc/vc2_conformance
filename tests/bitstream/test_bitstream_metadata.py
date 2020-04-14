@@ -5,7 +5,7 @@ def test_no_unexpected_missing_functions():
     # Sanity check: all bitstream-related VC-2 pseudo code functions are
     # listed.
     expected_missing = set(["slice_band", "color_diff_slice_band"])
-    
+
     expected = set(bitstream.vc2.__all__)
     present = set(bitstream.pseudocode_function_to_fixeddicts)
     assert present.issubset(expected)
@@ -18,8 +18,7 @@ def test_no_functions_without_types():
     # @context_type. If this is intentional, a special case should be added to
     # the metadata module.
     assert all(
-        len(types) > 0
-        for types in bitstream.pseudocode_function_to_fixeddicts.values()
+        len(types) > 0 for types in bitstream.pseudocode_function_to_fixeddicts.values()
     )
 
 
@@ -45,6 +44,6 @@ def test_recursive():
     # 'type' annotation.
     all_types = set(bitstream.vc2_default_values.keys())
     assert (
-        set(bitstream.pseudocode_function_to_fixeddicts_recursive["parse_sequence"]) ==
-        all_types
+        set(bitstream.pseudocode_function_to_fixeddicts_recursive["parse_sequence"])
+        == all_types
     )

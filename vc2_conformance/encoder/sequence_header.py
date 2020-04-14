@@ -67,9 +67,9 @@ def zip_longest_repeating_final_value(*iterables):
     filled with None.
     """
     iterators = list(map(iter, iterables))
-    
-    last_zipped = (None, ) * len(iterators)
-    
+
+    last_zipped = (None,) * len(iterators)
+
     some_iterators_running = True
     while some_iterators_running:
         zipped = []
@@ -80,7 +80,7 @@ def zip_longest_repeating_final_value(*iterables):
                 some_iterators_running = True
             except StopIteration:
                 zipped.append(last_zipped[i])
-        
+
         if some_iterators_running:
             last_zipped = tuple(zipped)
             yield last_zipped
@@ -203,30 +203,23 @@ def iter_custom_options_dicts(
         entries mentioned in ``presets`` will be checked.
     """
     # Normalise to (vp_key, dt_key) pairs
-    parameters = [
-        (key, key) if isinstance(key, str) else key
-        for key in parameters
-    ]
-    
+    parameters = [(key, key) if isinstance(key, str) else key for key in parameters]
+
     # Is the base video format already sufficient?
     if all(
         base_video_parameters[vp_key] == video_parameters[vp_key]
         for vp_key, _ in parameters
     ):
         yield dict_type({flag_key: False})
-    
+
     # Is there a suitable preset?
     if presets is not None:
         for index, values in presets.items():
-            if values == tuple(
-                video_parameters[vp_key]
-                for vp_key, _ in parameters
-            ):
-                yield dict_type({
-                    flag_key: True,
-                    "index": index,
-                })
-    
+            if values == tuple(video_parameters[vp_key] for vp_key, _ in parameters):
+                yield dict_type(
+                    {flag_key: True, "index": index,}
+                )
+
     # Explicitly set the desired value
     out = dict_type({flag_key: True})
     if presets is not None:
@@ -277,12 +270,7 @@ iter_clean_area_options = partial(
     iter_custom_options_dicts,
     dict_type=CleanArea,
     flag_key="custom_clean_area_flag",
-    parameters=[
-        "clean_width",
-        "clean_height",
-        "top_offset",
-        "left_offset",
-    ],
+    parameters=["clean_width", "clean_height", "top_offset", "left_offset",],
 )
 
 iter_signal_range_options = partial(
@@ -338,38 +326,31 @@ def iter_color_spec_options(base_video_parameters, video_parameters):
             "transfer_function_index",
         ]
     ):
-        yield ColorSpec(
-            custom_color_spec_flag=False,
-        )
-    
+        yield ColorSpec(custom_color_spec_flag=False,)
+
     # Can a preset (other than 0) satisfy the requirement?
-    for index, (
-        primaries,
-        matrix,
-        tf,
-    ) in PRESET_COLOR_SPECS.items():
+    for index, (primaries, matrix, tf,) in PRESET_COLOR_SPECS.items():
         if (
-            index != 0 and
-            video_parameters["color_primaries_index"] == primaries and
-            video_parameters["color_matrix_index"] == matrix and
-            video_parameters["transfer_function_index"] == tf
+            index != 0
+            and video_parameters["color_primaries_index"] == primaries
+            and video_parameters["color_matrix_index"] == matrix
+            and video_parameters["transfer_function_index"] == tf
         ):
             yield ColorSpec(
-                custom_color_spec_flag=True,
-                index=index,
+                custom_color_spec_flag=True, index=index,
             )
-    
+
     # Work through all possible ways to express this using fully custom formats
     custom_base_vp = base_video_parameters.copy()
     custom_presets = PRESET_COLOR_SPECS[0]
     custom_base_vp["color_primaries_index"] = custom_presets.color_primaries_index
     custom_base_vp["color_matrix_index"] = custom_presets.color_matrix_index
     custom_base_vp["transfer_function_index"] = custom_presets.transfer_function_index
-    
+
     for (
         color_primaries,
         color_matrix,
-        transfer_function
+        transfer_function,
     ) in zip_longest_repeating_final_value(
         iter_color_primaries_options(custom_base_vp, video_parameters),
         iter_color_matrix_options(custom_base_vp, video_parameters),
@@ -414,7 +395,7 @@ def iter_source_parameter_options(base_video_parameters, video_parameters):
     # any useful results.
     if base_video_parameters["top_field_first"] != video_parameters["top_field_first"]:
         return
-    
+
     for (
         frame_size,
         color_diff_sampling_format,
@@ -426,7 +407,9 @@ def iter_source_parameter_options(base_video_parameters, video_parameters):
         color_spec,
     ) in zip_longest_repeating_final_value(
         iter_frame_size_options(base_video_parameters, video_parameters),
-        iter_color_diff_sampling_format_options(base_video_parameters, video_parameters),
+        iter_color_diff_sampling_format_options(
+            base_video_parameters, video_parameters
+        ),
         iter_scan_format_options(base_video_parameters, video_parameters),
         iter_frame_rate_options(base_video_parameters, video_parameters),
         iter_pixel_aspect_ratio_options(base_video_parameters, video_parameters),
@@ -453,7 +436,7 @@ def count_video_parameter_differences(a, b):
     """
     # NB: Should always be the same in practice...
     all_keys = set(a) | set(b)
-    
+
     differences = 0
     for key in all_keys:
         if key not in a:
@@ -462,7 +445,7 @@ def count_video_parameter_differences(a, b):
             differences += 1
         elif a[key] != b[key]:
             differences += 1
-    
+
     return differences
 
 
@@ -482,13 +465,12 @@ def rank_base_video_format_similarity(video_parameters):
             index
             for index in BaseVideoFormats
             if (
-                BASE_VIDEO_FORMAT_PARAMETERS[index].top_field_first ==
-                video_parameters["top_field_first"]
+                BASE_VIDEO_FORMAT_PARAMETERS[index].top_field_first
+                == video_parameters["top_field_first"]
             )
         ),
         key=lambda index: count_video_parameter_differences(
-            set_source_defaults(index),
-            video_parameters,
+            set_source_defaults(index), video_parameters,
         ),
     )
 
@@ -519,14 +501,18 @@ def make_sequence_header(codec_features):
     base_video_format = rank_base_video_format_similarity(
         codec_features["video_parameters"],
     )[0]
-    
+
     # Pick a set of SourceParameters which minimally encode any differences
     # between the base video format and target video format
-    source_parameters = next(iter(iter_source_parameter_options(
-        set_source_defaults(base_video_format),
-        codec_features["video_parameters"],
-    )))
-    
+    source_parameters = next(
+        iter(
+            iter_source_parameter_options(
+                set_source_defaults(base_video_format),
+                codec_features["video_parameters"],
+            )
+        )
+    )
+
     return SequenceHeader(
         parse_parameters=make_parse_parameters(codec_features),
         base_video_format=base_video_format,

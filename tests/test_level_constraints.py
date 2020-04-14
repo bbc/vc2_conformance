@@ -16,6 +16,6 @@ def test_all_level_constraint_any_values_are_valid_level_constraints():
     all_keys = set()
     for table in LEVEL_CONSTRAINTS:
         all_keys.update(table)
-    
+
     for key in LEVEL_CONSTRAINT_ANY_VALUES:
         assert key in all_keys

@@ -19,4 +19,3 @@ def pytest_assertrepr_compare(op, left, right):
             "{} and {} are equivalent".format(left.ref_func, left.imp_func),
             "",
         ] + format_detailed_summary(left).splitlines()
-

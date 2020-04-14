@@ -80,13 +80,13 @@ def record_bitstream_finish(state):
     """
     recorded_bytes = state["_recorded_bytes"]
     del state["_recorded_bytes"]
-    
+
     # Add whatever has been used of the current byte
     if state["next_bit"] != 7:
         recorded_bytes.append(
-            state["current_byte"] & ~((1<<(state["next_bit"] + 1)) - 1)
+            state["current_byte"] & ~((1 << (state["next_bit"] + 1)) - 1)
         )
-    
+
     return recorded_bytes
 
 
@@ -116,10 +116,10 @@ def read_byte(state):
     # Record the now used-up byte (see record_bitstream_start)
     if "_recorded_bytes" in state:
         state["_recorded_bytes"].append(state["current_byte"])
-    
+
     # Step 1.
     state["next_bit"] = 7
-    
+
     # Step 2.
     byte = state["_file"].read(1)
     if len(byte) == 1:
@@ -143,8 +143,8 @@ def read_bit(state):
     if state["current_byte"] is None:
         raise UnexpectedEndOfStream()
     ## End not in spec
-    
-    bit = (state["current_byte"] >> state["next_bit"])&1
+
+    bit = (state["current_byte"] >> state["next_bit"]) & 1
     state["next_bit"] -= 1
     if state["next_bit"] < 0:
         state["next_bit"] = 7
@@ -171,6 +171,7 @@ def read_bool(state):
     else:
         return False
 
+
 @ref_pseudocode
 def read_nbits(state, n):
     """(A.3.3)"""
@@ -180,10 +181,11 @@ def read_nbits(state, n):
         val += read_bit(state)
     return val
 
+
 @ref_pseudocode
 def read_uint_lit(state, n):
     """(A.3.4)"""
-    return read_nbits(state, 8*n)
+    return read_nbits(state, 8 * n)
 
 
 @ref_pseudocode

@@ -74,10 +74,10 @@ def autofill_picture_number(sequence, initial_picture_number=0):
     picture numbers.
     """
     last_picture_number = (initial_picture_number - 1) & 0xFFFFFFFF
-    
+
     for data_unit in sequence.get("data_units", []):
         parse_code = data_unit.get("parse_info", {}).get("parse_code")
-        
+
         # Get the current picture/fragment header (in 'header') and determine if
         # the picture number should be incremented in this picture/fragment or
         # not ('increment' is True if an incremented picture number should be
@@ -95,20 +95,25 @@ def autofill_picture_number(sequence, initial_picture_number=0):
         ):
             fragment_parse = data_unit.setdefault("fragment_parse", FragmentParse())
             header = fragment_parse.setdefault("fragment_header", FragmentHeader())
-            increment = header.get(
-                "fragment_slice_count",
-                vc2_default_values_with_auto[FragmentHeader]["fragment_slice_count"]
-            ) == 0
+            increment = (
+                header.get(
+                    "fragment_slice_count",
+                    vc2_default_values_with_auto[FragmentHeader][
+                        "fragment_slice_count"
+                    ],
+                )
+                == 0
+            )
         else:
             # Not a picture; move on!
             continue
-        
+
         if header.get("picture_number", AUTO) is AUTO:
             if increment:
                 header["picture_number"] = (last_picture_number + 1) & 0xFFFFFFFF
             else:
                 header["picture_number"] = last_picture_number
-        
+
         last_picture_number = header["picture_number"]
 
 
@@ -125,34 +130,34 @@ def autofill_parse_offsets(sequence):
     """
     next_parse_offsets_to_autofill = []
     previous_parse_offsets_to_autofill = []
-    
+
     for data_unit_index, data_unit in enumerate(sequence.get("data_units", [])):
         parse_info = data_unit.setdefault("parse_info", ParseInfo())
         parse_code = parse_info.get("parse_code")
-        
+
         if parse_code in (ParseCodes.auxiliary_data, ParseCodes.padding_data):
             # The length of padding and aux. data fields are determined by the
             # next_parse_offset field so these should be auto-fillled based on the
             # length of padding/aux data present.
             if parse_info.get("next_parse_offset", AUTO) is AUTO:
                 if parse_code == ParseCodes.auxiliary_data:
-                    data = data_unit.get("auxiliary_data", {}).get("bytes",
-                        vc2_default_values_with_auto[AuxiliaryData]["bytes"]
+                    data = data_unit.get("auxiliary_data", {}).get(
+                        "bytes", vc2_default_values_with_auto[AuxiliaryData]["bytes"]
                     )
                 elif parse_code == ParseCodes.padding_data:
-                    data = data_unit.get("padding", {}).get("bytes",
-                        vc2_default_values_with_auto[Padding]["bytes"]
+                    data = data_unit.get("padding", {}).get(
+                        "bytes", vc2_default_values_with_auto[Padding]["bytes"]
                     )
                 parse_info["next_parse_offset"] = PARSE_INFO_HEADER_BYTES + len(data)
-        
+
         if parse_info.get("next_parse_offset", AUTO) is AUTO:
             parse_info["next_parse_offset"] = 0
             next_parse_offsets_to_autofill.append(data_unit_index)
-        
+
         if parse_info.get("previous_parse_offset", AUTO) is AUTO:
             parse_info["previous_parse_offset"] = 0
             previous_parse_offsets_to_autofill.append(data_unit_index)
-    
+
     return (next_parse_offsets_to_autofill, previous_parse_offsets_to_autofill)
 
 
@@ -183,33 +188,35 @@ def autofill_parse_offsets_finalize(
         remain to be auto-filled.
     """
     end_of_sequence_offset = bitstream_writer.tell()
-    
+
     for index in next_parse_offsets_to_autofill:
         if index == len(sequence["data_units"]) - 1:
             next_parse_offset = 0
         else:
             next_parse_offset = (
-                sequence["data_units"][index+1]["parse_info"]["_offset"] -
-                sequence["data_units"][index]["parse_info"]["_offset"]
+                sequence["data_units"][index + 1]["parse_info"]["_offset"]
+                - sequence["data_units"][index]["parse_info"]["_offset"]
             )
         byte_offset = sequence["data_units"][index]["parse_info"]["_offset"]
         bitstream_writer.seek(byte_offset + 4 + 1)  # Seek past prefix and parse code
         bitstream_writer.write_uint_lit(4, next_parse_offset)
         bitstream_writer.flush()
-    
+
     for index in previous_parse_offsets_to_autofill:
         if index == 0:
             previous_parse_offset = 0
         else:
             previous_parse_offset = (
-                sequence["data_units"][index]["parse_info"]["_offset"] -
-                sequence["data_units"][index-1]["parse_info"]["_offset"]
+                sequence["data_units"][index]["parse_info"]["_offset"]
+                - sequence["data_units"][index - 1]["parse_info"]["_offset"]
             )
         byte_offset = sequence["data_units"][index]["parse_info"]["_offset"]
-        bitstream_writer.seek(byte_offset + 4 + 1 + 4)  # Seek past prefix, parse code and next offset
+        bitstream_writer.seek(
+            byte_offset + 4 + 1 + 4
+        )  # Seek past prefix, parse code and next offset
         bitstream_writer.write_uint_lit(4, previous_parse_offset)
         bitstream_writer.flush()
-    
+
     bitstream_writer.seek(*end_of_sequence_offset)
 
 
@@ -238,12 +245,12 @@ def autofill_and_serialise_sequence(file, sequence):
         next_parse_offsets_to_autofill,
         previous_parse_offsets_to_autofill,
     ) = autofill_parse_offsets(sequence)
-    
+
     writer = BitstreamWriter(file)
     with Serialiser(writer, sequence, vc2_default_values_with_auto) as serdes:
         parse_sequence(serdes, State())
     writer.flush()
-    
+
     autofill_parse_offsets_finalize(
         writer,
         serdes.context,

@@ -5,9 +5,7 @@
 
 from vc2_conformance.metadata import ref_pseudocode
 
-from vc2_conformance.parse_code_functions import (
-    using_dc_prediction,
-)
+from vc2_conformance.parse_code_functions import using_dc_prediction
 
 from vc2_conformance.decoder.io import (
     tell,
@@ -26,9 +24,7 @@ from vc2_conformance.decoder.assertions import (
     assert_picture_number_incremented_as_expected,
 )
 
-from vc2_conformance.decoder.picture_syntax import (
-    transform_parameters,
-)
+from vc2_conformance.decoder.picture_syntax import transform_parameters
 
 from vc2_conformance.decoder.transform_data_syntax import (
     initialize_wavelet_data,
@@ -63,13 +59,13 @@ def fragment_parse(state):
 def fragment_header(state):
     """(14.2)"""
     fragment_offset = tell(state)  ## Not in spec
-    
+
     state["picture_number"] = read_uint_lit(state, 4)
     picture_number_offset = tell(state)  ## Not in spec
-    
+
     state["fragment_data_length"] = read_uint_lit(state, 2)
     state["fragment_slice_count"] = read_uint_lit(state, 2)
-    
+
     ## Begin not in spec
     if state["fragment_slice_count"] == 0:
         # Errata: not fully defined in spec
@@ -84,13 +80,13 @@ def fragment_header(state):
                 state["fragment_slices_received"],
                 state["_fragment_slices_remaining"],
             )
-        
+
         # Errata: wrapping behaviour not constrained in spec
         #
         # (14.2) The picture number should be incremented by one, wrap correctly and
         # fields should have even-numbered picture numbers first.
         assert_picture_number_incremented_as_expected(state, picture_number_offset)
-        
+
         state["_picture_initial_fragment_offset"] = fragment_offset
     else:
         # (14.2) Appart from when fragment_slice_count==0, the picture number
@@ -102,7 +98,7 @@ def fragment_header(state):
                 picture_number_offset,
                 state["picture_number"],
             )
-        
+
         # Errata: not specified in standard...
         #
         # (14.2) A fragmented picture must not contain any extra slices
@@ -115,22 +111,25 @@ def fragment_header(state):
                 state["fragment_slice_count"],
             )
     ## End not in spec
-    
-    
+
     if state["fragment_slice_count"] != 0:
         state["fragment_x_offset"] = read_uint_lit(state, 2)
         state["fragment_y_offset"] = read_uint_lit(state, 2)
-        
+
         # Errata: not specified in standard...
         #
         # (14.2) A fragmented picture must include all slices in raster-scan
         # order
         ## Begin not in spec
-        expected_fragment_x_offset = state["fragment_slices_received"] % state["slices_x"]
-        expected_fragment_y_offset = state["fragment_slices_received"] // state["slices_x"]
+        expected_fragment_x_offset = (
+            state["fragment_slices_received"] % state["slices_x"]
+        )
+        expected_fragment_y_offset = (
+            state["fragment_slices_received"] // state["slices_x"]
+        )
         if (
-            state["fragment_x_offset"] != expected_fragment_x_offset or
-            state["fragment_y_offset"] != expected_fragment_y_offset
+            state["fragment_x_offset"] != expected_fragment_x_offset
+            or state["fragment_y_offset"] != expected_fragment_y_offset
         ):
             raise FragmentSlicesNotContiguous(
                 state["_picture_initial_fragment_offset"],
@@ -150,7 +149,9 @@ def initialize_fragment_state(state):
     state["c1_transform"] = initialize_wavelet_data(state, "C1")
     state["c2_transform"] = initialize_wavelet_data(state, "C2")
     state["fragment_slices_received"] = 0
-    state["_fragment_slices_remaining"] = state["slices_x"] * state["slices_y"]  ## Not in spec
+    ## Begin not in spec
+    state["_fragment_slices_remaining"] = state["slices_x"] * state["slices_y"]
+    ## End not in spec
     state["fragmented_picture_done"] = False
 
 
@@ -158,12 +159,20 @@ def initialize_fragment_state(state):
 def fragment_data(state):
     """(14.4)"""
     for s in range(0, state["fragment_slice_count"]):
-        state["slice_x"] = (state["fragment_y_offset"]*state["slices_x"] + state["fragment_x_offset"] + s)%state["slices_x"]
-        state["slice_y"] = (state["fragment_y_offset"]*state["slices_x"] + state["fragment_x_offset"] + s)//state["slices_x"]
+        state["slice_x"] = (
+            state["fragment_y_offset"] * state["slices_x"]
+            + state["fragment_x_offset"]
+            + s
+        ) % state["slices_x"]
+        state["slice_y"] = (
+            state["fragment_y_offset"] * state["slices_x"]
+            + state["fragment_x_offset"]
+            + s
+        ) // state["slices_x"]
         slice(state, state["slice_x"], state["slice_y"])
         state["fragment_slices_received"] += 1
         state["_fragment_slices_remaining"] -= 1  ## Not in spec
-        if state["fragment_slices_received"] == state["slices_x"]*state["slices_y"]:
+        if state["fragment_slices_received"] == state["slices_x"] * state["slices_y"]:
             state["fragmented_picture_done"] = True
             if using_dc_prediction(state):
                 if state["dwt_depth_ho"] == 0:

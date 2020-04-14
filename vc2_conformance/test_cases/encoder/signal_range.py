@@ -49,39 +49,42 @@ def signal_range(codec_features):
             codec_features["name"],
         )
         return
-    
+
     for component, analysis_test_pictures in [
         ("Y", analysis_luma_pictures),
         ("C1", analysis_color_diff_pictures),
         ("C2", analysis_color_diff_pictures),
     ]:
         # Generate an initially empty set of mid-grey pictures
-        one_gray_frame = list(mid_gray(
-            codec_features["video_parameters"],
-            codec_features["picture_coding_mode"],
-        ))
-        pictures = list(repeat_pictures(
-            one_gray_frame,
-            (
-                (len(analysis_test_pictures) + len(one_gray_frame) - 1)
-                // len(one_gray_frame)
-            ),
-        ))
-        
+        one_gray_frame = list(
+            mid_gray(
+                codec_features["video_parameters"],
+                codec_features["picture_coding_mode"],
+            )
+        )
+        pictures = list(
+            repeat_pictures(
+                one_gray_frame,
+                (
+                    (len(analysis_test_pictures) + len(one_gray_frame) - 1)
+                    // len(one_gray_frame)
+                ),
+            )
+        )
+
         # Fill-in the test patterns
         for test_picture, picture in zip(analysis_test_pictures, pictures):
             picture[component] = test_picture.picture.tolist()
-        
+
         # Extract the testpoints in JSON-serialisable form
         metadata = [
-            [tp._asdict() for tp in p.test_points]
-            for p in analysis_test_pictures
+            [tp._asdict() for tp in p.test_points] for p in analysis_test_pictures
         ]
-        
+
         out = EncoderTestSequence(
             pictures=pictures,
             video_parameters=codec_features["video_parameters"],
             picture_coding_mode=codec_features["picture_coding_mode"],
         )
-        
+
         yield TestCase(out, component, metadata=metadata)

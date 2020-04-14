@@ -4,9 +4,7 @@ Tests which verify that codecs correctly ignore padding data units (10.4.5).
 
 from copy import deepcopy
 
-from vc2_data_tables import (
-    ParseCodes,
-)
+from vc2_data_tables import ParseCodes
 
 from vc2_conformance.symbol_re import ImpossibleSequenceError
 
@@ -17,13 +15,9 @@ from vc2_conformance.test_cases import (
 
 from vc2_conformance.picture_generators import mid_gray, repeat_pictures
 
-from vc2_conformance.encoder import (
-    make_sequence,
-)
+from vc2_conformance.encoder import make_sequence
 
-from vc2_conformance.test_cases.decoder.common import (
-    make_dummy_end_of_sequence,
-)
+from vc2_conformance.test_cases.decoder.common import make_dummy_end_of_sequence
 
 
 def replace_padding_data(sequence, bytes):
@@ -37,7 +31,7 @@ def replace_padding_data(sequence, bytes):
     for data_unit in sequence["data_units"]:
         if data_unit["parse_info"]["parse_code"] == ParseCodes.padding_data:
             data_unit["padding"]["bytes"] = bytes
-    
+
     return sequence
 
 
@@ -80,26 +74,13 @@ def padding_data(codec_features):
         # Padding not allowed in the supplied video format so just skip this
         # test
         return
-    
+
     for description, data in [
-        (
-            "empty",
-            b"",
-        ),
-        (
-            "zero",
-            b"\x00"*32,
-        ),
-        (
-            "non_zero",
-            b"Ignore this padding data please!",
-        ),
-        (
-            "dummy_end_of_sequence",
-            make_dummy_end_of_sequence().ljust(32, b"\x00"),
-        ),
+        ("empty", b"",),
+        ("zero", b"\x00" * 32,),
+        ("non_zero", b"Ignore this padding data please!",),
+        ("dummy_end_of_sequence", make_dummy_end_of_sequence().ljust(32, b"\x00"),),
     ]:
         yield TestCase(
-            replace_padding_data(base_sequence, data),
-            description,
+            replace_padding_data(base_sequence, data), description,
         )

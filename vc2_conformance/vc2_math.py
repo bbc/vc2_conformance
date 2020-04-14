@@ -37,7 +37,7 @@ def intlog2(n):
     """
     (5.5.3) Implemented via pure integer, arbitrary-precision operations.
     """
-    return (n-1).bit_length()
+    return (n - 1).bit_length()
 
 
 @ref_pseudocode
@@ -61,4 +61,4 @@ def clip(a, b, t):
 def mean(S):
     """(5.5.3)"""
     n = len(S)
-    return (sum(S) + (n//2)) // n
+    return (sum(S) + (n // 2)) // n
