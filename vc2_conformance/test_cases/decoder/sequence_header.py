@@ -11,7 +11,7 @@ from vc2_conformance.test_cases import (
     decoder_test_case_generator,
 )
 
-from vc2_conformance.bitstream import SequenceHeader
+from vc2_conformance.symbol_re import ImpossibleSequenceError
 
 from vc2_conformance.video_parameters import set_source_defaults
 
@@ -35,7 +35,7 @@ def replace_sequence_header_options(
     :py:class:`~vc2_conformance.bitstream.SourceParameters` values of all
     :py:class:`~vc2_conformance.bitstream.SequenceHeader`\ s in a
     :py:class:`~vc2_conformance.bitstream.Sequence`.
-    
+
     A new sequence is returned and the old sequence left unmodified. Likewise
     the ``source_parameters`` argument will be copied into the new sequence and
     not referenced.
@@ -55,7 +55,7 @@ def source_parameters_encodings(codec_features):
     """
     This series of test cases contain examples of different ways the source
     parameters (11.4) may be encoded in a stream.
-    
+
     These test cases range from relying as much as possible on base video
     formats (11.3) to explicitly specifying every parameter using the various
     ``custom_*_flag`` options. In every example, the video parameters encoded
