@@ -28,6 +28,10 @@ def test_disabled_code():
         "a = b + c\n"
         "### with disabled_code()\n"
         "###     a += 1\n"
+        "### \n"
+        "###\n"
+        "    ### \n"
+        "    ###\n"
         "    ### a -= 1\n"
         "a += 1\n"
     )
@@ -37,6 +41,10 @@ def test_disabled_code():
         "a = b + c\n"
         "with disabled_code()\n"
         "    a += 1\n"
+        "\n"
+        "\n"
+        "    \n"
+        "    \n"
         "    a -= 1\n"
         "a += 1\n"
     )
@@ -44,6 +52,10 @@ def test_disabled_code():
         3: 4,
         4: 4,
         5: 4,
+        6: 3,
+        7: 4,
+        8: 3,
+        9: 4,
     }
 
 

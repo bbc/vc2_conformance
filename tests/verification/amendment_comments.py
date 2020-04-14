@@ -145,7 +145,7 @@ class UnclosedNotInSpecBlockError(Exception):
         )
 
 
-_RE_DISABLED_COMMENT = re.compile(r"^### ")
+_RE_DISABLED_COMMENT = re.compile(r"^###(| .*)$")
 _RE_LINE_NOT_IN_SPEC_COMMENT = re.compile(r"^##\s*Not\s+in\s+spec", re.IGNORECASE)
 _RE_BEGIN_NOT_IN_SPEC_COMMENT = re.compile(r"^##\s*Begin\s+not\s+in\s+spec", re.IGNORECASE)
 _RE_END_NOT_IN_SPEC_COMMENT = re.compile(r"^##\s*End\s+not\s+in\s+spec", re.IGNORECASE)
@@ -185,7 +185,7 @@ def undo_amendments(source):
     indent_corrections = {}  # {row: offset, ...}
     
     # Disabled lines, to be uncommented.
-    disabled_lines = []  # [(row, col), ...]
+    disabled_lines = []  # [(row, col, prefix_length), ...]
     
     # Not-in-spec blocks ranges (begin/end comment lines given) to be 'passed
     # out'
@@ -199,7 +199,7 @@ def undo_amendments(source):
             comment_only_line = source_lines[srow-1][:scol].strip() == ""
             
             if _RE_DISABLED_COMMENT.match(string) and comment_only_line:
-                disabled_lines.append((srow, scol))
+                disabled_lines.append((srow, scol, min(len(string), 4)))
             elif _RE_BEGIN_NOT_IN_SPEC_COMMENT.match(string) and comment_only_line:
                 not_in_spec_stack.append(srow)
             elif _RE_END_NOT_IN_SPEC_COMMENT.match(string) and comment_only_line:
@@ -216,10 +216,10 @@ def undo_amendments(source):
         raise UnclosedNotInSpecBlockError(not_in_spec_stack[-1])
     
     # Uncomment triple-hash disabled lines
-    for row, col in disabled_lines:
+    for row, col, prefix_length in disabled_lines:
         line = source_lines[row - 1]
-        source_lines[row - 1] = line[:col] + line[col+4:]
-        indent_corrections[row] = 4
+        source_lines[row - 1] = line[:col] + line[col+prefix_length:]
+        indent_corrections[row] = prefix_length
     
     # Comment-out "Not in spec" lines
     for srow, erow in not_in_spec_blocks:
