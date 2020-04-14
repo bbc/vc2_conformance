@@ -4,7 +4,6 @@ import pytest
 
 from mock import Mock
 
-import sys
 from io import BytesIO
 from shlex import split
 
@@ -84,7 +83,7 @@ class TestIsInternalError(object):
         # considered external
         try:
             raise Exception()
-        except:
+        except:  # noqa: E722
             exc_type, exc_value, exc_tb = sys.exc_info()
 
         assert is_internal_error(exc_tb) is False
@@ -93,7 +92,7 @@ class TestIsInternalError(object):
         # Errors occuring within the script are (obviously) internal
         try:
             relative_int("not an int")
-        except:
+        except:  # noqa: 722
             exc_type, exc_value, exc_tb = sys.exc_info()
 
         assert is_internal_error(exc_tb) is True
@@ -107,7 +106,7 @@ class TestIsInternalError(object):
 
         try:
             _call(fail)
-        except:
+        except:  # noqa: 722
             exc_type, exc_value, exc_tb = sys.exc_info()
 
         assert is_internal_error(exc_tb) is True
@@ -182,7 +181,7 @@ class TestMostRecentPseudocodeFunction(object):
         try:
             # Should crash due to missing 'major_version' in state
             bitstream.transform_parameters(Mock(), State())
-        except:
+        except:  # noqa: 722
             exc_type, exc_value, exc_tb = sys.exc_info()
         assert (
             most_recent_pseudocode_function(exc_tb) == "transform_parameters (12.4.1)"
@@ -192,7 +191,7 @@ class TestMostRecentPseudocodeFunction(object):
         try:
             # Should crash due to invalid base video format index
             video_parameters.set_source_defaults(-1)
-        except:
+        except:  # noqa: 722
             exc_type, exc_value, exc_tb = sys.exc_info()
         assert most_recent_pseudocode_function(exc_tb) == "set_source_defaults (11.4.2)"
 
@@ -858,7 +857,7 @@ class TestParseArgs(object):
             ),
         ],
     )
-    def test_from_and_to_offset(self, capsys, args, message_pattern):
+    def test_invalid_arguments(self, capsys, args, message_pattern):
         with pytest.raises(SystemExit):
             parse_args(split(args))
         out, err = capsys.readouterr()
