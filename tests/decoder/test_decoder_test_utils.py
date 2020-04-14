@@ -1,5 +1,3 @@
-import pytest
-
 from decoder_test_utils import populate_parse_offsets, serialise_to_bytes
 
 from vc2_conformance import bitstream
@@ -24,7 +22,7 @@ class TestPopulateParseOffsets(object):
         assert seq["data_units"][0]["parse_info"]["next_parse_offset"] == 0
         assert seq["data_units"][0]["parse_info"]["previous_parse_offset"] == 0
 
-    def test_empty_sequence(self):
+    def test_non_empty_sequence(self):
         sh = bitstream.SequenceHeader()
 
         seq = bitstream.Sequence(
