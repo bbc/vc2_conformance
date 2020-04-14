@@ -1,5 +1,3 @@
-import pytest
-
 from vc2_conformance.quantization import (
     forward_quant,
     inverse_quant,

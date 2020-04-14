@@ -1,6 +1,13 @@
 import pytest
 
-from vc2_conformance._py2x_compat import *
+from vc2_conformance._py2x_compat import (
+    zip_longest,
+    get_terminal_size,
+    wraps,
+    unwrap,
+    zip,
+    makedirs,
+)
 
 import os
 

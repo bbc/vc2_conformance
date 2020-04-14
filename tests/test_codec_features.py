@@ -248,7 +248,7 @@ class TestReadCodecFeaturesCSV(object):
                         video_parameters=VideoParameters(
                             frame_width=8,
                             frame_height=4,
-                            color_diff_format_index=ColorDifferenceSamplingFormats.color_4_4_4,
+                            color_diff_format_index=ColorDifferenceSamplingFormats.color_4_4_4,  # noqa: E501
                             source_sampling=SourceSamplingModes.progressive,
                             top_field_first=True,
                             frame_rate_numer=1,
@@ -296,7 +296,7 @@ class TestReadCodecFeaturesCSV(object):
                     "major_version,             3,                  3",
                     "minor_version,             0,                  0",
                     "base_video_format,         hd1080p_50,         hd1080p_50",
-                    "picture_coding_mode,       pictures_are_frames,pictures_are_frames",
+                    "picture_coding_mode,       pictures_are_frames,pictures_are_frames",  # noqa: E501
                     "frame_width,               default,            default",
                     "frame_height,              default,            default",
                     "color_diff_format_index,   default,            default",
