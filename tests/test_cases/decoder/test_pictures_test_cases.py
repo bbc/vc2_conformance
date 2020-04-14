@@ -2,10 +2,6 @@ import pytest
 
 from bitarray import bitarray
 
-import os
-
-import sys
-
 from copy import deepcopy
 
 from io import BytesIO
@@ -767,7 +763,7 @@ class TestGenerateDanglingTransformValues(object):
                     ]
                 ),
             ),
-            (3, 2, 1, set(["stop_and_sign_dangling", "sign_dangling",])),
+            (3, 2, 1, set(["stop_and_sign_dangling", "sign_dangling"])),
             (3, 1, 1, set(["sign_dangling"])),
             # Special oddball case: single value with 4 bits (arguably could be
             # fulfilled for the stop+sign dangling case by having the overflowing
@@ -775,7 +771,7 @@ class TestGenerateDanglingTransformValues(object):
             # implement...)
             (4, 1, 1, set([])),
             # Larger values may not fit into smaller arrays
-            (8, 2, 2, set(["zero_dangling", "stop_and_sign_dangling",])),
+            (8, 2, 2, set(["zero_dangling", "stop_and_sign_dangling"])),
         ],
     )
     def test_degenerate_cases(self, block_bits, num_values, magnitude, exp_cases):
@@ -914,7 +910,7 @@ class TestCutOffValueAtEndOfHQSlice(object):
 
         self.sanity_check(2, hq_slice)
 
-    def test_min_length(self):
+    def test_magnitude(self):
         hq_slice = HQSlice(
             qindex=0,
             slice_y_length=1,
@@ -971,7 +967,6 @@ class TestCutOffValueAtEndOfLDSlice(object):
     @pytest.mark.parametrize("component", ["Y", "C"])
     @pytest.mark.parametrize("dangle_type", DanglingTransformValueType)
     def test_component_selection(self, component, dangle_type):
-        slice_size_scaler = 2
         ld_slice = LDSlice(
             qindex=0,
             slice_y_length=16,
@@ -1254,11 +1249,9 @@ class TestDanglingBoundedBlockData(object):
         return pictures
 
     @pytest.mark.parametrize(
-        "wavelet_index", [WaveletFilters.haar_no_shift, WaveletFilters.haar_with_shift,]
+        "wavelet_index", [WaveletFilters.haar_no_shift, WaveletFilters.haar_with_shift]
     )
-    @pytest.mark.parametrize(
-        "dwt_depth,dwt_depth_ho", [(0, 0), (1, 0), (0, 1), (1, 1),]
-    )
+    @pytest.mark.parametrize("dwt_depth,dwt_depth_ho", [(0, 0), (1, 0), (0, 1), (1, 1)])
     def test_dangling_value_matters(self, wavelet_index, dwt_depth, dwt_depth_ho):
         # Here we chop off the dangling values and check that this actually
         # makes a difference in the final decoded picture. (If it didn't, you'd
