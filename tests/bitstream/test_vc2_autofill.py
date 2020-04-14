@@ -11,7 +11,6 @@ from vc2_conformance.state import State
 from vc2_conformance.bitstream import vc2
 
 from vc2_conformance.bitstream import (
-    vc2_default_values,
     vc2_default_values_with_auto,
     AUTO,
     autofill_picture_number,
@@ -479,7 +478,7 @@ class TestAutofillParseOffsets(object):
             next_parse_offsets_to_autofill,
             previous_parse_offsets_to_autofill,
         )
-        assert w.tell() == w.tell()
+        assert w.tell() == offset_before
 
         f.seek(0)
         r = BitstreamReader(f)
