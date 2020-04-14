@@ -66,14 +66,7 @@ The following exception custom exception types are defined:
 
 import re
 
-from tokenize import COMMENT
-
-try:
-    # Python 2.x
-    from tokenize import generate_tokens as tokenize
-except ImportError:
-    # Python 3.x
-    from tokenize import tokens
+from tokenize import COMMENT, generate_tokens
 
 from functools import partial
 
@@ -192,7 +185,7 @@ def undo_amendments(source):
     # Find the amendment comments in the source
     not_in_spec_stack = []  # [srow, ...]
     readline = partial(next, iter(source_lines))
-    for type, string, (srow, scol), (erow, ecol), lineno in tokenize(readline):
+    for type, string, (srow, scol), (erow, ecol), lineno in generate_tokens(readline):
         if type == COMMENT:
             comment_only_line = source_lines[srow - 1][:scol].strip() == ""
 
