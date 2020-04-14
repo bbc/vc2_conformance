@@ -98,7 +98,7 @@ class TestParseIntEnum(object):
             parse_int_enum(Profiles, string)
 
 
-class TestParseIntEnum(object):
+class TestParseIntAtLeast(object):
     @pytest.mark.parametrize("string,exp", [("100", 100), ("123", 123)])
     def test_valid(self, string, exp):
         assert parse_int_at_least(100, string) == exp
