@@ -3,7 +3,6 @@ import pytest
 import numpy as np
 
 import os
-import sys
 
 from io import BytesIO
 
@@ -35,19 +34,14 @@ from vc2_conformance.video_parameters import VideoParameters
 
 from vc2_conformance.bitstream import (
     BitstreamWriter,
-    BitstreamReader,
     Serialiser,
-    Deserialiser,
     vc2_default_values,
-    parse_sequence,
     quant_matrix,
     transform_data,
     QuantMatrix,
     HQSlice,
     hq_slice,
     LDSlice,
-    ld_slice,
-    TransformData,
     ExtendedTransformParameters,
     DataUnit,
     ParseInfo,
@@ -1407,7 +1401,7 @@ class TestMakeFragmentParseDataUnits(object):
 )
 def test_make_picture_data_units(fragment_slice_count, exp_data_units, lovell):
     picture, video_parameters, picture_coding_mode = lovell
-    return CodecFeatures(
+    codec_features = CodecFeatures(
         name="basic",
         level=Levels.unconstrained,
         profile=Profiles.high_quality,
