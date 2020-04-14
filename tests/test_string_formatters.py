@@ -2,7 +2,19 @@ import pytest
 
 from bitarray import bitarray
 
-from vc2_conformance._string_formatters import *
+from vc2_conformance._string_formatters import (
+    Number,
+    Hex,
+    Dec,
+    Oct,
+    Bin,
+    Bool,
+    Bits,
+    Bytes,
+    Object,
+    List,
+    MultilineList,
+)
 
 
 @pytest.mark.parametrize(
@@ -50,7 +62,7 @@ def test_hex(formatter, number, expectation):
         (Dec(prefix="0d"), 1234, "0d1234"),
     ],
 )
-def test_hex(formatter, number, expectation):
+def test_dec(formatter, number, expectation):
     assert formatter(number) == expectation
 
 
@@ -63,7 +75,7 @@ def test_hex(formatter, number, expectation):
         (Oct(prefix=""), 0o1234, "1234"),
     ],
 )
-def test_bin(formatter, number, expectation):
+def test_oct(formatter, number, expectation):
     assert formatter(number) == expectation
 
 
@@ -91,7 +103,7 @@ def test_bin(formatter, number, expectation):
         (None, "False (None)"),
     ],
 )
-def test_bits(value, expectation):
+def test_bool(value, expectation):
     assert Bool()(value) == expectation
 
 
