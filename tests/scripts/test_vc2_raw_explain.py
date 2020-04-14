@@ -4,8 +4,6 @@ import os
 
 from fractions import Fraction
 
-from itertools import chain
-
 import subprocess
 
 import shlex
@@ -384,6 +382,10 @@ def assert_plausibly_linear_ramps_image(frame, transfer_function_index):
     assert np.all(np.isclose(ramps[:, 0, :], 0.0, atol=atol))
 
     # Right sides of curves should be roughly the right color
+    assert np.isclose(ramp_w[-1, 0], 1.0, atol=atol)
+    assert np.isclose(ramp_w[-1, 1], 1.0, atol=atol)
+    assert np.isclose(ramp_w[-1, 2], 1.0, atol=atol)
+
     assert np.isclose(ramp_r[-1, 0], 1.0, atol=atol)
     assert np.isclose(ramp_r[-1, 1], 0.0, atol=atol)
     assert np.isclose(ramp_r[-1, 2], 0.0, atol=atol)
