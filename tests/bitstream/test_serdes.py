@@ -2,10 +2,6 @@ import pytest
 
 from mock import Mock
 
-import re
-
-import sys
-
 from io import BytesIO
 
 from bitarray import bitarray
@@ -164,7 +160,7 @@ class TestSerDes(object):
         assert serdes._get_context_value("populated_list") == 1
         assert serdes._get_context_value("populated_list") == 2
         assert serdes._get_context_value("populated_list") == 3
-        assert serdes._cur_context_indices["populated_list"] is 3
+        assert serdes._cur_context_indices["populated_list"] == 3
 
         # Should fail to get values which have already been accessed
         with pytest.raises(exceptions.ReusedTargetError, match=r"dict\['non_list'\]"):
@@ -281,15 +277,6 @@ class TestSerDes(object):
             assert serdes.io.bits_remaining == 123
 
         serdes.bitarray.assert_called_with("foo", 123)
-
-    def test_declare_list(self):
-        serdes = SerDes(None)
-
-        serdes.declare_list("foo")
-
-        # Effect has been had
-        assert serdes.cur_context["foo"] == []
-        assert serdes._cur_context_indices["foo"] == 0
 
     def test_subcontext_non_list(self):
         serdes = SerDes(None)
