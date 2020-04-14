@@ -20,9 +20,6 @@ from vc2_conformance.scripts.vc2_test_case_generator import (
     main,
 )
 
-# Add test root directory to path for sample_codec_features test utility module
-sys.path.append(os.path.join(os.path.dirname(__file__), "..",))
-
 from sample_codec_features import MINIMAL_CODEC_FEATURES
 from smaller_real_pictures import alternative_real_pictures
 

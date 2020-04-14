@@ -61,8 +61,6 @@ from vc2_conformance.encoder.sequence_header import (
     make_sequence_header,
 )
 
-# Add test root directory to path for sample_codec_features test utility module
-sys.path.append(os.path.join(os.path.dirname(__file__), "..",))
 from sample_codec_features import MINIMAL_CODEC_FEATURES
 
 

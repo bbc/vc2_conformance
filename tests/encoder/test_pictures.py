@@ -23,9 +23,6 @@ from vc2_data_tables import (
     ParseCodes,
 )
 
-# Add parent directory to path for sample_codec_features test utility module
-sys.path.append(os.path.join(os.path.dirname(__file__), "..",))
-
 from sample_codec_features import MINIMAL_CODEC_FEATURES
 
 from vc2_conformance.arrays import width, height

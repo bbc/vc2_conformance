@@ -16,9 +16,6 @@ from vc2_conformance.file_format import compute_dimensions_and_depths
 
 from vc2_data_tables import PictureCodingModes
 
-# Add test root directory to path for sample_codec_features test utility module
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..",))
-
 from sample_codec_features import MINIMAL_CODEC_FEATURES
 from smaller_real_pictures import alternative_real_pictures
 

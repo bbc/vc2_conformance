@@ -29,9 +29,6 @@ from vc2_conformance.decoder import (
 
 from vc2_conformance.test_cases.decoder.signal_range import signal_range
 
-# Add test root directory to path for sample_codec_features test utility module
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..",))
-
 from sample_codec_features import MINIMAL_CODEC_FEATURES
 
 

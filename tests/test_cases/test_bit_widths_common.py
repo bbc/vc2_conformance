@@ -15,9 +15,6 @@ from vc2_data_tables import (
 
 from vc2_bit_widths.bundle import bundle_index
 
-# Add test root directory to path for sample_codec_features test utility module
-sys.path.append(os.path.join(os.path.dirname(__file__), "..",))
-
 from sample_codec_features import MINIMAL_CODEC_FEATURES
 
 from vc2_conformance.test_cases.bit_widths_common import (

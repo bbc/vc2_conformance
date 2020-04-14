@@ -29,9 +29,6 @@ from vc2_conformance.level_constraints import (
     LevelSequenceRestrictions,
 )
 
-# Add parent directory to path for sample_codec_features test utility module
-sys.path.append(os.path.join(os.path.dirname(__file__), "..",))
-
 from sample_codec_features import MINIMAL_CODEC_FEATURES
 
 from vc2_conformance.state import State

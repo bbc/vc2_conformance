@@ -27,9 +27,6 @@ from vc2_conformance.decoder import (
 
 from vc2_conformance.test_cases.decoder.real_pictures import real_pictures
 
-# Add test root directory to path for sample_codec_features test utility module
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..",))
-
 from sample_codec_features import MINIMAL_CODEC_FEATURES
 from smaller_real_pictures import alternative_real_pictures
 
