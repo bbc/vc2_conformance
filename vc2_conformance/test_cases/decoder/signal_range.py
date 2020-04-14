@@ -20,6 +20,7 @@ from vc2_conformance.picture_generators import (
 
 from vc2_conformance.test_cases.bit_widths_common import (
     get_test_pictures,
+    MissingStaticAnalysisError,
 )
 
 from vc2_conformance.test_cases import (
@@ -47,12 +48,23 @@ def signal_range(codec_features):
     points checked by that picture. See
     :py:class:`vc2_bit_widths.helpers.TestPoint` for details.
     """
-    (
-        analysis_luma_pictures,
-        synthesis_luma_pictures,
-        analysis_color_diff_pictures,
-        synthesis_color_diff_pictures,
-    ) = get_test_pictures(codec_features)
+    try:
+        (
+            analysis_luma_pictures,
+            synthesis_luma_pictures,
+            analysis_color_diff_pictures,
+            synthesis_color_diff_pictures,
+        ) = get_test_pictures(codec_features)
+    except MissingStaticAnalysisError:
+        logging.warning(
+            (
+                "No static analysis available for the wavelet "
+                "used by codec '%s'. Signal range test cases cannot "
+                "be generated."
+            ),
+            codec_features["name"],
+        )
+        return
     
     dimensions_and_depths = compute_dimensions_and_depths(
         codec_features["video_parameters"],

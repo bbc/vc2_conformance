@@ -8,6 +8,8 @@ from copy import deepcopy
 
 import numpy as np
 
+import logging
+
 from vc2_data_tables import (
     WaveletFilters,
     PictureCodingModes,
@@ -19,10 +21,6 @@ from vc2_conformance.state import State
 from vc2_conformance.picture_encoding import picture_encode
 
 from vc2_conformance.video_parameters import set_coding_parameters
-
-from vc2_conformance.test_cases.bit_widths_common import (
-    MissingStaticAnalysisError,
-)
 
 from vc2_conformance.test_cases.encoder.signal_range import (
     signal_range,
@@ -44,11 +42,13 @@ class TestSignalRange(object):
     def codec_features(self):
         return deepcopy(MINIMAL_CODEC_FEATURES)
     
-    def test_unsupported_codec(self, codec_features):
+    def test_unsupported_codec(self, caplog, codec_features):
         codec_features["dwt_depth"] = 99
         
-        with pytest.raises(MissingStaticAnalysisError):
-            list(signal_range(codec_features))
+        caplog.set_level(logging.WARNING)
+        assert len(list(signal_range(codec_features))) == 0
+        assert "WARNING" in caplog.text
+        assert "No static analysis available" in caplog.text
     
     @pytest.mark.parametrize("picture_coding_mode", PictureCodingModes)
     @pytest.mark.parametrize("color_diff_format_index", [
