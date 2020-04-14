@@ -4,8 +4,6 @@ import os
 
 import re
 
-import sys
-
 from functools import partial
 
 from vc2_conformance._py2x_compat import makedirs
@@ -267,7 +265,7 @@ def test_force(
 def test_completeness(
     tmpdir, extra_args, exp_encoder, exp_decoder, expected_files,
 ):
-    with alternative_real_pictures() as p:
+    with alternative_real_pictures():
         assert (
             main(
                 [CODEC_FEATURES_CSV, "--output", str(tmpdir), "--codecs", "minimal"]

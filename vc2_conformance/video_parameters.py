@@ -25,7 +25,19 @@ from vc2_conformance.metadata import ref_value, ref_pseudocode
 
 from vc2_conformance.fixeddict import fixeddict, Entry
 
-from vc2_data_tables import *
+from vc2_data_tables import (
+    PictureCodingModes,
+    ColorDifferenceSamplingFormats,
+    SourceSamplingModes,
+    PresetColorPrimaries,
+    PresetColorMatrices,
+    PresetTransferFunctions,
+    BASE_VIDEO_FORMAT_PARAMETERS,
+    PRESET_FRAME_RATES,
+    PRESET_PIXEL_ASPECT_RATIOS,
+    PRESET_SIGNAL_RANGES,
+    PRESET_COLOR_SPECS,
+)
 
 from vc2_conformance.vc2_math import intlog2
 

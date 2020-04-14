@@ -20,7 +20,6 @@ from verification import reference_pseudocode
 
 
 # Force loading of all submodules (and thus registration of metadata)
-import vc2_conformance
 from vc2_conformance.metadata import referenced_values
 
 # The directory the test scripts reside in

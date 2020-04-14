@@ -1,6 +1,6 @@
 import pytest
 
-from verification.node_comparator import NodeComparator, NodesDiffer
+from verification.node_comparator import NodeComparator
 
 import ast
 

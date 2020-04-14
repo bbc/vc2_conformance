@@ -131,7 +131,7 @@ expressions and very short sequences (i.e. likely to be tens of symbols long),
 the NFA is not further converted into a Deterministic Finite-state Automaton
 (DFA) nor minimised. Instead, :py:class:`Matcher` uses the NFA-form of the
 regular expression to match sequences directly.
-"""
+"""  # noqa: E501
 
 
 import re

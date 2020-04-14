@@ -189,7 +189,7 @@ class TestSliceParameters(object):
                 )
             )
         )
-        with pytest.raises(decoder.SliceSizeScalerIsZero) as exc_info:
+        with pytest.raises(decoder.SliceSizeScalerIsZero):
             decoder.slice_parameters(state)
 
     @pytest.mark.parametrize(

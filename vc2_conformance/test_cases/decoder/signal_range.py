@@ -5,8 +5,6 @@ arithmetic.
 
 import logging
 
-from vc2_conformance.file_format import compute_dimensions_and_depths
-
 from vc2_conformance.encoder import make_sequence
 
 from vc2_conformance.picture_generators import (
@@ -32,10 +30,10 @@ def signal_range(codec_features):
     """
     Verify that a decoder has sufficient numerical range to handle extreme
     input signals.
-    
+
     Decoder implementers should ensure that no integer clamping or overflows
     occur while processing these test pictures.
-    
+
     The metadata provided with each test case gives, for each picture, the test
     points checked by that picture. See
     :py:class:`vc2_bit_widths.helpers.TestPoint` for details.
@@ -57,10 +55,6 @@ def signal_range(codec_features):
             codec_features["name"],
         )
         return
-
-    dimensions_and_depths = compute_dimensions_and_depths(
-        codec_features["video_parameters"], codec_features["picture_coding_mode"],
-    )
 
     for component, analysis_test_pictures, synthesis_test_pictures in [
         ("Y", analysis_luma_pictures, synthesis_luma_pictures),

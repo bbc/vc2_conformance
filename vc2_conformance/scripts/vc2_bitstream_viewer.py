@@ -113,7 +113,7 @@ By default, error messages show only limited information about the failure.
 Adding the ``--verbose``/``-v`` option will cause additional details (such as
 the next few bits in the bitstream and details of what was being parsed at the
 time.
-"""
+"""  # noqa: E501
 
 import os
 import sys
@@ -734,7 +734,7 @@ class BitstreamViewer(object):
             error_message = "reached the end of the file while parsing {}".format(
                 most_recent_pseudocode_function(sys.exc_info()[2]),
             )
-        except:
+        except Exception:
             # Other exceptions may be raised during parsing (e.g. due to
             # invalid bitstream values), attempt to display these sensibly.
             exc_type, exc_value, exc_tb = sys.exc_info()

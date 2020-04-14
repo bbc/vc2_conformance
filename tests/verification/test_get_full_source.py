@@ -1,5 +1,3 @@
-import pytest
-
 import sys
 import inspect
 
@@ -14,7 +12,7 @@ def f():
 
     # Comment afterwards
 # Comment not in function
-pass  # First non-function line
+pass  # noqa: E305 First non-function line
 
 # fmt: on
 
@@ -26,7 +24,7 @@ def test_get_full_source():
     filename, lineno, full_source_lines = get_full_source(f)
 
     assert filename == _test_script_filename
-    assert lineno == 11
+    assert lineno == 9
     assert full_source_lines == [
         "def f():\n",
         "    return \\\n",

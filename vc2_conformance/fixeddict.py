@@ -94,10 +94,6 @@ import sys
 
 from collections import OrderedDict
 
-from itertools import chain
-
-from functools import partial
-
 from vc2_conformance._string_utils import indent
 
 

@@ -1,5 +1,3 @@
-import pytest
-
 from vc2_data_tables import ParseCodes
 
 from io import BytesIO

@@ -28,7 +28,6 @@ from vc2_conformance.decoder.io import (
 )
 
 from vc2_data_tables import (
-    PictureCodingModes,
     WaveletFilters,
     QUANTISATION_MATRICES,
 )

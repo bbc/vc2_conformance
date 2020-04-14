@@ -1046,7 +1046,7 @@ def test_sequence_contains_incomplete_fragmented_picture():
         To view the offending part of the bitstream:
 
             {cmd} {file} --from-offset 81 --to_offset {offset} --show parse_info --show fragment_parse --hide slice
-    """
+        """
     )
 
 

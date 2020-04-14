@@ -21,15 +21,21 @@ be used.
 
 """
 
-from collections import defaultdict
-
 from vc2_conformance.metadata import ref_pseudocode
 
 from vc2_conformance.bitstream.serdes import context_type
 
-from vc2_data_tables import *
-
-from vc2_conformance.state import State
+from vc2_data_tables import (
+    BaseVideoFormats,
+    PresetFrameRates,
+    PresetPixelAspectRatios,
+    PresetSignalRanges,
+    PresetColorSpecs,
+    PresetColorPrimaries,
+    PresetColorMatrices,
+    PresetTransferFunctions,
+    PARSE_INFO_HEADER_BYTES,
+)
 
 from vc2_conformance.video_parameters import (
     set_source_defaults,
@@ -59,8 +65,6 @@ from vc2_conformance.parse_code_functions import (
 from vc2_conformance.vc2_math import intlog2
 
 from vc2_conformance.slice_sizes import (
-    subband_width,
-    subband_height,
     slice_bytes,
     slice_left,
     slice_right,
@@ -68,7 +72,40 @@ from vc2_conformance.slice_sizes import (
     slice_bottom,
 )
 
-from vc2_conformance.bitstream.vc2_fixeddicts import *
+from vc2_conformance.bitstream.vc2_fixeddicts import (
+    ParseInfo,
+    SequenceHeader,
+    ParseParameters,
+    SourceParameters,
+    FrameSize,
+    ColorDiffSamplingFormat,
+    ScanFormat,
+    FrameRate,
+    PixelAspectRatio,
+    CleanArea,
+    SignalRange,
+    ColorSpec,
+    ColorPrimaries,
+    ColorMatrix,
+    TransferFunction,
+    AuxiliaryData,
+    Padding,
+    TransformParameters,
+    ExtendedTransformParameters,
+    SliceParameters,
+    QuantMatrix,
+    PictureHeader,
+    TransformData,
+    WaveletTransform,
+    PictureParse,
+    LDSlice,
+    HQSlice,
+    FragmentHeader,
+    FragmentData,
+    FragmentParse,
+    DataUnit,
+    Sequence,
+)
 
 __all__ = [
     "parse_sequence",
@@ -662,7 +699,7 @@ def ld_slice(serdes, state, sx, sy):
     """(13.5.3.1)"""
     slice_bits_left = 8 * slice_bytes(state, sx, sy)
 
-    qindex = serdes.nbits("qindex", 7)
+    qindex = serdes.nbits("qindex", 7)  # noqa: F841
     slice_bits_left -= 7
 
     # Not required for bitstream unpacking
@@ -731,7 +768,7 @@ def hq_slice(serdes, state, sx, sy):
     """(13.5.4)"""
     serdes.bytes("prefix_bytes", state["slice_prefix_bytes"])
 
-    qindex = serdes.uint_lit("qindex", 1)
+    qindex = serdes.uint_lit("qindex", 1)  # noqa: F841
 
     # Not required for bitstream unpacking
     ### slice_quantizers(state, qindex)
@@ -788,7 +825,7 @@ def slice_band(serdes, state, transform, level, orient, sx, sy):
     ###     for x in range(slice_left(state, sx,comp,level), slice_right(state, sx,comp,level)):
     for y in range(y1, y2):  ## Not in spec
         for x in range(x1, x2):  ## Not in spec
-            val = serdes.sint(transform)
+            val = serdes.sint(transform)  # noqa: F841
 
             # Not required for bitstream unpacking
             ### qi = state["quantizer"][level][orient]
@@ -818,10 +855,10 @@ def color_diff_slice_band(serdes, state, level, orient, sx, sy):
             # Not required for bitstream unpacking
             ### qi = state["quantizer"][level][orient]
 
-            val = serdes.sint("c_transform")
+            val = serdes.sint("c_transform")  # noqa: F841
             ### state["c1_transform"][level][orient][y][x] = inverse_quant(val, qi)
 
-            val = serdes.sint("c_transform")
+            val = serdes.sint("c_transform")  # noqa: F841
             ### state["c2_transform"][level][orient][y][x] = inverse_quant(val, qi)
 
     # Following line included to ensure the trailing comment above is

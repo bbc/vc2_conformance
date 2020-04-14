@@ -1,9 +1,5 @@
 import pytest
 
-import os
-
-import sys
-
 from io import BytesIO
 
 from collections import defaultdict
@@ -11,7 +7,6 @@ from collections import defaultdict
 from vc2_data_tables import (
     Profiles,
     Levels,
-    ParseCodes,
     BaseVideoFormats,
     PresetPixelAspectRatios,
     PRESET_PIXEL_ASPECT_RATIOS,
@@ -19,7 +14,6 @@ from vc2_data_tables import (
     PresetColorMatrices,
     PresetTransferFunctions,
     PresetColorSpecs,
-    ColorDifferenceSamplingFormats,
 )
 
 from vc2_conformance.bitstream import (
@@ -31,17 +25,15 @@ from vc2_conformance.bitstream import (
     ColorMatrix,
     TransferFunction,
     ColorSpec,
-    ColorPrimaries,
-    ColorMatrix,
-    TransferFunction,
 )
 
 from vc2_conformance.bitstream.vc2 import (
-    vc2_default_values,
     source_parameters,
     parse_parameters,
     sequence_header,
 )
+
+from vc2_conformance.bitstream.vc2_fixeddicts import vc2_default_values
 
 from vc2_conformance.state import State
 
@@ -394,7 +386,7 @@ class TestIterSourceParameterOptions(object):
         # {flag_name: set([bool, ...]), ...}
         observed_flag_settings = defaultdict(set)
 
-        for source_parameters in source_parameters_sets:
+        for src_parameters in source_parameters_sets:
             flag_settings = {}
 
             def find_flags(d):
@@ -406,7 +398,7 @@ class TestIterSourceParameterOptions(object):
                         else:
                             find_flags(value)
 
-            find_flags(source_parameters)
+            find_flags(src_parameters)
             for flag, setting in flag_settings.items():
                 observed_flag_settings[flag].add(setting)
 

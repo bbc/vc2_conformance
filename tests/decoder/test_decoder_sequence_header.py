@@ -2,7 +2,6 @@ import pytest
 
 from decoder_test_utils import serialise_to_bytes, bytes_to_state
 
-from vc2_conformance.state import reset_state
 from vc2_conformance import bitstream
 from vc2_conformance import decoder
 
@@ -71,7 +70,15 @@ class TestSequenceHeader(object):
         assert exc_info.value.picture_coding_mode == 2
 
     @pytest.mark.parametrize(
-        "frame_width,frame_height,exp_luma_width,exp_luma_height,exp_color_diff_width,exp_color_diff_height,exp_error",
+        (
+            "frame_width,"
+            "frame_height,"
+            "exp_luma_width,"
+            "exp_luma_height,"
+            "exp_color_diff_width,"
+            "exp_color_diff_height,"
+            "exp_error,"
+        ),
         [
             # Divides both dimensions exactly
             (1000, 1000, 1000, 500, 500, 250, False),
@@ -116,7 +123,7 @@ class TestSequenceHeader(object):
                         ),
                         color_diff_sampling_format=bitstream.ColorDiffSamplingFormat(
                             custom_color_diff_format_flag=True,
-                            color_diff_format_index=tables.ColorDifferenceSamplingFormats.color_4_2_0,
+                            color_diff_format_index=tables.ColorDifferenceSamplingFormats.color_4_2_0,  # noqa: E501
                         ),
                     ),
                 )

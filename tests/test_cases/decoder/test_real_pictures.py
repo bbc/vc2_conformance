@@ -2,10 +2,6 @@ import pytest
 
 import os
 
-import sys
-
-import logging
-
 import numpy as np
 
 from copy import deepcopy

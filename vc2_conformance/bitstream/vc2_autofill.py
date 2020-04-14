@@ -6,7 +6,7 @@ This module provides auto-fill routines for automatically computing certain
 values for the context dictionaries used by the
 :py:mod:`vc2_conformance.bitstream.vc2`
 :py:mod:`~vc2_conformance.bitstream.serdes` functions.
-"""
+"""  # noqa: E501
 
 from copy import deepcopy
 
@@ -222,8 +222,9 @@ def autofill_parse_offsets_finalize(
 
 def autofill_and_serialise_sequence(file, sequence):
     """
-    Given a :py:class:`~vc2_conformance.bitstream.vc2_fixeddicts.Sequence` dictionary describing a VC-2 sequence,
-    seriallise that into the supplied file.
+    Given a :py:class:`~vc2_conformance.bitstream.vc2_fixeddicts.Sequence`
+    dictionary describing a VC-2 sequence, seriallise that into the supplied
+    file.
 
     Parameters
     ==========

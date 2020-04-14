@@ -248,10 +248,10 @@ def dwt_pad_addition(state, pic, c):
     height = subband_height(state, top_level, c)
 
     # Copy-extend every row
-    for row in pic:
-        value = row[-1]
-        while len(row) < width:
-            row.append(value)
+    for pic_row in pic:
+        value = pic_row[-1]
+        while len(pic_row) < width:
+            pic_row.append(value)
 
     # Copy extend every column
     while len(pic) < height:

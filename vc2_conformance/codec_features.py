@@ -23,8 +23,6 @@ from string import ascii_uppercase
 
 from functools import partial
 
-from numbers import Number
-
 from collections import OrderedDict
 
 from vc2_conformance.video_parameters import set_source_defaults

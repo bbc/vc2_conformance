@@ -23,8 +23,6 @@ import signal
 
 from collections import OrderedDict
 
-from functools import partial
-
 from io import BytesIO
 
 from argparse import ArgumentParser, FileType

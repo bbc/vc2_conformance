@@ -1,12 +1,6 @@
 import pytest
 
-import os
-
-import sys
-
 import logging
-
-import numpy as np
 
 from copy import deepcopy
 
@@ -112,7 +106,7 @@ class TestSignalRange(object):
         test_cases = list(signal_range(codec_features))
 
         # Should provide test cases for all components
-        assert set(tc.subcase_name for tc in test_cases) == set(["Y", "C1", "C2",])
+        assert set(tc.subcase_name for tc in test_cases) == set(["Y", "C1", "C2"])
 
         # Without going to great lengths we can only really verify that the
         # test patterns designed to produce min/max responses in the output
@@ -162,4 +156,4 @@ class TestSignalRange(object):
         assert "qindex" in caplog.text
 
         # Should have provided test cases for all components
-        assert set(tc.subcase_name for tc in test_cases) == set(["Y", "C1", "C2",])
+        assert set(tc.subcase_name for tc in test_cases) == set(["Y", "C1", "C2"])

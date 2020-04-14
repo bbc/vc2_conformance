@@ -375,7 +375,7 @@ class TestParseSequence(object):
                             ),
                             color_diff_sampling_format=bitstream.ColorDiffSamplingFormat(
                                 custom_color_diff_format_flag=True,
-                                color_diff_format_index=tables.ColorDifferenceSamplingFormats.color_4_2_2,
+                                color_diff_format_index=tables.ColorDifferenceSamplingFormats.color_4_2_2,  # noqa: E501
                             ),
                             # Output values will be treated as 8-bit (and thus all
                             # decode to 128)

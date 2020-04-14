@@ -57,7 +57,6 @@ from vc2_data_tables import (
 )
 
 from vc2_conformance.color_conversion import (
-    XYZ_TO_LINEAR_RGB,
     LINEAR_RGB_TO_XYZ,
     to_xyz,
     from_xyz,

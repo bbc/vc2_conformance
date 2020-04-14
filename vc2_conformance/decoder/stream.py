@@ -5,8 +5,6 @@
 
 from vc2_conformance.metadata import ref_pseudocode
 
-from vc2_conformance.state import State
-
 from vc2_conformance.parse_code_functions import (
     is_seq_header,
     is_picture,
@@ -53,7 +51,6 @@ from vc2_conformance.decoder.assertions import (
 )
 
 from vc2_conformance.decoder.io import (
-    init_io,
     tell,
     byte_align,
     read_uint_lit,

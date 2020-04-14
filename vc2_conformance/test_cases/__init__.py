@@ -252,5 +252,5 @@ decoder_test_case_generator = (
 
 # Import test case containing submodules to ensure they become registered with
 # the above registries
-from vc2_conformance.test_cases.encoder import *
-from vc2_conformance.test_cases.decoder import *
+from vc2_conformance.test_cases.encoder import *  # noqa: E402
+from vc2_conformance.test_cases.decoder import *  # noqa: E402

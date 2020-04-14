@@ -24,7 +24,7 @@ def replace_padding_data(sequence, bytes):
     """
     Replace the bytes in all :py:class:`~vc2_conformance.bitstream.Padding`
     data units in a :py:class:`~vc2_conformance.bitstream.Sequence`.
-    
+
     A new sequence is returned and the old sequence left unmodified.
     """
     sequence = deepcopy(sequence)
@@ -40,17 +40,17 @@ def padding_data(codec_features):
     """
     This series of test cases verify that padding data units in a sequence are
     correctly ignored.
-    
+
     Sequences are generated in which every-other data unit is a padding data
     unit. These padding data units are filled with the following (in different
     test sequences):
-    
+
     * Empty
     * 32 bytes of zeros
     * 32 bytes of non-zero data
     * 32 bytes containing a the values for an end-of-sequence data unit (which
       must be ignored!).
-    
+
     Where padding data is not permitted by the VC-2 level chosen, no test cases
     will be generated.
     """

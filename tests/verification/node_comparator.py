@@ -24,7 +24,9 @@ at the start of functions::
                     body,
                 )
 
-            return self.generic_compare(n1, n2, filter_fields={"body": without_docstrings})
+            return self.generic_compare(
+                n1, n2, filter_fields={"body": without_docstrings}
+            )
 
 This can then be used like so::
 
@@ -398,7 +400,7 @@ class NodeListFieldsDiffer(NodesDiffer):
             n1_row_col,
             n2,
             n2_row_col,
-            "Node {!r} fields have a differing entry at index {} ({!r} and {!r})".format(
+            "Node {!r} fields have a differing entry at index {} ({!r} and {!r})".format(  # noqa: E501
                 self.field, self.index, self.v1[self.index], self.v2[self.index],
             ),
         )

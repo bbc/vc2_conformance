@@ -1,9 +1,3 @@
-import pytest
-
-import os
-
-import sys
-
 from copy import deepcopy
 
 from vc2_data_tables import (

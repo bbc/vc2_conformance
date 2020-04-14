@@ -895,8 +895,6 @@ class TestExampleImageMagickCommand(object):
         color_diff_format,
         tmpdir,
     ):
-        working_dir = str(tmpdir)
-
         # Make tall enough and wide enough that colour subsampling doesn't
         # completely destroy the image
         video_parameters["frame_width"] = 32

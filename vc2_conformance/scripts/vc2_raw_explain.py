@@ -7,6 +7,8 @@ format produced by the conformance software.
 
 """
 
+import sys
+
 from argparse import ArgumentParser
 
 from fractions import Fraction
@@ -14,16 +16,11 @@ from fractions import Fraction
 from vc2_data_tables import (
     SourceSamplingModes,
     PictureCodingModes,
-    PresetColorPrimaries,
     PRESET_COLOR_PRIMARIES,
     PresetColorMatrices,
     PRESET_COLOR_MATRICES,
-    PresetTransferFunctions,
     PRESET_TRANSFER_FUNCTIONS,
     ColorDifferenceSamplingFormats,
-    PRESET_SIGNAL_RANGES,
-    PresetSignalRanges,
-    SignalRangeParameters,
 )
 
 from vc2_conformance.file_format import (
@@ -441,7 +438,6 @@ def example_ffmpeg_command(picture_filename, video_parameters, picture_coding_mo
         )
 
     depth_bits = dimensions_and_depths["Y"].depth_bits
-    bytes_per_sample = dimensions_and_depths["Y"].bytes_per_sample
     if depth_bits == 8:
         # No extension required for 8-bit values
         pass

@@ -101,7 +101,6 @@ API
 import re
 import sys
 import inspect
-import functools
 
 from vc2_conformance._py2x_compat import unwrap
 
@@ -256,7 +255,7 @@ def ref_value(
     if document is None:
         document = default_document
 
-    if name is "auto":
+    if name == "auto":
         # First try the __name__ attribute
         name = getattr(value, "__name__", None)
 

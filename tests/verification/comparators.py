@@ -20,7 +20,7 @@ import ast
 
 import vc2_data_tables as tables
 
-from verification.node_comparator import NodeComparator, NodesDiffer
+from verification.node_comparator import NodeComparator
 
 from verification.ast_utils import name_to_str
 

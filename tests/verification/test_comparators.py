@@ -12,7 +12,10 @@ class TestIdentical(object):
 
         n1 = ast.parse("def func(arg1, args2): return 123")
         n2 = ast.parse(
-            "@ref_pseudocode('1.2.3')\ndef func(arg1, args2):\n  '''Docs'''\n  return 123"
+            "@ref_pseudocode('1.2.3')\n"
+            "def func(arg1, args2):\n"
+            "  '''Docs'''\n"
+            "  return 123"
         )
         n3 = ast.parse("def func(arg1, args2): return 321")
         n4 = ast.parse("def func(arg1, args2):\n  '''Doc'''\n  return 123")
@@ -67,7 +70,9 @@ class TestSerdesChangesOnly(object):
 
         n1 = ast.parse("def func(a, b): return a + b")
         n2 = ast.parse(
-            "@context_type(Sequence)\n@ref_pseudocode(deviations='serdes')\ndef func(a, b): return a + b"
+            "@context_type(Sequence)\n"
+            "@ref_pseudocode(deviations='serdes')\n"
+            "def func(a, b): return a + b"
         )
 
         assert c.compare(n1, n2) is True

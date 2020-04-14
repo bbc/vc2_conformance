@@ -70,6 +70,7 @@ Like :py:data:`pseudocode_function_to_fixeddicts` but each entry also
 recursively includes the fixeddict types of all contained entries.
 """
 
+
 # Populate pseudocode_function_to_fixeddicts_recursive
 def iter_fixeddict_types(fixeddict):
     yield fixeddict

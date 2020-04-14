@@ -20,8 +20,6 @@ from vc2_conformance._string_formatters import (
     MultilineList,
 )
 
-from vc2_conformance.state import State
-
 from vc2_data_tables import (
     PARSE_INFO_PREFIX,
     ParseCodes,

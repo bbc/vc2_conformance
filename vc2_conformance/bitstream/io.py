@@ -18,11 +18,6 @@ from vc2_conformance._string_formatters import Bytes
 
 from vc2_conformance.bitstream.exceptions import OutOfRangeError
 
-from vc2_conformance.bitstream.exp_golomb import (
-    exp_golomb_length,
-    signed_exp_golomb_length,
-)
-
 
 __all__ = [
     "to_bit_offset",

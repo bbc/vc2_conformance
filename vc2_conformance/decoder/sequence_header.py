@@ -5,14 +5,11 @@
 
 from vc2_conformance.metadata import ref_pseudocode
 
-from vc2_conformance.vc2_math import intlog2
-
 from vc2_data_tables import (
     BaseVideoFormats,
     PictureCodingModes,
     Profiles,
     Levels,
-    LEVELS,
     ColorDifferenceSamplingFormats,
     SourceSamplingModes,
     PresetFrameRates,
@@ -193,8 +190,6 @@ def sequence_header(state):
 @ref_pseudocode
 def parse_parameters(state):
     """(11.2.1)"""
-    this_parse_parameters_offset = tell(state)  ## Not in spec
-
     state["major_version"] = read_uint(state)
     state["minor_version"] = read_uint(state)
 

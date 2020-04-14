@@ -2,7 +2,12 @@ import pytest
 
 import tokenize
 
-from verification.amendment_comments import *
+from verification.amendment_comments import (
+    undo_amendments,
+    BadAmendmentCommentError,
+    UnmatchedNotInSpecBlockError,
+    UnclosedNotInSpecBlockError,
+)
 
 
 def test_empty():

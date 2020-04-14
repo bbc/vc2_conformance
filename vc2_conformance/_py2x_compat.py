@@ -62,7 +62,9 @@ except ImportError:
 
     def unwrap(func, stop=None):
         if stop is None:
-            stop = lambda f: False
+
+            def stop(f):
+                return False
 
         while hasattr(func, "__wrapped__") and not stop(func):
             func = func.__wrapped__

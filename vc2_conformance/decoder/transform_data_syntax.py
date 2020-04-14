@@ -46,11 +46,7 @@ from vc2_conformance.decoder.io import (
     flush_inputb,
 )
 
-from vc2_conformance.quantization import (
-    inverse_quant,
-    quant_factor,
-    quant_offset,
-)
+from vc2_conformance.quantization import inverse_quant
 
 __all__ = [
     "initialize_wavelet_data",

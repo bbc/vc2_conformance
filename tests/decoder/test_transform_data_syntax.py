@@ -1,7 +1,5 @@
 import pytest
 
-from bitarray import bitarray
-
 from decoder_test_utils import serialise_to_bytes, bytes_to_state
 
 from vc2_conformance.vc2_math import intlog2
@@ -43,10 +41,6 @@ class TestLDSlice(object):
         ],
     )
     def test_slice_y_length_must_be_valid(self, slice_y_length, exp_fail):
-        slice_bits = 8 * 10
-        length_bits = intlog2(slice_bits - 7)
-        max_y_block_length = slice_bits - 7 - length_bits
-
         state = single_sample_transform_base_state.copy()
         state.update({"slice_bytes_numerator": 10, "slice_bytes_denominator": 1})
         ld_slice_bytes = serialise_to_bytes(

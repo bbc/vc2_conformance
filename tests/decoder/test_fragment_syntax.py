@@ -144,7 +144,13 @@ class TestFragmentHeader(object):
             decoder.fragment_header(state)
 
     @pytest.mark.parametrize(
-        "fragment_x_offset,fragment_y_offset,expected_fragment_x_offset,expected_fragment_y_offset,exp_fail",
+        (
+            "fragment_x_offset,"
+            "fragment_y_offset,"
+            "expected_fragment_x_offset,"
+            "expected_fragment_y_offset,"
+            "exp_fail"
+        ),
         [
             # Match expectations
             (0, 0, 0, 0, False),

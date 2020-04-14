@@ -716,7 +716,6 @@ class TestSerialiser(object):
         ],
     )
     def test_still_fails_when_excess_values(self, w, f, context):
-        default_values = {dict: {"b": b"\x00"}}
         with pytest.raises(exceptions.UnusedTargetError):
             with Serialiser(w, context) as serdes:
                 serdes.declare_list("a")

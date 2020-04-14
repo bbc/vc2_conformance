@@ -10,10 +10,7 @@ from copy import deepcopy
 
 from enum import Enum
 
-from vc2_data_tables import (
-    Profiles,
-    ParseCodes,
-)
+from vc2_data_tables import Profiles
 
 from vc2_conformance._py2x_compat import zip
 
@@ -51,7 +48,7 @@ def generate_filled_padding(
     generated bit array will have a sufficient number of 0s at the start to
     byte-align the first copy of ``filler`` assuming the padding starts at
     a bit address specified by ``byte_align``.
-    
+
     Parameters
     ==========
     padding_length_bits : int
@@ -88,7 +85,7 @@ def fill_hq_slice_padding(
     min_length*slice_size_scaler + 4 bytes, whichever is greater) but the
     specified component's bounded block padding data is set to repeated copies
     of ``filler``. All transform data will be forced to zeros.
-    
+
     Parameters
     ==========
     state : :py:class:`~vc2_conformance.state.State`
@@ -159,12 +156,12 @@ def fill_ld_slice_padding(
     such that the slice size remains the same, but the
     specified component's bounded block padding data is set to repeated copies
     of ``filler``. All transform data will be forced to zeros.
-    
+
     Parameters
     ==========
     state : :py:class:`~vc2_conformance.state.State`
         A state dictionary containing at least:
-        
+
         * ``slices_x``
         * ``slices_y``
         * ``slice_bytes_numerator``
@@ -220,7 +217,7 @@ def generate_exp_golomb_with_ascending_lengths(sign=1):
     """
     Generate a series of integers whose signed exp-golmb encodings have
     sequentially growing lengths.
-    
+
     Yields an infinite series of (length, int) pairs with the same sign as the
     ``sign`` argument.
     """
@@ -245,10 +242,10 @@ def generate_exp_golomb_with_length(num_values, required_length):
     exp-Golomb encoding is ``required_length`` bits long. Raises a
     :py:exc:`UnsatisfiableBlockSizeError` if the required length cannot be
     achieved with ``num_values``.
-    
+
     This function tries to keep the length and the magnitudes of the returned
     numbers as low as possible. Returned numbers will alternate in sign.
-    
+
     Parameters
     ==========
     num_values : int
@@ -256,7 +253,7 @@ def generate_exp_golomb_with_length(num_values, required_length):
     required_length : int
         The number of bits which the returned values must take up when encoded
         as signed exp-golomb codes.
-    
+
     Returns
     =======
     values : [int, ...]
@@ -360,7 +357,7 @@ def generate_dangling_transform_values(block_bits, num_values, dangle_type, magn
     Generates sets of values which can be encoded into a ``block_bits`` bit
     long bounded block where some value is entirely or partly beyond the end of
     the bounded block.
-    
+
     Parameters
     ==========
     block_bits : int
@@ -375,7 +372,7 @@ def generate_dangling_transform_values(block_bits, num_values, dangle_type, magn
         :py:attr:`DanglingTransformValueType.zero_dangling`. When
         :py:attr:`DanglingTransformValueType.lsb_stop_and_sign_dangling`, the
         two's complement representation will actually be magnitude+1 bits.
-    
+
     Returns
     =======
     values : [value, ...]
@@ -448,7 +445,7 @@ def cut_off_value_at_end_of_hq_slice(
     min_length*slice_size_scaler + 4 bytes, whichever is greater) but the
     specified component's bounded block contains a value whose last bits are
     off the end of the bounded block.
-    
+
     Parameters
     ==========
     state : :py:class:`~vc2_conformance.state.State`
@@ -467,7 +464,7 @@ def cut_off_value_at_end_of_hq_slice(
         is :py:attr:`DanglingTransformValueType.lsb_stop_and_sign_dangling`.
     min_length : int
         The minimum total length field for the modified slice
-    
+
     Raises
     ======
     UnsatisfiableBlockSizeError
@@ -528,12 +525,12 @@ def cut_off_value_at_end_of_ld_slice(
     such that the slice size remains the same, but the specified component's
     bounded block contains a value whose last bits are off the end of the
     bounded block.
-    
+
     Parameters
     ==========
     state : :py:class:`~vc2_conformance.state.State`
         A state dictionary containing at least:
-        
+
         * ``slices_x``
         * ``slices_y``
         * ``slice_bytes_numerator``
@@ -550,7 +547,7 @@ def cut_off_value_at_end_of_ld_slice(
     magnitude : int
         The magnitude of the dangling value, in bits. Ignored when dangle_type
         is :py:attr:`DanglingTransformValueType.lsb_stop_and_sign_dangling`.
-    
+
     Raises
     ======
     UnsatisfiableBlockSizeError
@@ -593,14 +590,14 @@ def cut_off_value_at_end_of_ld_slice(
 def iter_slices_in_sequence(codec_features, sequence):
     """
     Iterate over all of the slices in a sequence.
-    
+
     Generates a series of (:py:class:`~vc2_conformance.state.State`, sx, sy,
     :py:class:`~vc2_conformance.bitstream.LDSlice` or
     :py:class:`~vc2_conformance.bitstream.HQSlice`) tuples, one for each slice
     present in the provided :py:class:`~vc2_conformance.bitstream.Sequence`.
     The state dictionary will be populated as required by the two
     ``fill_*_slice_padding`` functions.
-    
+
     NB: This function assumes the stream is conformant (i.e. has the correct
     number of slices, all fragments are present and in order etc).
     """
@@ -669,7 +666,7 @@ def slice_padding_data(codec_features):
     cases check that decoders correctly ignore these values. Padding values
     will be filled with the following (where slice sizes are sufficiently large
     to allow it).
-    
+
     * All-zeros
     * All-ones
     * Alternating ones and zeros
@@ -739,16 +736,16 @@ def dangling_bounded_block_data(codec_features):
     blocks (A.4.2). These test cases include bounded blocks in which some
     encoded values lie off the end of the block. Specifically, the following
     cases are tested:
-    
+
     * A zero value (1 bit) is encoded entirely beyond the end of the bounded
       block.
-    
+
     * The final bit (the sign bit) of a non-zero exp-golomb value is dangling
       beyond the end of the bounded block.
-    
+
     * The final two bits (the stop bit and sign bit) of a non-zero exp-golomb
       value is dangling beyond the end of the bounded block.
-    
+
     * The final three bits (the least significant bit, stop bit and sign bit)
       of a non-zero exp-golomb value is dangling beyond the end of the bounded
       block.
@@ -812,7 +809,7 @@ def dangling_bounded_block_data(codec_features):
                         )
 
                 yield TestCase(sequence, "{}_{}".format(dangle_type.name, component,))
-            except UnsatisfiableBlockSizeError as e:
+            except UnsatisfiableBlockSizeError:
                 pass
 
 
@@ -821,10 +818,10 @@ def interlace_mode(codec_features):
     """
     Static and moving synthetic image sequences which may be used to verify
     that the interlacing modes are correctly reported to display equipment.
-    
+
     See :py:func:`vc2_conformance.picture_generators.moving_sprite` for a
     description of the still sequence.
-    
+
     See :py:func:`vc2_conformance.picture_generators.moving_sprite` for a
     description of the moving sequence.
     """
@@ -855,11 +852,11 @@ def interlace_mode(codec_features):
 def static_grey(codec_features):
     """
     A static mid-grey frame.
-    
+
     This test image represents the special case of a maximally compressible
     image where the codec need not represent any transform coefficients
     explicitly.
-    
+
     This test represents an extreme case for lossless (variable bitrate)
     codecs.
     """
@@ -876,7 +873,7 @@ def static_ramps(codec_features):
     """
     A static frame containing linear brightness ramps for white and primary
     red, green and blue (in that order, from top-to-bottom).
-    
+
     This test may be used to check that the correct colour model information
     has been passed on to the display.
     """

@@ -1,9 +1,5 @@
 import pytest
 
-import os
-
-import sys
-
 import json
 
 from io import BytesIO

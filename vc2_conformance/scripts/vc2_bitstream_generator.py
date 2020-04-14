@@ -12,10 +12,6 @@ import json
 
 import traceback
 
-from sentinels import Sentinel
-
-from copy import deepcopy
-
 from argparse import ArgumentParser
 
 from vc2_conformance.state import State
@@ -240,7 +236,10 @@ def main(*args, **kwargs):
         except Exception as exc:
             show_traceback()
             sys.stderr.write(
-                "Unable to construct bitstream at {}: {}: {} (is a sequence or fragment header missing?)\n".format(
+                (
+                    "Unable to construct bitstream at {}: {}: {} "
+                    "(is a sequence or fragment header missing?)\n"
+                ).format(
                     ser.describe_path(), type(exc).__name__, exc,
                 )
             )

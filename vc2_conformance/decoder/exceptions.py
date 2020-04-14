@@ -18,7 +18,6 @@ from vc2_data_tables import (
     PARSE_INFO_HEADER_BYTES,
     ParseCodes,
     Profiles,
-    PROFILES,
     LEVELS,
     WaveletFilters,
 )

@@ -1,6 +1,5 @@
 import pytest
 
-import os
 import sys
 
 import traceback
@@ -85,12 +84,12 @@ class TestBitstreamValidator(object):
                                     clean_width=4,
                                     clean_height=4,
                                 ),
-                                color_diff_sampling_format=bitstream.ColorDiffSamplingFormat(
+                                color_diff_sampling_format=bitstream.ColorDiffSamplingFormat(  # noqa: E501
                                     custom_color_diff_format_flag=True,
-                                    color_diff_format_index=tables.ColorDifferenceSamplingFormats.color_4_2_0,
+                                    color_diff_format_index=tables.ColorDifferenceSamplingFormats.color_4_2_0,  # noqa: E501
                                 ),
                             ),
-                            picture_coding_mode=tables.PictureCodingModes.pictures_are_frames,
+                            picture_coding_mode=tables.PictureCodingModes.pictures_are_frames,  # noqa: E501
                         ),
                     ),
                     bitstream.DataUnit(
@@ -136,9 +135,9 @@ class TestBitstreamValidator(object):
         assert "%] Starting bitstream validation" in stderr
         assert "%] Decoded picture written to {}".format(output_name % 0) in stderr
         assert "%] Decoded picture written to {}".format(output_name % 1) in stderr
-        assert (
-            stdout
-            == "No errors found in bitstream. Verify decoded pictures to confirm conformance.\n"
+        assert stdout == (
+            "No errors found in bitstream. "
+            "Verify decoded pictures to confirm conformance.\n"
         )
 
         # Check picture files are as expected
@@ -213,7 +212,7 @@ class TestBitstreamValidator(object):
                 * read_uint_lit (A.3.4)
                   * read_nbits (A.3.3)
                     * read_bit (A.2.3)
-        """.format(
+        """.format(  # noqa: E501
                     quote(filename)
                 )
             ).strip()

@@ -242,24 +242,28 @@ class TestCompareSources(object):
                 Identical(),
             )
         ) == (
-            "Mismatched Add vs. Sub (in reference code, line 2 col 10 and implementation code, line 1 col 22)"
+            "Mismatched Add vs. Sub (in reference code, line 2 col 10 and "
+            "implementation code, line 1 col 22)"
         )
 
     def test_differing_field_values(self):
         assert format_summary(compare_sources("a + b", "a+cde", Identical())) == (
-            "Different id values (in reference code, line 1 col 4 and implementation code, line 1 col 2)"
+            "Different id values (in reference code, line 1 col 4 and "
+            "implementation code, line 1 col 2)"
         )
 
     def test_differing_field_lengths(self):
         assert format_summary(
             compare_sources("foo(a, b)", "foo(a, b, c, d)", Identical())
         ) == (
-            "2 extra values in implementation's args (in reference code, line 1 col 7 and implementation code, line 1 col 13)"
+            "2 extra values in implementation's args (in reference code, "
+            "line 1 col 7 and implementation code, line 1 col 13)"
         )
         assert format_summary(
             compare_sources("foo(a, b, c)", "foo(a, b)", Identical())
         ) == (
-            "1 extra value in reference's args (in reference code, line 1 col 10 and implementation code, line 1 col 7)"
+            "1 extra value in reference's args (in reference code, "
+            "line 1 col 10 and implementation code, line 1 col 7)"
         )
 
     def test_tokenisation_errors(self):
@@ -300,7 +304,8 @@ class TestCompareSources(object):
         with pytest.raises(ComparisonError) as exc_info:
             compare_sources("", "## Foobar", Identical())
         assert format_summary(exc_info.value) == (
-            "Unrecognised amendment comment '## Foobar' (in implementation code, line 1 col 0)"
+            "Unrecognised amendment comment '## Foobar' "
+            "(in implementation code, line 1 col 0)"
         )
 
     def test_unmatched_not_in_spec_block(self):

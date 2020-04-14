@@ -27,7 +27,7 @@ def signal_range(codec_features):
     This test is designed to produce extreme signal levels within an encoder's
     processing chain. Implementations should ensure that no integer clamping or
     overflow operations occur while encoding these pictures.
-    
+
     The metadata provided with each test case gives, for each picture, the test
     points checked by that picture. See
     :py:class:`vc2_bit_widths.helpers.TestPoint` for details.

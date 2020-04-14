@@ -6,12 +6,6 @@ import re
 
 from copy import deepcopy
 
-from io import BytesIO
-
-from vc2_conformance import bitstream
-
-import vc2_data_tables as tables
-
 from vc2_conformance.state import State
 
 from vc2_conformance import decoder
@@ -378,7 +372,7 @@ class TestMain(object):
 
         with open(spec_filename, "w") as f:
             json.dump(
-                {"data_units": [{"parse_info": {"parse_code": "ParseCodes.oopsie"}},],},
+                {"data_units": [{"parse_info": {"parse_code": "ParseCodes.oopsie"}}]},
                 f,
             )
 

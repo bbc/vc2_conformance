@@ -60,12 +60,10 @@ import numpy as np
 from collections import OrderedDict, namedtuple
 
 from vc2_conformance.vc2_math import intlog2
-from vc2_conformance.arrays import new_array
 
 from vc2_data_tables import (
     ColorDifferenceSamplingFormats,
     PictureCodingModes,
-    ColorDifferenceSamplingFormats,
     SourceSamplingModes,
     PresetColorPrimaries,
     PresetColorMatrices,

@@ -1,9 +1,5 @@
 import pytest
 
-import os
-
-import sys
-
 from copy import deepcopy
 
 import numpy as np
@@ -82,7 +78,7 @@ class TestSignalRange(object):
         test_cases = list(signal_range(codec_features))
 
         # Should provide test cases for all components
-        assert set(tc.subcase_name for tc in test_cases) == set(["Y", "C1", "C2",])
+        assert set(tc.subcase_name for tc in test_cases) == set(["Y", "C1", "C2"])
 
         # Without going to great lengths we can only really verify that the
         # test patterns designed to produce encoded values of the correct

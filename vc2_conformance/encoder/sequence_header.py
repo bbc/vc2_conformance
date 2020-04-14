@@ -16,10 +16,7 @@ from vc2_data_tables import (
     PRESET_COLOR_SPECS,
 )
 
-from vc2_conformance.video_parameters import (
-    set_source_defaults,
-    set_coding_parameters,
-)
+from vc2_conformance.video_parameters import set_source_defaults
 
 from vc2_conformance.bitstream import (
     DataUnit,

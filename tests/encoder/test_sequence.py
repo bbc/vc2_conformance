@@ -1,9 +1,5 @@
 import pytest
 
-import os
-
-import sys
-
 from io import BytesIO
 
 from vc2_data_tables import (

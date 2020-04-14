@@ -16,7 +16,6 @@ conforms to the VC-2 specification.
 
 import os
 import sys
-import shlex
 import traceback
 
 from argparse import ArgumentParser
