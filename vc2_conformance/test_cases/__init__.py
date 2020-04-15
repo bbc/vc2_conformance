@@ -211,7 +211,7 @@ class Registry(object):
         """
         for test_case_generator in self._test_case_generators:
             for test_case in normalise_test_case_generator(
-                test_case_generator, *args, **kwargs,
+                test_case_generator, *args, **kwargs
             ):
                 yield test_case
 
@@ -222,7 +222,7 @@ class Registry(object):
         """
         for test_case_generator in self._test_case_generators:
             yield partial(
-                normalise_test_case_generator, test_case_generator, *args, **kwargs,
+                normalise_test_case_generator, test_case_generator, *args, **kwargs
             )
 
 
