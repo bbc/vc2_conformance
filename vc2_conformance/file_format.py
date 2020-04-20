@@ -356,6 +356,15 @@ def read_picture(video_parameters, picture_coding_mode, picture_number, file):
             file.read(height * width * bytes_per_sample), dtype=np.uint8,
         ).reshape(height, width, bytes_per_sample)
 
+        # Mask off just the intended bits
+        msb_byte = ((depth_bits + 7) // 8) - 1
+        if msb_byte < bytes_per_sample:
+            data = np.require(data, requirements="W")
+            data[:, :, msb_byte + 1 :] = 0
+        if depth_bits % 8 != 0:
+            data = np.require(data, requirements="W")
+            data[:, :, msb_byte] &= (1 << (depth_bits % 8)) - 1
+
         # We use a dtype=object array so that we can use Python's arbitrary
         # precision integers in order to support arbitrary bit depths
         values = np.zeros((height, width), dtype=object)

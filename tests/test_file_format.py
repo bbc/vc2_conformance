@@ -8,7 +8,7 @@ import random
 
 import vc2_data_tables as tables
 
-from vc2_conformance.video_parameters import set_source_defaults
+from vc2_conformance.video_parameters import VideoParameters, set_source_defaults
 
 from vc2_conformance.file_format import (
     get_metadata_and_picture_filenames,
@@ -165,6 +165,42 @@ def test_read_picture_and_read_and_write_metadata(
     )
 
     assert new_picture == noise_picture
+
+
+@pytest.mark.parametrize(
+    "num_bytes,num_bits",
+    [
+        (1, 7),
+        (1, 8),
+        (2, 9),
+        (2, 10),
+        (2, 15),
+        (2, 16),
+        (4, 17),
+        (4, 23),
+        (4, 24),
+        (4, 25),
+        (16, 90),
+    ],
+)
+def test_read_picture_masked(num_bytes, num_bits):
+    picture_file = BytesIO(b"\xFF" * (num_bytes * 3))
+
+    video_parameters = VideoParameters(
+        frame_width=1,
+        frame_height=1,
+        color_diff_format_index=tables.ColorDifferenceSamplingFormats.color_4_4_4,
+        luma_offset=0,
+        luma_excursion=(1 << num_bits) - 1,
+        color_diff_offset=0,
+        color_diff_excursion=(1 << num_bits) - 1,
+    )
+    picture_coding_mode = tables.PictureCodingModes.pictures_are_frames
+    picture = read_picture(video_parameters, picture_coding_mode, 0, picture_file)
+
+    assert picture["Y"] == [[(1 << num_bits) - 1]]
+    assert picture["C1"] == [[(1 << num_bits) - 1]]
+    assert picture["C2"] == [[(1 << num_bits) - 1]]
 
 
 def test_read_and_write_convenience_functions(
