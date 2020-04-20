@@ -1,7 +1,5 @@
 import pytest
 
-import os
-
 import numpy as np
 
 from fractions import Fraction
@@ -31,10 +29,9 @@ from vc2_conformance.color_conversion import (
 
 from vc2_conformance.file_format import compute_dimensions_and_depths
 
-from vc2_conformance_data import NATURAL_PICTURES_FILENAMES
+from vc2_conformance_data import POINTER_SPRITE_FILENAME
 
 from vc2_conformance.picture_generators import (
-    POINTER_SPRITE_PATH,
     read_as_xyz,
     resize,
     read_as_xyz_to_fit,
@@ -55,15 +52,9 @@ from vc2_conformance.picture_generators import (
 )
 
 
-def test_sprite_image_path():
-    # Indirectly test by checking that the pointer sprite filename is
-    # accessible
-    assert os.path.isfile(POINTER_SPRITE_PATH)
-
-
 def test_read_as_xyz():
     # Test on the well-defined pointer sprite
-    xyz, video_parameters, picture_coding_mode = read_as_xyz(POINTER_SPRITE_PATH)
+    xyz, video_parameters, picture_coding_mode = read_as_xyz(POINTER_SPRITE_FILENAME)
 
     assert xyz.shape == (128, 128, 3)
     assert xyz.dtype == float
@@ -343,7 +334,7 @@ def test_progressive_to_pictures():
 
 
 def test_xyz_to_native():
-    xyz, vp, pcm = read_as_xyz(POINTER_SPRITE_PATH)
+    xyz, vp, pcm = read_as_xyz(POINTER_SPRITE_FILENAME)
 
     pictures = [
         xyz,

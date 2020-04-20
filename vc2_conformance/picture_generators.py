@@ -30,8 +30,6 @@ pictures produced by the above generators:
 
 """
 
-import os
-
 import functools
 
 from copy import deepcopy
@@ -64,7 +62,10 @@ from vc2_conformance.color_conversion import (
     swap_primaries,
 )
 
-from vc2_conformance_data import NATURAL_PICTURES_FILENAMES
+from vc2_conformance_data import (
+    POINTER_SPRITE_FILENAME,
+    NATURAL_PICTURES_FILENAMES,
+)
 
 
 __all__ = [
@@ -74,30 +75,6 @@ __all__ = [
     "linear_ramps",
     "repeat_pictures",
 ]
-
-
-def image_path(raw_filename):
-    """
-    Given a raw/json filename in the ``vc2_conformance/test_images/``
-    directory, returns a complete path to that file.
-    """
-    return os.path.join(os.path.dirname(__file__), "test_images", raw_filename)
-
-
-POINTER_SPRITE_PATH = image_path("pointer.raw")
-"""
-A 128x128 sprite with the following features:
-
-* Saturated white triangle covering the top-left half of the sprite
-* A black, perfectly circular hole cut out of the middle of the triangle.
-* The letters 'VC-2' in the bottom right half of the sprite on a black
-  background.
-* The letters 'V', 'C', and '2' are printed in saturated primary red, green and
-  blue respectively. The hyphen is printed in saturated white.
-* All edges are antialiased
-
-    .. image:: /_static/test_images/pointer.png
-"""
 
 
 def read_as_xyz(filename):
@@ -372,13 +349,13 @@ def pipe(next_function):
 
 def read_and_adapt_pointer_sprite(video_parameters):
     """
-    Read the :py:data:`POINTER_SPRITE_PATH` sprite, correcting to match the
-    pixel aspect ratio and color primaries specified in the provided
-    ``video_parameters``.
+    Read the :py:data:`vc2_conformance_data.POINTER_SPRITE_FILENAME` sprite,
+    correcting to match the pixel aspect ratio and color primaries specified in
+    the provided ``video_parameters``.
 
     Returns a CIE-XYZ image.
     """
-    sprite, sprite_video_parameters, _ = read_as_xyz(POINTER_SPRITE_PATH)
+    sprite, sprite_video_parameters, _ = read_as_xyz(POINTER_SPRITE_FILENAME)
 
     # This sprite has been designed with the intention that 'white', 'red',
     # 'green', and 'blue' in the sprite's color model should be transformed
