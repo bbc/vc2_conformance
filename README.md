@@ -1,4 +1,4 @@
-SMPTE ST 2042-2: VC-2 Conformance Testing Software
+SMPTE RP 2042-3: VC-2 Conformance Testing Software
 ==================================================
 
 This repository contains the software tools for checking the conformance of
@@ -6,7 +6,7 @@ This repository contains the software tools for checking the conformance of
 codec](https://www.bbc.co.uk/rd/projects/vc-2) implementations.
 
 This software is being produced as part of an effort to update the (currently
-out-of-date) ST 2042-2 (VC-2 Conformance) document. When complete, these tools
+out-of-date) RP 2042-3 (VC-2 Conformance) document. When complete, these tools
 and the associated document will allow codec implementers to verify the
 conformance of their implementations with the SMPTE ST 2042-1 (VC-2) standard.
 
