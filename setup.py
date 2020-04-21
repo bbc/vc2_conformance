@@ -9,7 +9,6 @@ install_requires = [
     "enum34",
     "bitarray",
     "sentinels",
-    "six",
     "vc2_data_tables",
     "vc2_bit_widths",
     "vc2_conformance_data",
