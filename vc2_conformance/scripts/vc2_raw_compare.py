@@ -15,6 +15,8 @@ import numpy as np
 
 from vc2_data_tables import ColorDifferenceSamplingFormats
 
+from vc2_conformance import __version__
+
 from vc2_conformance._string_utils import indent
 
 from vc2_conformance.color_conversion import (
@@ -129,6 +131,10 @@ def parse_args(*args, **kwargs):
         Compare a pair of pictures in the raw format used by the VC-2
         conformance software.
     """
+    )
+
+    parser.add_argument(
+        "--version", action="version", version="%(prog)s {}".format(__version__),
     )
 
     parser.add_argument(

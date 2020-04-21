@@ -27,6 +27,8 @@ from io import BytesIO
 
 from argparse import ArgumentParser, FileType
 
+from vc2_conformance import __version__
+
 from vc2_conformance.codec_features import (
     read_codec_features_csv,
     InvalidCodecFeaturesError,
@@ -75,6 +77,10 @@ def parse_args(*args, **kwargs):
         description="""
         Generate test inputs for VC-2 encoder and decoder implementations.
     """
+    )
+
+    parser.add_argument(
+        "--version", action="version", version="%(prog)s {}".format(__version__),
     )
 
     parser.add_argument(

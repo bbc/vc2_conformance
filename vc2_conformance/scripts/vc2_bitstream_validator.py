@@ -24,6 +24,8 @@ from textwrap import dedent
 
 from vc2_conformance import metadata
 
+from vc2_conformance import __version__
+
 from vc2_conformance._py2x_compat import quote
 
 from vc2_conformance._string_utils import wrap_paragraphs
@@ -268,6 +270,10 @@ def parse_args(*args, **kwargs):
         description="""
         Validate a bitstream's conformance with the VC-2 specifications.
     """
+    )
+
+    parser.add_argument(
+        "--version", action="version", version="%(prog)s {}".format(__version__),
     )
 
     parser.add_argument(

@@ -14,6 +14,8 @@ import traceback
 
 from argparse import ArgumentParser
 
+from vc2_conformance import __version__
+
 from vc2_conformance.state import State
 
 from vc2_conformance._py2x_compat import string_types
@@ -122,6 +124,10 @@ def parse_args(*args, **kwargs):
         description="""
         Generate a VC-2 bitstream from a JSON specification.
     """
+    )
+
+    parser.add_argument(
+        "--version", action="version", version="%(prog)s {}".format(__version__),
     )
 
     parser.add_argument(

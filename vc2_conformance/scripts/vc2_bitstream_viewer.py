@@ -127,6 +127,8 @@ from argparse import ArgumentParser
 
 from textwrap import wrap
 
+from vc2_conformance import __version__
+
 from vc2_conformance import metadata
 
 from vc2_conformance import bitstream
@@ -809,6 +811,10 @@ def parse_args(*args, **kwargs):
         description="""
         Display VC-2 bitstreams in a human-readable form.
     """
+    )
+
+    parser.add_argument(
+        "--version", action="version", version="%(prog)s {}".format(__version__),
     )
 
     parser.add_argument(
