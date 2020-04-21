@@ -4,12 +4,14 @@ VC-2 Conformance Software Documentation
 For codec developers
 --------------------
 
-For codec developers, your starting point should be SMPTE RP2042-3 'VC-2
+For codec developers, your starting point should be SMPTE RP 2042-3 'VC-2
 Conformance Specification'.
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
+   
+   user_guide/index.rst
 
 
 For maintainers
@@ -23,7 +25,6 @@ source is reproduced here.
    :caption: Contents:
    
    maintainer/index.rst
-   maintainer/tables.rst
    maintainer/pure_functions.rst
    maintainer/state.rst
    maintainer/utils.rst
