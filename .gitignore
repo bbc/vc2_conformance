@@ -14,7 +14,6 @@ dist/
 pip-selfcheck.json
 
 *.pdf
-*.svg
 *.ods
 
 picture_*.raw
