@@ -13,13 +13,22 @@ from collections import OrderedDict
 
 import numpy as np
 
+from vc2_data_tables import ColorDifferenceSamplingFormats
+
 from vc2_conformance._string_utils import indent
+
+from vc2_conformance.color_conversion import (
+    from_xyz,
+    matmul_colors,
+    LINEAR_RGB_TO_XYZ,
+)
 
 from vc2_conformance.file_format import (
     get_metadata_and_picture_filenames,
     compute_dimensions_and_depths,
     read_metadata,
     read_picture,
+    write,
 )
 
 from vc2_conformance.video_parameters import VideoParameters
@@ -139,23 +148,14 @@ def parse_args(*args, **kwargs):
     output_group = parser.add_argument_group("difference image options",)
 
     output_group.add_argument(
-        "--difference",
-        "-d",
-        type=str,
-        metavar="FILENAME",
-        help="""
-            Output a difference image to the specified file.
-        """,
-    )
-
-    output_group.add_argument(
         "--difference-mask",
         "-D",
         type=str,
         metavar="FILENAME",
         help="""
             Output a difference mask image to the specified file. This mask
-            will contain white pixels wherever the input images differ.
+            will contain white pixels wherever the input images differ and
+            black pixels where they match.
         """,
     )
 
@@ -251,6 +251,67 @@ def measure_differences(all_deltas, video_parameters, picture_coding_mode):
     return identical, differences
 
 
+def generate_difference_mask_picture(deltas, video_parameters, picture_number=0):
+    """
+    Given a set of pixel delta values, produce a difference mask picture (which
+    is white where the pixels have a non-zero difference and black otherwise).
+
+    Parameters
+    ==========
+    deltas : {"Y": np.array, "C1": np.array, "C2": np.array}
+        Deltas for each pixel in the input images.
+    video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+    picture_number : int
+
+    Returns
+    =======
+    mask_picture : {"Y": [[...]], "C1": [[...]], "C2": [[...]], "pic_num": int}
+        A mask picture, in the same format as the original pictures.
+
+        The mask will be white in all pixels for which *any* picture component
+        differs at the corresponding pixel location. For formats using
+        subsampled color differences, a difference in a color difference
+        component will result in 2 or 4 pixels in the mask being illuminated.
+
+        The 'white' and 'black' reported in the mask are video white and video
+        black, not super white or super black (for colour formats which support
+        this).
+    """
+    masks = {c: deltas[c] != 0 for c, d in deltas.items()}
+
+    # Upsample color difference components
+    repeat_x, repeat_y = {
+        ColorDifferenceSamplingFormats.color_4_4_4: (1, 1),
+        ColorDifferenceSamplingFormats.color_4_2_2: (2, 1),
+        ColorDifferenceSamplingFormats.color_4_2_0: (2, 2),
+    }[video_parameters["color_diff_format_index"]]
+
+    for c in ["C1", "C2"]:
+        if repeat_x != 1:
+            masks[c] = np.repeat(masks[c], repeat_x, axis=1)
+        if repeat_y != 1:
+            masks[c] = np.repeat(masks[c], repeat_y, axis=0)
+
+    # Create the mask
+    mask = masks["Y"] | masks["C1"] | masks["C2"]
+
+    # Convert to RGB color image with signals in the range 0.0 - 1.0
+    rgb = np.repeat(mask, 3).reshape(mask.shape + (3,)).astype(float)
+
+    # Convert to native colour encoding
+    xyz = matmul_colors(
+        LINEAR_RGB_TO_XYZ[video_parameters["color_primaries_index"]], rgb
+    )
+    y, c1, c2 = from_xyz(xyz, video_parameters)
+
+    return {
+        "Y": y,
+        "C1": c1,
+        "C2": c2,
+        "pic_num": picture_number,
+    }
+
+
 def main(*args, **kwargs):
     args = parse_args(*args, **kwargs)
 
@@ -304,6 +365,13 @@ def main(*args, **kwargs):
     else:
         print("Pictures are different:")
         print(indent(differences))
+
+    # Write difference mask, as required
+    if args.difference_mask is not None:
+        mask = generate_difference_mask_picture(
+            deltas, video_parameters_a, picture_number=picture_a["pic_num"],
+        )
+        write(mask, video_parameters_a, picture_coding_mode_a, args.difference_mask)
 
     return 0 if identical else 4
 

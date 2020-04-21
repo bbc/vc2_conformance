@@ -25,6 +25,7 @@ from vc2_conformance.scripts.vc2_raw_compare import (
     psnr,
     measure_differences,
     main,
+    generate_difference_mask_picture,
 )
 
 
@@ -106,10 +107,10 @@ def generate_picture(
         top_offset=0,
         luma_offset=0,
         luma_excursion=(1 << luma_bit_width) - 1,
-        color_diff_offset=0,
+        color_diff_offset=1 << (color_diff_bit_width - 1),
         color_diff_excursion=(1 << color_diff_bit_width) - 1,
         color_primaries_index=PresetColorPrimaries.hdtv,
-        color_matrix_index=PresetColorMatrices.rgb,
+        color_matrix_index=PresetColorMatrices.hdtv,
         transfer_function_index=PresetTransferFunctions.tv_gamma,
     )
 
@@ -345,6 +346,241 @@ class TestMeasureDifferences(object):
         )
 
 
+class TestGenerateDifferenceMaskPicture(object):
+    @pytest.fixture
+    def video_parameters(self):
+        return VideoParameters(
+            frame_width=4,
+            frame_height=4,
+            color_diff_format_index=ColorDifferenceSamplingFormats.color_4_4_4,
+            source_sampling=SourceSamplingModes.progressive,
+            top_field_first=True,
+            frame_rate_numer=1,
+            frame_rate_denom=1,
+            pixel_aspect_ratio_numer=1,
+            pixel_aspect_ratio_denom=1,
+            clean_width=4,
+            clean_height=4,
+            left_offset=0,
+            top_offset=0,
+            luma_offset=0,
+            luma_excursion=1023,
+            color_diff_offset=512,
+            color_diff_excursion=1023,
+            color_primaries_index=PresetColorPrimaries.hdtv,
+            color_matrix_index=PresetColorMatrices.hdtv,
+            transfer_function_index=PresetTransferFunctions.tv_gamma,
+        )
+
+    def test_color_4_4_4(self, video_parameters):
+        video_parameters[
+            "color_diff_format_index"
+        ] = ColorDifferenceSamplingFormats.color_4_4_4
+
+        deltas = {
+            "Y": np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 1, 0, 0], [1, 0, 0, 0]]),
+            "C1": np.array([[1, 1, 1, 0], [1, 1, 0, 1], [0, 0, 0, 0], [0, 0, 0, 0]]),
+            "C2": np.array([[1, 1, 0, 0], [1, 1, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]]),
+        }
+
+        mask = generate_difference_mask_picture(deltas, video_parameters, 100)
+
+        write(
+            mask,
+            video_parameters,
+            PictureCodingModes.pictures_are_frames,
+            "/tmp/out.raw",
+        )
+
+        assert mask["Y"].tolist() == [
+            [1023, 1023, 1023, 0],
+            [1023, 1023, 0, 1023],
+            [0, 1023, 0, 1023],
+            [1023, 0, 1023, 0],
+        ]
+        assert mask["C1"].tolist() == [
+            [512, 512, 512, 512],
+            [512, 512, 512, 512],
+            [512, 512, 512, 512],
+            [512, 512, 512, 512],
+        ]
+        assert mask["C2"].tolist() == [
+            [512, 512, 512, 512],
+            [512, 512, 512, 512],
+            [512, 512, 512, 512],
+            [512, 512, 512, 512],
+        ]
+
+        assert mask["pic_num"] == 100
+
+    def test_color_4_2_2(self, video_parameters):
+        video_parameters[
+            "color_diff_format_index"
+        ] = ColorDifferenceSamplingFormats.color_4_2_2
+
+        deltas = {
+            "Y": np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 1, 0, 0], [1, 0, 0, 0]]),
+            "C1": np.array([[1, 1], [1, 0], [0, 0], [0, 0]]),
+            "C2": np.array([[1, 0], [1, 0], [0, 1], [0, 0]]),
+        }
+
+        mask = generate_difference_mask_picture(deltas, video_parameters, 100)
+
+        write(
+            mask,
+            video_parameters,
+            PictureCodingModes.pictures_are_frames,
+            "/tmp/out.raw",
+        )
+
+        assert mask["Y"].tolist() == [
+            [1023, 1023, 1023, 1023],
+            [1023, 1023, 0, 0],
+            [0, 1023, 1023, 1023],
+            [1023, 0, 0, 0],
+        ]
+        assert mask["C1"].tolist() == [
+            [512, 512],
+            [512, 512],
+            [512, 512],
+            [512, 512],
+        ]
+        assert mask["C2"].tolist() == [
+            [512, 512],
+            [512, 512],
+            [512, 512],
+            [512, 512],
+        ]
+
+        assert mask["pic_num"] == 100
+
+    def test_color_4_2_0(self, video_parameters):
+        video_parameters[
+            "color_diff_format_index"
+        ] = ColorDifferenceSamplingFormats.color_4_2_0
+
+        deltas = {
+            "Y": np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 1, 0, 0], [1, 0, 0, 0]]),
+            "C1": np.array([[1, 1], [0, 0]]),
+            "C2": np.array([[1, 0], [0, 1]]),
+        }
+
+        mask = generate_difference_mask_picture(deltas, video_parameters, 100)
+
+        write(
+            mask,
+            video_parameters,
+            PictureCodingModes.pictures_are_frames,
+            "/tmp/out.raw",
+        )
+
+        assert mask["Y"].tolist() == [
+            [1023, 1023, 1023, 1023],
+            [1023, 1023, 1023, 1023],
+            [0, 1023, 1023, 1023],
+            [1023, 0, 1023, 1023],
+        ]
+        assert mask["C1"].tolist() == [
+            [512, 512],
+            [512, 512],
+        ]
+        assert mask["C2"].tolist() == [
+            [512, 512],
+            [512, 512],
+        ]
+
+        assert mask["pic_num"] == 100
+
+    def test_rgb(self, video_parameters):
+        video_parameters[
+            "color_diff_format_index"
+        ] = ColorDifferenceSamplingFormats.color_4_4_4
+        video_parameters["color_matrix_index"] = PresetColorMatrices.rgb
+        video_parameters["luma_offset"] = 0
+        video_parameters["color_diff_offset"] = 0
+
+        deltas = {
+            "Y": np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 1, 0, 0], [1, 0, 0, 0]]),
+            "C1": np.array([[1, 1, 1, 0], [1, 1, 0, 1], [0, 0, 0, 0], [0, 0, 0, 0]]),
+            "C2": np.array([[1, 1, 0, 0], [1, 1, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]]),
+        }
+
+        mask = generate_difference_mask_picture(deltas, video_parameters, 100)
+
+        write(
+            mask,
+            video_parameters,
+            PictureCodingModes.pictures_are_frames,
+            "/tmp/out.raw",
+        )
+
+        assert mask["Y"].tolist() == [
+            [1023, 1023, 1023, 0],
+            [1023, 1023, 0, 1023],
+            [0, 1023, 0, 1023],
+            [1023, 0, 1023, 0],
+        ]
+        assert mask["C1"].tolist() == [
+            [1023, 1023, 1023, 0],
+            [1023, 1023, 0, 1023],
+            [0, 1023, 0, 1023],
+            [1023, 0, 1023, 0],
+        ]
+        assert mask["C2"].tolist() == [
+            [1023, 1023, 1023, 0],
+            [1023, 1023, 0, 1023],
+            [0, 1023, 0, 1023],
+            [1023, 0, 1023, 0],
+        ]
+
+        assert mask["pic_num"] == 100
+
+    def test_video_range(self, video_parameters):
+        video_parameters[
+            "color_diff_format_index"
+        ] = ColorDifferenceSamplingFormats.color_4_4_4
+        video_parameters["luma_offset"] = 16
+        video_parameters["luma_excursion"] = 219
+        video_parameters["color_diff_offset"] = 128
+        video_parameters["color_diff_excursion"] = 224
+
+        deltas = {
+            "Y": np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 1, 0, 0], [1, 0, 0, 0]]),
+            "C1": np.array([[1, 1, 1, 0], [1, 1, 0, 1], [0, 0, 0, 0], [0, 0, 0, 0]]),
+            "C2": np.array([[1, 1, 0, 0], [1, 1, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]]),
+        }
+
+        mask = generate_difference_mask_picture(deltas, video_parameters, 100)
+
+        write(
+            mask,
+            video_parameters,
+            PictureCodingModes.pictures_are_frames,
+            "/tmp/out.raw",
+        )
+
+        assert mask["Y"].tolist() == [
+            [235, 235, 235, 16],
+            [235, 235, 16, 235],
+            [16, 235, 16, 235],
+            [235, 16, 235, 16],
+        ]
+        assert mask["C1"].tolist() == [
+            [128, 128, 128, 128],
+            [128, 128, 128, 128],
+            [128, 128, 128, 128],
+            [128, 128, 128, 128],
+        ]
+        assert mask["C2"].tolist() == [
+            [128, 128, 128, 128],
+            [128, 128, 128, 128],
+            [128, 128, 128, 128],
+            [128, 128, 128, 128],
+        ]
+
+        assert mask["pic_num"] == 100
+
+
 class TestMain(object):
     def test_video_parameters_different(self, tmpdir, capsys):
         fa = str(tmpdir.join("a.raw"))
@@ -437,3 +673,46 @@ class TestMain(object):
         out, err = capsys.readouterr()
         assert "Pictures are identical" in out
         assert "Warning: Padding bits in raw picture data are different" in out
+
+    def test_difference_mask(self, tmpdir, capsys):
+        fa = str(tmpdir.join("a.raw"))
+        fb = str(tmpdir.join("b.raw"))
+        mask_filename = str(tmpdir.join("mask.raw"))
+
+        generate_picture(
+            fa,
+            (
+                np.array([[0, 1, 2, 3], [4, 5, 6, 7]]),
+                np.array([[8, 9]]),
+                np.array([[10, 11]]),
+            ),
+            picture_number=123,
+        )
+        generate_picture(
+            fb,
+            (
+                np.array([[0, 1, 2, 4], [4, 5, 7, 7]]),
+                np.array([[9, 9]]),
+                np.array([[10, 11]]),
+            ),
+            picture_number=123,
+        )
+
+        assert main([fa, fb, "--difference-mask", mask_filename]) == 4
+        out, err = capsys.readouterr()
+        assert "Pictures are different" in out
+
+        picture, video_parameters, picture_coding_mode = read(mask_filename)
+
+        # Mask should be as expected
+        assert picture["Y"] == [[1023, 1023, 0, 1023], [1023, 1023, 1023, 0]]
+        assert picture["C1"] == [[512, 512]]
+        assert picture["C2"] == [[512, 512]]
+
+        # Should match input picture numbers
+        assert picture["pic_num"] == 123
+
+        # Should match format of input pictures
+        _, video_parameters_a, picture_coding_mode_a = read(fa)
+        assert video_parameters == video_parameters_a
+        assert picture_coding_mode == picture_coding_mode_a
