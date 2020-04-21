@@ -446,7 +446,9 @@ def example_ffmpeg_command(picture_filename, video_parameters, picture_coding_mo
     elif depth_bits in (9, 10, 12, 14, 16):
         command.append(
             "{}le".format(depth_bits),
-            "{} bit little-endian values, LSB-aligned within 16 bit words.",
+            "{} bit little-endian values, LSB-aligned within 16 bit words.".format(
+                depth_bits
+            ),
         )
     else:
         raise UnsupportedPictureFormat(
