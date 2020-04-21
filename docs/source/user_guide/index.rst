@@ -10,3 +10,4 @@ VC-2 standards.
    :caption: Contents:
    
    introduction.rst
+   installation.rst

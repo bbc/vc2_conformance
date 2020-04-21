@@ -56,3 +56,5 @@ expected.
 
 Finally, in :ref:`guide-debugging` we provide some advice on how to approach
 the problem of debugging failing tests.
+
+So, lets move on to :ref:`guide-installation`...
