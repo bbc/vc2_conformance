@@ -162,6 +162,43 @@ class TestValueSet(object):
         assert 30 in vs
         assert 31 not in vs
 
+    @pytest.mark.parametrize(
+        "a,b,expected",
+        [
+            # Empty is always disjoint with other value sets
+            (ValueSet(), ValueSet(), True),
+            (ValueSet(1, 2, 3), ValueSet(), True),
+            (ValueSet((1, 3)), ValueSet(), True),
+            (AnyValue(), ValueSet(), True),
+            # Individual values
+            (ValueSet(1), ValueSet(2), True),
+            (ValueSet(1), ValueSet(1), False),
+            (ValueSet(1, 2, 3), ValueSet(4, 5, 6), True),
+            (ValueSet(1, 2, 3), ValueSet(3, 4, 5), False),
+            # Values and ranges
+            (ValueSet(1), ValueSet((2, 10)), True),
+            (ValueSet(2), ValueSet((2, 10)), False),
+            (ValueSet(5), ValueSet((2, 10)), False),
+            (ValueSet(10), ValueSet((2, 10)), False),
+            (ValueSet(11), ValueSet((2, 10)), True),
+            # Ranges: don't intersect
+            (ValueSet((1, 3)), ValueSet((4, 6)), True),
+            # Ranges: ends touch
+            (ValueSet((1, 3)), ValueSet((3, 6)), False),
+            # Ranges: partial overlap
+            (ValueSet((1, 4)), ValueSet((3, 6)), False),
+            # Ranges: identical
+            (ValueSet((3, 6)), ValueSet((3, 6)), False),
+            # Ranges: superset
+            (ValueSet((2, 6)), ValueSet((3, 6)), False),
+            (ValueSet((3, 7)), ValueSet((3, 6)), False),
+            (ValueSet((2, 7)), ValueSet((3, 6)), False),
+        ],
+    )
+    def test_is_disjoint(self, a, b, expected):
+        assert a.is_disjoint(b) is expected
+        assert b.is_disjoint(a) is expected
+
     def test_iter(self):
         vs = ValueSet()
 
@@ -175,6 +212,22 @@ class TestValueSet(object):
         vs.add_range(10, 20)
         vs.add_range(30, 40)
         assert set(vs) == set([1, 2, 3, (10, 20), (30, 40)])
+
+    def test_iter_values(self):
+        vs = ValueSet()
+
+        assert set(vs.iter_values()) == set()
+
+        vs.add_value(1)
+        vs.add_value(2)
+        vs.add_value(3)
+        assert set(vs.iter_values()) == set([1, 2, 3])
+
+        vs.add_range(10, 13)
+        vs.add_range(15, 20)
+        assert set(vs.iter_values()) == set(
+            [1, 2, 3, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20]
+        )
 
     def test_compare(self):
         assert ValueSet() == ValueSet()
@@ -238,6 +291,11 @@ class TestAnyValue(object):
 
         assert AnyValue() != ValueSet()
         assert ValueSet() != AnyValue()
+
+    def test_is_disjoint(self):
+        assert AnyValue().is_disjoint(AnyValue()) is False
+        assert AnyValue().is_disjoint(ValueSet()) is True
+        assert AnyValue().is_disjoint(ValueSet(1)) is False
 
     def test_repr(self):
         assert repr(AnyValue()) == "AnyValue()"
@@ -346,6 +404,21 @@ class TestAllowedValuesFor(object):
             "foo",
             {"bar": 123},
         ) == ValueSet(1, 3)
+
+    def test_any_value_substitution(self):
+        allowed_values = [
+            {"foo": AnyValue(), "bar": ValueSet(123)},
+            {"foo": ValueSet(2), "bar": ValueSet(321)},
+            {"foo": ValueSet(3), "bar": ValueSet(123)},
+        ]
+
+        # No substitution
+        assert allowed_values_for(allowed_values, "foo", {"bar": 123}) == AnyValue()
+
+        # With substitution
+        assert allowed_values_for(
+            allowed_values, "foo", {"bar": 123}, ValueSet(1, 2, 3, 4),
+        ) == ValueSet(1, 2, 3, 4)
 
 
 def test_read_constraints_from_csv():

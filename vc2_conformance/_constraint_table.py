@@ -162,6 +162,35 @@ class ValueSet(object):
 
         return False
 
+    def is_disjoint(self, other):
+        """
+        Test if this :py:class:`ValueSet` is disjoint from another -- i.e. they
+        share no common values.
+        """
+        if isinstance(other, AnyValue):
+            # Special case: only the empty ValueSet is disjoint from the
+            # AnyValue value set.
+            if self._values or self._ranges:
+                return False
+            else:
+                return True
+        else:
+            # Check for values which overlap
+            for a, b in [(self, other), (other, self)]:
+                for value in a._values:
+                    if value in b:
+                        return False
+
+            # Check for ranges which overlap
+            for a, b in [(self, other), (other, self)]:
+                for start, end in a._ranges:
+                    if start in b:
+                        return False
+                    if end in b:
+                        return False
+
+            return True
+
     def __eq__(self, other):
         return (
             not isinstance(other, AnyValue)
@@ -201,6 +230,17 @@ class ValueSet(object):
         for range in self._ranges:
             yield range
 
+    def iter_values(self):
+        """
+        Iterate over the values (including the enumerated values of ranges) in
+        this value set.
+        """
+        for value in self._values:
+            yield value
+        for low, high in self._ranges:
+            for value in range(low, high + 1):
+                yield value
+
     def __repr__(self):
         return "{}({})".format(type(self).__name__, ", ".join(map(repr, self)),)
 
@@ -238,6 +278,12 @@ class AnyValue(ValueSet):
     def __contains__(self, value):
         return True
 
+    def is_disjoint(self, other):
+        if isinstance(other, AnyValue):
+            return False
+        else:
+            return other.is_disjoint(self)
+
     def __eq__(self, other):
         return isinstance(other, AnyValue)
 
@@ -246,6 +292,9 @@ class AnyValue(ValueSet):
 
     def __iter__(self):
         raise AttributeError("__iter__")
+
+    def iter_values(self):
+        raise AttributeError("iter_values")
 
     def __repr__(self):
         return "{}()".format(type(self).__name__)
@@ -285,18 +334,32 @@ def is_allowed_combination(allowed_values, values):
     return len(filter_allowed_values(allowed_values, values)) > 0
 
 
-def allowed_values_for(allowed_values, key, values={}):
+def allowed_values_for(allowed_values, key, values={}, any_value=AnyValue()):
     """
     Return the :py:class:`ValueSet` which matches the allowable values which
     might be added to the specified key given the existing values in
     ``values``.
+
+    Parameters
+    ==========
+    allowed_values : [{key: :py:class:`ValueSet`, ...}, ...]
+    key : key
+    values : {key: value, ...}
+        Optional. The values already chosen. (Default: assume nothing chosen).
+    any_value : :py:class:`ValueSet`
+        Optional. If :py:class:`AnyValue` is allowed, this will be substituted
+        instead. This may be useful when :py:class:`AnyValue` is actually just
+        short-hand for a more concrete set of values.
     """
     out = ValueSet()
 
     for allowed in filter_allowed_values(allowed_values, values):
         out += allowed.get(key, ValueSet())
 
-    return out
+    if isinstance(out, AnyValue):
+        return any_value
+    else:
+        return out
 
 
 def read_constraints_from_csv(csv_filename):
