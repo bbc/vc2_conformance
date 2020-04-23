@@ -763,7 +763,7 @@ class TestMakeTransformDataHQLossless(object):
 )
 def test_get_safe_lossy_hq_slice_size_scaler(picture_bytes, exp_slice_size_scaler):
     assert (
-        get_safe_lossy_hq_slice_size_scaler(picture_bytes, 3, 2)
+        get_safe_lossy_hq_slice_size_scaler(picture_bytes, 3 * 2)
         == exp_slice_size_scaler
     )
 
