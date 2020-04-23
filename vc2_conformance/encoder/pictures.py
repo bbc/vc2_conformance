@@ -552,6 +552,36 @@ def make_transform_data_hq_lossless(transform_coeffs):
     return slice_size_scaler, transform_data
 
 
+def get_safe_lossy_hq_slice_size_scaler(picture_bytes, slices_x, slices_y):
+    """
+    Return a slice_size_scaler which is guaranteed to be large enough for any
+    slice in a lossy HQ picture.
+
+    Parameters
+    ==========
+    picture_bytes : int
+        The total number of bytes the picture slices should take up (i.e.
+        including ``qindex`` and ``slice_{y,c1,c2}_length`` fields). Must allow
+        at least 4 bytes per slice.
+    slices_x, slices_y : int
+        Number of slices.
+
+    Returns
+    =======
+    slice_size_scaler : int
+        A safe slice size scaler to use.
+    """
+    num_slices = slices_x * slices_y
+    max_slice_bytes = (picture_bytes + num_slices - 1) // num_slices
+    max_length_field_value = max_slice_bytes - 4
+
+    # Find the smallest slice size scaler which lets this size fit into an 8
+    # bit length field.
+    slice_size_scaler = (max_length_field_value + 254) // 255
+
+    return slice_size_scaler
+
+
 def make_transform_data_hq_lossy(picture_bytes, transform_coeffs, minimum_qindex=0):
     """
     Quantize and pack transform coefficients into HQ picture slices in a
@@ -582,10 +612,11 @@ def make_transform_data_hq_lossy(picture_bytes, transform_coeffs, minimum_qindex
 
     # Determine the largest size a slice could be
     num_slices = slices_x * slices_y
-    max_slice_bytes = (picture_bytes + num_slices - 1) // num_slices
 
     # Find the smallest slice size scaler which lets this size fit into 8 bits
-    slice_size_scaler = (max_slice_bytes + 254) // 255
+    slice_size_scaler = get_safe_lossy_hq_slice_size_scaler(
+        picture_bytes, slices_x, slices_y,
+    )
 
     # Work out the total bitstream space available after slice overheads are
     # accounted for (NB: 4 bytes overhead per slice due to qindex and

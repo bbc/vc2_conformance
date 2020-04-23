@@ -70,6 +70,7 @@ from vc2_conformance.encoder.pictures import (
     make_hq_slice,
     make_ld_slice,
     make_transform_data_hq_lossless,
+    get_safe_lossy_hq_slice_size_scaler,
     make_transform_data_hq_lossy,
     interleave,
     make_transform_data_ld_lossy,
@@ -748,16 +749,38 @@ class TestMakeTransformDataHQLossless(object):
 @pytest.mark.parametrize(
     "picture_bytes,exp_slice_size_scaler",
     [
+        # No need for a slice size scaler (<259 bytes per slice)
+        (3 * 2 * 100, 1),
+        # Maximum slice size before we might need a slice size scaler
+        (3 * 2 * (255 + 4), 1),
+        # Just over the line
+        ((3 * 2 * (255 + 4)) + 1, 2),
+        # Just short of next threshold
+        ((3 * 2 * (255 + 255 + 4)), 2),
+        # Just over next threshold
+        ((3 * 2 * (255 + 255 + 4)) + 1, 3),
+    ],
+)
+def test_get_safe_lossy_hq_slice_size_scaler(picture_bytes, exp_slice_size_scaler):
+    assert (
+        get_safe_lossy_hq_slice_size_scaler(picture_bytes, 3, 2)
+        == exp_slice_size_scaler
+    )
+
+
+@pytest.mark.parametrize(
+    "picture_bytes,exp_slice_size_scaler",
+    [
         # In this example we're using 3x2 picture slices
         # 100 bytes per slice; easily fits
         (3 * 2 * 100, 1),
-        # Exactly 255 bytes per slice; *just* fits
-        (3 * 2 * 255, 1),
-        # *Just* over 255 bytes per slice; requires a scaler
-        (3 * 2 * 255 + 1, 2),
-        (3 * 2 * 255 + 2, 2),
-        (3 * 2 * 255 + 3, 2),
-        (3 * 2 * 255 + 4, 2),
+        # Exactly 259 bytes per slice; *just* fits
+        (3 * 2 * 259, 1),
+        # *Just* over 259 bytes per slice; requires a scaler
+        (3 * 2 * 259 + 1, 2),
+        (3 * 2 * 259 + 2, 2),
+        (3 * 2 * 259 + 3, 2),
+        (3 * 2 * 259 + 4, 2),
     ],
 )
 def test_make_transform_data_hq_lossy(picture_bytes, exp_slice_size_scaler):
