@@ -13,39 +13,30 @@ from vc2_conformance.test_cases import (
 
 from vc2_conformance.symbol_re import ImpossibleSequenceError
 
-from vc2_conformance.video_parameters import set_source_defaults
-
 from vc2_conformance.picture_generators import (
     static_sprite,
     repeat_pictures,
 )
 
 from vc2_conformance.encoder import (
-    rank_base_video_format_similarity,
-    iter_source_parameter_options,
+    iter_sequence_headers,
     make_sequence,
 )
 
 
-def replace_sequence_header_options(
-    sequence, base_video_format, source_parameters,
-):
+def replace_sequence_headers(sequence, sequence_header):
     r"""
-    Replace the :py:class:`~vc2_data_tables.BaseVideoFormats` and
-    :py:class:`~vc2_conformance.bitstream.SourceParameters` values of all
-    :py:class:`~vc2_conformance.bitstream.SequenceHeader`\ s in a
-    :py:class:`~vc2_conformance.bitstream.Sequence`.
+    Replace the :py:class:`~vc2_conformance.bitstream.SequenceHeader`\ s in a
+    :py:class:`~vc2_conformance.bitstream.Sequence` with the provided
+    alternative.
 
     A new sequence is returned and the old sequence left unmodified. Likewise
-    the ``source_parameters`` argument will be copied into the new sequence and
-    not referenced.
+    the ``sequence_header`` argument will be copied.
     """
     sequence = deepcopy(sequence)
     for data_unit in sequence["data_units"]:
         if data_unit["parse_info"]["parse_code"] == ParseCodes.sequence_header:
-            sequence_header = data_unit["sequence_header"]
-            sequence_header["base_video_format"] = base_video_format
-            sequence_header["video_parameters"] = deepcopy(source_parameters)
+            data_unit["sequence_header"] = deepcopy(sequence_header)
 
     return sequence
 
@@ -70,46 +61,41 @@ def source_parameters_encodings(codec_features):
         ),
     )
 
-    base_video_formats = rank_base_video_format_similarity(
-        codec_features["video_parameters"],
-    )
+    # To keep the number of tests sensible, we'll include all sequence header
+    # encodings using the best-matching base video format followed by the
+    # least-custom-overridden encoding for all other base video formats. This
+    # checks out as many 'custom' flags as possible (against the best-matching
+    # base video format) and also checks (as best possible) the other base
+    # video format values are correct.
+    best_base_video_format = None
+    last_base_video_format = None
+    for i, sequence_header in enumerate(iter_sequence_headers(codec_features)):
+        base_video_format = sequence_header["base_video_format"]
 
-    # Try using every possible setting of all custom override flags, starting
-    # with the mostly closely matched base video format available.
-    best_base_video_format = base_video_formats[0]
-    source_parameter_sets = list(
-        iter_source_parameter_options(
-            set_source_defaults(best_base_video_format),
-            codec_features["video_parameters"],
-        )
-    )
-    for i, source_parameters in enumerate(source_parameter_sets):
-        yield TestCase(
-            replace_sequence_header_options(
-                base_sequence, best_base_video_format, source_parameters,
-            ),
-            "custom_flags_combination_{}_of_{}_base_video_format_{:d}".format(
-                i + 1, len(source_parameter_sets), best_base_video_format,
-            ),
-        )
+        # The iter_sequence_headers function returns headers with the best
+        # matching base video format first
+        if best_base_video_format is None:
+            best_base_video_format = base_video_format
 
-    # Try using all of the other base video formats (and using as few custom
-    # overrides as possible to ensure the base format is supported correctly).
-    for base_video_format in sorted(base_video_formats[1:]):
-        source_parameters = next(
-            iter(
-                iter_source_parameter_options(
-                    set_source_defaults(base_video_format),
-                    codec_features["video_parameters"],
-                )
+        # The iter_source_parameter_options produces sequence headers with
+        # base video formats grouped consecutively. The first example of each
+        # will use the fewest possible 'custom' flags and therefore best tests
+        # that the base video format parameters are correct in the decoder.
+        first_example_of_base_video_format = base_video_format != last_base_video_format
+        last_base_video_format = base_video_format
+
+        if base_video_format == best_base_video_format:
+            yield TestCase(
+                replace_sequence_headers(base_sequence, sequence_header),
+                "custom_flags_combination_{}_base_video_format_{:d}".format(
+                    i + 1, base_video_format,
+                ),
             )
-        )
-        yield TestCase(
-            replace_sequence_header_options(
-                base_sequence, base_video_format, source_parameters,
-            ),
-            "base_video_format_{:d}".format(base_video_format,),
-        )
+        elif first_example_of_base_video_format:
+            yield TestCase(
+                replace_sequence_headers(base_sequence, sequence_header),
+                "base_video_format_{:d}".format(base_video_format),
+            )
 
 
 @decoder_test_case_generator

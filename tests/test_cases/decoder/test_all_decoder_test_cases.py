@@ -64,6 +64,7 @@ with alternative_real_pictures():
 def test_names_unique():
     for codec_features, test_cases in ALL_TEST_CASES:
         names = [tc.name for tc in test_cases]
+        print("\n".join(sorted(names)))
         assert len(set(names)) == len(names)
 
 

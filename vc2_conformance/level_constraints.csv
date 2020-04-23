@@ -2,7 +2,7 @@
 # See vc2_conformance/level_constraints.py for meanings of the values in the table,,,,,,,,,,,,,,,,,,,,,,
 # See vc2_conformance/_constraint_table.py for details of how constraint tables are parsed and enforced,,,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,
-# (11.2.1),# Unconcstrained,# Sub-SD,# SD480i-60,# SD480p-30,# SD Interlaced,# SD Progressive,# HD Progressive,# HD Interlaced,# HD Interlaced as progressive,# D-Cinema 2K,# D-Cinema 4K,# UHDTV 4K,# UHDTV 8K,# 1080p60 over SDI,# 1080p50 over SDI,# 720p60 over SD SDI,# 720p50 over SD SDI,# 1080p60 over SD SDI,# 1080p50 over SD SDI,# 1440x1080p60 over SD SDI,# 1440x1080p50 over SD SDI,# UHD over HD
+# (11.2.1),# Unconcstrained,# Sub-SD,# SD480i-60,# SD480p-30,# SD Interlaced,# SD Progressive,# HD Progressive,# HD Interlaced,# HD Interlaced as progressive,# D-Cinema 2K,# D-Cinema 4K,# UHDTV 4K,# UHDTV 8K,# 1080p60 over SDI,# 1080p50 over SDI,# 720p60 over SD SDI,# 720p50 over SD SDI,# 1080i60 over SD SDI,# 1080i50 over SD SDI,# 1440x1080i60 over SD SDI,# 1440x1080i50 over SD SDI,# UHD over HD
 level,0,1,2,"""","""","""",3,"""","""",4,5,6,7,64,"""",65,"""","""","""","""","""",66
 profile,any,any,any,"""","""","""",any,"""","""",any,any,any,any,0,"""",0,"""","""","""","""","""",3
 major_version,any,any,any,"""","""","""",any,"""","""",any,any,any,any,2,"""",2,"""","""","""","""","""",any
@@ -54,13 +54,13 @@ color_diff_excursion,any,,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,
 # (11.4.10),,,,,,,,,,,,,,,,,,,,,,
 custom_color_spec_flag,any,FALSE,FALSE,"""","""","""",FALSE,"""","""",FALSE,FALSE,FALSE,FALSE,FALSE,"""",FALSE,"""","""","""","""","""",FALSE
-custom_color_spec_index,any,,,,,,,,,,,,,,,,,,,,,
+color_spec_index,any,,,,,,,,,,,,,,,,,,,,,
 custom_color_primaries_flag,any,,,,,,,,,,,,,,,,,,,,,FALSE
-custom_color_primaries_index,any,,,,,,,,,,,,,,,,,,,,,
+color_primaries_index,any,,,,,,,,,,,,,,,,,,,,,
 custom_color_matrix_flag,any,,,,,,,,,,,,,,,,,,,,,FALSE
-custom_color_matrix_index,any,,,,,,,,,,,,,,,,,,,,,
+color_matrix_index,any,,,,,,,,,,,,,,,,,,,,,
 custom_transfer_function_flag,any,,,,,,,,,,,,,,,,,,,,,FALSE
-custom_transfer_function_index,any,,,,,,,,,,,,,,,,,,,,,
+transfer_function_index,any,,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,
 # (12.4.1),,,,,,,,,,,,,,,,,,,,,,
 wavelet_index,any,"0,1,2,3,4","0,1,2,3,4","""","""","""","0,1,2,3,4","""","""","0,1,2,3,4","0,1,2,3,4","0,1,2,3,4","0,1,2,3,4",4,"""",1,"""","""","""","""","""",1

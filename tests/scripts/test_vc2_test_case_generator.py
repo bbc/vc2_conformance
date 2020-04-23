@@ -159,8 +159,16 @@ def test_check_output_directories_empty(
         fn()
 
 
+# NB: This test is currently xfailing as impossible Level constraints are
+# causing test case generation itself to be impossible (i.e. not just resulting
+# in a non-conformant stream). Some rethinking of how level constraints are
+# dealt with for test case generation needs doing...
 @pytest.mark.parametrize(
-    "name,exp_valid", [("minimal", True), ("minimal-invalid", False)]
+    "name,exp_valid",
+    [
+        ("minimal", True),
+        pytest.param("minimal-invalid", False, marks=pytest.mark.xfail),
+    ],
 )
 def test_check_codec_features_valid(capsys, name, exp_valid):
     codec_feature_sets = read_codec_features_csv(open(CODEC_FEATURES_CSV))

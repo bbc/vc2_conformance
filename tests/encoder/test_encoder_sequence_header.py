@@ -1,5 +1,7 @@
 import pytest
 
+from copy import deepcopy
+
 from io import BytesIO
 
 from collections import defaultdict
@@ -7,7 +9,13 @@ from collections import defaultdict
 from vc2_data_tables import (
     Profiles,
     Levels,
+    ParseCodes,
     BaseVideoFormats,
+    BASE_VIDEO_FORMAT_PARAMETERS,
+    PictureCodingModes,
+    SourceSamplingModes,
+    ColorDifferenceSamplingFormats,
+    WaveletFilters,
     PresetPixelAspectRatios,
     PRESET_PIXEL_ASPECT_RATIOS,
     PresetColorPrimaries,
@@ -16,9 +24,14 @@ from vc2_data_tables import (
     PresetColorSpecs,
 )
 
+from vc2_conformance.codec_features import CodecFeatures
+
+from vc2_conformance._constraint_table import ValueSet, AnyValue
+
 from vc2_conformance.bitstream import (
     BitstreamWriter,
     Serialiser,
+    ParseInfo,
     FrameSize,
     PixelAspectRatio,
     ColorPrimaries,
@@ -30,12 +43,20 @@ from vc2_conformance.bitstream import (
 from vc2_conformance.bitstream.vc2 import (
     source_parameters,
     parse_parameters,
+    parse_info,
     sequence_header,
 )
 
 from vc2_conformance.bitstream.vc2_fixeddicts import vc2_default_values
 
 from vc2_conformance.state import State
+
+from vc2_conformance.decoder import (
+    init_io,
+    parse_sequence,
+    UnexpectedEndOfStream,
+    InconsistentNextParseOffset,
+)
 
 from vc2_conformance.video_parameters import (
     VideoParameters,
@@ -49,11 +70,68 @@ from vc2_conformance.encoder.sequence_header import (
     iter_source_parameter_options,
     count_video_parameter_differences,
     rank_base_video_format_similarity,
+    rank_allowed_base_video_format_similarity,
     make_parse_parameters,
+    IncompatibleLevelAndVideoFormatError,
+    iter_sequence_headers,
     make_sequence_header,
 )
 
 from sample_codec_features import MINIMAL_CODEC_FEATURES
+
+
+HD_1440X1080I60_OVER_SD_SDI_CODEC_FEATURES = CodecFeatures(
+    level=Levels.hd_over_sd_sdi,
+    profile=Profiles.low_delay,
+    major_version=2,
+    minor_version=0,
+    picture_coding_mode=PictureCodingModes.pictures_are_fields,
+    video_parameters=VideoParameters(
+        frame_width=1440,
+        frame_height=1080,
+        color_diff_format_index=ColorDifferenceSamplingFormats.color_4_2_2,
+        source_sampling=SourceSamplingModes.interlaced,
+        top_field_first=True,
+        frame_rate_numer=30000,
+        frame_rate_denom=1001,
+        pixel_aspect_ratio_numer=4,
+        pixel_aspect_ratio_denom=3,
+        clean_width=1440,
+        clean_height=1080,
+        left_offset=0,
+        top_offset=0,
+        luma_offset=64,
+        luma_excursion=876,
+        color_diff_offset=512,
+        color_diff_excursion=896,
+        color_primaries_index=PresetColorPrimaries.hdtv,
+        color_matrix_index=PresetColorMatrices.hdtv,
+        transfer_function_index=PresetTransferFunctions.tv_gamma,
+    ),
+    wavelet_index=WaveletFilters.le_gall_5_3,
+    wavelet_index_ho=WaveletFilters.le_gall_5_3,
+    dwt_depth=3,
+    dwt_depth_ho=0,
+    slices_x=90,
+    slices_y=68,
+    fragment_slice_count=0,
+    lossless=False,
+    picture_bytes=(972 * 90 * 68) // 17,
+    quantization_matrix=None,
+)
+
+
+HD_1440X1080I50_OVER_SD_SDI_CODEC_FEATURES = CodecFeatures(
+    HD_1440X1080I60_OVER_SD_SDI_CODEC_FEATURES,
+    video_parameters=VideoParameters(
+        HD_1440X1080I60_OVER_SD_SDI_CODEC_FEATURES["video_parameters"],
+        frame_rate_numer=25,
+        frame_rate_denom=1,
+    ),
+    slices_x=90,
+    slices_y=68,
+    picture_bytes=(1152 * 90 * 68) // 17,
+)
 
 
 class TestZipLongestRepeatingFinalValue(object):
@@ -93,12 +171,13 @@ class TestZipLongestRepeatingFinalValue(object):
 
 class TestIterCustomOptionsDicts(object):
     @pytest.mark.parametrize(
-        "bvp,vp,exp",
+        "bvp,vp,lcd,exp",
         [
             # Override required
             (
                 VideoParameters(frame_width=640, frame_height=480,),
                 VideoParameters(frame_width=1920, frame_height=1080,),
+                defaultdict(AnyValue),
                 [
                     FrameSize(
                         custom_dimensions_flag=True,
@@ -111,6 +190,7 @@ class TestIterCustomOptionsDicts(object):
             (
                 VideoParameters(frame_width=1920, frame_height=1080,),
                 VideoParameters(frame_width=1920, frame_height=1080,),
+                defaultdict(AnyValue),
                 [
                     FrameSize(custom_dimensions_flag=False,),
                     FrameSize(
@@ -120,13 +200,48 @@ class TestIterCustomOptionsDicts(object):
                     ),
                 ],
             ),
+            # Force no-custom by disallowing the custom flag
+            (
+                VideoParameters(frame_width=1920, frame_height=1080,),
+                VideoParameters(frame_width=1920, frame_height=1080,),
+                defaultdict(AnyValue, custom_dimensions_flag=ValueSet(False)),
+                [FrameSize(custom_dimensions_flag=False,)],
+            ),
+            # Force no-custom by disallowing the required dimensions
+            (
+                VideoParameters(frame_width=1920, frame_height=1080,),
+                VideoParameters(frame_width=1920, frame_height=1080,),
+                defaultdict(AnyValue, frame_height=ValueSet(720)),
+                [FrameSize(custom_dimensions_flag=False,)],
+            ),
+            # Force custom flag
+            (
+                VideoParameters(frame_width=1920, frame_height=1080,),
+                VideoParameters(frame_width=1920, frame_height=1080,),
+                defaultdict(AnyValue, custom_dimensions_flag=ValueSet(True)),
+                [
+                    FrameSize(
+                        custom_dimensions_flag=True,
+                        frame_width=1920,
+                        frame_height=1080,
+                    ),
+                ],
+            ),
+            # Make impossible
+            (
+                VideoParameters(frame_width=1920, frame_height=720,),
+                VideoParameters(frame_width=1920, frame_height=1080,),
+                defaultdict(AnyValue, frame_height=ValueSet(720)),
+                [],
+            ),
         ],
     )
-    def test_no_presets(self, bvp, vp, exp):
+    def test_no_presets(self, bvp, vp, lcd, exp):
         dicts = list(
             iter_custom_options_dicts(
                 bvp,
                 vp,
+                lcd,
                 dict_type=FrameSize,
                 flag_key="custom_dimensions_flag",
                 parameters=["frame_width", "frame_height"],
@@ -136,7 +251,7 @@ class TestIterCustomOptionsDicts(object):
         assert dicts == exp
 
     @pytest.mark.parametrize(
-        "bvp,vp,exp",
+        "bvp,vp,lcd,exp",
         [
             # Custom required (no preset available)
             (
@@ -146,6 +261,7 @@ class TestIterCustomOptionsDicts(object):
                 VideoParameters(
                     pixel_aspect_ratio_numer=2, pixel_aspect_ratio_denom=1,
                 ),
+                defaultdict(AnyValue),
                 [
                     PixelAspectRatio(
                         custom_pixel_aspect_ratio_flag=True,
@@ -163,6 +279,7 @@ class TestIterCustomOptionsDicts(object):
                 VideoParameters(
                     pixel_aspect_ratio_numer=4, pixel_aspect_ratio_denom=3,
                 ),
+                defaultdict(AnyValue),
                 [
                     PixelAspectRatio(
                         custom_pixel_aspect_ratio_flag=True,
@@ -184,6 +301,7 @@ class TestIterCustomOptionsDicts(object):
                 VideoParameters(
                     pixel_aspect_ratio_numer=1, pixel_aspect_ratio_denom=1,
                 ),
+                defaultdict(AnyValue),
                 [
                     PixelAspectRatio(custom_pixel_aspect_ratio_flag=False,),
                     PixelAspectRatio(
@@ -198,17 +316,102 @@ class TestIterCustomOptionsDicts(object):
                     ),
                 ],
             ),
+            # Force no-custom by disallowing the flag
+            (
+                VideoParameters(
+                    pixel_aspect_ratio_numer=1, pixel_aspect_ratio_denom=1,
+                ),
+                VideoParameters(
+                    pixel_aspect_ratio_numer=1, pixel_aspect_ratio_denom=1,
+                ),
+                defaultdict(AnyValue, custom_pixel_aspect_ratio_flag=ValueSet(False)),
+                [PixelAspectRatio(custom_pixel_aspect_ratio_flag=False,)],
+            ),
+            # Force no-custom by disallowing required indices
+            (
+                VideoParameters(
+                    pixel_aspect_ratio_numer=1, pixel_aspect_ratio_denom=1,
+                ),
+                VideoParameters(
+                    pixel_aspect_ratio_numer=1, pixel_aspect_ratio_denom=1,
+                ),
+                defaultdict(AnyValue, pixel_aspect_ratio_index=ValueSet(99)),
+                [PixelAspectRatio(custom_pixel_aspect_ratio_flag=False,)],
+            ),
+            # Force no full custom by disallowing 0 index
+            (
+                VideoParameters(
+                    pixel_aspect_ratio_numer=1, pixel_aspect_ratio_denom=1,
+                ),
+                VideoParameters(
+                    pixel_aspect_ratio_numer=1, pixel_aspect_ratio_denom=1,
+                ),
+                defaultdict(
+                    AnyValue,
+                    pixel_aspect_ratio_index=ValueSet(
+                        PresetPixelAspectRatios.ratio_1_1
+                    ),
+                ),
+                [
+                    PixelAspectRatio(custom_pixel_aspect_ratio_flag=False,),
+                    PixelAspectRatio(
+                        custom_pixel_aspect_ratio_flag=True,
+                        index=PresetPixelAspectRatios.ratio_1_1,
+                    ),
+                ],
+            ),
+            # Force full custom
+            (
+                VideoParameters(
+                    pixel_aspect_ratio_numer=1, pixel_aspect_ratio_denom=1,
+                ),
+                VideoParameters(
+                    pixel_aspect_ratio_numer=1, pixel_aspect_ratio_denom=1,
+                ),
+                defaultdict(
+                    AnyValue,
+                    custom_pixel_aspect_ratio_flag=ValueSet(True),
+                    pixel_aspect_ratio_index=ValueSet(0),
+                ),
+                [
+                    PixelAspectRatio(
+                        custom_pixel_aspect_ratio_flag=True,
+                        index=0,
+                        pixel_aspect_ratio_numer=1,
+                        pixel_aspect_ratio_denom=1,
+                    ),
+                ],
+            ),
+            # Make impossible
+            (
+                VideoParameters(
+                    pixel_aspect_ratio_numer=1, pixel_aspect_ratio_denom=1,
+                ),
+                VideoParameters(
+                    pixel_aspect_ratio_numer=1, pixel_aspect_ratio_denom=1,
+                ),
+                defaultdict(
+                    AnyValue,
+                    custom_pixel_aspect_ratio_flag=ValueSet(True),
+                    pixel_aspect_ratio_index=ValueSet(0),
+                    pixel_aspect_ratio_numer=ValueSet(1),
+                    pixel_aspect_ratio_denom=ValueSet(2),
+                ),
+                [],
+            ),
         ],
     )
-    def test_with_presets(self, bvp, vp, exp):
+    def test_with_presets(self, bvp, vp, lcd, exp):
         dicts = list(
             iter_custom_options_dicts(
                 bvp,
                 vp,
+                lcd,
                 dict_type=PixelAspectRatio,
                 flag_key="custom_pixel_aspect_ratio_flag",
                 parameters=["pixel_aspect_ratio_numer", "pixel_aspect_ratio_denom"],
                 presets=PRESET_PIXEL_ASPECT_RATIOS,
+                preset_index_constraint_key="pixel_aspect_ratio_index",
             )
         )
 
@@ -247,9 +450,11 @@ class TestIterCustomOptionsDicts(object):
             iter_custom_options_dicts(
                 bvp,
                 vp,
+                defaultdict(AnyValue),
                 dict_type=ColorPrimaries,
                 flag_key="custom_color_primaries_flag",
                 parameters=[("color_primaries_index", "index")],
+                preset_index_constraint_key="color_primaries_index",
             )
         )
 
@@ -257,7 +462,7 @@ class TestIterCustomOptionsDicts(object):
 
 
 @pytest.mark.parametrize(
-    "bvp,vp,exp",
+    "bvp,vp,lcd, exp",
     [
         # Built-in combination, optionally specified
         (
@@ -271,6 +476,7 @@ class TestIterCustomOptionsDicts(object):
                 color_matrix_index=PresetColorMatrices.hdtv,
                 transfer_function_index=PresetTransferFunctions.tv_gamma,
             ),
+            defaultdict(AnyValue),
             [
                 ColorSpec(custom_color_spec_flag=False,),
                 ColorSpec(custom_color_spec_flag=True, index=PresetColorSpecs.hdtv,),
@@ -312,6 +518,7 @@ class TestIterCustomOptionsDicts(object):
                 color_matrix_index=PresetColorMatrices.hdtv,
                 transfer_function_index=PresetTransferFunctions.linear,
             ),
+            defaultdict(AnyValue),
             [
                 ColorSpec(
                     custom_color_spec_flag=True,
@@ -340,10 +547,137 @@ class TestIterCustomOptionsDicts(object):
                 ),
             ],
         ),
+        # Custom not allowed (by disabling flag)
+        (
+            VideoParameters(
+                color_primaries_index=PresetColorPrimaries.hdtv,
+                color_matrix_index=PresetColorMatrices.hdtv,
+                transfer_function_index=PresetTransferFunctions.tv_gamma,
+            ),
+            VideoParameters(
+                color_primaries_index=PresetColorPrimaries.hdtv,
+                color_matrix_index=PresetColorMatrices.hdtv,
+                transfer_function_index=PresetTransferFunctions.tv_gamma,
+            ),
+            defaultdict(AnyValue, custom_color_spec_flag=ValueSet(False)),
+            [ColorSpec(custom_color_spec_flag=False)],
+        ),
+        # Custom not allowed (by disabling usable index and invalidating
+        # required combination of explicit values)
+        (
+            VideoParameters(
+                color_primaries_index=PresetColorPrimaries.d_cinema,
+                color_matrix_index=PresetColorMatrices.reversible,
+                transfer_function_index=PresetTransferFunctions.d_cinema,
+            ),
+            VideoParameters(
+                color_primaries_index=PresetColorPrimaries.d_cinema,
+                color_matrix_index=PresetColorMatrices.reversible,
+                transfer_function_index=PresetTransferFunctions.d_cinema,
+            ),
+            defaultdict(
+                AnyValue,
+                color_spec_index=ValueSet(0),
+                custom_color_primaries_flag=ValueSet(False),
+                custom_color_matrix_flag=ValueSet(False),
+                custom_transfer_function_flag=ValueSet(False),
+            ),
+            [ColorSpec(custom_color_spec_flag=False)],
+        ),
+        # Full custom not allowed (by disabling index 0)
+        (
+            VideoParameters(
+                color_primaries_index=PresetColorPrimaries.d_cinema,
+                color_matrix_index=PresetColorMatrices.reversible,
+                transfer_function_index=PresetTransferFunctions.d_cinema,
+            ),
+            VideoParameters(
+                color_primaries_index=PresetColorPrimaries.d_cinema,
+                color_matrix_index=PresetColorMatrices.reversible,
+                transfer_function_index=PresetTransferFunctions.d_cinema,
+            ),
+            defaultdict(
+                AnyValue, color_spec_index=ValueSet(PresetColorSpecs.d_cinema),
+            ),
+            [
+                ColorSpec(custom_color_spec_flag=False),
+                ColorSpec(
+                    custom_color_spec_flag=True, index=PresetColorSpecs.d_cinema,
+                ),
+            ],
+        ),
+        # Full custom required
+        (
+            VideoParameters(
+                color_primaries_index=PresetColorPrimaries.d_cinema,
+                color_matrix_index=PresetColorMatrices.reversible,
+                transfer_function_index=PresetTransferFunctions.d_cinema,
+            ),
+            VideoParameters(
+                color_primaries_index=PresetColorPrimaries.d_cinema,
+                color_matrix_index=PresetColorMatrices.reversible,
+                transfer_function_index=PresetTransferFunctions.d_cinema,
+            ),
+            defaultdict(
+                AnyValue,
+                custom_color_spec_flag=ValueSet(True),
+                color_spec_index=ValueSet(0),
+            ),
+            [
+                ColorSpec(
+                    custom_color_spec_flag=True,
+                    index=0,
+                    color_primaries=ColorPrimaries(
+                        custom_color_primaries_flag=True,
+                        index=PresetColorPrimaries.d_cinema,
+                    ),
+                    color_matrix=ColorMatrix(
+                        custom_color_matrix_flag=True,
+                        index=PresetColorMatrices.reversible,
+                    ),
+                    transfer_function=TransferFunction(
+                        custom_transfer_function_flag=True,
+                        index=PresetTransferFunctions.d_cinema,
+                    ),
+                ),
+            ],
+        ),
+        # Impossible (because custom disabled)
+        (
+            VideoParameters(
+                color_primaries_index=PresetColorPrimaries.hdtv,
+                color_matrix_index=PresetColorMatrices.hdtv,
+                transfer_function_index=PresetTransferFunctions.tv_gamma,
+            ),
+            VideoParameters(
+                color_primaries_index=PresetColorPrimaries.d_cinema,
+                color_matrix_index=PresetColorMatrices.reversible,
+                transfer_function_index=PresetTransferFunctions.d_cinema,
+            ),
+            defaultdict(AnyValue, custom_color_spec_flag=ValueSet(False),),
+            [],
+        ),
+        # Impossible (because underlying parameters cannot be customised)
+        (
+            VideoParameters(
+                color_primaries_index=PresetColorPrimaries.hdtv,
+                color_matrix_index=PresetColorMatrices.hdtv,
+                transfer_function_index=PresetTransferFunctions.tv_gamma,
+            ),
+            VideoParameters(
+                color_primaries_index=PresetColorPrimaries.d_cinema,
+                color_matrix_index=PresetColorMatrices.reversible,
+                transfer_function_index=PresetTransferFunctions.tv_gamma,
+            ),
+            defaultdict(
+                AnyValue, color_primaries_index=ValueSet(PresetColorPrimaries.hdtv)
+            ),
+            [],
+        ),
     ],
 )
-def test_iter_color_spec_options(bvp, vp, exp):
-    assert list(iter_color_spec_options(bvp, vp)) == exp
+def test_iter_color_spec_options(bvp, vp, lcd, exp):
+    assert list(iter_color_spec_options(bvp, vp, lcd)) == exp
 
 
 class TestIterSourceParameterOptions(object):
@@ -355,9 +689,12 @@ class TestIterSourceParameterOptions(object):
         # functions.
         base_video_format = BaseVideoFormats.hd1080p_50
         video_parameters = set_source_defaults(base_video_format)
+        level_constraints_dict = defaultdict(AnyValue)
 
         source_parameters_sets = list(
-            iter_source_parameter_options(video_parameters, video_parameters,)
+            iter_source_parameter_options(
+                video_parameters, video_parameters, level_constraints_dict
+            )
         )
 
         for context in source_parameters_sets:
@@ -378,9 +715,12 @@ class TestIterSourceParameterOptions(object):
 
         base_video_format = BaseVideoFormats.hd1080p_50
         video_parameters = set_source_defaults(base_video_format)
+        level_constraints_dict = defaultdict(AnyValue)
 
         source_parameters_sets = list(
-            iter_source_parameter_options(video_parameters, video_parameters,)
+            iter_source_parameter_options(
+                video_parameters, video_parameters, level_constraints_dict
+            )
         )
 
         # {flag_name: set([bool, ...]), ...}
@@ -410,10 +750,29 @@ class TestIterSourceParameterOptions(object):
     def test_mismatched_top_field_first(self):
         base_video_parameters = set_source_defaults(BaseVideoFormats.custom_format)
         video_parameters = set_source_defaults(BaseVideoFormats.hd1080p_50)
+        level_constraints_dict = defaultdict(AnyValue)
 
         assert (
             list(
-                iter_source_parameter_options(base_video_parameters, video_parameters,)
+                iter_source_parameter_options(
+                    base_video_parameters, video_parameters, level_constraints_dict
+                )
+            )
+            == []
+        )
+
+    def test_unsatisfiable_level_constraints(self):
+        base_video_parameters = set_source_defaults(BaseVideoFormats.hd720p_50)
+        video_parameters = set_source_defaults(BaseVideoFormats.hd1080p_50)
+        level_constraints_dict = defaultdict(
+            AnyValue, custom_dimensions_flag=ValueSet(False),
+        )
+
+        assert (
+            list(
+                iter_source_parameter_options(
+                    base_video_parameters, video_parameters, level_constraints_dict
+                )
             )
             == []
         )
@@ -490,10 +849,56 @@ class TestRankBaseVideoFormatSimilarity(object):
         for index in rank_base_video_format_similarity(video_parameters):
             assert set_source_defaults(index)["top_field_first"] == top_field_first
 
+    def test_match_against_subset(self):
+        video_parameters = VideoParameters(top_field_first=True)
 
-def serialise(context, pseudocode, state=None, *args, **kwargs):
+        candidates = [
+            BaseVideoFormats.hd1080p_50,
+            BaseVideoFormats.hd1080p_60,
+            BaseVideoFormats.hd720p_50,
+            BaseVideoFormats.hd720p_60,
+        ]
+
+        assert set(
+            rank_base_video_format_similarity(video_parameters, candidates)
+        ) == set(candidates)
+
+
+class TestRankAllowedBaseVideoFormatSimilarity(object):
+    def test_unconstrained(self):
+        base_video_formats = rank_allowed_base_video_format_similarity(
+            MINIMAL_CODEC_FEATURES
+        )
+
+        suitable_base_video_formats = set(
+            index
+            for index, params in BASE_VIDEO_FORMAT_PARAMETERS.items()
+            if params.top_field_first is True
+        )
+
+        assert set(base_video_formats) == suitable_base_video_formats
+
+    def test_constrained_by_level(self):
+        base_video_formats = rank_allowed_base_video_format_similarity(
+            HD_1440X1080I60_OVER_SD_SDI_CODEC_FEATURES
+        )
+
+        assert base_video_formats == [
+            BaseVideoFormats.hd1080i_60,
+            BaseVideoFormats.hd1080i_50,
+        ]
+
+    def test_impossible(self):
+        codec_features = deepcopy(HD_1440X1080I60_OVER_SD_SDI_CODEC_FEATURES)
+        codec_features["video_parameters"]["top_field_first"] = False
+
+        assert rank_allowed_base_video_format_similarity(codec_features) == []
+
+
+def serialise(context, pseudocode, state=None, file=None, *args, **kwargs):
     state = state if state is not None else State()
-    with Serialiser(BitstreamWriter(BytesIO()), context, vc2_default_values,) as ser:
+    file = file if file is not None else BytesIO()
+    with Serialiser(BitstreamWriter(file), context, vc2_default_values,) as ser:
         return pseudocode(ser, state, *args, **kwargs)
 
 
@@ -506,8 +911,50 @@ def test_make_parse_parameters():
     assert state["level"] == Levels.unconstrained
 
 
-def test_make_sequence_header():
-    video_parameters = serialise(
-        make_sequence_header(MINIMAL_CODEC_FEATURES), sequence_header,
+@pytest.mark.parametrize(
+    "codec_features",
+    [
+        # A fairly generic and unconstrained set
+        MINIMAL_CODEC_FEATURES,
+        # A level-constrained format (for which the level constraints must be
+        # obeyed)
+        HD_1440X1080I60_OVER_SD_SDI_CODEC_FEATURES,
+        HD_1440X1080I50_OVER_SD_SDI_CODEC_FEATURES,
+    ],
+)
+def test_iter_sequence_headers(codec_features):
+    sequence_headers = list(iter_sequence_headers(codec_features))
+    assert sequence_headers
+
+    pi = ParseInfo(
+        parse_code=ParseCodes.sequence_header,
+        # An arbitrary non-zero value; this won't get picked up by the
+        # conformance checker since it'll hit the end-of-file first
+        next_parse_offset=999,
     )
-    assert video_parameters == MINIMAL_CODEC_FEATURES["video_parameters"]
+
+    for sh in sequence_headers:
+        f = BytesIO()
+        state = State()
+        serialise(pi, parse_info, state, f)
+        video_parameters = serialise(sh, sequence_header, state, f)
+
+        # Check the encoded video parameters are as requested
+        assert video_parameters == codec_features["video_parameters"]
+
+        # Check that the header does everything that the level requires. Here we
+        # just check we reach the end of the sequence header without a conformance
+        # error.
+        f.seek(0)
+        state = State()
+        init_io(state, f)
+        with pytest.raises((UnexpectedEndOfStream, InconsistentNextParseOffset)):
+            parse_sequence(state)
+        assert f.tell() == len(f.getvalue())
+
+
+def test_make_sequence_header_impossible():
+    codec_features = deepcopy(HD_1440X1080I60_OVER_SD_SDI_CODEC_FEATURES)
+    codec_features["video_parameters"]["left_offset"] = 1
+    with pytest.raises(IncompatibleLevelAndVideoFormatError):
+        make_sequence_header(codec_features)

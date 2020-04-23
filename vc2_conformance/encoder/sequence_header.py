@@ -7,6 +7,7 @@ serialisation given a description of an arbitrary video format.
 from functools import partial
 
 from vc2_data_tables import (
+    Levels,
     ParseCodes,
     BaseVideoFormats,
     BASE_VIDEO_FORMAT_PARAMETERS,
@@ -14,6 +15,16 @@ from vc2_data_tables import (
     PRESET_PIXEL_ASPECT_RATIOS,
     PRESET_SIGNAL_RANGES,
     PRESET_COLOR_SPECS,
+)
+
+from vc2_conformance._constraint_table import (
+    filter_allowed_values,
+    allowed_values_for,
+)
+
+from vc2_conformance.level_constraints import (
+    LEVEL_CONSTRAINTS,
+    LEVEL_CONSTRAINT_ANY_VALUES,
 )
 
 from vc2_conformance.video_parameters import set_source_defaults
@@ -40,8 +51,11 @@ from vc2_conformance.bitstream import (
 
 __all__ = [
     "rank_base_video_format_similarity",
+    "rank_allowed_base_video_format_similarity",
     "iter_source_parameter_options",
     "make_parse_parameters",
+    "IncompatibleLevelAndVideoFormatError",
+    "iter_sequence_headers",
     "make_sequence_header",
     "make_sequence_header_data_unit",
 ]
@@ -86,25 +100,29 @@ def zip_longest_repeating_final_value(*iterables):
 def iter_custom_options_dicts(
     base_video_parameters,
     video_parameters,
+    level_constraints_dict,
     dict_type,
     flag_key,
     parameters,
     presets=None,
+    preset_index_constraint_key=None,
 ):
     """
     A generator which enumerates valid sets of VC-2 custom option settings
     which achieve a set of video parameters given a set of base video
-    parameters.
+    parameters and level constraints.
 
     Options dictionaries will be generated in ascending order of explicitness.
 
     Example usage::
 
         >>> from functools import partial
+        >>> from collections import defaultdict
         >>> from vc2_data_tables import (
         ...     BASE_VIDEO_FORMAT_PARAMETERS,
         ...     PRESET_PIXEL_ASPECT_RATIOS,
         ... )
+        >>> from vc2_conformance._constraint_table import AnyValue
         >>> from vc2_conformance.bitstream import (
         ...     PixelAspectRatio,
         ... )
@@ -136,9 +154,11 @@ def iter_custom_options_dicts(
         ...     pixel_aspect_ratio_denom=11,
         ...     # ...
         ... )
+        >>> level_constraints_dict = defaultdict(AnyValue)  # ...for sake of example
         >>> for f in iter_pixel_aspect_ratio_options(
         ...     base_video_parameters,
         ...     video_parameters,
+        ...     level_constraints_dict,
         ... ):
         ...     print(f)
         PixelAspectRatio:
@@ -162,6 +182,7 @@ def iter_custom_options_dicts(
         >>> for f in iter_pixel_aspect_ratio_options(
         ...     base_video_parameters,
         ...     video_parameters,
+        ...     level_constraints_dict,
         ... ):
         ...     print(f)
         PixelAspectRatio:
@@ -175,6 +196,17 @@ def iter_custom_options_dicts(
 
     Parameters
     ==========
+    base_video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+        The :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+        representing the current base video parameters. See
+        :py:func:`~vc2_conformance.video_parameters.set_source_defaults`.
+    video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+        The :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+        representing the desired video parameters to be represented. Only the
+        entries mentioned in ``dict_type`` will be checked.
+    level_constraints_dict : {str: :py:class:`~vc2_conformance._constraint_table.ValueSet`, ...}
+        A single dictionary of level constraints (i.e. a single column from
+        :py:class:`vc2_conformance.level_constraints.LEVEL_CONSTRAINTS`).
     dict_type : :py:class:`~vc2_conformance.fixeddicts.fixeddict` type
         The type of :py:class:`~vc2_conformance.fixeddicts.fixeddict` which
         holds the required custom option.
@@ -188,40 +220,57 @@ def iter_custom_options_dicts(
     presets : {index: namedtuple(value, ...), ...} or None
         If present, gives the set of default values for this ``dict_type``
         which would be indicated by a field called 'index'. If this argument is
-        None, no 'index' field will not be added. The names in ``parameters``
-        must match the order in the presets.
-    base_video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
-        The :py:class:`~vc2_conformance.video_parameters.VideoParameters`
-        representing the current base video parameters. See
-        :py:func:`~vc2_conformance.video_parameters.set_source_defaults`.
-    video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
-        The :py:class:`~vc2_conformance.video_parameters.VideoParameters`
-        representing the desired video parameters to be represented. Only the
-        entries mentioned in ``presets`` will be checked.
+        None, no 'index' field will be added. The names in ``parameters`` must
+        match the order in the presets.
+    preset_index_constraint_key : str
+        Required if ``presets`` is not None. The name of the
+        :py:class:`vc2_conformance.level_constraints.LEVEL_CONSTRAINTS` key
+        which corresponds with the index field. Ignored otherwise.
     """
     # Normalise to (vp_key, dt_key) pairs
     parameters = [(key, key) if isinstance(key, str) else key for key in parameters]
 
-    # Is the base video format already sufficient?
-    if all(
-        base_video_parameters[vp_key] == video_parameters[vp_key]
-        for vp_key, _ in parameters
+    # Is the base video format already sufficient (and are we allowed to leave
+    # the flag cleared)?
+    if (
+        all(
+            base_video_parameters[vp_key] == video_parameters[vp_key]
+            for vp_key, _ in parameters
+        )
+        and False in level_constraints_dict[flag_key]
     ):
         yield dict_type({flag_key: False})
 
-    # Is there a suitable preset?
+    # Is there a suitable preset (and are we allowed to set it)?
     if presets is not None:
         for index, values in presets.items():
             if values == tuple(video_parameters[vp_key] for vp_key, _ in parameters):
-                yield dict_type({flag_key: True, "index": index})
+                if (
+                    True in level_constraints_dict[flag_key]
+                    and index in level_constraints_dict[preset_index_constraint_key]
+                ):
+                    yield dict_type({flag_key: True, "index": index})
 
-    # Explicitly set the desired value
-    out = dict_type({flag_key: True})
-    if presets is not None:
-        out["index"] = 0
-    for vp_key, dt_key in parameters:
-        out[dt_key] = video_parameters[vp_key]
-    yield out
+    # Explicitly set the desired value (if we're allowed to do so)
+    if (
+        True in level_constraints_dict[flag_key]
+        and (
+            presets is None or 0 in level_constraints_dict[preset_index_constraint_key]
+        )
+        and all(
+            # NB: Constraints table entry names are shared with the
+            # VideoParameters keys (and not the pseudocode/bitstream fixeddicts
+            # whose names are not globally unique).
+            video_parameters[vp_key] in level_constraints_dict[vp_key]
+            for vp_key, dt_key in parameters
+        )
+    ):
+        out = dict_type({flag_key: True})
+        if presets is not None:
+            out["index"] = 0
+        for vp_key, dt_key in parameters:
+            out[dt_key] = video_parameters[vp_key]
+        yield out
 
 
 iter_frame_size_options = partial(
@@ -251,6 +300,7 @@ iter_frame_rate_options = partial(
     flag_key="custom_frame_rate_flag",
     parameters=["frame_rate_numer", "frame_rate_denom"],
     presets=PRESET_FRAME_RATES,
+    preset_index_constraint_key="frame_rate_index",
 )
 
 iter_pixel_aspect_ratio_options = partial(
@@ -259,6 +309,7 @@ iter_pixel_aspect_ratio_options = partial(
     flag_key="custom_pixel_aspect_ratio_flag",
     parameters=["pixel_aspect_ratio_numer", "pixel_aspect_ratio_denom"],
     presets=PRESET_PIXEL_ASPECT_RATIOS,
+    preset_index_constraint_key="pixel_aspect_ratio_index",
 )
 
 iter_clean_area_options = partial(
@@ -279,6 +330,7 @@ iter_signal_range_options = partial(
         "color_diff_excursion",
     ],
     presets=PRESET_SIGNAL_RANGES,
+    preset_index_constraint_key="custom_signal_range_index",
 )
 
 iter_color_primaries_options = partial(
@@ -303,64 +355,108 @@ iter_transfer_function_options = partial(
 )
 
 
-def iter_color_spec_options(base_video_parameters, video_parameters):
+def iter_color_spec_options(
+    base_video_parameters, video_parameters, level_constraints_dict
+):
     """
     Generates a series of :py:class:`vc2_conformance.bitstream.ColorSpec`
-    dictionaries which may be used to achieve the specified video parameters.
+    dictionaries which may be used to achieve the specified video parameters
+    while obeying the provided level constraints.
 
     Where defaults are permissible, examples will be produced with each flag
     set to both True and False, though not every combination of flags will be
     given.
+
+    Parameters
+    ==========
+    base_video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+        The :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+        representing the current base video parameters. See
+        :py:func:`~vc2_conformance.video_parameters.set_source_defaults`.
+    video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+        The :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+        representing the desired video parameters to be represented. Only the
+        colour mode related entries mentioned in will be checked.
+    level_constraints_dict : {str: :py:class:`~vc2_conformance._constraint_table.ValueSet`, ...}
+        A single dictionary of level constraints (i.e. a single column from
+        :py:class:`vc2_conformance.level_constraints.LEVEL_CONSTRAINTS`).
     """
-    # Is this already covered by the base format?
-    if all(
-        base_video_parameters[key] == video_parameters[key]
-        for key in [
-            "color_primaries_index",
-            "color_matrix_index",
-            "transfer_function_index",
-        ]
+    # Is this already covered by the base format (and are we allowed to use it)?
+    if (
+        all(
+            base_video_parameters[key] == video_parameters[key]
+            for key in [
+                "color_primaries_index",
+                "color_matrix_index",
+                "transfer_function_index",
+            ]
+        )
+        and False in level_constraints_dict["custom_color_spec_flag"]
     ):
         yield ColorSpec(custom_color_spec_flag=False,)
 
-    # Can a preset (other than 0) satisfy the requirement?
+    # Can a preset (other than 0) satisfy the requirement (and are we allowed
+    # to use it)?
     for index, (primaries, matrix, tf,) in PRESET_COLOR_SPECS.items():
         if (
             index != 0
             and video_parameters["color_primaries_index"] == primaries
             and video_parameters["color_matrix_index"] == matrix
             and video_parameters["transfer_function_index"] == tf
+            and True in level_constraints_dict["custom_color_spec_flag"]
+            and index in level_constraints_dict["color_spec_index"]
         ):
             yield ColorSpec(
                 custom_color_spec_flag=True, index=index,
             )
 
     # Work through all possible ways to express this using fully custom formats
+    # (if we're allowed to do so)
     custom_base_vp = base_video_parameters.copy()
     custom_presets = PRESET_COLOR_SPECS[0]
     custom_base_vp["color_primaries_index"] = custom_presets.color_primaries_index
     custom_base_vp["color_matrix_index"] = custom_presets.color_matrix_index
     custom_base_vp["transfer_function_index"] = custom_presets.transfer_function_index
 
-    for (
-        color_primaries,
-        color_matrix,
-        transfer_function,
-    ) in zip_longest_repeating_final_value(
-        iter_color_primaries_options(custom_base_vp, video_parameters),
-        iter_color_matrix_options(custom_base_vp, video_parameters),
-        iter_transfer_function_options(custom_base_vp, video_parameters),
+    if (
+        True in level_constraints_dict["custom_color_spec_flag"]
+        and 0 in level_constraints_dict["color_spec_index"]
     ):
-        yield ColorSpec(
-            custom_color_spec_flag=True,
-            index=0,
-            color_primaries=color_primaries,
-            color_matrix=color_matrix,
-            transfer_function=transfer_function,
-        )
+        for (
+            color_primaries,
+            color_matrix,
+            transfer_function,
+        ) in zip_longest_repeating_final_value(
+            iter_color_primaries_options(
+                custom_base_vp, video_parameters, level_constraints_dict,
+            ),
+            iter_color_matrix_options(
+                custom_base_vp, video_parameters, level_constraints_dict,
+            ),
+            iter_transfer_function_options(
+                custom_base_vp, video_parameters, level_constraints_dict,
+            ),
+        ):
+            # Give up if we're unable to produce a needed custom colour option
+            if (
+                color_primaries is None
+                or color_matrix is None
+                or transfer_function is None
+            ):
+                break
+
+            yield ColorSpec(
+                custom_color_spec_flag=True,
+                index=0,
+                color_primaries=color_primaries,
+                color_matrix=color_matrix,
+                transfer_function=transfer_function,
+            )
 
 
-def iter_source_parameter_options(base_video_parameters, video_parameters):
+def iter_source_parameter_options(
+    base_video_parameters, video_parameters, level_constraints_dict
+):
     """
     Generates a series of
     :py:class:`vc2_conformance.bitstream.SourceParameters` dictionaries which
@@ -376,6 +472,11 @@ def iter_source_parameter_options(base_video_parameters, video_parameters):
     video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
         The :py:class:`~vc2_conformance.video_parameters.VideoParameters`
         representing the desired video parameters to be represented.
+    level_constraints_dict : {str: :py:class:`~vc2_conformance._constraint_table.ValueSet`, ...}
+        A single dictionary of level constraints (i.e. a single column from
+        :py:class:`vc2_conformance.level_constraints.LEVEL_CONSTRAINTS`). All
+        generated parameter sets will meet the restrictions imposed (which may
+        include preventing any cases being generated).
 
     Generates
     =========
@@ -401,18 +502,21 @@ def iter_source_parameter_options(base_video_parameters, video_parameters):
         signal_range,
         color_spec,
     ) in zip_longest_repeating_final_value(
-        iter_frame_size_options(base_video_parameters, video_parameters),
-        iter_color_diff_sampling_format_options(
-            base_video_parameters, video_parameters
-        ),
-        iter_scan_format_options(base_video_parameters, video_parameters),
-        iter_frame_rate_options(base_video_parameters, video_parameters),
-        iter_pixel_aspect_ratio_options(base_video_parameters, video_parameters),
-        iter_clean_area_options(base_video_parameters, video_parameters),
-        iter_signal_range_options(base_video_parameters, video_parameters),
-        iter_color_spec_options(base_video_parameters, video_parameters),
+        *(
+            fn(base_video_parameters, video_parameters, level_constraints_dict)
+            for fn in [
+                iter_frame_size_options,
+                iter_color_diff_sampling_format_options,
+                iter_scan_format_options,
+                iter_frame_rate_options,
+                iter_pixel_aspect_ratio_options,
+                iter_clean_area_options,
+                iter_signal_range_options,
+                iter_color_spec_options,
+            ]
+        )
     ):
-        yield SourceParameters(
+        source_parameters = SourceParameters(
             frame_size=frame_size,
             color_diff_sampling_format=color_diff_sampling_format,
             scan_format=scan_format,
@@ -422,6 +526,12 @@ def iter_source_parameter_options(base_video_parameters, video_parameters):
             signal_range=signal_range,
             color_spec=color_spec,
         )
+
+        # Give up immediately if any of the parts cannot be satisifed
+        if any(value is None for value in source_parameters.values()):
+            break
+
+        yield source_parameters
 
 
 def count_video_parameter_differences(a, b):
@@ -444,7 +554,9 @@ def count_video_parameter_differences(a, b):
     return differences
 
 
-def rank_base_video_format_similarity(video_parameters):
+def rank_base_video_format_similarity(
+    video_parameters, base_video_formats=list(BaseVideoFormats),
+):
     """
     Given a set of
     :py:class:`~vc2_conformance.video_parameters.VideoParameters`, return an
@@ -454,11 +566,20 @@ def rank_base_video_format_similarity(video_parameters):
     .. note::
         The returned :py:class:`~vc2_data_tables.BaseVideoFormats` will always
         have the same ``top_field_first`` setting.
+
+    Parameters
+    ==========
+    video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+        The video parameters against which to rank base video formats'
+        similarity.
+    base_video_formats : [:py:class:`~vc2_data_tables.BaseVideoFormats`, ...]
+        Optional. The base video format indices to consider. Defaults to all
+        base video formats.
     """
     return sorted(
         (
             index
-            for index in BaseVideoFormats
+            for index in base_video_formats
             if (
                 BASE_VIDEO_FORMAT_PARAMETERS[index].top_field_first
                 == video_parameters["top_field_first"]
@@ -466,6 +587,40 @@ def rank_base_video_format_similarity(video_parameters):
         ),
         key=lambda index: count_video_parameter_differences(
             set_source_defaults(index), video_parameters,
+        ),
+    )
+
+
+class IncompatibleLevelAndVideoFormatError(ValueError):
+    """
+    Thrown when the codec features specified a particular VC-2 level which is
+    incompatible with the video format specified.
+    """
+
+
+def rank_allowed_base_video_format_similarity(codec_features):
+    """
+    Produce a ranked list of base video format IDs for the provided codec
+    features. Video formats with the wrong 'top field first' value and which
+    aren't allowed by the current level are omitted. The most similar base
+    format is returned first.
+
+    Raises :py:exc:`IncompatibleLevelAndVideoFormatError` if no suitable base
+    video format is available.
+    """
+
+    return rank_base_video_format_similarity(
+        codec_features["video_parameters"],
+        list(
+            allowed_values_for(
+                LEVEL_CONSTRAINTS,
+                "base_video_format",
+                {
+                    "level": codec_features["level"],
+                    "picture_coding_mode": codec_features["picture_coding_mode"],
+                },
+                LEVEL_CONSTRAINT_ANY_VALUES["base_video_format"],
+            ).iter_values()
         ),
     )
 
@@ -485,35 +640,90 @@ def make_parse_parameters(codec_features):
     )
 
 
+def iter_sequence_headers(codec_features):
+    """
+    Generate a series of :py:class:`~vc2_conformance.bitstream.SequenceHeader`
+    objects which encode the video format specified in
+    :py:class:`~vc2_conformance.codec_features.CodecFeatures` dictionary
+    provided.
+
+    This generator will start with an efficient encoding of the required
+    features, built on the most closely matched base video format. This will be
+    followed by successively less efficient encodings (i.e. using more custom
+    fields) but the same (best-matched) base video format. After this,
+    encodings based on other base video formats will be produced (again
+    starting with the most efficient encoding for each format first).
+
+    This generator may output no items if the VC-2 level specified does not
+    permit the format given.
+
+    Parameters
+    ==========
+    codec_features : :py:class:`~vc2_conformance.codec_features.CodecFeatures`
+
+    Generates
+    =========
+    sequence_header : :py:class:`~vc2_conformance.bitstream.SequenceHeader`
+    """
+    picture_coding_mode = codec_features["picture_coding_mode"]
+    video_parameters = codec_features["video_parameters"]
+
+    values = {
+        "level": codec_features["level"],
+        "picture_coding_mode": picture_coding_mode,
+    }
+
+    # Level constraints may force us to use a particular base video format for
+    # this encoding so we try all possible encodings (starting with the most
+    # compact) and stop when we find one compliant with the level restrictions.
+    base_video_formats = rank_allowed_base_video_format_similarity(codec_features)
+    for base_video_format in base_video_formats:
+        base_video_parameters = set_source_defaults(base_video_format)
+
+        level_constraints_dicts = filter_allowed_values(
+            LEVEL_CONSTRAINTS, dict(values, base_video_format=base_video_format),
+        )
+        for level_constraints_dict in level_constraints_dicts:
+            for source_parameters in iter_source_parameter_options(
+                base_video_parameters, video_parameters, level_constraints_dict
+            ):
+                yield SequenceHeader(
+                    parse_parameters=make_parse_parameters(codec_features),
+                    base_video_format=base_video_format,
+                    video_parameters=source_parameters,
+                    picture_coding_mode=picture_coding_mode,
+                )
+
+
 def make_sequence_header(codec_features):
     """
     Create a :py:class:`~vc2_conformance.bitstream.SequenceHeader` object which
-    sensibly encodes the video format specified in
-    :py:class:`~vc2_conformance.codec_features.CodecFeatures`
-    dictionary provided.
+    efficiently encodes the video format specified in
+    :py:class:`~vc2_conformance.codec_features.CodecFeatures` dictionary
+    provided.
+
+    Parameters
+    ==========
+    codec_features : :py:class:`~vc2_conformance.codec_features.CodecFeatures`
+
+    Returns
+    =======
+    sequence_header : :py:class:`~vc2_conformance.bitstream.SequenceHeader`
+
+    Raises
+    =======
+    :py:exc:`IncompatibleLevelAndVideoFormatError`
     """
-    # Pick a base video format similar to the desired video format
-    base_video_format = rank_base_video_format_similarity(
-        codec_features["video_parameters"],
-    )[0]
-
-    # Pick a set of SourceParameters which minimally encode any differences
-    # between the base video format and target video format
-    source_parameters = next(
-        iter(
-            iter_source_parameter_options(
-                set_source_defaults(base_video_format),
-                codec_features["video_parameters"],
-            )
-        )
-    )
-
-    return SequenceHeader(
-        parse_parameters=make_parse_parameters(codec_features),
-        base_video_format=base_video_format,
-        video_parameters=source_parameters,
-        picture_coding_mode=codec_features["picture_coding_mode"],
-    )
+    try:
+        return next(iter_sequence_headers(codec_features))
+    except StopIteration:
+        # No suitable encoding was possible. This (should!) only occur due to level
+        # constraints so we'll blame these here.
+        #
+        # This assertion (should be) unreachable and is here so that we don't
+        # misleadingly blame levels in the event of this code being broken!
+        assert codec_features["level"] != Levels.unconstrained
+        raise IncompatibleLevelAndVideoFormatError(codec_features)
 
 
 def make_sequence_header_data_unit(codec_features):
@@ -522,6 +732,18 @@ def make_sequence_header_data_unit(codec_features):
     a sequence header which sensibly encodes the features specified in
     :py:class:`~vc2_conformance.codec_features.CodecFeatures`
     dictionary provided.
+
+    Parameters
+    ==========
+    codec_features : :py:class:`~vc2_conformance.codec_features.CodecFeatures`
+
+    Returns
+    =======
+    data_unit : :py:class:`~vc2_conformance.bitstream.DataUnit`
+
+    Raises
+    =======
+    :py:exc:`IncompatibleLevelAndVideoFormatError`
     """
     return DataUnit(
         parse_info=ParseInfo(parse_code=ParseCodes.sequence_header),

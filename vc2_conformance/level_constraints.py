@@ -132,13 +132,13 @@ headers and transform parameters headers and are enumerated below:
     * ``color_diff_excursion``: int
 * (11.4.10)
     * ``custom_color_spec_flag``: bool
-    * ``custom_color_spec_index``: int (from the :py:class:`PresetColorSpecs` enum)
+    * ``color_spec_index``: int (from the :py:class:`PresetColorSpecs` enum)
     * ``custom_color_primaries_flag``: bool
-    * ``custom_color_primaries_index``: int (from the :py:class:`PresetColorPrimaries` enum)
+    * ``color_primaries_index``: int (from the :py:class:`PresetColorPrimaries` enum)
     * ``custom_color_matrix_flag``: bool
-    * ``custom_color_matrix_index``: int (from the :py:class:`PresetColorMatrices` enum)
+    * ``color_matrix_index``: int (from the :py:class:`PresetColorMatrices` enum)
     * ``custom_transfer_function_flag``: bool
-    * ``custom_transfer_function_index``: int (from the :py:class:`PresetTransferFunctions` enum)
+    * ``transfer_function_index``: int (from the :py:class:`PresetTransferFunctions` enum)
 * (11.1)
     * ``picture_coding_mode``: int (from the :py:class:`PictureCodingModes` enum)
 * (12.4.1)
@@ -188,13 +188,13 @@ LEVEL_CONSTRAINT_ANY_VALUES = {
     "custom_signal_range_flag": ValueSet(False, True),
     "custom_signal_range_index": ValueSet(0, *PresetSignalRanges),
     "custom_color_spec_flag": ValueSet(False, True),
-    "custom_color_spec_index": ValueSet(0, *PresetColorSpecs),
+    "color_spec_index": ValueSet(0, *PresetColorSpecs),
     "custom_color_primaries_flag": ValueSet(False, True),
-    "custom_color_primaries_index": ValueSet(*PresetColorPrimaries),
+    "color_primaries_index": ValueSet(*PresetColorPrimaries),
     "custom_color_matrix_flag": ValueSet(False, True),
-    "custom_color_matrix_index": ValueSet(*PresetColorMatrices),
+    "color_matrix_index": ValueSet(*PresetColorMatrices),
     "custom_transfer_function_flag": ValueSet(False, True),
-    "custom_transfer_function_index": ValueSet(*PresetTransferFunctions),
+    "transfer_function_index": ValueSet(*PresetTransferFunctions),
     "picture_coding_mode": ValueSet(*PictureCodingModes),
     "wavelet_index": ValueSet(*WaveletFilters),
     "asym_transform_index_flag": ValueSet(False, True),

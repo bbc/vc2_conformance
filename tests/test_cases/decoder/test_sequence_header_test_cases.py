@@ -27,7 +27,7 @@ from vc2_conformance.bitstream import (
 )
 
 from vc2_conformance.test_cases.decoder import (
-    replace_sequence_header_options,
+    replace_sequence_headers,
     source_parameters_encodings,
     repeated_sequence_headers,
 )
@@ -35,7 +35,7 @@ from vc2_conformance.test_cases.decoder import (
 from sample_codec_features import MINIMAL_CODEC_FEATURES
 
 
-def test_replace_sequence_header_options():
+def test_replace_sequence_headers():
     orig_seq = Sequence(
         data_units=[
             DataUnit(
@@ -58,13 +58,13 @@ def test_replace_sequence_header_options():
     )
     orig_seq_copy = deepcopy(orig_seq)
 
-    new_base_video_format = 100
-    new_video_parameters = SourceParameters(
-        frame_size=FrameSize(custom_dimensions_flag=True),
+    new_sequence_header = SequenceHeader(
+        base_video_format=100,
+        video_parameters=SourceParameters(
+            frame_size=FrameSize(custom_dimensions_flag=True),
+        ),
     )
-    new_seq = replace_sequence_header_options(
-        orig_seq, new_base_video_format, new_video_parameters,
-    )
+    new_seq = replace_sequence_headers(orig_seq, new_sequence_header)
 
     # Original not modified
     assert orig_seq == orig_seq_copy
@@ -77,16 +77,13 @@ def test_replace_sequence_header_options():
     # Non-sequence header data unit should not have changed
     assert new_seq["data_units"][1] == orig_seq["data_units"][1]
 
-    # Should have replaced base video formats
-    assert sh0["base_video_format"] == new_base_video_format
-    assert sh2["base_video_format"] == new_base_video_format
+    # Should have replaced sequence headers
+    assert sh0 == new_sequence_header
+    assert sh2 == new_sequence_header
 
-    # Should have replaced source parameters with a copy
-    assert sh0["video_parameters"] == new_video_parameters
-    assert sh0["video_parameters"] is not new_video_parameters
-
-    assert sh2["video_parameters"] == new_video_parameters
-    assert sh2["video_parameters"] is not new_video_parameters
+    # ...with copies
+    assert sh0 is not new_sequence_header
+    assert sh2 is not new_sequence_header
 
 
 def test_source_parameters_encodings():
