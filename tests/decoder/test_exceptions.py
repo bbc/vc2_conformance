@@ -616,6 +616,32 @@ class TestCleanAreaOutOfRange(object):
         )
 
 
+class TestBadCustomSignalExcursion(object):
+    def test_luma(self):
+        e = exceptions.BadCustomSignalExcursion(
+            component_type_name="luma", excursion=0,
+        )
+
+        assert wrap_paragraphs(e.explain()) == wrap_paragraphs(
+            """
+            Custom signal range luma_excursion must be at least 1 but 0 was
+            provided (11.4.9).
+            """
+        )
+
+    def test_color_diff(self):
+        e = exceptions.BadCustomSignalExcursion(
+            component_type_name="color_diff", excursion=0,
+        )
+
+        assert wrap_paragraphs(e.explain()) == wrap_paragraphs(
+            """
+            Custom signal range color_diff_excursion must be at least 1 but 0
+            was provided (11.4.9).
+            """
+        )
+
+
 def test_bad_preset_signal_range():
     e = exceptions.BadPresetSignalRange(999)
 

@@ -1068,6 +1068,30 @@ class CleanAreaOutOfRange(ConformanceError):
         )
 
 
+class BadCustomSignalExcursion(ConformanceError):
+    """
+    signal_range (11.4.9) requires that signal excursions must be at least 1.
+
+    A string "luma" or "color_diff" followed by the offending excursion value
+    should be provided as arguments.
+    """
+
+    def __init__(
+        self, component_type_name, excursion,
+    ):
+        self.component_type_name = component_type_name
+        self.excursion = excursion
+        super(BadCustomSignalExcursion, self).__init__()
+
+    def explain(self):
+        return """
+            Custom signal range {}_excursion must be at least 1 but {} was
+            provided (11.4.9).
+        """.format(
+            self.component_type_name, self.excursion,
+        )
+
+
 class BadPresetSignalRange(ConformanceError):
     """
     signal_range (11.4.9) has been given an unrecognised preset index

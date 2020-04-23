@@ -51,6 +51,7 @@ from vc2_conformance.decoder.exceptions import (
     BadPresetFrameRateIndex,
     BadPresetPixelAspectRatio,
     CleanAreaOutOfRange,
+    BadCustomSignalExcursion,
     BadPresetSignalRange,
     BadPresetColorSpec,
     BadPresetColorPrimaries,
@@ -544,6 +545,17 @@ def signal_range(state, video_parameters):
             )
             ## End not in spec
 
+            # (11.4.9) Check luma_excursion is valid
+            #
+            # Errata: Spec fails to constrain excursions.  Excursions *must* be
+            # >= 1 or the pseudocode behaviour will be undefined.
+            ## Begin not in spec
+            if video_parameters["luma_excursion"] < 1:
+                raise BadCustomSignalExcursion(
+                    "luma", video_parameters["luma_excursion"]
+                )
+            ## End not in spec
+
             video_parameters["color_diff_offset"] = read_uint(state)
             # (C.3) Check level allows this offset
             ## Begin not in spec
@@ -558,6 +570,17 @@ def signal_range(state, video_parameters):
             assert_level_constraint(
                 state, "color_diff_excursion", video_parameters["color_diff_excursion"]
             )
+            ## End not in spec
+
+            # (11.4.9) Check color_diff_excursion is valid
+            #
+            # Errata: Spec fails to constrain excursions.  Excursions *must* be
+            # >= 1 or the pseudocode behaviour will be undefined.
+            ## Begin not in spec
+            if video_parameters["color_diff_excursion"] < 1:
+                raise BadCustomSignalExcursion(
+                    "color_diff", video_parameters["color_diff_excursion"]
+                )
             ## End not in spec
         else:
             # (11.4.9) Signal range preset must be a known value
@@ -584,7 +607,7 @@ def color_spec(state, video_parameters):
         assert_in_enum(index, PresetColorSpecs, BadPresetColorSpec)  ## Not in spec
 
         # (C.3) Check level allows the specified preset
-        assert_level_constraint(state, "custom_color_spec_index", index)  ## Not in spec
+        assert_level_constraint(state, "color_spec_index", index)  ## Not in spec
 
         preset_color_spec(video_parameters, index)
 
@@ -615,7 +638,7 @@ def color_primaries(state, video_parameters):
 
         # (C.3) Check level allows the specified preset
         ## Begin not in spec
-        assert_level_constraint(state, "custom_color_primaries_index", index)
+        assert_level_constraint(state, "color_primaries_index", index)
         ## End not in spec
 
         preset_color_primaries(video_parameters, index)
@@ -638,7 +661,7 @@ def color_matrix(state, video_parameters):
 
         # (C.3) Check level allows the specified preset
         ## Begin not in spec
-        assert_level_constraint(state, "custom_color_matrix_index", index)
+        assert_level_constraint(state, "color_matrix_index", index)
         ## End not in spec
 
         preset_color_matrix(video_parameters, index)
@@ -665,7 +688,7 @@ def transfer_function(state, video_parameters):
 
         # (C.3) Check level allows the specified preset
         ## Begin not in spec
-        assert_level_constraint(state, "custom_transfer_function_index", index)
+        assert_level_constraint(state, "transfer_function_index", index)
         ## End not in spec
 
         preset_transfer_function(video_parameters, index)

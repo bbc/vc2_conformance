@@ -516,6 +516,37 @@ def test_signal_range_index_must_be_valid():
     assert exc_info.value.index == 9999
 
 
+@pytest.mark.parametrize(
+    "luma_excursion,color_diff_excursion,exp_component",
+    [(1, 1, None), (0, 255, "luma"), (255, 0, "color_diff")],
+)
+def test_signal_range_excursion_must_be_valid(
+    luma_excursion, color_diff_excursion, exp_component
+):
+    state = bytes_to_state(
+        serialise_to_bytes(
+            bitstream.SignalRange(
+                custom_signal_range_flag=True,
+                index=0,
+                luma_offset=0,
+                luma_excursion=luma_excursion,
+                color_diff_offset=0,
+                color_diff_excursion=color_diff_excursion,
+            ),
+            {},
+            {},
+        )
+    )
+
+    if exp_component is None:
+        # Should not fail
+        decoder.signal_range(state, {})
+    else:
+        with pytest.raises(decoder.BadCustomSignalExcursion) as exc_info:
+            decoder.signal_range(state, {})
+        assert exc_info.value.component_type_name == exp_component
+
+
 def test_color_spec_index_must_be_valid():
     state = bytes_to_state(
         serialise_to_bytes(
@@ -731,14 +762,14 @@ def test_level_constraints():
         "color_diff_excursion": 4,
         # color_spec
         "custom_color_spec_flag": True,
-        "custom_color_spec_index": 0,
+        "color_spec_index": 0,
         # color_primaries
         "custom_color_primaries_flag": True,
-        "custom_color_primaries_index": tables.PresetColorPrimaries.uhdtv,
+        "color_primaries_index": tables.PresetColorPrimaries.uhdtv,
         # color_matrix
         "custom_color_matrix_flag": True,
-        "custom_color_matrix_index": tables.PresetColorMatrices.uhdtv,
+        "color_matrix_index": tables.PresetColorMatrices.uhdtv,
         # transfer_function
         "custom_transfer_function_flag": True,
-        "custom_transfer_function_index": tables.PresetTransferFunctions.hybrid_log_gamma,
+        "transfer_function_index": tables.PresetTransferFunctions.hybrid_log_gamma,
     }
