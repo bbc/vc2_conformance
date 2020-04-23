@@ -7,8 +7,6 @@ Defined by VC-2 in (13).
 All of the functions below take a 'state' argument which should be a dictionary-like
 object containing the following entries:
 
-* ``"slices_x"``
-* ``"slices_y"``
 * ``"luma_width"``
 * ``"luma_height"``
 * ``"color_diff_width"``
@@ -16,7 +14,15 @@ object containing the following entries:
 * ``"dwt_depth"``
 * ``"dwt_depth_ho"``
 
-The :py:func:`slice_bytes` function requires the following additional values:
+The :py:func:`slice_bytes`, :py:func:`slice_top`, :py:func:`slice_bottom`,
+:py:func:`slice_left`, :py:func:`slice_right` and
+:py:func:`slices_have_same_dimensions` functions all additionally require the
+following entries:
+
+* ``"slices_x"``
+* ``"slices_y"``
+
+Finally :py:func:`slice_bytes` function requires the following further values:
 
 * ``"slice_bytes_numerator"``
 * ``"slice_bytes_denominator"``
@@ -26,6 +32,10 @@ The 'c' or 'comp' arguments should be set to one of the following strings:
 * ``"Y"``
 * ``"C1"``
 * ``"C2"``
+
+The :py:func:`slices_have_same_dimensions` utility is added beyond the VC-2
+pseudocode functions which determines if all slices will contain the same
+number of samples or not.
 """
 
 from vc2_conformance.metadata import ref_pseudocode
@@ -38,6 +48,7 @@ __all__ = [
     "slice_right",
     "slice_top",
     "slice_bottom",
+    "slices_have_same_dimensions",
 ]
 
 
@@ -118,3 +129,20 @@ def slice_top(state, sy, c, level):
 def slice_bottom(state, sy, c, level):
     """(13.5.6.2) Get the y coordinate of the bottom of the given slice."""
     return (subband_height(state, level, c) * (sy + 1)) // state["slices_y"]
+
+
+def slices_have_same_dimensions(state):
+    """
+    Utility function, not part of the standard. Tests whether all picture
+    slices will have the same dimensions.
+    """
+    dc_luma_width = subband_width(state, 0, "Y")
+    dc_luma_height = subband_height(state, 0, "Y")
+    dc_color_diff_width = subband_width(state, 0, "C1")
+    dc_color_diff_height = subband_height(state, 0, "C1")
+    return (
+        dc_luma_width % state["slices_x"] == 0
+        and dc_luma_height % state["slices_y"] == 0
+        and dc_color_diff_width % state["slices_x"] == 0
+        and dc_color_diff_height % state["slices_y"] == 0
+    )

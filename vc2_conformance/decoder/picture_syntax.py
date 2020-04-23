@@ -7,10 +7,7 @@ from vc2_conformance.metadata import ref_pseudocode
 
 from vc2_conformance._constraint_table import allowed_values_for
 
-from vc2_conformance.slice_sizes import (
-    subband_width,
-    subband_height,
-)
+from vc2_conformance.slice_sizes import slices_have_same_dimensions
 
 from vc2_conformance.parse_code_functions import (
     is_ld_picture,
@@ -185,18 +182,8 @@ def slice_parameters(state):
     # (C.3) Check if this level expects slice counts which result in every
     # slice having the same number of transform components
     ## Begin not in spec
-    dc_luma_width = subband_width(state, 0, "Y")
-    dc_luma_height = subband_height(state, 0, "Y")
-    dc_color_diff_width = subband_width(state, 0, "C1")
-    dc_color_diff_height = subband_height(state, 0, "C1")
-    slices_have_same_dimensions = (
-        dc_luma_width % state["slices_x"] == 0
-        and dc_luma_height % state["slices_y"] == 0
-        and dc_color_diff_width % state["slices_x"] == 0
-        and dc_color_diff_height % state["slices_y"] == 0
-    )
     assert_level_constraint(
-        state, "slices_have_same_dimensions", slices_have_same_dimensions
+        state, "slices_have_same_dimensions", slices_have_same_dimensions(state)
     )
     ## End not in spec
 

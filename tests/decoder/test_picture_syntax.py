@@ -193,35 +193,22 @@ class TestSliceParameters(object):
             decoder.slice_parameters(state)
 
     @pytest.mark.parametrize(
-        "slices_x,slices_y,state_override,exp_same_dimensions",
+        "slices_x,slices_y,exp_same_dimensions",
         [
-            (1, 1, {}, True),
-            (192, 108, {}, True),
+            (1, 1, True),
+            (2, 2, True),
+            # Not a multiple
+            (111, 111, False),
             # Up to limit
-            (960, 540, {}, True),
-            # Too small for colour diff
-            (1920, 1, {}, False),
-            (1, 1080, {}, False),
-            # Not a multiple of either
-            (111, 1, {}, False),
-            (1, 111, {}, False),
-            # Too small for either
-            (3840, 1, {}, False),
-            (1, 2160, {}, False),
-            # With increased transform depths
-            (1, 1, {"dwt_depth": 1, "dwt_depth_ho": 1}, True),
-            # Up to limit
-            (240, 270, {"dwt_depth": 1, "dwt_depth_ho": 1}, True),
-            # Past new limit should fail
-            (192, 1, {"dwt_depth": 1, "dwt_depth_ho": 1}, False),
-            (1, 108, {"dwt_depth": 1, "dwt_depth_ho": 1}, False),
+            (240, 270, True),
+            # Past limit should fail
+            (192, 1, False),
+            (1, 108, False),
         ],
     )
-    def test_slices_have_same_dimensions(
-        self, slices_x, slices_y, state_override, exp_same_dimensions
-    ):
+    def test_slices_have_same_dimensions(self, slices_x, slices_y, exp_same_dimensions):
         state = minimal_slice_parameters_state.copy()
-        state.update(state_override)
+        state.update({"dwt_depth": 1, "dwt_depth_ho": 1})
         state.update(
             bytes_to_state(
                 serialise_to_bytes(
