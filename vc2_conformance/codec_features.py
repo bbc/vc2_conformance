@@ -60,7 +60,7 @@ CodecFeatures = fixeddict(
     Entry("major_version"),
     Entry("minor_version"),
     # (11.1)
-    Entry("picture_coding_mode", enum=ColorDifferenceSamplingFormats),
+    Entry("picture_coding_mode", enum=PictureCodingModes),
     # (11.4)
     Entry("video_parameters"),  # VideoParameters
     # (12.4.1) and (12.4.4.1)
@@ -595,6 +595,20 @@ def read_codec_features_csv(csvfile):
 
             features["picture_bytes"] = pop(
                 "picture_bytes", partial(parse_int_at_least, minimum_picture_bytes),
+            )
+
+        # Check asymmetric wavelets are supported
+        if (
+            # (12.4.1)
+            features["major_version"] < 3
+            and (
+                features["wavelet_index"] != features["wavelet_index_ho"]
+                or features["dwt_depth_ho"] != 0
+            )
+        ):
+            raise InvalidCodecFeaturesError(
+                "Asymmetric wavelet transform specified in '{}' column "
+                "but major_version is not >= 3 (12.4.1).".format(name)
             )
 
         # Quantisation matrix
