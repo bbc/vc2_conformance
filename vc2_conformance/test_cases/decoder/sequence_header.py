@@ -11,14 +11,13 @@ from vc2_conformance.test_cases import (
     decoder_test_case_generator,
 )
 
-from vc2_conformance.symbol_re import ImpossibleSequenceError
-
 from vc2_conformance.picture_generators import (
     static_sprite,
     repeat_pictures,
 )
 
 from vc2_conformance.encoder import (
+    IncompatibleLevelAndDataUnitError,
     iter_sequence_headers,
     make_sequence,
 )
@@ -120,7 +119,7 @@ def repeated_sequence_headers(codec_features):
             # Force an extra sequence header between every data unit
             "(sequence_header .)+",
         )
-    except ImpossibleSequenceError:
+    except IncompatibleLevelAndDataUnitError:
         # Do not try to force levels which don't support this level of sequence
         # header interleaving to accept it.
         return

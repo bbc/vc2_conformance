@@ -1,3 +1,5 @@
+import pytest
+
 from io import BytesIO
 
 from copy import deepcopy
@@ -24,6 +26,11 @@ from vc2_conformance.bitstream import (
     FrameSize,
     Padding,
     sequence_header,
+)
+
+from vc2_conformance.level_constraints import (
+    LEVEL_SEQUENCE_RESTRICTIONS,
+    LevelSequenceRestrictions,
 )
 
 from vc2_conformance.test_cases.decoder import (
@@ -146,23 +153,43 @@ def test_source_parameters_encodings():
     )
 
 
-def test_repeated_sequence_headers():
+@pytest.yield_fixture
+def level_sequence_restrictions():
+    # Fixture which reverts any monkeypatches made to LEVEL_SEQUENCE_RESTRICTIONS
+    old = deepcopy(LEVEL_SEQUENCE_RESTRICTIONS)
+    try:
+        yield LEVEL_SEQUENCE_RESTRICTIONS
+    finally:
+        LEVEL_SEQUENCE_RESTRICTIONS.clear()
+        LEVEL_SEQUENCE_RESTRICTIONS.update(old)
+
+
+@pytest.mark.parametrize("restricted_sequence", [True, False])
+def test_repeated_sequence_headers(level_sequence_restrictions, restricted_sequence):
+    if restricted_sequence:
+        LEVEL_SEQUENCE_RESTRICTIONS[0] = LevelSequenceRestrictions(
+            "", ".  high_quality_picture+ .",
+        )
+
     codec_features = MINIMAL_CODEC_FEATURES
 
     all_sequences = list(repeated_sequence_headers(codec_features))
 
-    assert len(all_sequences) == 1
+    if not restricted_sequence:
+        assert len(all_sequences) == 1
 
-    sequence = all_sequences[0]
+        sequence = all_sequences[0]
 
-    # All sequence headers must be identical
-    sh_count = 0
-    for data_unit in sequence["data_units"]:
-        if data_unit["parse_info"]["parse_code"] == ParseCodes.sequence_header:
-            sh_count += 1
+        # All sequence headers must be identical
+        sh_count = 0
+        for data_unit in sequence["data_units"]:
+            if data_unit["parse_info"]["parse_code"] == ParseCodes.sequence_header:
+                sh_count += 1
 
-            sh = data_unit["sequence_header"]
-            assert sh == sequence["data_units"][0]["sequence_header"]
+                sh = data_unit["sequence_header"]
+                assert sh == sequence["data_units"][0]["sequence_header"]
 
-    # Multiple sequence headers must be present
-    assert sh_count >= 3
+        # Multiple sequence headers must be present
+        assert sh_count >= 3
+    else:
+        assert len(all_sequences) == 0
