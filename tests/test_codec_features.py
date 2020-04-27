@@ -32,6 +32,7 @@ from vc2_conformance.codec_features import (
     parse_quantization_matrix,
     InvalidCodecFeaturesError,
     read_codec_features_csv,
+    codec_features_to_trivial_level_constraints,
 )
 
 
@@ -719,3 +720,89 @@ class TestReadCodecFeaturesCSV(object):
                     "quantization_matrix,       default",
                 ]
             )
+
+
+class TestCodecFeaturesToTrivialLevelConstraints(object):
+    @pytest.fixture
+    def codec_features(self):
+        return CodecFeatures(
+            name="example",
+            level=Levels.unconstrained,
+            profile=Profiles.high_quality,
+            major_version=3,
+            minor_version=0,
+            picture_coding_mode=PictureCodingModes.pictures_are_frames,
+            video_parameters=set_source_defaults(BaseVideoFormats.hd1080p_50),
+            wavelet_index=WaveletFilters.haar_with_shift,
+            wavelet_index_ho=WaveletFilters.haar_with_shift,
+            dwt_depth=2,
+            dwt_depth_ho=0,
+            slices_x=120,
+            slices_y=108,
+            fragment_slice_count=0,
+            lossless=False,
+            picture_bytes=1036800,
+            quantization_matrix=None,
+        )
+
+    def test_directly_copied_values(self, codec_features):
+        values = codec_features_to_trivial_level_constraints(codec_features)
+
+        assert values["level"] == Levels.unconstrained
+        assert values["profile"] == Profiles.high_quality
+        assert values["major_version"] == 3
+        assert values["minor_version"] == 0
+        assert values["picture_coding_mode"] == PictureCodingModes.pictures_are_frames
+        assert values["wavelet_index"] == WaveletFilters.haar_with_shift
+        assert values["dwt_depth"] == 2
+        assert values["slices_x"] == 120
+        assert values["slices_y"] == 108
+
+    @pytest.mark.parametrize(
+        "dwt_depth,slices_x,slices_y,exp_same_dimensions",
+        [
+            # Trivial: one slice
+            (0, 1, 1, True),
+            # No transform, check width and height divisible by slice count
+            (0, 100, 50, True),
+            (0, 101, 50, False),
+            (0, 100, 51, False),
+            # With transform, check rounded to nearest multiple of transform
+            # power (new dimensions will be 1008x512 as must be multiple of 16
+            # for depth 4 transform)
+            (4, 1, 1, True),
+            (4, 63, 32, True),
+            (4, 64, 32, False),
+            (4, 63, 33, False),
+            (4, 100, 32, False),
+            (4, 63, 50, False),
+        ],
+    )
+    def test_slices_have_same_dimensions(
+        self, codec_features, dwt_depth, slices_x, slices_y, exp_same_dimensions,
+    ):
+        codec_features["dwt_depth"] = dwt_depth
+        codec_features["slices_x"] = slices_x
+        codec_features["slices_y"] = slices_y
+        codec_features["video_parameters"]["frame_width"] = 1000
+        codec_features["video_parameters"]["frame_height"] = 500
+        codec_features["video_parameters"][
+            "color_diff_format_index"
+        ] = ColorDifferenceSamplingFormats.color_4_4_4
+
+        values = codec_features_to_trivial_level_constraints(codec_features)
+        assert values["slices_have_same_dimensions"] is exp_same_dimensions
+
+    @pytest.mark.parametrize(
+        "quantization_matrix,exp_custom_quant_matrix",
+        [(None, False), ({0: {"L": 0}, 1: {"H": 1}}, True)],
+    )
+    def test_custom_quant_matrix(
+        self, codec_features, quantization_matrix, exp_custom_quant_matrix,
+    ):
+        codec_features["dwt_depth"] = 0
+        codec_features["dwt_depth_ho"] = 1
+        codec_features["quantization_matrix"] = quantization_matrix
+
+        values = codec_features_to_trivial_level_constraints(codec_features)
+        assert values["custom_quant_matrix"] is exp_custom_quant_matrix

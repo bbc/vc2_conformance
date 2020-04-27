@@ -23,9 +23,9 @@ from string import ascii_uppercase
 
 from functools import partial
 
-from collections import OrderedDict
+from fractions import Fraction
 
-from vc2_conformance.video_parameters import set_source_defaults
+from collections import OrderedDict
 
 from vc2_data_tables import (
     Levels,
@@ -41,6 +41,12 @@ from vc2_data_tables import (
     PresetTransferFunctions,
 )
 
+from vc2_conformance.video_parameters import set_source_defaults, picture_dimensions
+
+from vc2_conformance.state import State
+
+from vc2_conformance.slice_sizes import slices_have_same_dimensions
+
 from vc2_conformance.fixeddict import fixeddict, Entry
 
 
@@ -48,6 +54,7 @@ __all__ = [
     "CodecFeatures",
     "InvalidCodecFeaturesError",
     "read_codec_features_csv",
+    "codec_features_to_trivial_level_constraints",
 ]
 
 
@@ -642,3 +649,94 @@ def read_codec_features_csv(csvfile):
             )
 
     return out
+
+
+def codec_features_to_trivial_level_constraints(codec_features):
+    """
+    Returns the values a given set of :py:class:`CodecFeatures` trivially fixes
+    in a :py:mod:`~vc2_conformance.level_constraints` table.
+
+    Parameters
+    ==========
+    codec_features : :py:class:`CodecFeatures`
+
+    Returns
+    =======
+    constrained_values : {key: concrete_value, ...}
+        A partial set of :py:mod:`~vc2_conformance.level_constraints`,
+        specifically containing the following keys:
+
+        * level
+        * profile
+        * major_version
+        * minor_version
+        * picture_coding_mode
+        * wavelet_index
+        * dwt_depth
+        * slices_x
+        * slices_y
+        * slices_have_same_dimensions
+        * custom_quant_matrix
+        * Low delay profile only:
+            * slice_bytes_numerator
+            * slice_bytes_denominator
+        * High quality profile only:
+            * slice_prefix_bytes
+
+        .. note::
+
+            In principle, more keys would be determined however a line in the
+            sand is required for what is considered 'simple' to determine and
+            what requires re-implementing much of the codec. We draw the line
+            at these values since all of them are straight-forward to work out.
+    """
+    constrained_values = {}
+
+    # Copy across the trivial options
+    for key in [
+        "level",
+        "profile",
+        "major_version",
+        "minor_version",
+        "picture_coding_mode",
+        "wavelet_index",
+        "dwt_depth",
+        "slices_x",
+        "slices_y",
+    ]:
+        constrained_values[key] = codec_features[key]
+
+    # Determine if all slices have the same dimensions
+    state = State(
+        dwt_depth=codec_features["dwt_depth"],
+        dwt_depth_ho=codec_features["dwt_depth_ho"],
+        slices_x=codec_features["slices_x"],
+        slices_y=codec_features["slices_y"],
+    )
+    picture_dimensions(
+        state,
+        codec_features["video_parameters"],
+        codec_features["picture_coding_mode"],
+    )
+    constrained_values["slices_have_same_dimensions"] = slices_have_same_dimensions(
+        state
+    )
+
+    # Determine slice sizes
+    if codec_features["profile"] == Profiles.low_delay:
+        assert not codec_features["lossless"]
+        num_slices = codec_features["slices_x"] * codec_features["slices_y"]
+        slice_bytes = Fraction(codec_features["picture_bytes"], num_slices)
+        constrained_values["slice_bytes_numerator"] = slice_bytes.numerator
+        constrained_values["slice_bytes_denominator"] = slice_bytes.denominator
+    elif codec_features["profile"] == Profiles.high_quality:
+        # TODO: At the moment the test case generator cannot generate streams
+        # which include prefix bytes we assume it is zero below...
+        constrained_values["slice_prefix_bytes"] = 0
+
+    # Determine custom quantisation matrix values
+    constrained_values["custom_quant_matrix"] = (
+        codec_features["quantization_matrix"] is not None
+    )
+
+    return constrained_values
