@@ -76,6 +76,7 @@ def test_padding_data_disallowed():
     # cases...)
     codec_features = MINIMAL_CODEC_FEATURES.copy()
     codec_features["profile"] = Profiles.low_delay
+    codec_features["major_version"] = 2
     codec_features["level"] = Levels.hd_over_sd_sdi
     test_cases = list(padding_data(codec_features))
     assert len(test_cases) == 0

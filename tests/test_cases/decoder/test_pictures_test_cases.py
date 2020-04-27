@@ -1069,6 +1069,7 @@ def test_iter_slices_in_sequence(profile, fragment_slice_count):
     codec_features["fragment_slice_count"] = fragment_slice_count
     codec_features["slices_x"] = 3
     codec_features["slices_y"] = 2
+    codec_features["picture_bytes"] = 100
 
     num_pictures = 2
 

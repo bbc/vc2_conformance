@@ -24,8 +24,6 @@ from vc2_data_tables import (
     PresetColorSpecs,
 )
 
-from vc2_conformance.codec_features import CodecFeatures
-
 from vc2_conformance._constraint_table import ValueSet, AnyValue
 
 from vc2_conformance.bitstream import (
@@ -63,6 +61,8 @@ from vc2_conformance.video_parameters import (
     set_source_defaults,
 )
 
+from vc2_conformance.encoder.exceptions import IncompatibleLevelAndVideoFormatError
+
 from vc2_conformance.encoder.sequence_header import (
     zip_longest_repeating_final_value,
     iter_custom_options_dicts,
@@ -72,10 +72,11 @@ from vc2_conformance.encoder.sequence_header import (
     rank_base_video_format_similarity,
     rank_allowed_base_video_format_similarity,
     make_parse_parameters,
-    IncompatibleLevelAndVideoFormatError,
     iter_sequence_headers,
     make_sequence_header,
 )
+
+from vc2_conformance.codec_features import CodecFeatures
 
 from sample_codec_features import MINIMAL_CODEC_FEATURES
 
@@ -883,10 +884,7 @@ class TestRankAllowedBaseVideoFormatSimilarity(object):
             HD_1440X1080I60_OVER_SD_SDI_CODEC_FEATURES
         )
 
-        assert base_video_formats == [
-            BaseVideoFormats.hd1080i_60,
-            BaseVideoFormats.hd1080i_50,
-        ]
+        assert base_video_formats == [BaseVideoFormats.hd1080i_60]
 
     def test_impossible(self):
         codec_features = deepcopy(HD_1440X1080I60_OVER_SD_SDI_CODEC_FEATURES)

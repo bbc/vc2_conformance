@@ -99,6 +99,12 @@ from vc2_conformance.video_parameters import set_coding_parameters
 
 from vc2_conformance.picture_encoding import picture_encode
 
+from vc2_conformance.codec_features import codec_features_to_trivial_level_constraints
+
+from vc2_conformance._constraint_table import allowed_values_for
+
+from vc2_conformance.level_constraints import LEVEL_CONSTRAINTS
+
 from vc2_conformance.slice_sizes import (
     slice_bytes,
     slice_left,
@@ -128,6 +134,10 @@ from vc2_conformance.bitstream import (
 )
 
 from vc2_conformance.bitstream.exp_golomb import signed_exp_golomb_length
+
+from vc2_conformance.encoder.exceptions import (
+    IncompatibleLevelAndExtendedTransformParametersError,
+)
 
 
 def get_quantization_marix(codec_features):
@@ -755,24 +765,65 @@ def make_quant_matrix(codec_features):
         )
 
 
+def decide_flag(codec_features, flag_name, required):
+    """
+    Decide what asym_transform*_flag setting to use, accounting for level
+    restrictions.
+
+    Parameters
+    ==========
+    codec_features : :py:class:`~vc2_conformance.codec_features.CodecFeatures`
+    flag_name : str
+        The name of the flag to be decided (e.g. "asym_transform_index_flag").
+    required : str
+        If True, require this flag to be True, if False, the flag may be set to
+        True or False, as allowed by the level, preferring False.
+
+    Returns
+    =======
+    flag : bool
+
+    Raises
+    ======
+    vc2_conformance.encoder.exceptions.IncompatibleLevelAndExtendedTransformParametersError
+        If ``required`` is True but the level prohibits the flag.
+    """
+    # The flag states which we could use to encode the required value
+    usable_flags = [True] if required else [False, True]
+
+    # The allowed flag values according to the current level
+    constrained_values = codec_features_to_trivial_level_constraints(codec_features)
+    permitted_flags = allowed_values_for(
+        LEVEL_CONSTRAINTS, flag_name, constrained_values
+    )
+
+    try:
+        return next(flag for flag in usable_flags if flag in permitted_flags)
+    except StopIteration:
+        raise IncompatibleLevelAndExtendedTransformParametersError(codec_features)
+
+
 def make_extended_transform_parameters(codec_features):
     """
     Create a :py:class:`vc2_conformance.bitstream.ExtendedTransformParameters`
     given a set of codec features. The encoding used will be as short as
-    possible for the specified codec.
+    possible for the specified codec configuration.
     """
+
     etp = ExtendedTransformParameters()
 
-    if codec_features["wavelet_index"] == codec_features["wavelet_index_ho"]:
-        etp["asym_transform_index_flag"] = False
-    else:
-        etp["asym_transform_index_flag"] = True
+    etp["asym_transform_index_flag"] = decide_flag(
+        codec_features,
+        "asym_transform_index_flag",
+        codec_features["wavelet_index"] != codec_features["wavelet_index_ho"],
+    )
+    if etp["asym_transform_index_flag"]:
         etp["wavelet_index_ho"] = codec_features["wavelet_index_ho"]
 
-    if codec_features["dwt_depth_ho"] == 0:
-        etp["asym_transform_flag"] = False
-    else:
-        etp["asym_transform_flag"] = True
+    etp["asym_transform_flag"] = decide_flag(
+        codec_features, "asym_transform_flag", codec_features["dwt_depth_ho"] != 0,
+    )
+    if etp["asym_transform_flag"]:
         etp["dwt_depth_ho"] = codec_features["dwt_depth_ho"]
 
     return etp

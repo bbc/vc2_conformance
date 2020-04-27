@@ -26,7 +26,43 @@ Example usage
     >>> with open("bitstream.vc2", "wb") as f:
     ...     autofill_and_serialise_sequence(f, sequence)
 
+Level constraints
+-----------------
+
+For the most part, all of the parameters which could be restricted by a VC-2
+level are chosen in the supplied
+:py:class:`~vc2_conformance.codec_features.CodecFeatures`. As such, choosing
+parameters which comply with the declared level is the responsibility of the
+caller, perhaps by subsequently decoding the sequence with the bitstream
+validator (:py:mod:`vc2_conformance.decoder`).
+
+Some choices are left up to this encoder, such as how best to encode a set of
+video parameters in a sequence header. In these cases, the encoder must make
+choices which comply with the supplied level. Since levels are expressed as a
+table of constraints (see :py:class:`vc2_conformance.level_constraints` and
+:py:class:`vc2_conformance._constraint_table`), this process potentially
+requires the use of a global constraint solver.
+
+Fortunately, all existing VC-2 levels are specified such that, once the level
+(and a few other parameters) have been defined, allmost all constrained
+parameters are independent meaning that global constraint solving is not
+required. The only case where dependencies exist are the parameters relating to
+sequence headers. As a conseiquence the
+:py:mod:`~vc2_conformance.encoder.sequence_header` generation module uses a
+simple constraint solver internally.
+
+.. note::
+
+    The parameter independence property of the VC-2 levels mentioned above is
+    essential for the encoder to generate level-conforming bitstreams. A test
+    in ``tests/encoder/test_level_constraints_assumptions.py`` is provided
+    which will fail should a future VC-2 level not have this property. See the
+    documentation at the top of this file for a more thorough introduction and
+    discussion of this topic.
 """
+
+# Exceptions thrown when impossible requests are made of the encoder
+from vc2_conformance.encoder.exceptions import *
 
 # Sequence header construction
 from vc2_conformance.encoder.sequence_header import *

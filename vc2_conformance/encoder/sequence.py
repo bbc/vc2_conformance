@@ -28,7 +28,9 @@ from vc2_conformance.bitstream import (
     AuxiliaryData,
 )
 
-from vc2_conformance.symbol_re import make_matching_sequence
+from vc2_conformance.symbol_re import make_matching_sequence, ImpossibleSequenceError
+
+from vc2_conformance.encoder.exceptions import IncompatibleLevelAndDataUnitError
 
 from vc2_conformance.encoder.sequence_header import make_sequence_header_data_unit
 
@@ -86,6 +88,10 @@ def make_sequence(codec_features, pictures, *data_unit_patterns, **kwargs):
     sequence : :py:class:`vc2_conformance.bitstream.Sequence`
         The VC-2 bitstream sequence, ready for serialization using
         :py:func:`~vc2_conformance.bitstream.vc2_autofill.autofill_and_serialise_sequence`.
+
+    Raises
+    ======
+    IncompatibleLevelAndDataUnitError
     """
     minimum_qindices = kwargs.pop("minimum_qindex", 0)
     assert not kwargs, "Unexpected arguments: {}".format(kwargs)
@@ -104,16 +110,21 @@ def make_sequence(codec_features, pictures, *data_unit_patterns, **kwargs):
         data_unit["parse_info"]["parse_code"].name
         for data_unit in pictures_only_sequence["data_units"]
     ]
-    required_data_unit_names = make_matching_sequence(
-        picture_only_data_unit_names,
-        # (10.4.1) Sequences start with a sequence header and end with an end
-        # of sequence data unit
-        "sequence_header .* end_of_sequence",
-        # Certain levels may provide additional constraints
-        LEVEL_SEQUENCE_RESTRICTIONS[codec_features["level"]].sequence_restriction_regex,
-        *data_unit_patterns,
-        symbol_priority=["padding_data", "sequence_header"]
-    )
+    try:
+        required_data_unit_names = make_matching_sequence(
+            picture_only_data_unit_names,
+            # (10.4.1) Sequences start with a sequence header and end with an end
+            # of sequence data unit
+            "sequence_header .* end_of_sequence",
+            # Certain levels may provide additional constraints
+            LEVEL_SEQUENCE_RESTRICTIONS[
+                codec_features["level"]
+            ].sequence_restriction_regex,
+            *data_unit_patterns,
+            symbol_priority=["padding_data", "sequence_header"]
+        )
+    except ImpossibleSequenceError:
+        raise IncompatibleLevelAndDataUnitError(codec_features)
 
     # Functions for producing the necessary data units
     #

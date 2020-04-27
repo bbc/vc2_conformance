@@ -191,6 +191,12 @@ class ValueSet(object):
 
             return True
 
+    def __hash__(self):
+        # Warning: This null-hash function is provided only to allow ValueSets
+        # to be used as part of dictionary keys in non-performance sensitive
+        # settings.
+        return hash(0)
+
     def __eq__(self, other):
         return (
             not isinstance(other, AnyValue)
@@ -283,6 +289,9 @@ class AnyValue(ValueSet):
             return False
         else:
             return other.is_disjoint(self)
+
+    def __hash__(self):
+        return hash(0)
 
     def __eq__(self, other):
         return isinstance(other, AnyValue)

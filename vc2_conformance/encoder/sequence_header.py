@@ -27,6 +27,8 @@ from vc2_conformance.level_constraints import (
     LEVEL_CONSTRAINT_ANY_VALUES,
 )
 
+from vc2_conformance.codec_features import codec_features_to_trivial_level_constraints
+
 from vc2_conformance.video_parameters import set_source_defaults
 
 from vc2_conformance.bitstream import (
@@ -48,13 +50,14 @@ from vc2_conformance.bitstream import (
     TransferFunction,
 )
 
+from vc2_conformance.encoder.exceptions import IncompatibleLevelAndVideoFormatError
+
 
 __all__ = [
     "rank_base_video_format_similarity",
     "rank_allowed_base_video_format_similarity",
     "iter_source_parameter_options",
     "make_parse_parameters",
-    "IncompatibleLevelAndVideoFormatError",
     "iter_sequence_headers",
     "make_sequence_header",
     "make_sequence_header_data_unit",
@@ -591,13 +594,6 @@ def rank_base_video_format_similarity(
     )
 
 
-class IncompatibleLevelAndVideoFormatError(ValueError):
-    """
-    Thrown when the codec features specified a particular VC-2 level which is
-    incompatible with the video format specified.
-    """
-
-
 def rank_allowed_base_video_format_similarity(codec_features):
     """
     Produce a ranked list of base video format IDs for the provided codec
@@ -605,9 +601,12 @@ def rank_allowed_base_video_format_similarity(codec_features):
     aren't allowed by the current level are omitted. The most similar base
     format is returned first.
 
-    Raises :py:exc:`IncompatibleLevelAndVideoFormatError` if no suitable base
-    video format is available.
+    Raises
+    :py:exc:`~vc2_conformance.encoder.exceptions.IncompatibleLevelAndVideoFormatError`
+    if no suitable base video format is available.
     """
+
+    constrained_values = codec_features_to_trivial_level_constraints(codec_features)
 
     return rank_base_video_format_similarity(
         codec_features["video_parameters"],
@@ -615,10 +614,7 @@ def rank_allowed_base_video_format_similarity(codec_features):
             allowed_values_for(
                 LEVEL_CONSTRAINTS,
                 "base_video_format",
-                {
-                    "level": codec_features["level"],
-                    "picture_coding_mode": codec_features["picture_coding_mode"],
-                },
+                constrained_values,
                 LEVEL_CONSTRAINT_ANY_VALUES["base_video_format"],
             ).iter_values()
         ),
@@ -668,10 +664,7 @@ def iter_sequence_headers(codec_features):
     picture_coding_mode = codec_features["picture_coding_mode"]
     video_parameters = codec_features["video_parameters"]
 
-    values = {
-        "level": codec_features["level"],
-        "picture_coding_mode": picture_coding_mode,
-    }
+    constrained_values = codec_features_to_trivial_level_constraints(codec_features)
 
     # Level constraints may force us to use a particular base video format for
     # this encoding so we try all possible encodings (starting with the most
@@ -681,7 +674,8 @@ def iter_sequence_headers(codec_features):
         base_video_parameters = set_source_defaults(base_video_format)
 
         level_constraints_dicts = filter_allowed_values(
-            LEVEL_CONSTRAINTS, dict(values, base_video_format=base_video_format),
+            LEVEL_CONSTRAINTS,
+            dict(constrained_values, base_video_format=base_video_format),
         )
         for level_constraints_dict in level_constraints_dicts:
             for source_parameters in iter_source_parameter_options(

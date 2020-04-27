@@ -6,8 +6,6 @@ from copy import deepcopy
 
 from vc2_data_tables import ParseCodes
 
-from vc2_conformance.symbol_re import ImpossibleSequenceError
-
 from vc2_conformance.test_cases import (
     TestCase,
     decoder_test_case_generator,
@@ -15,7 +13,10 @@ from vc2_conformance.test_cases import (
 
 from vc2_conformance.picture_generators import mid_gray, repeat_pictures
 
-from vc2_conformance.encoder import make_sequence
+from vc2_conformance.encoder import (
+    make_sequence,
+    IncompatibleLevelAndDataUnitError,
+)
 
 from vc2_conformance.test_cases.decoder.common import make_dummy_end_of_sequence
 
@@ -70,7 +71,7 @@ def padding_data(codec_features):
             # Insert padding data between every data unit
             "sequence_header (padding_data .)* padding_data end_of_sequence $",
         )
-    except ImpossibleSequenceError:
+    except IncompatibleLevelAndDataUnitError:
         # Padding not allowed in the supplied video format so just skip this
         # test
         return

@@ -57,6 +57,14 @@ from vc2_conformance import file_format
 
 from vc2_conformance.encoder.sequence_header import make_sequence_header_data_unit
 
+from vc2_conformance._constraint_table import ValueSet
+
+from vc2_conformance.level_constraints import LEVEL_CONSTRAINTS
+
+from vc2_conformance.encoder.exceptions import (
+    IncompatibleLevelAndExtendedTransformParametersError,
+)
+
 from vc2_conformance.encoder.pictures import (
     get_quantization_marix,
     apply_dc_prediction,
@@ -75,6 +83,7 @@ from vc2_conformance.encoder.pictures import (
     interleave,
     make_transform_data_ld_lossy,
     make_quant_matrix,
+    decide_flag,
     make_extended_transform_parameters,
     make_picture_parse_data_unit,
     make_fragment_parse_data_units,
@@ -973,10 +982,67 @@ class TestMakeQuantMatrix(object):
         ) == QuantMatrix(custom_quant_matrix=True, quant_matrix=[1, 2],)
 
 
+class TestMakeDecideFlag(object):
+    @pytest.yield_fixture
+    def level_constraints(self):
+        # Override allow temporary modifications to the level constraints
+        original_constraints = deepcopy(LEVEL_CONSTRAINTS)
+
+        try:
+            yield LEVEL_CONSTRAINTS
+        finally:
+            LEVEL_CONSTRAINTS.clear()
+            LEVEL_CONSTRAINTS.extend(original_constraints)
+
+    @pytest.mark.parametrize("required,expected", [(True, True), (False, False)])
+    def test_unconstrained(self, required, expected):
+        assert (
+            decide_flag(MINIMAL_CODEC_FEATURES, "asym_transform_index_flag", required,)
+            is expected
+        )
+
+    @pytest.mark.parametrize("required", [True, False])
+    def test_constrained_true(self, level_constraints, required):
+        assert level_constraints[0]["level"] == ValueSet(0)
+        level_constraints[0]["asym_transform_index_flag"] = ValueSet(True)
+        assert (
+            decide_flag(MINIMAL_CODEC_FEATURES, "asym_transform_index_flag", required,)
+            is True
+        )
+
+    def test_constrained_false_not_required(self, level_constraints):
+        assert level_constraints[0]["level"] == ValueSet(0)
+        level_constraints[0]["asym_transform_index_flag"] = ValueSet(False)
+        assert (
+            decide_flag(MINIMAL_CODEC_FEATURES, "asym_transform_index_flag", False,)
+            is False
+        )
+
+    def test_constrained_false_but_required(self, level_constraints):
+        assert level_constraints[0]["level"] == ValueSet(0)
+        level_constraints[0]["asym_transform_index_flag"] = ValueSet(False)
+        with pytest.raises(IncompatibleLevelAndExtendedTransformParametersError):
+            decide_flag(
+                MINIMAL_CODEC_FEATURES, "asym_transform_index_flag", True,
+            )
+
+
 class TestMakeExtendedTransformParameters(object):
+    @pytest.yield_fixture
+    def level_constraints(self):
+        # Override allow temporary modifications to the level constraints
+        original_constraints = deepcopy(LEVEL_CONSTRAINTS)
+
+        try:
+            yield LEVEL_CONSTRAINTS
+        finally:
+            LEVEL_CONSTRAINTS.clear()
+            LEVEL_CONSTRAINTS.extend(original_constraints)
+
     def test_symmetric(self):
         assert make_extended_transform_parameters(
             CodecFeatures(
+                MINIMAL_CODEC_FEATURES,
                 wavelet_index=WaveletFilters.haar_with_shift,
                 wavelet_index_ho=WaveletFilters.haar_with_shift,
                 dwt_depth=2,
@@ -986,9 +1052,32 @@ class TestMakeExtendedTransformParameters(object):
             asym_transform_index_flag=False, asym_transform_flag=False,
         )
 
+    def test_forced_flags(self, level_constraints):
+        # Use the level to force the asym transform flags to be specified for a
+        # symmetric transform
+        assert level_constraints[0]["level"] == ValueSet(0)
+        level_constraints[0]["asym_transform_index_flag"] = ValueSet(True)
+        level_constraints[0]["asym_transform_flag"] = ValueSet(True)
+
+        assert make_extended_transform_parameters(
+            CodecFeatures(
+                MINIMAL_CODEC_FEATURES,
+                wavelet_index=WaveletFilters.haar_with_shift,
+                wavelet_index_ho=WaveletFilters.haar_with_shift,
+                dwt_depth=2,
+                dwt_depth_ho=0,
+            )
+        ) == ExtendedTransformParameters(
+            asym_transform_index_flag=True,
+            wavelet_index_ho=WaveletFilters.haar_with_shift,
+            asym_transform_flag=True,
+            dwt_depth_ho=0,
+        )
+
     def test_asymmetric_transform_index(self):
         assert make_extended_transform_parameters(
             CodecFeatures(
+                MINIMAL_CODEC_FEATURES,
                 wavelet_index=WaveletFilters.le_gall_5_3,
                 wavelet_index_ho=WaveletFilters.haar_no_shift,
                 dwt_depth=2,
@@ -1003,6 +1092,7 @@ class TestMakeExtendedTransformParameters(object):
     def test_asymmetric_transform(self):
         assert make_extended_transform_parameters(
             CodecFeatures(
+                MINIMAL_CODEC_FEATURES,
                 wavelet_index=WaveletFilters.haar_with_shift,
                 wavelet_index_ho=WaveletFilters.haar_with_shift,
                 dwt_depth=2,

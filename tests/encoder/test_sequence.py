@@ -9,7 +9,7 @@ from vc2_data_tables import (
     PictureCodingModes,
 )
 
-from vc2_conformance.symbol_re import ImpossibleSequenceError
+from vc2_conformance.encoder.exceptions import IncompatibleLevelAndDataUnitError
 
 from vc2_conformance.encoder.sequence import make_sequence
 
@@ -187,7 +187,7 @@ def test_custom_sequence_restrictions_obeyed():
     )
 
     # Should fail to create conflicting sequence
-    with pytest.raises(ImpossibleSequenceError):
+    with pytest.raises(IncompatibleLevelAndDataUnitError):
         seq = make_sequence(codec_features, pictures, "end_of_sequence $",)
 
     seq = make_sequence(
