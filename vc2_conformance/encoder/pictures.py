@@ -578,7 +578,7 @@ def get_safe_lossy_hq_slice_size_scaler(picture_bytes, num_slices):
     # bit length field.
     slice_size_scaler = (max_length_field_value + 254) // 255
 
-    return slice_size_scaler
+    return max(1, slice_size_scaler)
 
 
 def make_transform_data_hq_lossy(picture_bytes, transform_coeffs, minimum_qindex=0):

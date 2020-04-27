@@ -749,6 +749,8 @@ class TestMakeTransformDataHQLossless(object):
 @pytest.mark.parametrize(
     "picture_bytes,exp_slice_size_scaler",
     [
+        # Special case: 4 bytes per slice (the minimum possible)
+        (3 * 2 * 4, 1),
         # No need for a slice size scaler (<259 bytes per slice)
         (3 * 2 * 100, 1),
         # Maximum slice size before we might need a slice size scaler
