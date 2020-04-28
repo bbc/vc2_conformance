@@ -36,7 +36,6 @@ from vc2_conformance.bitstream import (
     BitstreamWriter,
     Serialiser,
     vc2_default_values,
-    quant_matrix,
     transform_data,
     QuantMatrix,
     HQSlice,
@@ -62,6 +61,7 @@ from vc2_conformance._constraint_table import ValueSet
 from vc2_conformance.level_constraints import LEVEL_CONSTRAINTS
 
 from vc2_conformance.encoder.exceptions import (
+    MissingQuantizationMatrixError,
     IncompatibleLevelAndExtendedTransformParametersError,
 )
 
@@ -129,34 +129,25 @@ class TestGetQuantMatrix(object):
         codec_features["dwt_depth_ho"] = 100
         codec_features["quantization_matrix"] = None
 
-        with pytest.raises(ValueError):
+        with pytest.raises(MissingQuantizationMatrixError):
             get_quantization_marix(codec_features)
 
-    @pytest.mark.parametrize("dwt_depth", [0, 1, 2])
-    @pytest.mark.parametrize("dwt_depth_ho", [0, 1, 2])
-    def test_custom_quantisation_matrix(self, dwt_depth, dwt_depth_ho):
+    def test_custom_quantisation_matrix(self):
         codec_features = MINIMAL_CODEC_FEATURES.copy()
         codec_features["wavelet_index"] = WaveletFilters.le_gall_5_3
         codec_features["wavelet_index_ho"] = WaveletFilters.haar_no_shift
-        codec_features["dwt_depth"] = dwt_depth
-        codec_features["dwt_depth_ho"] = dwt_depth_ho
+        codec_features["dwt_depth"] = 0
+        codec_features["dwt_depth_ho"] = 1
 
-        codec_features["quantization_matrix"] = list(
-            range(3 * dwt_depth + dwt_depth_ho + 1)
-        )
+        codec_features["quantization_matrix"] = {
+            0: {"L": 0},
+            1: {"H": 1},
+        }
 
-        # Use the pseudocode to read the quantisation matrix in bitstream order
-        # as the 'model answer'.
-        state = State(dwt_depth=dwt_depth, dwt_depth_ho=dwt_depth_ho,)
-        context = QuantMatrix(
-            custom_quant_matrix=True,
-            quant_matrix=codec_features["quantization_matrix"],
-        )
-        with Serialiser(BitstreamWriter(BytesIO()), context) as ser:
-            quant_matrix(ser, state)
-        expected = state["quant_matrix"]
-
-        assert get_quantization_marix(codec_features) == expected
+        assert get_quantization_marix(codec_features) == {
+            0: {"L": 0},
+            1: {"H": 1},
+        }
 
 
 def test_apply_dc_prediction():
@@ -351,7 +342,7 @@ class TestTransformAndSlicePicture(object):
             fragment_slice_count=0,
             lossless=False,
             picture_bytes=24,
-            quantization_matrix=[123, 321],
+            quantization_matrix={0: {"L": 123}, 1: {"H": 321}},
         )
 
     @pytest.fixture

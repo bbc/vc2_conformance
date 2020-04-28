@@ -136,6 +136,7 @@ from vc2_conformance.bitstream import (
 from vc2_conformance.bitstream.exp_golomb import signed_exp_golomb_length
 
 from vc2_conformance.encoder.exceptions import (
+    MissingQuantizationMatrixError,
     IncompatibleLevelAndExtendedTransformParametersError,
 )
 
@@ -144,6 +145,10 @@ def get_quantization_marix(codec_features):
     """
     Get the quantization matrix (in the form of the ``quant_matrix`` entry in
     ``state``) based on the provided ``codec_features``.
+
+    Throws
+    :py:exc:`vc2_conformance.encoder.exceptions.MissingQuantizationMatrixError`
+    if a matrix is not provided when no default is available.
     """
     if codec_features["quantization_matrix"] is None:
         transform_details = (
@@ -153,38 +158,10 @@ def get_quantization_marix(codec_features):
             codec_features["dwt_depth_ho"],
         )
         if transform_details not in QUANTISATION_MATRICES:
-            raise ValueError(
-                "No default quantization matrix is available for {}".format(
-                    transform_details,
-                )
-            )
+            raise MissingQuantizationMatrixError(codec_features)
         return QUANTISATION_MATRICES[transform_details]
     else:
-        values = iter(codec_features["quantization_matrix"])
-
-        quant_matrix = {}
-
-        if codec_features["dwt_depth_ho"] == 0:
-            quant_matrix[0] = {}
-            quant_matrix[0]["LL"] = next(values)
-        else:
-            quant_matrix[0] = {}
-            quant_matrix[0]["L"] = next(values)
-
-        for level in range(1, codec_features["dwt_depth_ho"] + 1):
-            quant_matrix[level] = {}
-            quant_matrix[level]["H"] = next(values)
-
-        for level in range(
-            codec_features["dwt_depth_ho"] + 1,
-            codec_features["dwt_depth_ho"] + codec_features["dwt_depth"] + 1,
-        ):
-            quant_matrix[level] = {}
-            quant_matrix[level]["HL"] = next(values)
-            quant_matrix[level]["LH"] = next(values)
-            quant_matrix[level]["HH"] = next(values)
-
-        return quant_matrix
+        return codec_features["quantization_matrix"]
 
 
 @ref_pseudocode(deviation="inferred_implementation")

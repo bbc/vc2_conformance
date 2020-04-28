@@ -6,6 +6,13 @@ class InvalidCodecFeaturesError(ValueError):
     """
 
 
+class MissingQuantizationMatrixError(InvalidCodecFeaturesError):
+    """
+    Thrown when the codec features specified did not include a quantization
+    matrix when one was required.
+    """
+
+
 class IncompatibleLevelAndVideoFormatError(InvalidCodecFeaturesError):
     """
     Thrown when the codec features specified a particular VC-2 level which is
