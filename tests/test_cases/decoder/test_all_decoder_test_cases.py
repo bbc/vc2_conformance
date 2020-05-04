@@ -44,7 +44,7 @@ with alternative_real_pictures():
                 MINIMAL_CODEC_FEATURES,
                 profile=Profiles.high_quality,
                 lossless=True,
-                picture_bytes=0,
+                picture_bytes=None,
             ),
             # Fragmented pictures
             CodecFeatures(

@@ -13,6 +13,22 @@ class MissingQuantizationMatrixError(InvalidCodecFeaturesError):
     """
 
 
+class PictureBytesSpecifiedForLosslessModeError(InvalidCodecFeaturesError):
+    """
+    Thrown when the 'picture_bytes' field of a
+    :py:class:`vc2_conformance.codec_features.CodecFeatures` is set at the same
+    time as the lossless field being true.
+    """
+
+
+class InsufficientPictureBytesError(InvalidCodecFeaturesError):
+    """
+    Thrown when the 'picture_bytes' field of a
+    :py:class:`vc2_conformance.codec_features.CodecFeatures` is set too low for
+    the coding options chosen.
+    """
+
+
 class AsymmetricTransformPreVersion3Error(InvalidCodecFeaturesError):
     """
     Thrown when an asymmetric wavelet transform is used in a stream specified

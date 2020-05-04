@@ -64,6 +64,8 @@ from vc2_conformance.encoder.exceptions import (
     MissingQuantizationMatrixError,
     IncompatibleLevelAndExtendedTransformParametersError,
     AsymmetricTransformPreVersion3Error,
+    PictureBytesSpecifiedForLosslessModeError,
+    InsufficientPictureBytesError,
 )
 
 from vc2_conformance.encoder.pictures import (
@@ -1298,6 +1300,19 @@ class TestMakePictureParseDataUnit(object):
         del natural_picture["pic_num"]
         data_unit = make_picture_parse_data_unit(codec_features, natural_picture)
         assert "picture_number" not in data_unit["picture_parse"]["picture_header"]
+
+    def test_lossless_with_picture_bytes_set(self, codec_features, natural_picture):
+        codec_features["lossless"] = True
+        codec_features["picture_bytes"] = 100
+        with pytest.raises(PictureBytesSpecifiedForLosslessModeError):
+            make_picture_parse_data_unit(codec_features, natural_picture)
+
+    @pytest.mark.parametrize("profile", Profiles)
+    def test_insufficient_picture_bytes(self, codec_features, natural_picture, profile):
+        codec_features["profile"] = profile
+        codec_features["picture_bytes"] = 1
+        with pytest.raises(InsufficientPictureBytesError):
+            make_picture_parse_data_unit(codec_features, natural_picture)
 
     @pytest.mark.parametrize(
         "wavelet_index,dwt_depth_ho",

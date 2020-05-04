@@ -1139,7 +1139,7 @@ def test_slice_padding_data(profile, lossless):
     codec_features["profile"] = profile
     codec_features["lossless"] = lossless
     if lossless:
-        codec_features["picture_bytes"] = 0
+        codec_features["picture_bytes"] = None
 
     # The first 10 bytes of padding data for each component
     # {padding_field_name: set([bitarray, ...]), ...}

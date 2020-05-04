@@ -139,6 +139,8 @@ from vc2_conformance.encoder.exceptions import (
     MissingQuantizationMatrixError,
     IncompatibleLevelAndExtendedTransformParametersError,
     AsymmetricTransformPreVersion3Error,
+    PictureBytesSpecifiedForLosslessModeError,
+    InsufficientPictureBytesError,
 )
 
 
@@ -574,6 +576,9 @@ def make_transform_data_hq_lossy(picture_bytes, transform_coeffs, minimum_qindex
     Quantize and pack transform coefficients into HQ picture slices in a
     :py:class:`TransformData`.
 
+    Raises :py:exc:`InsufficientPictureBytesError` if ``picture_bytes`` is too
+    small.
+
     Parameters
     ==========
     picture_bytes : int
@@ -607,6 +612,9 @@ def make_transform_data_hq_lossy(picture_bytes, transform_coeffs, minimum_qindex
     # accounted for (NB: 4 bytes overhead per slice due to qindex and
     # slice_{y,c1,c2}_length fields).
     total_coeff_bytes = picture_bytes - (num_slices * 4)
+
+    if total_coeff_bytes < 0:
+        raise InsufficientPictureBytesError()
 
     # We'll repurpose slice_bytes (13.5.3.2) to compute the number of
     # slice_size_scaler bytes available for transform coefficients in each
@@ -667,6 +675,9 @@ def make_transform_data_ld_lossy(picture_bytes, transform_coeffs, minimum_qindex
     Quantize and pack transform coefficients into LD picture slices in a
     :py:class:`TransformData`.
 
+    Raises :py:exc:`InsufficientPictureBytesError` if ``picture_bytes`` is too
+    small.
+
     Parameters
     ==========
     picture_bytes : int
@@ -696,6 +707,9 @@ def make_transform_data_ld_lossy(picture_bytes, transform_coeffs, minimum_qindex
             target_size = 8 * slice_bytes(state, sx, sy)
             target_size -= 7  # qindex field
             target_size -= intlog2(target_size)  # slice_y_length field
+
+            if target_size < 0:
+                raise InsufficientPictureBytesError()
 
             # Interleave color components
             y_coeffs = transform_coeffs_slice.Y
@@ -814,6 +828,12 @@ def make_picture_parse(codec_features, picture, minimum_qindex=0):
     Raises :py:exc:`AsymmetricTransformPreVersion3Error` if an asymmetric
     transform type is specified for a pre-version 3 stream.
 
+    Raises :py:exc:`PictureBytesSpecifiedForLosslessModeError` if
+    ``picture_bytes`` is specifiied for a lossless coding mode.
+
+    Raises :py:exc:`InsufficientPictureBytesError` if ``picture_bytes`` is too
+    small for the coding mode used.
+
     Parameters
     ==========
     codec_features : :py:class:`~vc2_conformance.codec_features.CodecFeatures`
@@ -847,6 +867,8 @@ def make_picture_parse(codec_features, picture, minimum_qindex=0):
     if codec_features["profile"] == Profiles.high_quality:
         if codec_features["lossless"]:
             assert minimum_qindex == 0
+            if codec_features["picture_bytes"] is not None:
+                raise PictureBytesSpecifiedForLosslessModeError()
             slice_size_scaler, transform_data = make_transform_data_hq_lossless(
                 transform_coeffs,
             )

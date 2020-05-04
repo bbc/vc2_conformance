@@ -116,7 +116,7 @@ a collection of these, defining support for several picture formats.
   false, fixed-rate lossy coding is used.
 * ``picture_bytes``: When ``lossless`` is False, this gives the number of bytes
   per picture to use. Slices will be assigned (as close to) the same number of
-  bytes each as possible. If True, this value should be None.
+  bytes each as possible. If ``lossless` is True, this value should be None.
 * ``quantization_matrix``: None or a hierarchy of dictionaries as constructed
   by the ``quant_matrix`` pseudocode function (12.4.5.3). If None, the default
   quantization matrix will be used.
@@ -588,6 +588,7 @@ def read_codec_features_csv(csvfile):
                     "Entry provided for 'picture_bytes' when lossless mode "
                     "specified for '{}' column".format(name,)
                 )
+            features["picture_bytes"] = None
         else:
             # Check size is sufficient
             num_slices = features["slices_x"] * features["slices_y"]
