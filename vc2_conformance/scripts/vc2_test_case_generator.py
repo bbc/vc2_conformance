@@ -34,6 +34,8 @@ from vc2_conformance.codec_features import (
     InvalidCodecFeaturesError,
 )
 
+from vc2_conformance.encoder import UnsatisfiableCodecFeaturesError
+
 from vc2_conformance._py2x_compat import (
     get_terminal_size,
     makedirs,
@@ -253,7 +255,16 @@ def check_codec_features_valid(codec_feature_sets):
         f = BytesIO()
 
         # Generate a minimal bitstream
-        autofill_and_serialise_sequence(f, static_grey(codec_features,))
+        try:
+            autofill_and_serialise_sequence(f, static_grey(codec_features,))
+        except UnsatisfiableCodecFeaturesError as e:
+            sys.stderr.write(
+                "Error: Codec configuration {!r} is invalid:\n".format(name)
+            )
+            terminal_width = get_terminal_size()[0]
+            sys.stderr.write(wrap_paragraphs(e.explain(), terminal_width))
+            sys.stderr.write("\n")
+            sys.exit(4)
         f.seek(0)
 
         # Validate it meets the spec

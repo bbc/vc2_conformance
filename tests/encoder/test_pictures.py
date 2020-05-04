@@ -65,7 +65,8 @@ from vc2_conformance.encoder.exceptions import (
     IncompatibleLevelAndExtendedTransformParametersError,
     AsymmetricTransformPreVersion3Error,
     PictureBytesSpecifiedForLosslessModeError,
-    InsufficientPictureBytesError,
+    InsufficientLDPictureBytesError,
+    InsufficientHQPictureBytesError,
     LosslessUnsupportedByLowDelayError,
 )
 
@@ -1308,11 +1309,19 @@ class TestMakePictureParseDataUnit(object):
         with pytest.raises(PictureBytesSpecifiedForLosslessModeError):
             make_picture_parse_data_unit(codec_features, natural_picture)
 
-    @pytest.mark.parametrize("profile", Profiles)
-    def test_insufficient_picture_bytes(self, codec_features, natural_picture, profile):
+    @pytest.mark.parametrize(
+        "profile,exc",
+        [
+            (Profiles.low_delay, InsufficientLDPictureBytesError),
+            (Profiles.high_quality, InsufficientHQPictureBytesError),
+        ],
+    )
+    def test_insufficient_picture_bytes(
+        self, codec_features, natural_picture, profile, exc
+    ):
         codec_features["profile"] = profile
         codec_features["picture_bytes"] = 1
-        with pytest.raises(InsufficientPictureBytesError):
+        with pytest.raises(exc):
             make_picture_parse_data_unit(codec_features, natural_picture)
 
     @pytest.mark.parametrize(

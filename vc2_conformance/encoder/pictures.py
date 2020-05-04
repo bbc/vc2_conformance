@@ -140,7 +140,8 @@ from vc2_conformance.encoder.exceptions import (
     IncompatibleLevelAndExtendedTransformParametersError,
     AsymmetricTransformPreVersion3Error,
     PictureBytesSpecifiedForLosslessModeError,
-    InsufficientPictureBytesError,
+    InsufficientHQPictureBytesError,
+    InsufficientLDPictureBytesError,
     LosslessUnsupportedByLowDelayError,
 )
 
@@ -577,7 +578,7 @@ def make_transform_data_hq_lossy(picture_bytes, transform_coeffs, minimum_qindex
     Quantize and pack transform coefficients into HQ picture slices in a
     :py:class:`TransformData`.
 
-    Raises :py:exc:`InsufficientPictureBytesError` if ``picture_bytes`` is too
+    Raises :py:exc:`InsufficientHQPictureBytesError` if ``picture_bytes`` is too
     small.
 
     Parameters
@@ -615,7 +616,7 @@ def make_transform_data_hq_lossy(picture_bytes, transform_coeffs, minimum_qindex
     total_coeff_bytes = picture_bytes - (num_slices * 4)
 
     if total_coeff_bytes < 0:
-        raise InsufficientPictureBytesError()
+        raise InsufficientHQPictureBytesError()
 
     # We'll repurpose slice_bytes (13.5.3.2) to compute the number of
     # slice_size_scaler bytes available for transform coefficients in each
@@ -676,7 +677,7 @@ def make_transform_data_ld_lossy(picture_bytes, transform_coeffs, minimum_qindex
     Quantize and pack transform coefficients into LD picture slices in a
     :py:class:`TransformData`.
 
-    Raises :py:exc:`InsufficientPictureBytesError` if ``picture_bytes`` is too
+    Raises :py:exc:`InsufficientLDPictureBytesError` if ``picture_bytes`` is too
     small.
 
     Parameters
@@ -710,7 +711,7 @@ def make_transform_data_ld_lossy(picture_bytes, transform_coeffs, minimum_qindex
             target_size -= intlog2(target_size)  # slice_y_length field
 
             if target_size < 0:
-                raise InsufficientPictureBytesError()
+                raise InsufficientLDPictureBytesError()
 
             # Interleave color components
             y_coeffs = transform_coeffs_slice.Y
@@ -832,8 +833,9 @@ def make_picture_parse(codec_features, picture, minimum_qindex=0):
     Raises :py:exc:`PictureBytesSpecifiedForLosslessModeError` if
     ``picture_bytes`` is specifiied for a lossless coding mode.
 
-    Raises :py:exc:`InsufficientPictureBytesError` if ``picture_bytes`` is too
-    small for the coding mode used.
+    Raises :py:exc:`InsufficientLDPictureBytesError`
+    :py:exc:`InsufficientHQPictureBytesError` if ``picture_bytes`` is too small
+    for the coding mode used.
 
     Parameters
     ==========
@@ -869,23 +871,31 @@ def make_picture_parse(codec_features, picture, minimum_qindex=0):
         if codec_features["lossless"]:
             assert minimum_qindex == 0
             if codec_features["picture_bytes"] is not None:
-                raise PictureBytesSpecifiedForLosslessModeError()
+                raise PictureBytesSpecifiedForLosslessModeError(codec_features)
             slice_size_scaler, transform_data = make_transform_data_hq_lossless(
                 transform_coeffs,
             )
         else:
-            slice_size_scaler, transform_data = make_transform_data_hq_lossy(
-                codec_features["picture_bytes"], transform_coeffs, minimum_qindex,
-            )
+            try:
+                slice_size_scaler, transform_data = make_transform_data_hq_lossy(
+                    codec_features["picture_bytes"], transform_coeffs, minimum_qindex,
+                )
+            except InsufficientHQPictureBytesError:
+                # Re-raise with codec features dict
+                raise InsufficientHQPictureBytesError(codec_features)
 
         slice_parameters["slice_prefix_bytes"] = 0
         slice_parameters["slice_size_scaler"] = slice_size_scaler
     elif codec_features["profile"] == Profiles.low_delay:
         if codec_features["lossless"]:
-            raise LosslessUnsupportedByLowDelayError()
-        transform_data = make_transform_data_ld_lossy(
-            codec_features["picture_bytes"], transform_coeffs, minimum_qindex,
-        )
+            raise LosslessUnsupportedByLowDelayError(codec_features)
+        try:
+            transform_data = make_transform_data_ld_lossy(
+                codec_features["picture_bytes"], transform_coeffs, minimum_qindex,
+            )
+        except InsufficientLDPictureBytesError:
+            # Re-raise with codec features dict
+            raise InsufficientLDPictureBytesError(codec_features)
 
         slice_bytes_fraction = Fraction(
             codec_features["picture_bytes"],
@@ -909,7 +919,7 @@ def make_picture_parse(codec_features, picture, minimum_qindex=0):
             codec_features["wavelet_index"] != codec_features["wavelet_index_ho"]
             or codec_features["dwt_depth_ho"] != 0
         ):
-            raise AsymmetricTransformPreVersion3Error()
+            raise AsymmetricTransformPreVersion3Error(codec_features)
 
     wavelet_transform = WaveletTransform(
         transform_parameters=transform_parameters, transform_data=transform_data,

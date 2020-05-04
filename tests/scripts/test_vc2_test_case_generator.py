@@ -164,11 +164,7 @@ def test_check_output_directories_empty(
 # in a non-conformant stream). Some rethinking of how level constraints are
 # dealt with for test case generation needs doing...
 @pytest.mark.parametrize(
-    "name,exp_valid",
-    [
-        ("minimal", True),
-        pytest.param("minimal-invalid", False, marks=pytest.mark.xfail),
-    ],
+    "name,exp_valid", [("minimal", True), ("minimal-invalid", False)],
 )
 def test_check_codec_features_valid(capsys, name, exp_valid):
     codec_feature_sets = read_codec_features_csv(open(CODEC_FEATURES_CSV))
@@ -183,7 +179,6 @@ def test_check_codec_features_valid(capsys, name, exp_valid):
         out, err = capsys.readouterr()
         assert "minimal-invalid" in err
         assert "is invalid" in err
-        assert "custom_dimensions_flag" in err
 
 
 @pytest.fixture(scope="module")
