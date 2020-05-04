@@ -36,9 +36,9 @@ with alternative_real_pictures():
         )
         for codec_features in [
             # High quality
-            CodecFeatures(MINIMAL_CODEC_FEATURES, profile=Profiles.high_quality,),
+            CodecFeatures(MINIMAL_CODEC_FEATURES, profile=Profiles.high_quality),
             # Low delay
-            CodecFeatures(MINIMAL_CODEC_FEATURES, profile=Profiles.low_delay,),
+            CodecFeatures(MINIMAL_CODEC_FEATURES, profile=Profiles.low_delay),
             # Lossless coding
             CodecFeatures(
                 MINIMAL_CODEC_FEATURES,
@@ -56,6 +56,18 @@ with alternative_real_pictures():
             CodecFeatures(
                 MINIMAL_CODEC_FEATURES,
                 picture_coding_mode=PictureCodingModes.pictures_are_fields,
+            ),
+            # Custom quantisation matrix
+            CodecFeatures(
+                MINIMAL_CODEC_FEATURES,
+                dwt_depth=1,
+                dwt_depth_ho=2,
+                quantization_matrix={
+                    0: {"L": 1},
+                    1: {"H": 2},
+                    2: {"H": 3},
+                    3: {"LH": 4, "HL": 5, "HH": 6},
+                },
             ),
         ]
     ]

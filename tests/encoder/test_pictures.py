@@ -37,6 +37,7 @@ from vc2_conformance.bitstream import (
     Serialiser,
     vc2_default_values,
     transform_data,
+    quant_matrix,
     QuantMatrix,
     HQSlice,
     hq_slice,
@@ -72,6 +73,7 @@ from vc2_conformance.encoder.exceptions import (
 
 from vc2_conformance.encoder.pictures import (
     get_quantization_marix,
+    serialize_quantization_matrix,
     apply_dc_prediction,
     calculate_coeffs_bits,
     calculate_hq_length_field,
@@ -153,6 +155,39 @@ class TestGetQuantMatrix(object):
             0: {"L": 0},
             1: {"H": 1},
         }
+
+
+@pytest.mark.parametrize(
+    "dwt_depth,dwt_depth_ho,quantization_matrix",
+    [
+        (0, 0, {0: {"LL": 10}}),
+        (0, 2, {0: {"L": 1}, 1: {"H": 2}, 2: {"H": 3}}),
+        (
+            2,
+            0,
+            {
+                0: {"LL": 1},
+                1: {"HL": 2, "LH": 3, "HH": 4},
+                2: {"HL": 5, "LH": 6, "HH": 7},
+            },
+        ),
+        (1, 1, {0: {"L": 1}, 1: {"H": 2}, 2: {"HL": 3, "LH": 4, "HH": 5}}),
+    ],
+)
+def test_serialize_quantization_matrix(
+    dwt_depth, dwt_depth_ho, quantization_matrix,
+):
+    # Check that the function serialises the quantization matrix values in the
+    # same order the pseudocode (in this case as implemented in the Serialiser)
+    state = State(dwt_depth=dwt_depth, dwt_depth_ho=dwt_depth_ho,)
+    context = QuantMatrix(
+        custom_quant_matrix=True,
+        quant_matrix=serialize_quantization_matrix(quantization_matrix),
+    )
+    with Serialiser(BitstreamWriter(BytesIO()), context) as ser:
+        quant_matrix(ser, state)
+
+    assert state["quant_matrix"] == quantization_matrix
 
 
 def test_apply_dc_prediction():
@@ -974,8 +1009,12 @@ class TestMakeQuantMatrix(object):
 
     def test_custom(self):
         assert make_quant_matrix(
-            CodecFeatures(quantization_matrix=[1, 2],)
-        ) == QuantMatrix(custom_quant_matrix=True, quant_matrix=[1, 2],)
+            CodecFeatures(
+                dwt_depth=0,
+                dwt_depth_ho=1,
+                quantization_matrix={0: {"L": 10}, 1: {"H": 20}},
+            )
+        ) == QuantMatrix(custom_quant_matrix=True, quant_matrix=[10, 20],)
 
 
 class TestMakeDecideFlag(object):

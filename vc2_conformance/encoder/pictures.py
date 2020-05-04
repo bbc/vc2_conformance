@@ -169,6 +169,21 @@ def get_quantization_marix(codec_features):
         return codec_features["quantization_matrix"]
 
 
+def serialize_quantization_matrix(matrix):
+    """
+    Given a quantization matrix as a hierarchy of dictionaries, returns the
+    serial list of matrix values for use in a VC-2 bitstream.
+    """
+    out = []
+    for level, orients in sorted(matrix.items()):
+        for orient, value in sorted(
+            orients.items(),
+            key=lambda ov: ["L", "H", "LL", "HL", "LH", "HH"].index(ov[0]),
+        ):
+            out.append(value)
+    return out
+
+
 @ref_pseudocode(deviation="inferred_implementation")
 def apply_dc_prediction(band):
     """(13.4) Inverse of dc_prediction."""
@@ -755,7 +770,9 @@ def make_quant_matrix(codec_features):
     else:
         return QuantMatrix(
             custom_quant_matrix=True,
-            quant_matrix=codec_features["quantization_matrix"],
+            quant_matrix=serialize_quantization_matrix(
+                codec_features["quantization_matrix"]
+            ),
         )
 
 
