@@ -63,6 +63,7 @@ from vc2_conformance.level_constraints import LEVEL_CONSTRAINTS
 from vc2_conformance.encoder.exceptions import (
     MissingQuantizationMatrixError,
     IncompatibleLevelAndExtendedTransformParametersError,
+    AsymmetricTransformPreVersion3Error,
 )
 
 from vc2_conformance.encoder.pictures import (
@@ -1297,6 +1298,19 @@ class TestMakePictureParseDataUnit(object):
         del natural_picture["pic_num"]
         data_unit = make_picture_parse_data_unit(codec_features, natural_picture)
         assert "picture_number" not in data_unit["picture_parse"]["picture_header"]
+
+    @pytest.mark.parametrize(
+        "wavelet_index,dwt_depth_ho",
+        [(WaveletFilters.haar_no_shift, 0), (WaveletFilters.le_gall_5_3, 1)],
+    )
+    def test_asymmetric_version_2(
+        self, codec_features, natural_picture, wavelet_index, dwt_depth_ho,
+    ):
+        codec_features["major_version"] = 2
+        codec_features["wavelet_index"] = wavelet_index
+        codec_features["dwt_depth_ho"] = dwt_depth_ho
+        with pytest.raises(AsymmetricTransformPreVersion3Error):
+            make_picture_parse_data_unit(codec_features, natural_picture)
 
     @pytest.mark.parametrize("profile", Profiles)
     def test_minimum_qindex(self, codec_features, natural_picture, profile):

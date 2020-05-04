@@ -138,6 +138,7 @@ from vc2_conformance.bitstream.exp_golomb import signed_exp_golomb_length
 from vc2_conformance.encoder.exceptions import (
     MissingQuantizationMatrixError,
     IncompatibleLevelAndExtendedTransformParametersError,
+    AsymmetricTransformPreVersion3Error,
 )
 
 
@@ -810,6 +811,9 @@ def make_picture_parse(codec_features, picture, minimum_qindex=0):
     """
     Compress a picture.
 
+    Raises :py:exc:`AsymmetricTransformPreVersion3Error` if an asymmetric
+    transform type is specified for a pre-version 3 stream.
+
     Parameters
     ==========
     codec_features : :py:class:`~vc2_conformance.codec_features.CodecFeatures`
@@ -876,6 +880,12 @@ def make_picture_parse(codec_features, picture, minimum_qindex=0):
         transform_parameters[
             "extended_transform_parameters"
         ] = make_extended_transform_parameters(codec_features)
+    else:
+        if (
+            codec_features["wavelet_index"] != codec_features["wavelet_index_ho"]
+            or codec_features["dwt_depth_ho"] != 0
+        ):
+            raise AsymmetricTransformPreVersion3Error()
 
     wavelet_transform = WaveletTransform(
         transform_parameters=transform_parameters, transform_data=transform_data,

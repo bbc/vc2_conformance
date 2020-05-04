@@ -13,6 +13,13 @@ class MissingQuantizationMatrixError(InvalidCodecFeaturesError):
     """
 
 
+class AsymmetricTransformPreVersion3Error(InvalidCodecFeaturesError):
+    """
+    Thrown when an asymmetric wavelet transform is used in a stream specified
+    as being version 2 or under.
+    """
+
+
 class IncompatibleLevelAndVideoFormatError(InvalidCodecFeaturesError):
     """
     Thrown when the codec features specified a particular VC-2 level which is
