@@ -806,3 +806,12 @@ class TestCodecFeaturesToTrivialLevelConstraints(object):
 
         values = codec_features_to_trivial_level_constraints(codec_features)
         assert values["custom_quant_matrix"] is exp_custom_quant_matrix
+
+    def test_lossless_and_low_delay_doesnt_crash(self, codec_features):
+        codec_features["profile"] = Profiles.low_delay
+        codec_features["lossless"] = True
+        codec_features["picture_bytes"] = None
+
+        assert isinstance(
+            codec_features_to_trivial_level_constraints(codec_features), dict,
+        )

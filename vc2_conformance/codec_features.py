@@ -725,9 +725,8 @@ def codec_features_to_trivial_level_constraints(codec_features):
 
     # Determine slice sizes
     if codec_features["profile"] == Profiles.low_delay:
-        assert not codec_features["lossless"]
         num_slices = codec_features["slices_x"] * codec_features["slices_y"]
-        slice_bytes = Fraction(codec_features["picture_bytes"], num_slices)
+        slice_bytes = Fraction(codec_features["picture_bytes"] or 0, num_slices)
         constrained_values["slice_bytes_numerator"] = slice_bytes.numerator
         constrained_values["slice_bytes_denominator"] = slice_bytes.denominator
     elif codec_features["profile"] == Profiles.high_quality:
