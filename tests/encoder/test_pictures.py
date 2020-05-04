@@ -66,6 +66,7 @@ from vc2_conformance.encoder.exceptions import (
     AsymmetricTransformPreVersion3Error,
     PictureBytesSpecifiedForLosslessModeError,
     InsufficientPictureBytesError,
+    LosslessUnsupportedByLowDelayError,
 )
 
 from vc2_conformance.encoder.pictures import (
@@ -1325,6 +1326,13 @@ class TestMakePictureParseDataUnit(object):
         codec_features["wavelet_index"] = wavelet_index
         codec_features["dwt_depth_ho"] = dwt_depth_ho
         with pytest.raises(AsymmetricTransformPreVersion3Error):
+            make_picture_parse_data_unit(codec_features, natural_picture)
+
+    def test_lossless_low_delay(self, codec_features, natural_picture):
+        codec_features["profile"] = Profiles.low_delay
+        codec_features["lossless"] = True
+        codec_features["picture_bytes"] = None
+        with pytest.raises(LosslessUnsupportedByLowDelayError):
             make_picture_parse_data_unit(codec_features, natural_picture)
 
     @pytest.mark.parametrize("profile", Profiles)

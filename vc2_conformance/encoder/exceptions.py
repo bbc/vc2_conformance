@@ -29,6 +29,13 @@ class InsufficientPictureBytesError(InvalidCodecFeaturesError):
     """
 
 
+class LosslessUnsupportedByLowDelayError(InvalidCodecFeaturesError):
+    """
+    Thrown when lossless coding is chosen for the low delay profile (which only
+    supports lossy coding).
+    """
+
+
 class AsymmetricTransformPreVersion3Error(InvalidCodecFeaturesError):
     """
     Thrown when an asymmetric wavelet transform is used in a stream specified

@@ -141,6 +141,7 @@ from vc2_conformance.encoder.exceptions import (
     AsymmetricTransformPreVersion3Error,
     PictureBytesSpecifiedForLosslessModeError,
     InsufficientPictureBytesError,
+    LosslessUnsupportedByLowDelayError,
 )
 
 
@@ -880,7 +881,8 @@ def make_picture_parse(codec_features, picture, minimum_qindex=0):
         slice_parameters["slice_prefix_bytes"] = 0
         slice_parameters["slice_size_scaler"] = slice_size_scaler
     elif codec_features["profile"] == Profiles.low_delay:
-        assert not codec_features["lossless"]
+        if codec_features["lossless"]:
+            raise LosslessUnsupportedByLowDelayError()
         transform_data = make_transform_data_ld_lossy(
             codec_features["picture_bytes"], transform_coeffs, minimum_qindex,
         )
