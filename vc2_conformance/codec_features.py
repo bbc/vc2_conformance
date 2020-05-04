@@ -34,7 +34,6 @@ from vc2_data_tables import (
     WaveletFilters,
     ColorDifferenceSamplingFormats,
     BaseVideoFormats,
-    QUANTISATION_MATRICES,
     SourceSamplingModes,
     PresetColorPrimaries,
     PresetColorMatrices,
@@ -581,7 +580,7 @@ def read_codec_features_csv(csvfile):
                 field_name, field_type, features["video_parameters"][field_name],
             )
 
-        # Data-rate options
+        # Parse picture_bytes option
         if features["lossless"]:
             if "picture_bytes" in column:
                 raise InvalidCodecFeaturesError(
@@ -590,36 +589,11 @@ def read_codec_features_csv(csvfile):
                 )
             features["picture_bytes"] = None
         else:
-            # Check size is sufficient
-            num_slices = features["slices_x"] * features["slices_y"]
-            if features["profile"] == Profiles.high_quality:
-                # (13.5.4) hq_slice headers include 4 8-bit numbers
-                minimum_picture_bytes = 4 * num_slices
-            elif features["profile"] == Profiles.low_delay:
-                # (13.5.3.1) ld_slice header consists of a 7-bit quantization
-                # index and slice-size-dependant fixed-length field starting at
-                # 1 bit in length.
-                minimum_picture_bytes = num_slices
-
             features["picture_bytes"] = pop(
-                "picture_bytes", partial(parse_int_at_least, minimum_picture_bytes),
+                "picture_bytes", partial(parse_int_at_least, 1),
             )
 
-        # Check asymmetric wavelets are supported
-        if (
-            # (12.4.1)
-            features["major_version"] < 3
-            and (
-                features["wavelet_index"] != features["wavelet_index_ho"]
-                or features["dwt_depth_ho"] != 0
-            )
-        ):
-            raise InvalidCodecFeaturesError(
-                "Asymmetric wavelet transform specified in '{}' column "
-                "but major_version is not >= 3 (12.4.1).".format(name)
-            )
-
-        # Quantisation matrix
+        # Parse quantisation matrix
         features["quantization_matrix"] = pop(
             "quantization_matrix",
             partial(
@@ -629,19 +603,6 @@ def read_codec_features_csv(csvfile):
             ),
             None,
         )
-
-        # Check default quantisation matrix available if default specified
-        if features["quantization_matrix"] is None:
-            if (
-                features["wavelet_index"],
-                features["wavelet_index_ho"],
-                features["dwt_depth"],
-                features["dwt_depth_ho"],
-            ) not in QUANTISATION_MATRICES:
-                raise InvalidCodecFeaturesError(
-                    "Default quantisation matrix specified for '{}' column "
-                    "but none is defined.".format(field_name, name,)
-                )
 
         # Check for extraneous rows
         if column:
