@@ -1,0 +1,90 @@
+# Level constraints for use in test routines,
+,
+# (11.2.1),# Compatible with MINIMAL_CODEC_FEATURES
+level,1
+profile,3
+major_version,3
+minor_version,0
+,
+# (11.1),
+base_video_format,14
+picture_coding_mode,0
+,
+# (11.4.3),
+custom_dimensions_flag,TRUE
+frame_width,8
+frame_height,4
+,
+# (11.4.4),
+custom_color_diff_format_flag,TRUE
+color_diff_format_index,0
+,
+# (11.4.5),
+custom_scan_format_flag,TRUE
+source_sampling,0
+,
+# (11.4.6),
+custom_frame_rate_flag,TRUE
+frame_rate_index,0
+frame_rate_numer,1
+frame_rate_denom,1
+,
+# (11.4.7),
+custom_pixel_aspect_ratio_flag,TRUE
+pixel_aspect_ratio_index,0
+pixel_aspect_ratio_numer,1
+pixel_aspect_ratio_denom,1
+,
+# (11.4.8),
+custom_clean_area_flag,TRUE
+clean_width,8
+clean_height,4
+left_offset,0
+top_offset,0
+,
+# (11.4.9),
+custom_signal_range_flag,TRUE
+custom_signal_range_index,0
+luma_offset,0
+luma_excursion,255
+color_diff_offset,128
+color_diff_excursion,255
+,
+# (11.4.10),
+custom_color_spec_flag,TRUE
+color_spec_index,0
+custom_color_primaries_flag,TRUE
+color_primaries_index,0
+custom_color_matrix_flag,TRUE
+color_matrix_index,0
+custom_transfer_function_flag,TRUE
+transfer_function_index,0
+,
+# (12.4.1),
+wavelet_index,4
+dwt_depth,1
+,
+# (12.4.4.1),
+asym_transform_index_flag,TRUE
+wavelet_index_ho,4
+asym_transform_flag,TRUE
+dwt_depth_ho,0
+,
+# (12.4.5.2),
+slices_x,2
+slices_y,1
+slices_have_same_dimensions,TRUE
+slice_bytes_numerator,
+slice_bytes_denominator,
+slice_prefix_bytes,0
+slice_size_scaler,1
+,
+# (12.4.5.3),
+custom_quant_matrix,FALSE
+quant_matrix_values,
+,
+# (13.5.3),
+qindex,any
+,
+# (13.5.3.2),
+total_slice_bytes,any
