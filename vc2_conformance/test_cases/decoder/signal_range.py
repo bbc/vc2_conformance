@@ -22,7 +22,7 @@ from vc2_conformance.test_cases import (
     decoder_test_case_generator,
 )
 
-from vc2_conformance.test_cases.decoder.pictures import iter_slices_in_sequence
+from vc2_conformance.test_cases.decoder.common import iter_slices_in_sequence
 
 
 @decoder_test_case_generator
