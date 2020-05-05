@@ -901,6 +901,11 @@ def make_picture_parse(codec_features, picture, minimum_qindex=0):
                 # Re-raise with codec features dict
                 raise InsufficientHQPictureBytesError(codec_features)
 
+        # NB: For simplicity, this implementation currently does not support
+        # setting the slice prefix bytes to anything except zero since this is
+        # not required by any existing VC-2 level. The assumption that this is
+        # OK is verified in
+        # ``tests/encoder/test_level_constraints_assumptions.py``.
         slice_parameters["slice_prefix_bytes"] = 0
         slice_parameters["slice_size_scaler"] = slice_size_scaler
     elif codec_features["profile"] == Profiles.low_delay:

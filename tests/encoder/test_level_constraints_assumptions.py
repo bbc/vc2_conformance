@@ -316,3 +316,12 @@ def test_non_sequence_header_constraints_are_independent():
         )
 
         assert non_independent_parameters - set(SEQUENCE_HEADER_PARAMETERS) == set()
+
+
+def test_slice_prefix_bytes_can_be_zero():
+    # The current encoder does not support setting slice_prefix_bytes to
+    # anything other than 0 (simplifying things somewhat). This test verifies
+    # that no level requires anything different.
+    for values in LEVEL_CONSTRAINTS:
+        if Profiles.high_quality in values["profile"]:
+            assert 0 in values["slice_prefix_bytes"]
