@@ -169,28 +169,21 @@ def read_as_xyz_to_fit(filename, width, height, pixel_aspect_ratio=1):
     ]
 
 
-def seconds_to_samples(video_parameters, seconds):
+def frames_to_samples(video_parameters, frames):
     """
     Convert a number of seconds into a number of samples (frames for
     progressive video, fields for interlaced video).
-
-    Rounds-up to a non-zero, whole number of frames.
 
     Returns a (num_samples, relative_rate) pair. The 'relative_rate' value
     gives the relative sample rate to the frame rate and is 1 for progressive
     and 2 for interlaced formats.
     """
-    sample_rate = float(video_parameters["frame_rate_numer"]) / float(
-        video_parameters["frame_rate_denom"]
-    )
-    num_samples = max(1, round(seconds * sample_rate))
-
     if video_parameters["source_sampling"] == SourceSamplingModes.interlaced:
         relative_rate = 2
     else:
         relative_rate = 1
 
-    num_samples *= relative_rate
+    num_samples = frames * relative_rate
 
     return (num_samples, relative_rate)
 
@@ -420,13 +413,14 @@ def real_pictures(video_parameters, picture_coding_mode):
 
 @pipe(xyz_to_native)
 @pipe(progressive_to_pictures)
-def moving_sprite(video_parameters, picture_coding_mode, duration=1.0):
+def moving_sprite(video_parameters, picture_coding_mode, num_frames=10):
     """
     A video sequence containing a simple moving synthetic image.
 
     This sequence consists of a 128 by 128 pixel sprite (shown below) on a
     black background which traverses the screen from left-to-right moving 16
-    pixels to the right every frame (or 8 every field).
+    pixels to the right every frame (or 8 every field). By default the sequence
+    is 10 frames (but not necessarily 10 pictures) long.
 
     .. image:: /_static/test_images/pointer.png
 
@@ -471,7 +465,7 @@ def moving_sprite(video_parameters, picture_coding_mode, duration=1.0):
     sprite_height, sprite_width, _ = sprite.shape
 
     # Generate frames
-    num_samples, relative_rate = seconds_to_samples(video_parameters, duration)
+    num_samples, relative_rate = frames_to_samples(video_parameters, num_frames)
     x_step_size = 16 // relative_rate
     for px in np.arange(num_samples, dtype=int) * x_step_size:
         # For bizarre, tiny picture formats too small for the sprite, clip the

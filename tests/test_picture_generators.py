@@ -35,7 +35,7 @@ from vc2_conformance.picture_generators import (
     read_as_xyz,
     resize,
     read_as_xyz_to_fit,
-    seconds_to_samples,
+    frames_to_samples,
     progressive_to_interlaced,
     progressive_to_split_fields,
     interleave_fields,
@@ -132,25 +132,14 @@ def test_read_as_xyz_to_fit(filename, width, height, pixel_aspect_ratio):
     assert np.isclose(shape_aspect_ratio, 1.0 / pixel_aspect_ratio, atol=0.05,)
 
 
-def test_seconds_to_samples():
-    vp = VideoParameters(
-        frame_rate_numer=10,
-        frame_rate_denom=1,
-        source_sampling=SourceSamplingModes.progressive,
-    )
-    assert seconds_to_samples(vp, 0) == (1, 1)
-    assert seconds_to_samples(vp, 0.1) == (1, 1)
-    assert seconds_to_samples(vp, 0.2) == (2, 1)
-    assert seconds_to_samples(vp, 10) == (100, 1)
-    assert seconds_to_samples(vp, 10.00001) == (100, 1)
-    assert seconds_to_samples(vp, 9.99999) == (100, 1)
+def test_frames_to_samples():
+    vp = VideoParameters(source_sampling=SourceSamplingModes.progressive,)
+    assert frames_to_samples(vp, 1) == (1, 1)
+    assert frames_to_samples(vp, 10) == (10, 1)
 
     vp["source_sampling"] = SourceSamplingModes.interlaced
-    assert seconds_to_samples(vp, 0) == (2, 2)
-    assert seconds_to_samples(vp, 0.1) == (2, 2)
-    assert seconds_to_samples(vp, 0.15) == (4, 2)
-    assert seconds_to_samples(vp, 0.2) == (4, 2)
-    assert seconds_to_samples(vp, 10) == (200, 2)
+    assert frames_to_samples(vp, 1) == (2, 2)
+    assert frames_to_samples(vp, 10) == (20, 2)
 
 
 def test_progressive_to_interlaced():

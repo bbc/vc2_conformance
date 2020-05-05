@@ -474,7 +474,7 @@ class TestExampleFFMPEGCommand(object):
         # Generate a series of frames in the specified format to disk in raw
         # format.
         write_pictures_to_dir(
-            moving_sprite(video_parameters, picture_coding_mode, duration=3.0),
+            moving_sprite(video_parameters, picture_coding_mode, num_frames=3),
             video_parameters,
             picture_coding_mode,
             working_dir,
@@ -550,7 +550,7 @@ class TestExampleFFMPEGCommand(object):
 
         # Generate a frame in the specified format
         write_pictures_to_dir(
-            moving_sprite(video_parameters, picture_coding_mode, duration=1.0),
+            moving_sprite(video_parameters, picture_coding_mode, num_frames=1),
             video_parameters,
             picture_coding_mode,
             working_dir,
@@ -622,7 +622,7 @@ class TestExampleFFMPEGCommand(object):
         # Generate a single frame (with a known-square sprite, when scaled
         # correctly)
         write_pictures_to_dir(
-            moving_sprite(video_parameters, picture_coding_mode, duration=1.0),
+            moving_sprite(video_parameters, picture_coding_mode, num_frames=1),
             video_parameters,
             picture_coding_mode,
             working_dir,
@@ -815,7 +815,7 @@ class TestExampleImageMagickCommand(object):
         # Generate a single frame (with a known-square sprite, when scaled
         # correctly)
         write_pictures_to_dir(
-            moving_sprite(video_parameters, picture_coding_mode, duration=1.0),
+            moving_sprite(video_parameters, picture_coding_mode, num_frames=1),
             video_parameters,
             picture_coding_mode,
             working_dir,
