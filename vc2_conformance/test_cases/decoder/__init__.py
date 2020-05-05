@@ -5,3 +5,4 @@ from vc2_conformance.test_cases.decoder.picture_numbers import *
 from vc2_conformance.test_cases.decoder.signal_range import *
 from vc2_conformance.test_cases.decoder.real_pictures import *
 from vc2_conformance.test_cases.decoder.extended_transform_parameters import *
+from vc2_conformance.test_cases.decoder.slice_prefix_bytes import *
