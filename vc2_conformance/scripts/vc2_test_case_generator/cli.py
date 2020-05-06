@@ -15,11 +15,7 @@ import logging
 
 import json
 
-import multiprocessing
-
-import time
-
-import signal
+from functools import partial
 
 from collections import OrderedDict
 
@@ -62,6 +58,8 @@ from vc2_conformance.test_cases import (
     DECODER_TEST_CASE_GENERATOR_REGISTRY,
 )
 
+from vc2_conformance.scripts.vc2_test_case_generator.worker import create_command
+
 
 def regex(regex):
     try:
@@ -77,8 +75,8 @@ def parse_args(*args, **kwargs):
     """
     parser = ArgumentParser(
         description="""
-        Generate test inputs for VC-2 encoder and decoder implementations.
-    """
+            Generate test inputs for VC-2 encoder and decoder implementations.
+        """
     )
 
     parser.add_argument(
@@ -101,6 +99,18 @@ def parse_args(*args, **kwargs):
         default=0,
         help="""
             Show additional status information during execution.
+        """,
+    )
+
+    parser.add_argument(
+        "--parallel",
+        "-p",
+        action="store_true",
+        default=False,
+        help="""
+            If given, don't generate test cases but instead produce a series of
+            commands on stdout which may be executed in parallel to generate
+            the test cases.
         """,
     )
 
@@ -144,17 +154,6 @@ def parse_args(*args, **kwargs):
         default=False,
         help="""
             If set, only generate test cases for VC-2 decoders.
-        """,
-    )
-
-    parser.add_argument(
-        "--num-cpus",
-        "-m",
-        type=int,
-        default=None,
-        help="""
-            Specify the number of CPUs to use to generate test cases. By
-            default will use all available CPUs.
         """,
     )
 
@@ -377,6 +376,11 @@ def output_decoder_test_cases(output_dir, codec_features, generator_function):
         output_decoder_test_case(output_dir, codec_features, test_case)
 
 
+def set_log_level_and_call(log_level, fn, *args, **kwargs):
+    logging.basicConfig(level=log_level)
+    return fn(*args, **kwargs)
+
+
 def main(*args, **kwargs):
     args = parse_args(*args, **kwargs)
 
@@ -399,16 +403,7 @@ def main(*args, **kwargs):
 
     check_codec_features_valid(codec_feature_sets)
 
-    def initializer():
-        logging.basicConfig(level=log_level)
-
-        # Required so that KeyboardInterrupt doesn't break the
-        # multiprocessing.Pool...
-        signal.signal(signal.SIGINT, signal.SIG_IGN)
-
-    pool = multiprocessing.Pool(processes=args.num_cpus, initializer=initializer,)
-
-    running = []
+    to_call = []
 
     for name, codec_features in codec_feature_sets.items():
         if not args.decoder_only:
@@ -418,10 +413,14 @@ def main(*args, **kwargs):
             ) in ENCODER_TEST_CASE_GENERATOR_REGISTRY.iter_independent_generators(
                 codec_features,
             ):
-                running.append(
-                    pool.apply_async(
+                to_call.append(
+                    partial(
+                        set_log_level_and_call,
+                        log_level,
                         output_encoder_test_cases,
-                        [output_dir, codec_features, generator_function],
+                        output_dir,
+                        codec_features,
+                        generator_function,
                     )
                 )
 
@@ -432,36 +431,22 @@ def main(*args, **kwargs):
             ) in DECODER_TEST_CASE_GENERATOR_REGISTRY.iter_independent_generators(
                 codec_features,
             ):
-                running.append(
-                    pool.apply_async(
+                to_call.append(
+                    partial(
+                        set_log_level_and_call,
+                        log_level,
                         output_decoder_test_cases,
-                        [output_dir, codec_features, generator_function],
+                        output_dir,
+                        codec_features,
+                        generator_function,
                     )
                 )
 
-    # Wait for jobs to complete
-    try:
-        pool.close()
-        while running:
-            time.sleep(0.1)
-
-            # Remove completed jobs from the job list
-            for i in reversed(range(len(running))):
-                job = running[i]
-                if job.ready():
-                    del running[i]
-                    if not job.successful():
-                        pool.terminate()
-                        pool.join()
-                        # Re-throw the traceback here
-                        job.get()
-        pool.join()
-    except KeyboardInterrupt:
-        pool.terminate()
-        pool.join()
+    if args.parallel:
+        for fn in to_call:
+            print(create_command(fn))
+    else:
+        for fn in to_call:
+            fn()
 
     return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())

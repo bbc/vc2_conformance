@@ -10,7 +10,7 @@ from vc2_conformance._py2x_compat import makedirs
 
 from vc2_conformance.codec_features import read_codec_features_csv
 
-from vc2_conformance.scripts.vc2_test_case_generator import (
+from vc2_conformance.scripts.vc2_test_case_generator.cli import (
     parse_args,
     load_codec_features,
     check_output_directories_empty,
@@ -257,9 +257,6 @@ def test_force(
     "extra_args,exp_encoder,exp_decoder",
     [
         ([], True, True),
-        # Should work serially and in parallel
-        (["--num-cpus", "1", "--encoder-only"], True, False),
-        (["--num-cpus", "2", "--encoder-only"], True, False),
         # Should only produce required files
         (["--encoder-only"], True, False),
         (["--decoder-only"], False, True),
@@ -295,3 +292,48 @@ def test_completeness(
         assert expected_files[1].issubset(generated_files)
     else:
         assert expected_files[1].isdisjoint(generated_files)
+
+
+def test_parallel(tmpdir, expected_files, capsys):
+    assert (
+        main(
+            [
+                CODEC_FEATURES_CSV,
+                "--parallel",
+                "--encoder-only",
+                "--output",
+                str(tmpdir),
+                "--codecs",
+                "minimal",
+            ]
+        )
+        == 0
+    )
+    out, err = capsys.readouterr()
+    assert err == ""
+
+    # Should not have generated any files yet
+    assert [
+        os.path.join(root, filename)
+        for root, dirs, files in os.walk(str(tmpdir))
+        for filename in files
+    ] == []
+
+    # Check that the commands could plausibly work by just running the first
+    # one (which shouldn't be one which loads a very large real picture file
+    # and so not take too long to run...)
+    first_command = next(iter(filter(None, out.split("\n"))))
+
+    os.system(first_command)
+
+    generated_files = set(
+        # Get relative paths within output dir
+        os.path.abspath(os.path.join(root, filename))[
+            len(os.path.abspath(str(tmpdir))) + 1 :
+        ]
+        for root, dirs, files in os.walk(str(tmpdir))
+        for filename in files
+    )
+
+    assert expected_files[0].intersection(generated_files) != set()
+    assert expected_files[1].intersection(generated_files) == set()
