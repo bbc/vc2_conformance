@@ -120,7 +120,7 @@ def parse_args(*args, **kwargs):
         default="./test_cases/",
         help="""
             Directory name to write test cases to. Will be created if it does
-            not exist.
+            not exist. Defaults to '%(default)s'.
         """,
     )
 

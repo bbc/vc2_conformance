@@ -31,7 +31,7 @@ for which test cases are to be generated with the left-most cell containing the
 text ``name``. The remaining rows specify the parameters which define the codec
 configurations.
 
-The following parameters *must* be given for each codec configuration.
+The following parameters must be given for each codec configuration.
 
 ``level``
     Integer. The VC-2 level number (see annex (C.3)) to report in the bit
@@ -182,3 +182,75 @@ The following parameters *must* be given for each codec configuration.
     Quantisation matrix values, if provided, should be given in the same order
     they would appear in the stream as defined by the ``quant_matrix``
     pseudocode function (12.4.5.3).
+
+
+Generating test cases
+---------------------
+
+Once a codec features CSV has been created, with columns covering the major
+operating modes of the codec to be tested, the :ref:`vc2-test-case-generator`
+command may be used to generate test cases.
+
+In the simplest case, the command should be provided with the filename of your
+codec features CSV::
+
+    $ vc2-test-case-generator path/to/codec_features.csv
+
+By default, a ``test_cases`` directory will be created into which the test
+cases are written. This can be changed using the ``--output <path>`` argument.
+The ``--verbose`` option may be used to keep track of progress.
+
+Before any test cases are generated, the test case generator internally
+generates and then validates a simple test stream for each column of the codec
+features table. This step ensures that the codec features specified are not in
+conflict with themselves or the VC-2 standard. If this step fails, an error
+message is produced indicating the problem and test case generation is aborted.
+
+If you are using a wavelet transform combination or depth for which a default
+quantization matrices are not provided in the VC-2 specification (see annexe
+(D.2)), the test case generator will produce the following warning:
+
+    WARNING:root:No static analysis available for the wavelet used by codec '<name>'. Signal range test cases cannot be generated.
+
+See :ref:`generating-static-analyses` for instructions on this specific case.
+
+Warning messages are otherwise only produced for degenerate codec
+configurations. It is very unlikely a useful codec configuration will result in
+a warning. If any are produced, check your the values in your codec features
+CSV if warnings are encountered.
+
+
+Test case generation may require several hours, depending on the codec feature
+sets provided.
+
+.. note::
+
+    The slow runtime performance of the VC-2 conformance software is an
+    unfortunate side effect of it being based on the pseudocode published in
+    the VC-2 specification. This design gives a high degree of confidence that
+    it is consistent with the specification at the cost of slow execution.
+
+
+Parallel test case generation
+-----------------------------
+
+To speed up test case generation on multi-core systems, independent test cases
+may be generated in parallel. To do this, the ``--parallel`` argument may be
+used. Instead of generating test cases, when ``--parallel`` is used, the test
+case generator will print a series of commands which may be executed in
+parallel to generate the test cases, for example using `GNU Parallel
+<https://www.gnu.org/software/parallel/>`_::
+
+    $ # Write test case generation commands to 'commands.txt'
+    $ vc2-test-case-generator path/to/codec_features.csv --parallel > commands.txt
+    
+    $ # Run test case generation in paralllel using GNU Parallel
+    $ parallel -a commands.txt
+
+.. warning::
+
+    Some test cases require relatively large quantities of RAM during test case
+    generation. You may need to reduce the number of commands run in parallel
+    if your system runs out of memory. If you're using GNU parallel, the ``-j
+    N`` argument may be used to set the number of parallel jobs to ``N`` (with
+    the default being however many CPU cores are available).
