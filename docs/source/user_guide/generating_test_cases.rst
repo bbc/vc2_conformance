@@ -200,6 +200,11 @@ By default, a ``test_cases`` directory will be created into which the test
 cases are written. This can be changed using the ``--output <path>`` argument.
 The ``--verbose`` option may be used to keep track of progress.
 
+If only test cases for an encoder are required, the ``--encoder-only`` option
+may be given. Alternatively if only decoder test cases are needed
+``--decoder-only`` may be used. By default, test cases are generated for both
+encoders and decoders.
+
 Before any test cases are generated, the test case generator internally
 generates and then validates a simple test stream for each column of the codec
 features table. This step ensures that the codec features specified are not in
@@ -254,3 +259,32 @@ parallel to generate the test cases, for example using `GNU Parallel
     if your system runs out of memory. If you're using GNU parallel, the ``-j
     N`` argument may be used to set the number of parallel jobs to ``N`` (with
     the default being however many CPU cores are available).
+
+
+Directory structure
+-------------------
+
+The test case generator produces a directory structure as outlined below:
+
+* ``test_cases/``
+    * ``<codec feature set name>/``
+        * ``decoder/`` -- Test VC-2 bitstreams for decoders.
+            * ``<test-case-name>.vc2`` -- VC-2 bitstream to be decoded.
+            * ``<test-case-name>_metadata.json`` -- Optional metadata file
+              provided for some tests
+            * ``<test-case-name>_expected/`` -- Reference decoding of the
+              bitstream.
+                * ``picture_<N>.raw``
+                * ``picture_<N>.json``
+        * ``encoder/`` -- Test raw video streams for encoders.
+            * ``<test-case-name>_metadata.json`` -- Optional metadata file
+              provided for some tests
+            * ``<test-case-name>/`` -- Raw video to be encoded
+                * ``picture_<N>.raw``
+                * ``picture_<N>.json``
+
+The testing procedures for decoders and encoders are described in the next two
+sections:
+
+* :ref:`guide-decoder-testing`
+* :ref:`guide-encoder-testing`

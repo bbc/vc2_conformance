@@ -11,3 +11,4 @@ per-file-ignores =
     tests/decoder/test_exceptions.py:E501
     vc2_conformance/color_conversion.py:E741
     setup.py:E501
+    docs/source/conf.py:E402

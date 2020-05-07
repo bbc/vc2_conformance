@@ -133,3 +133,10 @@ class TestRegistry(object):
             tc.TestCase(103, case_name="bar", subcase_name="2"),
         ]
         assert call_counts == {"foo": 1, "bar": 1}
+
+    def test_iter_registered_functions(self, registry, call_counts):
+        funcs = list(registry.iter_registered_functions())
+        assert len(funcs) == 2
+        assert call_counts == {"foo": 0, "bar": 0}
+
+        assert set(f.__name__ for f in funcs) == set(["foo", "bar"])

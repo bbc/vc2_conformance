@@ -225,6 +225,14 @@ class Registry(object):
                 normalise_test_case_generator, test_case_generator, *args, **kwargs
             )
 
+    def iter_registered_functions(self):
+        """
+        Iterates over the functions registered with this registry. Only
+        intended for use during documentation generation.
+        """
+        for test_case_generator in self._test_case_generators:
+            yield test_case_generator
+
 
 ENCODER_TEST_CASE_GENERATOR_REGISTRY = Registry()
 """

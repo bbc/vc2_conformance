@@ -12,6 +12,9 @@ sys.path.insert(0, os.path.abspath("../.."))
 # To find the verification module
 sys.path.insert(0, os.path.abspath("../../tests/"))
 
+# To find custom sphinx extensions
+sys.path.insert(0, os.path.abspath("_ext/"))
+
 
 # -- Project information -----------------------------------------------------
 
@@ -20,6 +23,7 @@ copyright = "2019, SMPTE"
 author = "SMPTE"
 
 from vc2_conformance import __version__ as version
+
 release = version
 
 # -- General configuration ---------------------------------------------------
@@ -32,6 +36,7 @@ extensions = [
     "sphinx.ext.mathjax",
     "numpydoc",
     "sphinxcontrib.inkscapeconverter",
+    "test_case_documentation",
 ]
 
 # -- Options for numpydoc/autodoc --------------------------------------------
