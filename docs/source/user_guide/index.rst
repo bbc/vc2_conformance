@@ -12,3 +12,4 @@ VC-2 standards.
    introduction.rst
    installation.rst
    file_format.rst
+   generating_test_cases.rst

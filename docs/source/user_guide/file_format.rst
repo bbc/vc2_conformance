@@ -274,3 +274,6 @@ raw format. This may be of help when trying to interpret the raw video data.
 Example invocations of `FFmpeg's <https://ffmpeg.org/>`_ ``ffplay`` command and
 `ImageMagick's <https://imagemagick.org/>`_ ``convert`` command are provided,
 when possible, for displaying the raw picture data directly.
+
+Next, lets walk through the process of generating test cases in
+:ref:`guide-generating-test-cases`.
