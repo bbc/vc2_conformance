@@ -115,10 +115,11 @@ def slice_prefix_bytes(codec_features):
             logging.warning(
                 (
                     "Codec '%s' has a very small picture_bytes value "
-                    "meaning the slice_prefix_bytes[{}] test case may not "
+                    "meaning the slice_prefix_bytes[%s] test case may not "
                     "be as useful as intended."
                 ),
                 codec_features["name"],
+                description,
             )
 
         # Set the number of slice prefix bytes in all slice parameter headers
