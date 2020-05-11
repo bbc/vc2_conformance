@@ -615,17 +615,24 @@ def test_linear_ramps(primaries, transfer_function):
 
     rgb = np.stack([r, g, b], axis=-1) / 255.0
 
-    assert np.all(np.isclose(rgb[0, 0, :], [0, 0, 0], rtol=0.05))
-    assert np.all(np.isclose(rgb[0, 30, :], [1, 1, 1], rtol=0.05))
+    # NB: The d_cinema_transfer_function does not map 1.0 to 1.0 so in that
+    # special case we must add some slack here.
+    if transfer_function == PresetTransferFunctions.d_cinema:
+        atol = 0.05
+    else:
+        atol = 0.0
 
-    assert np.all(np.isclose(rgb[4, 0, :], [0, 0, 0], rtol=0.05))
-    assert np.all(np.isclose(rgb[4, 30, :], [1, 0, 0], rtol=0.05))
+    assert np.all(np.isclose(rgb[0, 0, :], [0, 0, 0], atol=atol))
+    assert np.all(np.isclose(rgb[0, 31, :], [1, 1, 1], atol=atol))
 
-    assert np.all(np.isclose(rgb[8, 0, :], [0, 0, 0], rtol=0.05))
-    assert np.all(np.isclose(rgb[8, 30, :], [0, 1, 0], rtol=0.05))
+    assert np.all(np.isclose(rgb[4, 0, :], [0, 0, 0], atol=atol))
+    assert np.all(np.isclose(rgb[4, 31, :], [1, 0, 0], atol=atol))
 
-    assert np.all(np.isclose(rgb[12, 0, :], [0, 0, 0], rtol=0.05))
-    assert np.all(np.isclose(rgb[12, 30, :], [0, 0, 1], rtol=0.05))
+    assert np.all(np.isclose(rgb[8, 0, :], [0, 0, 0], atol=atol))
+    assert np.all(np.isclose(rgb[8, 31, :], [0, 1, 0], atol=atol))
+
+    assert np.all(np.isclose(rgb[12, 0, :], [0, 0, 0], atol=atol))
+    assert np.all(np.isclose(rgb[12, 31, :], [0, 0, 1], atol=atol))
 
     # Whites should be pure whites
     for c1 in range(3):

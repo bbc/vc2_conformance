@@ -390,6 +390,13 @@ def linear_transfer_function(l):
 def d_cinema_transfer_function(l):
     """
     The transfer function from (ST 428-1).
+
+    .. note::
+
+        This transfer function does not map 1.0 to 1.0 as other transfer
+        functions do. That is, the headroom above the 'reference luminance' for
+        luminance values above 1.0 is included in the range 0.0 to 1.0 in the
+        transformed signal.
     """
     peak_luminance = 52.37  # cd/m^2
     reference_luminance = 48.0  # cd/m^2
