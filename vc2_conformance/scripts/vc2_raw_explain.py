@@ -528,7 +528,7 @@ def example_ffmpeg_command(picture_filename, video_parameters, picture_coding_mo
             vf_args.append((",",))
         vf_args.append(
             (
-                "scale=trunc((iw*{})/{}):ih".format(
+                "scale='trunc((iw*{})/{}):ih'".format(
                     pixel_aspect_ratio.numerator, pixel_aspect_ratio.denominator,
                 ),
                 "rescale non-square pixels for display with square pixels",
