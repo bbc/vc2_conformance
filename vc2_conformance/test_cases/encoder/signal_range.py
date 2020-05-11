@@ -24,12 +24,35 @@ from vc2_conformance.test_cases.bit_widths_common import (
 @encoder_test_case_generator
 def signal_range(codec_features):
     """
-    This test is designed to produce extreme signal levels within an encoder's
-    processing chain. Implementations should ensure that no integer clamping or
-    overflow operations occur while encoding these pictures.
+    **Tests that an encoder has sufficient numerical dynamic range.**
 
-    The metadata provided with each test case gives, for each picture, the test
-    points checked by that picture. See
+    These test cases contain test patterns designed to produce extreme signals
+    within encoders. During these test cases, no integer clamping or overflows
+    must occur.
+
+    A test case is produced for each picture component:
+
+    ``signal_range[Y]``
+        Luma component test patterns.
+
+    ``signal_range[C1]``
+        Color difference 1 component test patterns.
+
+    ``signal_range[C2]``
+        Color difference 2 component test patterns.
+
+    Though the test patterns produce near worst case signal levels, they are
+    not guaranteed to produce the largest values possible.
+
+    .. note::
+
+        For informational purposes, an example of a set of test patterns are shown below:
+
+        .. image:: /_static/user_guide/signal_range_encoder.png
+
+    An informative metadata file is provided along side each test case which
+    gives, for each picture in the bitstream, the parts of a encoder which are
+    being tested by the test patterns. See
     :py:class:`vc2_bit_widths.helpers.TestPoint` for details.
     """
     try:

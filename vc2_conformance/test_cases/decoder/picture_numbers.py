@@ -16,17 +16,25 @@ from vc2_conformance.picture_generators import (
 @decoder_test_case_generator
 def picture_numbers(codec_features):
     """
-    Tests that picture numbers are read correctly from the stream, including
-    handling cases such as picture number wrap-arounds.
+    **Tests picture numbers are correctly read from the bitstream.**
 
-    The following test cases will be produced:
+    Each test case contains 8 blank pictures numbered in a particular way.
 
-    * ``start_at_zero``: Picture numbers starting at 0.
-    * ``non_zero_start``: Picture numbers starting at 1000.
-    * ``wrap_around``: Picture numbers which overflow/wrap-around the 32 bit
-      picture number field.
-    * ``odd_first_picture``: Picture numbers starting at 7. Included only when
-      pictures are frames.
+    ``picture_numbers[start_at_zero]``
+        The first picture has picture number 0.
+
+    ``picture_numbers[non_zero_start]``
+        The first picture has picture number 1000.
+
+    ``picture_numbers[wrap_around]``
+        The first picture has picture number 4294967292, with the picture
+        numbers wrapping around to 0 on the 4th picture in the sequence.
+
+    ``picture_numbers[odd_first_picture]``
+        The first picture has picture number 7. This test case is only included
+        when the picture coding mode is 0 (i.e. pictures are frames) since the
+        first field of each frame must have an even number when the picture
+        coding mode is 1 (i.e. pictures are fields) (11.5).
     """
     # Create a sequence with at least 8 pictures (and 4 frames)
     mid_gray_pictures = list(

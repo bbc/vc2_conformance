@@ -595,16 +595,34 @@ def cut_off_value_at_end_of_ld_slice(
 @decoder_test_case_generator
 def slice_padding_data(codec_features):
     """
+    **Tests that padding bits in picture slices are ignored.**
+
     Picture slices (13.5.3) and (13.5.4) may contain padding bits beyond the
     end of the transform coefficients for each picture component. These test
     cases check that decoders correctly ignore these values. Padding values
-    will be filled with the following (where slice sizes are sufficiently large
-    to allow it).
+    will be filled with the following:
 
-    * All-zeros
-    * All-ones
-    * Alternating ones and zeros
-    * A the bits which encode an end-of-sequence data unit (which must be ignored)
+    ``slice_padding_data[slice_?_all_zeros]``
+        Padding bits are all zero.
+
+    ``slice_padding_data[slice_?_all_ones]``
+        Padding bits are all one.
+
+    ``slice_padding_data[slice_?_alternating_1s_and_0s]``
+        Padding bits alternate between one and zero, starting with one.
+
+    ``slice_padding_data[slice_?_alternating_0s_and_1s]``
+        Padding bits alternate between zero and one, starting with zero.
+
+    ``slice_padding_data[slice_?_dummy_end_of_sequence]``
+        Padding bits will contain bits which encode an end of sequence data
+        unit (10.6).
+
+    The above cases are repeated for the luma and color difference picture
+    components as indicated by the value substituted for ``?`` in the test case
+    names above. For low-delay pictures these will be ``Y`` (luma) and ``C``
+    (interleaved color difference). For high quality pictures these will be
+    ``Y`` (luma), ``C1`` (color difference 1) and ``C2`` (color difference 2).
     """
     # The values with which to fill padding data
     #
@@ -666,23 +684,44 @@ def slice_padding_data(codec_features):
 @decoder_test_case_generator
 def dangling_bounded_block_data(codec_features):
     """
+    **Tests that transform values which lie beyond the end of a bounded block
+    are read correctly.**
+
     Picture slices (13.5.3) and (13.5.4) contain transform values in bounded
     blocks (A.4.2). These test cases include bounded blocks in which some
     encoded values lie off the end of the block. Specifically, the following
     cases are tested:
 
-    * A zero value (1 bit) is encoded entirely beyond the end of the bounded
-      block.
+    ``dangling_bounded_block_data[zero_dangling]``
+        .. image:: /_static/user_guide/dangling_bounded_block_data_zero_dangling.svg
 
-    * The final bit (the sign bit) of a non-zero exp-golomb value is dangling
-      beyond the end of the bounded block.
+        A zero value (1 bit) is encoded entirely beyond the end of the bounded
+        block.
 
-    * The final two bits (the stop bit and sign bit) of a non-zero exp-golomb
-      value is dangling beyond the end of the bounded block.
+    ``dangling_bounded_block_data[sign_dangling]``
+        .. image:: /_static/user_guide/dangling_bounded_block_data_sign_dangling.svg
 
-    * The final three bits (the least significant bit, stop bit and sign bit)
-      of a non-zero exp-golomb value is dangling beyond the end of the bounded
-      block.
+        The final bit (the sign bit) of a non-zero exp-golomb value is dangling
+        beyond the end of the bounded block.
+
+    ``dangling_bounded_block_data[stop_and_sign_dangling]``
+        .. image:: /_static/user_guide/dangling_bounded_block_data_stop_and_sign_dangling.svg
+
+        The final two bits (the stop bit and sign bit) of a non-zero exp-golomb
+        value is dangling beyond the end of the bounded block.
+
+    ``dangling_bounded_block_data[lsb_stop_and_sign_dangling]``
+        .. image:: /_static/user_guide/dangling_bounded_block_data_lsb_stop_and_sign_dangling.svg
+
+        The final three bits (the least significant bit, stop bit and sign bit)
+        of a non-zero exp-golomb value is dangling beyond the end of the
+        bounded block.
+
+    .. note::
+
+        The value and magnitudes of the dangling values are chosen depending on
+        the wavelet transform in use and may differ from the illustrations
+        above.
     """
     # The magnitude of the dangling value is chosen such that even if it ends
     # up being part of the DC component, the bit-shift used by some wavelets
@@ -755,16 +794,43 @@ def dangling_bounded_block_data(codec_features):
 
 
 @decoder_test_case_generator
-def interlace_mode(codec_features):
+def interlace_mode_and_pixel_aspect_ratio(codec_features):
     """
-    Static and moving synthetic image sequences which may be used to verify
-    that the interlacing modes are correctly reported to display equipment.
+    **Tests that the interlacing mode and pixel aspect ratio is correctly
+    decoded.**
 
-    See :py:func:`vc2_conformance.picture_generators.moving_sprite` for a
-    description of the still sequence.
+    These tests require that the decoded pictures are observed using the
+    intended display equipment for the decoder to ensure that the relevant
+    display metadata is passed on.
 
-    See :py:func:`vc2_conformance.picture_generators.moving_sprite` for a
-    description of the moving sequence.
+    ``interlace_mode_and_pixel_aspect_ratio[static_sequence]``
+        A single frame containing a stationary graphic at the top-left corner
+        on a black background, as illustrated below.
+
+        .. image:: /_static/user_guide/interlace_mode_and_pixel_aspect_ratio_static_sequence.svg
+
+        If the field ordering (i.e. top field first flag, see (7.3) and (11.3))
+        has been decoded correctly, the edges should be smooth. If the field
+        order has been reversed the edges will appear jagged.
+
+        If the pixel aspect ratio (see (11.4.7)) has been correctly decoded,
+        the white triangle should be as wide as it is tall and the 'hole'
+        should be circular.
+
+    ``interlace_mode_and_pixel_aspect_ratio[moving_sequence]``
+        A sequence of 10 frames containing a graphic moving from left to right
+        along the top of the frame. In successive each frame, the graphic moves
+        16 luma samples to the right (i.e. 8 samples every field, for
+        interlaced formats).
+
+        .. image:: /_static/user_guide/interlace_mode_and_pixel_aspect_ratio_moving_sequence.svg
+
+        For progressive formats, the graphic should appear with smooth edges in
+        each frame.
+
+        For interlaced formats, the graphic should move smoothly when displayed
+        on an interlaced monitor. If displayed as progressive frames (as in the
+        illustration above), the pictures will appear to have ragged edges.
     """
     yield TestCase(
         make_sequence(
@@ -792,14 +858,16 @@ def interlace_mode(codec_features):
 @decoder_test_case_generator
 def static_grey(codec_features):
     """
-    A static mid-grey frame.
+    **Tests that the decoder can decode a maximally compressible sequence.**
 
-    This test image represents the special case of a maximally compressible
-    image where the codec need not represent any transform coefficients
-    explicitly.
+    This sequence contains an image in which every transform coefficient is
+    zero. For most color specifications (11.4.10), this decodes to a mid-grey
+    frame.
 
-    This test represents an extreme case for lossless (variable bitrate)
-    codecs.
+    This special case image is maximally compressible since no transform
+    coefficients need to be explicitly coded in the bitstream. For lossless
+    coding modes, this will also produce produce the smallest possible
+    bitstream.
     """
     return make_sequence(
         codec_features,
@@ -812,11 +880,55 @@ def static_grey(codec_features):
 @decoder_test_case_generator
 def static_ramps(codec_features):
     """
-    A static frame containing linear brightness ramps for white and primary
-    red, green and blue (in that order, from top-to-bottom).
+    **Tests that decoder correctly reports color encoding information.**
 
-    This test may be used to check that the correct colour model information
-    has been passed on to the display.
+    This test requires that the decoded pictures are observed using the
+    intended display equipment for the decoder to ensure that the relevant
+    color coding metadata is passed on.
+
+    A static frame containing linear signal ramps for white and primary
+    red, green and blue (in that order, from top-to-bottom) as illustrated
+    below:
+
+    .. image:: /_static/user_guide/static_ramps.png
+
+    The color bands must be in the correct order (white, red, green, blue from
+    top to bottom). If not, the color components may have been ordered
+    incorrectly.
+
+    The red, green and blue colors should correspond to the red, green and blue
+    primaries for the color specification (11.4.10.2).
+
+    .. note::
+
+        When D-Cinema primaries are specified (preset color primaries index 3),
+        red, green and blue are replaced with CIE X, Y and Z respectively. Note
+        that these may not represent physically realisable colours.
+
+    The left-most pixels in each band are notionally video black and the
+    right-most pixels video white, reg, green and blue (respectively). That is,
+    oversaturated signals (e.g. 'super-blacks' and 'super-white') are not
+    included.
+
+    .. note::
+
+        For lossy codecs, the decoded signal values may vary due to coding
+        artefacts.
+
+    The value ramps in the test picture are linear meaning that the (linear)
+    pixel values increase at a constant rate from left (black) to right
+    (saturated white/red/green/blue). Due to the non-linear response of human
+    vision, this will produce a non-linear brightness ramp which appears to
+    quickly saturate. Further, when a non-linear transfer function is specified
+    (11.4.10.4) the raw decoded picture values will not be linearly spaced.
+
+    .. note::
+
+        When the D-Cinema transfer function is specified (preset transfer
+        function index 3), the saturated signals do not correspond to a
+        non-linear signal value of 1.0 but instead approximately 0.97. This is
+        because the D-Cinema transfer function allocates part of its nominal
+        output range to over-saturated signals.
     """
     return make_sequence(
         codec_features,

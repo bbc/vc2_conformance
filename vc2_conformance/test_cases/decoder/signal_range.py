@@ -28,14 +28,46 @@ from vc2_conformance.test_cases.decoder.common import iter_slices_in_sequence
 @decoder_test_case_generator
 def signal_range(codec_features):
     """
-    Verify that a decoder has sufficient numerical range to handle extreme
-    input signals.
+    **Tests that a decoder has sufficient numerical dynamic range.**
 
-    Decoder implementers should ensure that no integer clamping or overflows
-    occur while processing these test pictures.
+    These test cases contain a series of pictures containing test patterns
+    designed to produce extreme signals within decoders. During these test
+    cases, no integer clamping (except for final output clamping) or integer
+    overflows must occur.
 
-    The metadata provided with each test case gives, for each picture, the test
-    points checked by that picture. See
+    A test case is produced for each picture component:
+
+    ``signal_range[Y]``
+        Luma component test patterns.
+
+    ``signal_range[C1]``
+        Color difference 1 component test patterns.
+
+    ``signal_range[C2]``
+        Color difference 2 component test patterns.
+
+    These test cases are produced by encoding pictures consisting test patterns
+    made up of entirely of legal (in range) signal values. Nevertheless, the
+    resulting bitstreams may produce large intermediate values within a
+    decoder, though these are not guaranteed to be worst-case.
+
+    .. note::
+
+        For informational purposes, an example of a set of test patterns before
+        and after encoding and quantisation is shown below:
+
+        .. image:: /_static/user_guide/signal_range_decoder.svg
+
+    .. note::
+
+        The quantization indices used for lossy codecs are chosen to maximise
+        the peak signal range produced by the test patterns. These are often
+        higher than a typical VC-2 encoder might pick for a given bit rate but
+        are nevertheless valid.
+
+    An informative metadata file is provided along side each test case which
+    gives, for each picture in the bitstream, the parts of a decoder which are
+    being tested by the test patterns. See
     :py:class:`vc2_bit_widths.helpers.TestPoint` for details.
     """
     try:
@@ -115,7 +147,8 @@ def signal_range(codec_features):
         if num_unexpected_qindices > 0:
             logging.warning(
                 "Could not assign the required qindex to %d picture slices "
-                "for signal range test case. Peak signal levels may be reduced.",
+                "for signal range test case due to a small picture_bytes value. "
+                "Peak signal levels may be reduced.",
                 num_unexpected_qindices,
             )
 

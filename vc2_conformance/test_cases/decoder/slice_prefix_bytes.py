@@ -46,15 +46,23 @@ def iter_slice_parameters_in_sequence(sequence):
 @decoder_test_case_generator
 def slice_prefix_bytes(codec_features):
     """
-    Tests that slice prefix bytes can be set to non-zero values, and the prefix
-    bytes are ignored, for the high quality profile.
+    **Tests the decoder can handle a non-zero number of slice prefix bytes.**
 
-    The following test cases will be produced:
+    Produces a test cases with a non-zero number of slice prefix bytes
+    containing the following values:
 
-    * ``zeros``: Slice prefix bytes contain zeros
-    * ``ones``: Slice prefix bytes contain ones
-    * ``end_of_sequence``: Slice prefix bytes contain the bytes which encode a
-      end_of_sequence data unit.
+    ``slice_prefix_bytes[zeros]``
+        All slice prefix bytes are 0x00.
+
+    ``slice_prefix_bytes[ones]``
+        All slice prefix bytes are 0xFF.
+
+    ``slice_prefix_bytes[end_of_sequence]``
+        All slice prefix bytes contain bits which encode an end of sequence
+        data unit (10.4).
+
+    These test cases apply only to the high quality profile and are omitted
+    when the low delay profile is used.
     """
     # This test only applies to high quality codecs
     if codec_features["profile"] != Profiles.high_quality:

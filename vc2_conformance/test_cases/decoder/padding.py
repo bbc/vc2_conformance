@@ -39,21 +39,29 @@ def replace_padding_data(sequence, bytes):
 @decoder_test_case_generator
 def padding_data(codec_features):
     """
-    This series of test cases verify that padding data units in a sequence are
-    correctly ignored.
+    **Tests that the contents of padding data units are ignored.**
 
-    Sequences are generated in which every-other data unit is a padding data
-    unit. These padding data units are filled with the following (in different
-    test sequences):
+    This test case consists of a sequence containing two blank frames in which
+    every-other data unit is a padding data unit (10.4.5) of various lengths
+    and contents (described below).
 
-    * Empty
-    * 32 bytes of zeros
-    * 32 bytes of non-zero data
-    * 32 bytes containing a the values for an end-of-sequence data unit (which
-      must be ignored!).
+    ``padding_data[empty]``
+        Padding data units containing zero padding bytes (i.e. just consisting
+        of a parse info header).
 
-    Where padding data is not permitted by the VC-2 level chosen, no test cases
-    will be generated.
+    ``padding_data[zero]``
+        Padding data units containing 32 bytes set to 0x00.
+
+    ``padding_data[non_zero]``
+        Padding data units containing 32 bytes containing the ASCII encoding of
+        the text ``Ignore this padding data please!``.
+
+    ``padding_data[dummy_end_of_sequence]``
+        Padding data units containing 32 bytes containing an encoding of an end
+        of sequence data unit (10.4.1).
+
+    Where padding data units are not permitted by the VC-2 level in use, these
+    test cases are omitted.
     """
     # Generate a base sequence in which we'll modify the padding data units. We
     # ensure there are always at least two pictures in the sequences to make

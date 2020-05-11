@@ -68,10 +68,21 @@ def update_extended_transform_parameters(sequence, *args, **kwargs):
 @decoder_test_case_generator
 def extended_transform_parameters(codec_features):
     """
-    This test case ensures that a decoder can handle the extended transform
-    parameter flags (asym_transform_index_flag and asym_transform_flag
-    (12.4.4)) being used for symmetric transforms (where they would usually be
-    false).
+    **Tests that extended transform parameter flags are handled correctly.**
+
+    Ensures that extended transform parameters fields (12.4.4) are correctly
+    handled by decoders for symmetric transform modes.
+
+    ``extended_transform_parameters[asym_transform_index_flag]``
+        Verifies that ``asym_transform_index_flag`` can be set to ``1``.
+
+    ``extended_transform_parameters[asym_transform_flag]``
+        Verifies that ``asym_transform_flag`` can be set to ``1``.
+
+    These test cases are skipped for streams whose major version is less than 3
+    (which do not support the extended transform parameters header).
+    Additionally, these test cases are skipped for asymmetric transforms when
+    the flag being tested must already be ``1``.
     """
     # Nothing to do if not version 3
     if codec_features["major_version"] < 3:

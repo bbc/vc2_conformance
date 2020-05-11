@@ -12,13 +12,21 @@ from vc2_conformance import picture_generators
 @encoder_test_case_generator
 def synthetic_moving_sprite(codec_features):
     """
-    This test case is designed to test correct metadata handling in a codec
-    implementation while providing a simple sanity check of overall encoder
-    behaviour.
+    **Tests that an encoder produces sensible results for motion.**
 
-    This test sequence consists of a 1 second video sequence as defined by
-    :py:class:`vc2_conformance.picture_generators.moving_sprite`. See that
-    function's documentation for further details.
+    A sequence of 10 frames containing a graphic moving from left to right
+    along the top of the frame. In successive each frame, the graphic moves
+    16 luma samples to the right (i.e. 8 samples every field, for
+    interlaced formats).
+
+    .. image:: /_static/user_guide/interlace_mode_and_pixel_aspect_ratio_moving_sequence.svg
+
+    For progressive formats, the graphic should appear with smooth edges in
+    each frame.
+
+    For interlaced formats, the graphic should move smoothly when displayed
+    on an interlaced monitor. If displayed as progressive frames (as in the
+    illustration above), the pictures will appear to have ragged edges.
     """
     return picture_generator_to_test_case(
         picture_generators.moving_sprite, codec_features,
@@ -28,13 +36,42 @@ def synthetic_moving_sprite(codec_features):
 @encoder_test_case_generator
 def synthetic_linear_ramps(codec_features):
     """
-    This test case may be used to check channel ordering and, to a limited
-    extent, correctness of colour metadata handling.
+    **Tests that an encoder correctly encodes color specification
+    information.**
 
-    This test sequence contains a single frame which contains four horizontal
-    color ramps as defined by
-    :py:class:`vc2_conformance.picture_generators.linear_ramps`. See that
-    function's documentation for further details.
+    A static frame containing linear signal ramps for white and primary
+    red, green and blue (in that order, from top-to-bottom) as illustrated
+    below:
+
+    .. image:: /_static/user_guide/static_ramps.png
+
+    The red, green and blue colors correspond to the red, green and blue
+    primaries for the color specification (11.4.10.2).
+
+    .. note::
+
+        When D-Cinema primaries are specified (preset color primaries index 3),
+        red, green and blue are replaced with CIE X, Y and Z respectively. Note
+        that these may not represent physically realisable colours.
+
+    The left-most pixels in each band are video black and the right-most pixels
+    video white, reg, green and blue (respectively). That is, oversaturated
+    signals (e.g. 'super-blacks' and 'super-white') are not included.
+
+    The value ramps in the test picture are linear meaning that the (linear)
+    pixel values increase at a constant rate from left (black) to right
+    (saturated white/red/green/blue). Due to the non-linear response of human
+    vision, this will produce a non-linear brightness ramp which appears to
+    quickly saturate. Further, when a non-linear transfer function is specified
+    (11.4.10.4) the raw picture values will not be linearly spaced.
+
+    .. note::
+
+        When the D-Cinema transfer function is specified (preset transfer
+        function index 3), the saturated signals do not correspond to a
+        non-linear signal value of 1.0 but instead approximately 0.97. This is
+        because the D-Cinema transfer function allocates part of its nominal
+        output range to over-saturated signals.
     """
     return picture_generator_to_test_case(
         picture_generators.linear_ramps, codec_features,

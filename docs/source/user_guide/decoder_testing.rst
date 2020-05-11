@@ -71,4 +71,3 @@ debugging failing tests is provided below.
     definition of the auto-documentation extraction routine below.
 
 .. test-case-documentation:: decoder
-

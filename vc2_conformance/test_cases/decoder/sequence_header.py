@@ -43,13 +43,44 @@ def replace_sequence_headers(sequence, sequence_header):
 @decoder_test_case_generator
 def source_parameters_encodings(codec_features):
     """
-    This series of test cases contain examples of different ways the source
-    parameters (11.4) may be encoded in a stream.
+    **Tests the decoder can decode different encodings of the video format
+    metadata.**
 
-    These test cases range from relying as much as possible on base video
-    formats (11.3) to explicitly specifying every parameter using the various
-    ``custom_*_flag`` options. In every example, the video parameters encoded
-    are identical.
+    This series of test cases each contain the same source parameters (11.4),
+    but in different ways.
+
+    ``source_parameters_encodings[custom_flags_combination_?_base_video_format_?]``
+        For these test cases, the base video format which most closely matches
+        the desired video format is used. Each test case incrementally checks
+        that source parameters may be explicitly set to their desired values
+        (e.g. by setting ``custom_*_flag`` bits to 1).
+
+    ``source_parameters_encodings[base_video_format_?]``
+        These test cases, check that other base video formats may be used (and
+        overridden) to specify the desired video format. Each of these test
+        cases will explicitly specify as few video parameters as possible (e.g.
+        leaving as many ``custom_*_flag`` fields as 0 as possible).
+
+    .. tip::
+
+        The :ref:`vc2-bitstream-viewer` may be used to display the encoding
+        used in a given test case as follows::
+
+            $ vc2-bitstream-viewer --show sequence_header path/to/test_case.vc2
+
+    .. note::
+
+        Some VC-2 levels constrain the allowed encoding of source parameters in
+        the bit stream and so fewer test cases will be produced in this
+        instance.
+
+    .. note::
+
+        Not all base video formats can be used as the basis for encoding a
+        specific video format. For example, the 'top field first' flag (11.3)
+        set by a base video format cannot be overridden. As a result, test
+        cases will not include every base video format index.
+
     """
     # Generate a base sequence in which we'll replace the sequence headers
     # later
@@ -100,8 +131,13 @@ def source_parameters_encodings(codec_features):
 @decoder_test_case_generator
 def repeated_sequence_headers(codec_features):
     """
-    This test case ensures that a decoder can handle streams which include more
-    than one sequence header.
+    **Tests the decoder can handle a stream with repeated sequence headers.**
+
+    This test case consists of a sequence containing two frames in which the
+    sequence header is repeated before every picture.
+
+    This test may be omitted if the VC-2 level prohibits the repetition of the
+    sequence header.
     """
     try:
         # Generate a base sequence in which we'll replace the sequence headers
