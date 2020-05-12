@@ -12,6 +12,7 @@ Conformance Specification'.
    :caption: Contents:
    
    user_guide/index.rst
+   cli/index.rst
 
 
 For maintainers

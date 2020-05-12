@@ -5,7 +5,7 @@ VC-2 decoder conformance testing procedure
 
 The VC-2 decoder conformance testing procedure is described below. In summary,
 each of the bitstreams generated in the previous step
-(:ref:`guide-generating-test-cases`), we will be decoded user the candidate
+(:ref:`guide-generating-test-cases`), we will be decoded using the candidate
 decoder and the resulting raw video compared with a reference decoding.
 
 
@@ -57,6 +57,8 @@ The section below outlines the purpose of each test case and gives advice on
 what that case failing may indicate. Alternatively, once all decoder tests have
 passed, we can continue onto :ref:`guide-encoder-testing`.
 
+
+.. _decoder-test-cases:
 
 Decoder Test Cases
 ------------------

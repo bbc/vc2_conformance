@@ -1,9 +1,142 @@
-"""
+r"""
+.. _vc2-raw-explain:
+
 ``vc2-raw-explain``
 ===================
 
-An command-line utility which provides informative descriptions the raw video
-format produced by the conformance software.
+A command-line utility which provides informative descriptions the raw video
+format (see :ref:`file-format`) used by the VC-2 conformance software. As well
+as providing an explanation of the format, where possible sample invocations of
+`FFmpeg <https://ffmpeg.org/>`_ and `ImageMagick <https://imagemagick.org/>`_
+are provided for viewing the raw files directly.
+
+Example usage
+-------------
+
+An example invocation is shown below::
+
+    $ vc2-raw-explain path/to/raw/picture_0.raw
+    Normative description
+    =====================
+
+    Picture coding mode: pictures_are_fields (1)
+
+    Video parameters:
+
+    * frame_width: 352
+    * frame_height: 288
+    * color_diff_format_index: color_4_2_0 (2)
+    * source_sampling: progressive (0)
+    * top_field_first: True
+    * frame_rate_numer: 25
+    * frame_rate_denom: 2
+    * pixel_aspect_ratio_numer: 12
+    * pixel_aspect_ratio_denom: 11
+    * clean_width: 352
+    * clean_height: 288
+    * left_offset: 0
+    * top_offset: 0
+    * luma_offset: 0
+    * luma_excursion: 255
+    * color_diff_offset: 128
+    * color_diff_excursion: 255
+    * color_primaries_index: sdtv_625 (2)
+    * color_matrix_index: sdtv (1)
+    * transfer_function_index: tv_gamma (0)
+
+    Explanation (informative)
+    =========================
+
+    Each raw picture contains a single field (though the underlying video is
+    progressive). The top field comes first.
+
+    Pictures contain three planar components: Y, Cb and Cr, in that order, which are
+    4:2:0 subsampled.
+
+    The Y component consists of 352x144 8 bit values. Values run from 0 (video level
+    0.00) to 255 (video level 1.00).
+
+    The Cb and Cr components consist of 176x72 8 bit values. Values run from 0
+    (video level -0.50) to 255 (video level 0.50).
+
+    The color model uses the 'sdtv_625' primaries (ITU-R BT.601), the 'sdtv' color
+    matrix (ITU-R BT.601) and the 'tv_gamma' transfer function (ITU-R BT.2020).
+
+    The pixel aspect ratio is 12:11 (not to be confused with the frame aspect
+    ratio).
+
+    Example FFMPEG command (informative)
+    ====================================
+
+    The following command can be used to play back this video format using FFMPEG:
+
+        $ ffplay \
+            -f image2 \
+            -video_size 352x144 \
+            -framerate 25 \
+            -pixel_format yuv420p \
+            -i path/to/raw/picture_%d.raw \
+            -vf weave=t,scale='trunc((iw*12)/11):ih'
+
+    Where:
+
+    * `-f image2` = Read pictures from individual files
+    * `-video_size 352x144` = Picture size (not frame size).
+    * `-framerate 25` = Picture rate (not frame rate)
+    * `-pixel_format` = Specifies raw picture encoding.
+    * `yuv` = Y C1 C2 colour.
+    * `420` = 4:2:0 color difference subsampling.
+    * `p` = Planar format.
+    * `-i path/to/raw/picture_%d.raw` = Input raw picture filename pattern
+    * `-vf` = define a pipeline of video filtering operations
+    * `weave=t` = interleave pairs of pictures, top field first
+    * `scale='trunc((iw*12)/11):ih'` = rescale non-square pixels for display with
+      square pixels
+
+    This command is provided as a minimal example for basic playback of this raw
+    video format.  While it attempts to ensure correct frame rate, pixel aspect
+    ratio, interlacing mode and basic pixel format, color model options are omitted
+    due to inconsistent handling by FFMPEG.
+
+    Example ImageMagick command (informative)
+    =========================================
+
+    The following command can be used to convert a single raw picture into PNG
+    format for viewing in a conventional image viewer:
+
+        $ convert \
+            -size 352x144 \
+            -depth 8 \
+            -sampling-factor 4:2:0 \
+            -interlace plane \
+            -colorspace sRGB \
+            yuv:path/to/raw/picture_%d.raw \
+            -resize 109.0909090909091%,100% \
+            png24:path/to/raw/picture_%d.png
+
+    Where:
+
+    * `-size 352x144` = Picture size.
+    * `-depth 8` = 8 bit values.
+    * `-sampling-factor 4:2:0` = 4:2:0 color difference subsampling.
+    * `-interlace plane` = Planar format (not related to video interlace mode).
+    * `-colorspace sRGB` = Display as if using sRGB color.
+    * `yuv:` = Input is Y C1 C2 picture.
+    * `path/to/raw/picture_%d.raw` = Input filename.
+    * `-resize 109.0909090909091%,100%` = rescale non-square pixels for display with
+      square pixels
+    * `png24:path/to/raw/picture_%d.png` = Save as 24-bit PNG (e.g. 8 bit channels)
+
+    This command is provided as a minimal example for basic viewing of pictures.
+    Interlacing and correct color model conversion are not implemented.
+
+
+Arguments
+---------
+
+The complete set of arguments can be listed using ``--help``
+
+.. program-output:: vc2-raw-explain --help
 
 """
 

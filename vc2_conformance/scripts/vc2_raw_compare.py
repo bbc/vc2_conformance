@@ -1,8 +1,107 @@
-"""
+r"""
+.. _vc2-raw-compare:
+
 ``vc2-raw-compare``
 ===================
 
-An command-line utility which compares pairs of pictures.
+A command-line utility which compares pairs of raw pictures (see
+:ref:`file-format`).
+
+Usage
+-----
+
+Given a pair of images in raw format (see :ref:`file-format`), these images can
+be compared as follows::
+
+    $ vc2-raw-compare image_a.raw image_b.raw
+    Pictures are different:
+      Y: Different: PSNR = 55.6 dB, 1426363 pixels (68.8%) differ
+      C1: Different: PSNR = 57.7 dB, 662607 pixels (63.9%) differ
+      C2: Different: PSNR = 56.8 dB, 703531 pixels (67.9%) differ
+
+Differences in the encoded values are reported separately for each picture
+component.
+
+Peak Signal to Noise Ratio (PSNR) figures give the PSNR of the raw signal
+values (and not, for example, linear light levels).
+
+The number of pixels which are not bit-for-bit identical is also reported.
+
+The tool also compares the metadata of the raw images and will flag up
+differences here too, for example::
+
+    $ vc2-raw-compare picture_hd.raw picture_cif.raw
+    Picture numbers are different:
+    Video parameters are different:
+      - frame_width: 1920
+      + frame_width: 352
+      - frame_height: 1080
+      + frame_height: 288
+      - color_diff_format_index: color_4_2_2 (1)
+      + color_diff_format_index: color_4_2_0 (2)
+        source_sampling: progressive (0)
+        top_field_first: True
+      - frame_rate_numer: 50
+      + frame_rate_numer: 25
+      - frame_rate_denom: 1
+      + frame_rate_denom: 2
+      - pixel_aspect_ratio_numer: 1
+      + pixel_aspect_ratio_numer: 12
+      - pixel_aspect_ratio_denom: 1
+      + pixel_aspect_ratio_denom: 11
+      - clean_width: 1920
+      + clean_width: 352
+      - clean_height: 1080
+      + clean_height: 288
+        left_offset: 0
+        top_offset: 0
+      - luma_offset: 64
+      + luma_offset: 0
+      - luma_excursion: 876
+      + luma_excursion: 255
+      - color_diff_offset: 512
+      + color_diff_offset: 128
+      - color_diff_excursion: 896
+      + color_diff_excursion: 255
+      - color_primaries_index: hdtv (0)
+      + color_primaries_index: sdtv_625 (2)
+      - color_matrix_index: hdtv (0)
+      + color_matrix_index: sdtv (1)
+        transfer_function_index: tv_gamma (0)
+
+When picture metadata differs, the pixel values will not be compared since the
+difference in metadata typically means a difference in format making the
+pictures incomparable.
+
+
+Generating difference masks
+---------------------------
+
+The ``vc2-raw-compare`` tool can optionally output a simple difference mask
+image using ``--difference-mask``/``-D``. The generated image contains white
+pixels wherever the inputs differed and black pixels wherever they were
+identical. The generated difference mask is output as a raw file of the same
+format as the two input files.
+
+For example::
+
+    $ vc2-raw-compare \
+          image_a.raw \
+          image_b.raw \
+          --difference-mask difference_mask.raw
+    Pictures are different:
+      Y: Different: PSNR = 55.6 dB, 1426363 pixels (68.8%) differ
+      C1: Different: PSNR = 57.7 dB, 662607 pixels (63.9%) differ
+      C2: Different: PSNR = 56.8 dB, 703531 pixels (67.9%) differ
+
+
+Arguments
+---------
+
+The complete set of arguments can be listed using ``--help``
+
+.. program-output:: vc2-raw-compare --help
+
 """
 
 import sys

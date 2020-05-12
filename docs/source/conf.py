@@ -36,6 +36,7 @@ extensions = [
     "sphinx.ext.mathjax",
     "numpydoc",
     "sphinxcontrib.inkscapeconverter",
+    "sphinxcontrib.programoutput",
     "test_case_documentation",
 ]
 

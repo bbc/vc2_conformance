@@ -1,8 +1,68 @@
-"""
+r"""
+.. _vc2-test-case-generator:
+
 ``vc2-test-case-generator``
 ===========================
 
-This application generates test cases for VC-2 encoders and decoders.
+This application generates test cases for VC-2 encoders and decoders given a
+set of codec features to target.
+
+* For a guide to the codec features CSV file format see :ref:`codec-features`
+* For a guide to encoder test cases see :ref:`encoder-test-cases`
+* For a guide to decoder test cases see :ref:`decoder-test-cases`
+
+Usage
+-----
+
+A codec features CSV file should be created (as described in
+:ref:`guide-generating-test-cases`). This can then be processed by
+``vc2-test-case-generator`` to generate test cases for the codecs supporting
+the specific codec features described.
+
+Test case generation may be performed as follows::
+
+    $ vc2-test-case-generator path/to/codec_features.csv
+
+The test cases are written to a ``test_cases`` in the current working
+directory. The ``--output`` argument may be given to choose an alternative
+location. By default, if any existing test cases are present in the output
+directory, the test case generator will not run. The ``--force`` argument may
+be added to run the test case generator anyway.
+
+If only a subset of test cases are required, the following arguments may also
+be used:
+
+* ``--encoder-only``: Only generate test cases for encoders
+* ``--decoder-only``: Only generate test cases for decoders
+* ``--codec <regexp>``: Only generate test cases for codec feature sets whose
+  name match a supplied pattern.
+
+
+Parallel execution
+------------------
+
+The test case generator can take many hours to run. To speed up execution,
+test cases may be generated in parallel on multi-core machines. To do this the
+``--parallel`` argument may be added to ``vc2-test-case-generator``. Rather
+than performing test case generation, this command outputs a series of
+newline-separated commands which may be executed in parallel to perform test
+case generation. These may then be executed, for example using `GNU Parallel
+<https://www.gnu.org/software/parallel/>`_::
+
+    $ # Write test case generation commands to 'commands.txt'
+    $ vc2-test-case-generator path/to/codec_features.csv --parallel > commands.txt
+
+    $ # Run test case generation in paralllel using GNU Parallel
+    $ parallel -a commands.txt
+
+
+Arguments
+---------
+
+The complete set of arguments can be listed using ``--help``
+
+.. program-output:: vc2-test-case-generator --help
+
 """
 
 import os

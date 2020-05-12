@@ -1,16 +1,78 @@
-"""
+r"""
+.. _vc2-bitstream-validator:
+
 ``vc2-bitstream-validator``
 ===========================
 
 A command-line utility for validating VC-2 bitstreams' conformance with the
-VC-2 specification.
+VC-2 specification and providing a reference decoding of the pictures within.
+
+Usage
+-----
 
 This command should be passed a filename containing a candidate VC-2 bitstream.
-The bitstream will be checked against the VC-2 specification and the pictures
-decoded. If a conformance error is displayed, the bitstream is not a conforming
-VC-2 bitstream. If no errors occur, the decoded pictures must be compared with
-their expected content. If these pictures match, this particular bitstream
-conforms to the VC-2 specification.
+For example, given a valid stream::
+
+    $ vc2-bitstream-validator path/to/bitstream.vc2 --output decoded_picture_%d.raw
+    No errors found in bitstream. Verify decoded pictures to confirm conformance.
+
+Here the ``--output`` argument specifies the printf-style template for the
+decoded picture filenames. The decoded pictures are written as raw files (see
+:ref:`file-format`).
+
+If a conformance error is detected, a detailed explanation of the problem is
+displayed::
+
+    $ vc2-bitstream-validator invalid.vc2
+    Conformance error at bit offset 104
+    ===================================
+
+    Non-zero previous_parse_offset, 5789784, in the parse info at the start of
+    a sequence (10.5.1).
+
+
+    Details
+    -------
+
+    Was this parse info block copied from another stream without the
+    previous_parse_offset being updated?
+
+    Does this parse info block incorrectly include an offset into an adjacent
+    sequence?
+
+
+    Suggested bitstream viewer commands
+    -----------------------------------
+
+    To view the offending part of the bitstream:
+
+        vc2-bitstream-viewer invalid.vc2 --offset 104
+
+
+    Pseudocode traceback
+    --------------------
+
+    Most recent call last:
+
+    * parse_sequence (10.4.1)
+      * parse_info (10.5.1)
+
+    vc2-bitstream-validator: error: non-conformant bitstream (see above)
+
+Errors include an explanation of the conformance problem (along with references
+to the VC-2 standards documents) along with possible causes of the error.
+Additionally, a sample invocation of :ref:`vc2-bitstream-viewer` is given which
+may be used to display the contents of the bitstream at the offending position.
+Finally, a stack trace for the VC-2 pseudocode functions involved in parsing
+the stream at the point of failure is also printed.
+
+
+Arguments
+---------
+
+The complete set of arguments can be listed using ``--help``
+
+.. program-output:: vc2-bitstream-validator --help
 
 """
 

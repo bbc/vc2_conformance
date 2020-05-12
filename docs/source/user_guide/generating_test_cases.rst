@@ -9,6 +9,8 @@ defining the capabilities of our codec in a 'codec features' file and then
 generating the test cases accordingly.
 
 
+.. _codec-features:
+
 Defining codec features
 -----------------------
 

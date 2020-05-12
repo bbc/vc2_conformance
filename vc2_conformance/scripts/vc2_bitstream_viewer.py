@@ -1,4 +1,6 @@
-"""
+r"""
+.. _vc2-bitstream-viewer:
+
 ``vc2-bitstream-viewer``
 ========================
 
@@ -113,6 +115,14 @@ By default, error messages show only limited information about the failure.
 Adding the ``--verbose``/``-v`` option will cause additional details (such as
 the next few bits in the bitstream and details of what was being parsed at the
 time.
+
+Arguments
+---------
+
+The complete set of arguments can be listed using ``--help``
+
+.. program-output:: vc2-bitstream-viewer --help
+
 """  # noqa: E501
 
 import os
