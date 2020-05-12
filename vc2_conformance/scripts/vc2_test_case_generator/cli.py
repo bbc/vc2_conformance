@@ -56,6 +56,24 @@ case generation. These may then be executed, for example using `GNU Parallel
     $ parallel -a commands.txt
 
 
+Static wavelet filter analyses
+------------------------------
+
+Some test cases require a precomputed mathematical analysis of the wavelet
+transform used.
+
+The VC-2 conformance software includes suitable analyses for all wavelet
+transforms for which a default quantisation matrix is defined in the VC-2
+specification. To support additional wavelet transform combinations and depths,
+additional analyses must be generated as described in
+:ref:`generating-static-analyses`.
+
+If the ``VC2_BIT_WIDTHS_BUNDLE`` environment variable is defined, the test case
+generator will attempt to read wavelet filter analyses from the file it
+specifies. This must be a filter analysis bundle file created by
+``vc2-bundle``.
+
+
 Arguments
 ---------
 

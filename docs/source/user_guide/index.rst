@@ -15,3 +15,4 @@ VC-2 standards.
    generating_test_cases.rst
    decoder_testing.rst
    encoder_testing.rst
+   generating_static_analyses.rst
