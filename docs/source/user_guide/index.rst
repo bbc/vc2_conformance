@@ -14,3 +14,4 @@ VC-2 standards.
    file_format.rst
    generating_test_cases.rst
    decoder_testing.rst
+   encoder_testing.rst
