@@ -7,3 +7,4 @@ from vc2_conformance.test_cases.decoder.real_pictures import *
 from vc2_conformance.test_cases.decoder.extended_transform_parameters import *
 from vc2_conformance.test_cases.decoder.slice_prefix_bytes import *
 from vc2_conformance.test_cases.decoder.absent_next_parse_offset import *
+from vc2_conformance.test_cases.decoder.slice_size_scaler import *

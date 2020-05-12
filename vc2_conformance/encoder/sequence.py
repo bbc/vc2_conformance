@@ -82,6 +82,9 @@ def make_sequence(codec_features, pictures, *data_unit_patterns, **kwargs):
         index to be used. If a list is provided, specifies the minimum
         quantization index separately for each picture. Must be 0 for lossless
         codecs.
+    minimum_slice_size_scaler : int
+        Keyword-only argument. Default 1. Specifies the minimum slice size
+        scaler to use. Only has an effect on high quality slice encoding.
 
     Returns
     =======
@@ -94,6 +97,7 @@ def make_sequence(codec_features, pictures, *data_unit_patterns, **kwargs):
     IncompatibleLevelAndDataUnitError
     """
     minimum_qindices = kwargs.pop("minimum_qindex", 0)
+    minimum_slice_size_scaler = kwargs.pop("minimum_slice_size_scaler", 1)
     assert not kwargs, "Unexpected arguments: {}".format(kwargs)
 
     if not isinstance(minimum_qindices, list):
@@ -102,7 +106,9 @@ def make_sequence(codec_features, pictures, *data_unit_patterns, **kwargs):
     pictures_only_sequence = Sequence(data_units=[])
     for picture, minimum_qindex in zip(pictures, minimum_qindices):
         pictures_only_sequence["data_units"].extend(
-            make_picture_data_units(codec_features, picture, minimum_qindex)
+            make_picture_data_units(
+                codec_features, picture, minimum_qindex, minimum_slice_size_scaler,
+            )
         )
 
     # Fill in all other required bitstream data units

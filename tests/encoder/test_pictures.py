@@ -747,6 +747,37 @@ class TestMakeTransformDataHQLossless(object):
         assert transform_data["hq_slices"][1]["slice_c1_length"] == 255
         assert transform_data["hq_slices"][1]["slice_c2_length"] == 255
 
+    def test_minimum_slice_size_scaler(self):
+        # 3 byte slice components
+        slice_size_scaler, transform_data = make_transform_data_hq_lossless(
+            [
+                [
+                    SliceCoeffs(
+                        ComponentCoeffs([7] * 3, [0] * 3),
+                        ComponentCoeffs([7] * 3, [0] * 3),
+                        ComponentCoeffs([7] * 3, [0] * 3),
+                    ),
+                    SliceCoeffs(
+                        ComponentCoeffs([7] * 3, [0] * 3),
+                        ComponentCoeffs([7] * 3, [0] * 3),
+                        ComponentCoeffs([7] * 3, [0] * 3),
+                    ),
+                ]
+            ],
+            minimum_slice_size_scaler=2,
+        )
+        assert slice_size_scaler == 2
+
+        assert len(transform_data["hq_slices"]) == 2
+
+        assert transform_data["hq_slices"][0]["slice_y_length"] == 2
+        assert transform_data["hq_slices"][0]["slice_c1_length"] == 2
+        assert transform_data["hq_slices"][0]["slice_c2_length"] == 2
+
+        assert transform_data["hq_slices"][1]["slice_y_length"] == 2
+        assert transform_data["hq_slices"][1]["slice_c1_length"] == 2
+        assert transform_data["hq_slices"][1]["slice_c2_length"] == 2
+
     def test_slice_size_scaler_required(self):
         slice_size_scaler, transform_data = make_transform_data_hq_lossless(
             [
@@ -811,21 +842,25 @@ def test_get_safe_lossy_hq_slice_size_scaler(picture_bytes, exp_slice_size_scale
 
 
 @pytest.mark.parametrize(
-    "picture_bytes,exp_slice_size_scaler",
+    "picture_bytes,minimum_slice_size_scaler,exp_slice_size_scaler",
     [
         # In this example we're using 3x2 picture slices
         # 100 bytes per slice; easily fits
-        (3 * 2 * 100, 1),
+        (3 * 2 * 100, 1, 1),
         # Exactly 259 bytes per slice; *just* fits
-        (3 * 2 * 259, 1),
+        (3 * 2 * 259, 1, 1),
         # *Just* over 259 bytes per slice; requires a scaler
-        (3 * 2 * 259 + 1, 2),
-        (3 * 2 * 259 + 2, 2),
-        (3 * 2 * 259 + 3, 2),
-        (3 * 2 * 259 + 4, 2),
+        (3 * 2 * 259 + 1, 1, 2),
+        (3 * 2 * 259 + 2, 1, 2),
+        (3 * 2 * 259 + 3, 1, 2),
+        (3 * 2 * 259 + 4, 1, 2),
+        # 100 bytes per slice; but force a larger slice size scaler
+        (3 * 2 * 100, 3, 3),
     ],
 )
-def test_make_transform_data_hq_lossy(picture_bytes, exp_slice_size_scaler):
+def test_make_transform_data_hq_lossy(
+    picture_bytes, minimum_slice_size_scaler, exp_slice_size_scaler
+):
     # Using 3x2 slices. We need to have enough data per slice that we stil need
     # the quantizer to fit into 255-4 bytes.
     #
@@ -862,6 +897,7 @@ def test_make_transform_data_hq_lossy(picture_bytes, exp_slice_size_scaler):
             ]
             for sy in range(slices_y)
         ],
+        minimum_slice_size_scaler=minimum_slice_size_scaler,
     )
     assert slice_size_scaler == exp_slice_size_scaler
 

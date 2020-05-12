@@ -502,7 +502,7 @@ def make_ld_slice(y_transform, c_transform, qindex):
     )
 
 
-def make_transform_data_hq_lossless(transform_coeffs):
+def make_transform_data_hq_lossless(transform_coeffs, minimum_slice_size_scaler=1):
     """
     Pack transform coefficients into HQ picture slices in a
     :py:class:`TransformData`, computing the required slice_size_scaler.
@@ -510,6 +510,9 @@ def make_transform_data_hq_lossless(transform_coeffs):
     Parameters
     ==========
     transform_coeffs : [[:py:class:`SliceCoeffs`, ...], ...]
+    minimum_slice_size_scaler : int
+        Specifies the minimum slice_size_scaler to be used for high quality
+        pictures. Ignored in low delay mode.
 
     Returns
     =======
@@ -543,7 +546,7 @@ def make_transform_data_hq_lossless(transform_coeffs):
         )
         for hq_slice in transform_data["hq_slices"]
     )
-    slice_size_scaler = max(1, (max_length + 254) // 255)
+    slice_size_scaler = max(1, minimum_slice_size_scaler, (max_length + 254) // 255)
 
     # Adjust slice lengths accordingly
     for hq_slice in transform_data["hq_slices"]:
@@ -588,7 +591,9 @@ def get_safe_lossy_hq_slice_size_scaler(picture_bytes, num_slices):
     return max(1, slice_size_scaler)
 
 
-def make_transform_data_hq_lossy(picture_bytes, transform_coeffs, minimum_qindex=0):
+def make_transform_data_hq_lossy(
+    picture_bytes, transform_coeffs, minimum_qindex=0, minimum_slice_size_scaler=1
+):
     """
     Quantize and pack transform coefficients into HQ picture slices in a
     :py:class:`TransformData`.
@@ -610,6 +615,9 @@ def make_transform_data_hq_lossy(picture_bytes, transform_coeffs, minimum_qindex
     minimum_qindex : int
         If provided, gives the quantization index to start with when trying to
         find a suitable quantization index.
+    minimum_slice_size_scaler : int
+        Specifies the minimum slice_size_scaler to be used for high quality
+        pictures. Ignored in low delay mode.
 
     Returns
     =======
@@ -623,7 +631,10 @@ def make_transform_data_hq_lossy(picture_bytes, transform_coeffs, minimum_qindex
     num_slices = slices_x * slices_y
 
     # Find the smallest slice size scaler which lets this size fit into 8 bits
-    slice_size_scaler = get_safe_lossy_hq_slice_size_scaler(picture_bytes, num_slices)
+    slice_size_scaler = max(
+        get_safe_lossy_hq_slice_size_scaler(picture_bytes, num_slices),
+        minimum_slice_size_scaler,
+    )
 
     # Work out the total bitstream space available after slice overheads are
     # accounted for (NB: 4 bytes overhead per slice due to qindex and
@@ -840,7 +851,9 @@ def make_extended_transform_parameters(codec_features):
     return etp
 
 
-def make_picture_parse(codec_features, picture, minimum_qindex=0):
+def make_picture_parse(
+    codec_features, picture, minimum_qindex=0, minimum_slice_size_scaler=1
+):
     """
     Compress a picture.
 
@@ -865,6 +878,9 @@ def make_picture_parse(codec_features, picture, minimum_qindex=0):
     minimum_qindex : int
         Specifies the minimum quantization index to be used. Must be 0 for
         lossless codecs.
+    minimum_slice_size_scaler : int
+        Specifies the minimum slice_size_scaler to be used for high quality
+        pictures. Ignored in low delay mode.
 
     Returns
     =======
@@ -890,12 +906,15 @@ def make_picture_parse(codec_features, picture, minimum_qindex=0):
             if codec_features["picture_bytes"] is not None:
                 raise PictureBytesSpecifiedForLosslessModeError(codec_features)
             slice_size_scaler, transform_data = make_transform_data_hq_lossless(
-                transform_coeffs,
+                transform_coeffs, minimum_slice_size_scaler,
             )
         else:
             try:
                 slice_size_scaler, transform_data = make_transform_data_hq_lossy(
-                    codec_features["picture_bytes"], transform_coeffs, minimum_qindex,
+                    codec_features["picture_bytes"],
+                    transform_coeffs,
+                    minimum_qindex,
+                    minimum_slice_size_scaler,
                 )
             except InsufficientHQPictureBytesError:
                 # Re-raise with codec features dict
@@ -952,7 +971,9 @@ def make_picture_parse(codec_features, picture, minimum_qindex=0):
     )
 
 
-def make_picture_parse_data_unit(codec_features, picture, minimum_qindex=0):
+def make_picture_parse_data_unit(
+    codec_features, picture, minimum_qindex=0, minimum_slice_size_scaler=1
+):
     """
     Create a :py:class:`~vc2_conformance.bitstream.DataUnit` object containing
     a (possibly lossily compressed) picture.
@@ -968,6 +989,9 @@ def make_picture_parse_data_unit(codec_features, picture, minimum_qindex=0):
     minimum_qindex : int
         Specifies the minimum quantization index to be used. Must be 0 for
         lossless codecs.
+    minimum_slice_size_scaler : int
+        Specifies the minimum slice_size_scaler to be used for high quality
+        pictures. Ignored in low delay mode.
 
     Returns
     =======
@@ -985,11 +1009,15 @@ def make_picture_parse_data_unit(codec_features, picture, minimum_qindex=0):
                 else None  # Unreachable, unless a new profile is added
             )
         ),
-        picture_parse=make_picture_parse(codec_features, picture, minimum_qindex,),
+        picture_parse=make_picture_parse(
+            codec_features, picture, minimum_qindex, minimum_slice_size_scaler
+        ),
     )
 
 
-def make_fragment_parse_data_units(codec_features, picture, minimum_qindex=0):
+def make_fragment_parse_data_units(
+    codec_features, picture, minimum_qindex=0, minimum_slice_size_scaler=1
+):
     r"""
     Create a seires of :py:class:`~vc2_conformance.bitstream.DataUnit`\ s
     encoding a (possibly lossily compressed) picture.
@@ -1005,6 +1033,9 @@ def make_fragment_parse_data_units(codec_features, picture, minimum_qindex=0):
     minimum_qindex : int
         Specifies the minimum quantization index to be used. Must be 0 for
         lossless codecs.
+    minimum_slice_size_scaler : int
+        Specifies the minimum slice_size_scaler to be used for high quality
+        pictures. Ignored in low delay mode.
 
     Returns
     =======
@@ -1014,7 +1045,9 @@ def make_fragment_parse_data_units(codec_features, picture, minimum_qindex=0):
 
     # To avoid repeating ourselves, the fragmented picture is assembled from
     # the parts of a ready-made piture_parse.
-    picture_parse = make_picture_parse(codec_features, picture, minimum_qindex)
+    picture_parse = make_picture_parse(
+        codec_features, picture, minimum_qindex, minimum_slice_size_scaler
+    )
 
     wavelet_transform = picture_parse["wavelet_transform"]
 
@@ -1091,7 +1124,9 @@ def make_fragment_parse_data_units(codec_features, picture, minimum_qindex=0):
     return fragment_data_units
 
 
-def make_picture_data_units(codec_features, picture, minimum_qindex=0):
+def make_picture_data_units(
+    codec_features, picture, minimum_qindex=0, minimum_slice_size_scaler=1,
+):
     r"""
     Create a seires of one or more :py:class:`~vc2_conformance.bitstream.DataUnit`\ s
     containing a compressed version of the supplied picture.
@@ -1114,12 +1149,21 @@ def make_picture_data_units(codec_features, picture, minimum_qindex=0):
     minimum_qindex : int
         Specifies the minimum quantization index to be used. Must be 0 for
         lossless codecs.
+    minimum_slice_size_scaler : int
+        Specifies the minimum slice_size_scaler to be used for high quality
+        pictures. Ignored in low delay mode.
 
     Returns
     =======
     data_units : [:py:class:`vc2_conformance.bitstream.DataUnit`, ...]
     """
     if codec_features["fragment_slice_count"] == 0:
-        return [make_picture_parse_data_unit(codec_features, picture, minimum_qindex,)]
+        return [
+            make_picture_parse_data_unit(
+                codec_features, picture, minimum_qindex, minimum_slice_size_scaler
+            )
+        ]
     else:
-        return make_fragment_parse_data_units(codec_features, picture, minimum_qindex,)
+        return make_fragment_parse_data_units(
+            codec_features, picture, minimum_qindex, minimum_slice_size_scaler
+        )
