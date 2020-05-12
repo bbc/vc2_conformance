@@ -12,26 +12,20 @@ from vc2_conformance.test_cases.decoder.common import iter_slices_in_sequence
 class TestSliceSizeScaler(object):
     def test_low_delay(self):
         assert (
-            list(
-                slice_size_scaler(
-                    dict(MINIMAL_CODEC_FEATURES, profile=Profiles.low_delay,)
-                )
-            )
-            == []
+            slice_size_scaler(dict(MINIMAL_CODEC_FEATURES, profile=Profiles.low_delay))
+            is None
         )
 
     def test_level_prohibits_larger_slice_size_scaler(self):
         assert (
-            list(
-                slice_size_scaler(
-                    dict(
-                        MINIMAL_CODEC_FEATURES,
-                        profile=Profiles.high_quality,
-                        level=Levels.uhd_over_hd_sdi,
-                    )
+            slice_size_scaler(
+                dict(
+                    MINIMAL_CODEC_FEATURES,
+                    profile=Profiles.high_quality,
+                    level=Levels.uhd_over_hd_sdi,
                 )
             )
-            == []
+            is None
         )
 
     @pytest.mark.parametrize(
@@ -56,10 +50,7 @@ class TestSliceSizeScaler(object):
             slices_x=2,
             slices_y=3,
         )
-        sequences = list(slice_size_scaler(codec_features))
-
-        assert len(sequences) == 1
-        sequence = sequences[0]
+        sequence = slice_size_scaler(codec_features)
 
         for state, _sx, _sy, hq_slice in iter_slices_in_sequence(
             codec_features, sequence

@@ -45,6 +45,12 @@ class TestNormaliseTestCaseGenerator(object):
             tc.TestCase(101, case_name="foobar", subcase_name="plus_one"),
         ]
 
+    def test_returns_none(self):
+        def foobar(a):
+            return None
+
+        assert list(tc.normalise_test_case_generator(foobar, 100)) == []
+
     def test_yields_value(self):
         def foobar(a):
             yield a + 1
@@ -66,6 +72,17 @@ class TestNormaliseTestCaseGenerator(object):
         assert list(tc.normalise_test_case_generator(foobar, 100)) == [
             tc.TestCase(101, case_name="foobar", subcase_name="one"),
             tc.TestCase(102, case_name="foobar", subcase_name="two"),
+            tc.TestCase(103, case_name="foobar", subcase_name="three"),
+        ]
+
+    def test_yields_none(self):
+        def foobar(a):
+            yield tc.TestCase(a + 1, "one")
+            yield None
+            yield tc.TestCase(a + 3, "three")
+
+        assert list(tc.normalise_test_case_generator(foobar, 100)) == [
+            tc.TestCase(101, case_name="foobar", subcase_name="one"),
             tc.TestCase(103, case_name="foobar", subcase_name="three"),
         ]
 

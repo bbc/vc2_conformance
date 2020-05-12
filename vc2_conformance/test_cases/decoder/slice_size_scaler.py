@@ -30,7 +30,7 @@ def slice_size_scaler(codec_features):
     """
     # Skip if not high quality profile
     if codec_features["profile"] != Profiles.high_quality:
-        return
+        return None
 
     # Pick a minimum slice size scaler which is larger than the slice size
     # scaler which would otherwise be used
@@ -53,7 +53,7 @@ def slice_size_scaler(codec_features):
         "slice_size_scaler",
         codec_features_to_trivial_level_constraints(codec_features),
     ):
-        return
+        return None
 
     sequence = make_sequence(
         codec_features,
@@ -72,4 +72,4 @@ def slice_size_scaler(codec_features):
             assert hq_slice["slice_c2_length"] == 0
             hq_slice["slice_c2_length"] = 1
 
-    yield sequence
+    return sequence

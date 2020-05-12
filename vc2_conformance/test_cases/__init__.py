@@ -44,8 +44,9 @@ produce a :py:class:`vc2_conformance.bitstream.Sequence` dictionary.
 
 In the simplest case, test case generator functions may be functions which
 return a single :py:class:`EncoderTestSequence` or
-:py:class:`~vc2_conformance.bitstream.Sequence` object.  Alternatively case
-generators may also ``yield`` a series of several related values.
+:py:class:`~vc2_conformance.bitstream.Sequence` object (or None to indicate no
+suitable test case is available).  Alternatively case generators may also
+``yield`` a series of several related values.
 
 Test cases are assigned a name based on the name of the function which produced
 them. Where a test case generator generates several test cases, these are
@@ -164,7 +165,8 @@ def normalise_test_case_generator(f, *args, **kwargs):
     :py:attr:`TestCase.case_name` attributes will be populated with the
     function name, if not already defined. If the function returns or generates
     other values, these will be wrapped in :py:class:`TestCase` objects
-    automatically.
+    automatically. If the function returns or generates None, no test case will
+    be emitted.
     """
     generator = f(*args, **kwargs)
 
@@ -173,6 +175,9 @@ def normalise_test_case_generator(f, *args, **kwargs):
         generator = [generator]
 
     for i, value in enumerate(generator):
+        if value is None:
+            continue
+
         if not isinstance(value, TestCase):
             value = TestCase(value)
 

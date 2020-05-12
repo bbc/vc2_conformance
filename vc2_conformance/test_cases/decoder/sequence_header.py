@@ -158,6 +158,6 @@ def repeated_sequence_headers(codec_features):
     except IncompatibleLevelAndDataUnitError:
         # Do not try to force levels which don't support this level of sequence
         # header interleaving to accept it.
-        return
+        return None
 
-    yield sequence
+    return sequence

@@ -173,13 +173,9 @@ def test_repeated_sequence_headers(level_sequence_restrictions, restricted_seque
 
     codec_features = MINIMAL_CODEC_FEATURES
 
-    all_sequences = list(repeated_sequence_headers(codec_features))
+    sequence = repeated_sequence_headers(codec_features)
 
     if not restricted_sequence:
-        assert len(all_sequences) == 1
-
-        sequence = all_sequences[0]
-
         # All sequence headers must be identical
         sh_count = 0
         for data_unit in sequence["data_units"]:
@@ -192,4 +188,4 @@ def test_repeated_sequence_headers(level_sequence_restrictions, restricted_seque
         # Multiple sequence headers must be present
         assert sh_count >= 3
     else:
-        assert len(all_sequences) == 0
+        assert sequence is None
