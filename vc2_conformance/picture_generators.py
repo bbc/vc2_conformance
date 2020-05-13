@@ -21,6 +21,8 @@ component values. These must then be encoded by a suitable VC-2 encoder.
 
 .. autofunction:: mid_gray
 
+.. autofunction:: white_noise
+
 .. autofunction:: linear_ramps
 
 The following function may be used to produce longer sequences by repeating the
@@ -72,6 +74,7 @@ __all__ = [
     "moving_sprite",
     "static_sprite",
     "mid_gray",
+    "white_noise",
     "linear_ramps",
     "repeat_pictures",
 ]
@@ -548,7 +551,7 @@ def static_sprite(video_parameters, picture_coding_mode):
 
 def mid_gray(video_parameters, picture_coding_mode):
     """
-    An video sequence containing exactly one empty mid-gray frame.
+    A video sequence containing exactly one empty mid-gray frame.
 
     'Mid gray' is defined as having each color component set to the integer
     value exactly half-way along its range. The actual color will differ
@@ -574,6 +577,39 @@ def mid_gray(video_parameters, picture_coding_mode):
             "C2": c2.tolist(),
             "pic_num": 1,
         }
+
+
+def white_noise(video_parameters, picture_coding_mode, num_frames=1, seed=0):
+    """
+    A video sequence containing uniformly distributed pseudo-random full-range
+    signal values.
+
+    By default a single frame is produced, but the ``num_frames`` argument may
+    be used to specify more.
+
+    By default a fixed seed is used, but alternative seeds may be provided in
+    the ``seed`` argument.
+    """
+    if picture_coding_mode == PictureCodingModes.pictures_are_fields:
+        num_pictures = num_frames * 2
+    else:
+        num_pictures = num_frames
+
+    dd = compute_dimensions_and_depths(video_parameters, picture_coding_mode)
+
+    rand = np.random.RandomState(seed)
+
+    for pic_num in range(num_pictures):
+        picture = {"pic_num": pic_num}
+
+        for component in ["Y", "C1", "C2"]:
+            picture[component] = rand.randint(
+                0,
+                1 << dd[component].depth_bits,
+                (dd[component].height, dd[component].width),
+            ).tolist()
+
+        yield picture
 
 
 @pipe(xyz_to_native)

@@ -48,6 +48,7 @@ from vc2_conformance.picture_generators import (
     moving_sprite,
     static_sprite,
     mid_gray,
+    white_noise,
     linear_ramps,
 )
 
@@ -585,6 +586,78 @@ def test_mid_gray(primaries, transfer_function):
     assert np.array_equal(c2, np.full(c2.shape, 512))
 
 
+class TestWhiteNoise(object):
+    def test_consistent_for_same_feed(self):
+        vp = VideoParameters(
+            frame_width=10,
+            frame_height=5,
+            color_diff_format_index=ColorDifferenceSamplingFormats.color_4_4_4,
+            luma_offset=0,
+            luma_excursion=1023,
+            color_diff_offset=0,
+            color_diff_excursion=511,
+        )
+
+        p1 = list(white_noise(vp, PictureCodingModes.pictures_are_frames))
+        p2 = list(white_noise(vp, PictureCodingModes.pictures_are_frames))
+        p3 = list(white_noise(vp, PictureCodingModes.pictures_are_frames, seed=1337))
+        p4 = list(white_noise(vp, PictureCodingModes.pictures_are_frames, seed=1337))
+
+        assert p1 == p2
+        assert p1 != p3
+        assert p3 == p4
+
+    def test_num_frames(self):
+        vp = VideoParameters(
+            frame_width=10,
+            frame_height=5,
+            color_diff_format_index=ColorDifferenceSamplingFormats.color_4_4_4,
+            luma_offset=0,
+            luma_excursion=1023,
+            color_diff_offset=0,
+            color_diff_excursion=511,
+        )
+
+        p1 = list(white_noise(vp, PictureCodingModes.pictures_are_frames, num_frames=3))
+        p2 = list(white_noise(vp, PictureCodingModes.pictures_are_fields, num_frames=3))
+
+        assert len(p1) == 3
+        assert len(p2) == 6
+
+    def test_probably_is_noise(self):
+        vp = VideoParameters(
+            frame_width=10,
+            frame_height=5,
+            color_diff_format_index=ColorDifferenceSamplingFormats.color_4_4_4,
+            luma_offset=0,
+            luma_excursion=7,
+            color_diff_offset=8,
+            color_diff_excursion=15,
+        )
+
+        pictures = list(
+            white_noise(vp, PictureCodingModes.pictures_are_frames, num_frames=3)
+        )
+
+        # Pictures should be different
+        for i in range(len(pictures)):
+            for j in range(len(pictures)):
+                if i != j:
+                    assert pictures[i]["Y"] != pictures[j]["Y"]
+                    assert pictures[i]["C1"] != pictures[j]["C1"]
+                    assert pictures[i]["C2"] != pictures[j]["C2"]
+
+        # Signal ranges should be as expected (also with the number of pixels
+        # here should have seen one example of every value!)
+        values = {component: set() for component in ["Y", "C1", "C2"]}
+        for picture in pictures:
+            for component, value_set in values.items():
+                value_set.update(value for row in picture[component] for value in row)
+        assert values["Y"] == set(range(8))
+        assert values["C1"] == set(range(16))
+        assert values["C2"] == set(range(16))
+
+
 @pytest.mark.parametrize("primaries", PresetColorPrimaries)
 @pytest.mark.parametrize("transfer_function", PresetTransferFunctions)
 def test_linear_ramps(primaries, transfer_function):
@@ -670,6 +743,7 @@ class TestGenericPictureGeneratorBehaviour(object):
             moving_sprite,
             static_sprite,
             mid_gray,
+            white_noise,
             linear_ramps,
             lambda *a, **kw: repeat_pictures(mid_gray(*a, **kw), 2),
         ]
