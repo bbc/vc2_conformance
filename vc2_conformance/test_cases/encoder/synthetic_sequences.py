@@ -76,3 +76,24 @@ def synthetic_linear_ramps(codec_features):
     return picture_generator_to_test_case(
         picture_generators.linear_ramps, codec_features,
     )
+
+
+@encoder_test_case_generator
+def synthetic_noise(codec_features):
+    """
+    **Tests that an encoder correctly encodes a noise plate.**
+
+    A static frame containing pseudo-random uniform noise as illustrated below:
+
+    .. image:: /_static/user_guide/noise.png
+
+    .. note::
+
+        It is likely that lossy encoders will be unable to compress this test
+        case without a fairly significant loss of fidelity. As such, it is
+        acceptable for this test case for an encoder to produce only visually
+        similar results.
+    """
+    return picture_generator_to_test_case(
+        picture_generators.white_noise, codec_features,
+    )

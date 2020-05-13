@@ -32,6 +32,7 @@ from vc2_conformance.picture_generators import (
     static_sprite,
     mid_gray,
     linear_ramps,
+    white_noise,
 )
 
 from vc2_conformance.picture_encoding import filter_bit_shift
@@ -933,6 +934,23 @@ def static_ramps(codec_features):
     return make_sequence(
         codec_features,
         linear_ramps(
+            codec_features["video_parameters"], codec_features["picture_coding_mode"],
+        ),
+    )
+
+
+@decoder_test_case_generator
+def static_noise(codec_features):
+    """
+    **Tests that decoder correctly decodes a noise plate.**
+
+    A static frame containing pseudo-random uniform noise as illustrated below:
+
+    .. image:: /_static/user_guide/noise.png
+    """
+    return make_sequence(
+        codec_features,
+        white_noise(
             codec_features["video_parameters"], codec_features["picture_coding_mode"],
         ),
     )
