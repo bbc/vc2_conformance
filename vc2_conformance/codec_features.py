@@ -270,40 +270,6 @@ def parse_quantization_matrix(dwt_depth, dwt_depth_ho, value):
 
     return out
 
-    out = {}
-
-    try:
-        if dwt_depth_ho == 0:
-            out[0] = {"LL": int(next(values))}
-        else:
-            out[0] = {"L": int(next(values))}
-            for level in range(1, dwt_depth_ho + 1):
-                out[level] = {"H": int(next(values))}
-        for level in range(dwt_depth_ho + 1, dwt_depth + dwt_depth_ho + 1):
-            out[level] = {
-                "HL": int(next(values)),
-                "LH": int(next(values)),
-                "HH": int(next(values)),
-            }
-    except StopIteration:
-        raise ValueError(
-            "Expected {} values in quantisation matrix.".format(
-                dwt_depth + dwt_depth_ho + 1
-            )
-        )
-
-    try:
-        next(values)
-        raise ValueError(
-            "Expected {} values in quantisation matrix.".format(
-                dwt_depth + dwt_depth_ho + 1
-            )
-        )
-    except StopIteration:
-        pass
-
-    return out
-
 
 class InvalidCodecFeaturesError(ValueError):
     """
