@@ -16,6 +16,27 @@ from vc2_conformance.level_constraints import (
 
 
 @contextmanager
+def temporary_level_override():
+    """
+    Reverse any changes made to
+    :py:data:`~vc2_conformance.level_constraints.LEVEL_CONSTRAINTS` and
+    :py:data:`~vc2_conformance.level_constraints.LEVEL_SEQUENCE_RESTRICTIONS`
+    within this context manager when the context ends.
+    """
+    orig_constraints = deepcopy(LEVEL_CONSTRAINTS)
+    orig_sequence_restrictions = deepcopy(LEVEL_SEQUENCE_RESTRICTIONS)
+
+    try:
+        yield
+    finally:
+        del LEVEL_CONSTRAINTS[:]
+        LEVEL_CONSTRAINTS.extend(orig_constraints)
+
+        LEVEL_SEQUENCE_RESTRICTIONS.clear()
+        LEVEL_SEQUENCE_RESTRICTIONS.update(orig_sequence_restrictions)
+
+
+@contextmanager
 def alternative_level_1():
     """
     Replace level '1' in the
@@ -33,38 +54,30 @@ def alternative_level_1():
         >>> with alternative_level_1():
         ...     do_something(LEVEL_CONSTRAINTS)
     """
-    orig_constraints = deepcopy(LEVEL_CONSTRAINTS)
-    orig_sequence_restrictions = deepcopy(LEVEL_SEQUENCE_RESTRICTIONS)
+    with temporary_level_override():
+        # Remove existing level 1 constraints
+        del LEVEL_SEQUENCE_RESTRICTIONS[Levels(1)]
+        for i in reversed(range(len(LEVEL_CONSTRAINTS))):
+            if Levels(1) in LEVEL_CONSTRAINTS[i]["level"]:
+                del LEVEL_CONSTRAINTS[i]
 
-    # Remove existing level 1 constraints
-    del LEVEL_SEQUENCE_RESTRICTIONS[Levels(1)]
-    for i in reversed(range(len(LEVEL_CONSTRAINTS))):
-        if Levels(1) in LEVEL_CONSTRAINTS[i]["level"]:
-            del LEVEL_CONSTRAINTS[i]
-
-    # Add alternative constraints
-    LEVEL_SEQUENCE_RESTRICTIONS[Levels(1)] = LevelSequenceRestrictions(
-        sequence_restriction_explanation=(
-            "Interleaved pictures and sequence headers followed by "
-            "padding and auxiliary data at the end of the stream."
-        ),
-        sequence_restriction_regex=(
-            "(sequence_header high_quality_picture)+ "
-            "padding_data auxiliary_data end_of_sequence"
-        ),
-    )
-    LEVEL_CONSTRAINTS.extend(
-        read_constraints_from_csv(
-            os.path.join(
-                os.path.dirname(__file__), "alternative_level_constraints.csv",
+        # Add alternative constraints
+        LEVEL_SEQUENCE_RESTRICTIONS[Levels(1)] = LevelSequenceRestrictions(
+            sequence_restriction_explanation=(
+                "Interleaved pictures and sequence headers followed by "
+                "padding and auxiliary data at the end of the stream."
+            ),
+            sequence_restriction_regex=(
+                "(sequence_header high_quality_picture)+ "
+                "padding_data auxiliary_data end_of_sequence"
+            ),
+        )
+        LEVEL_CONSTRAINTS.extend(
+            read_constraints_from_csv(
+                os.path.join(
+                    os.path.dirname(__file__), "alternative_level_constraints.csv",
+                )
             )
         )
-    )
 
-    try:
         yield (LEVEL_CONSTRAINTS, LEVEL_SEQUENCE_RESTRICTIONS)
-    finally:
-        del LEVEL_CONSTRAINTS[:]
-        LEVEL_SEQUENCE_RESTRICTIONS.clear()
-        LEVEL_CONSTRAINTS.extend(orig_constraints)
-        LEVEL_SEQUENCE_RESTRICTIONS.update(orig_sequence_restrictions)

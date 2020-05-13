@@ -184,6 +184,10 @@ The following parameters must be given for each codec configuration.
     Quantisation matrix values, if provided, should be given in the same order
     they would appear in the stream as defined by the ``quant_matrix``
     pseudocode function (12.4.5.3).
+    
+    If a non ``default`` value is given, the majority (though not all)
+    generated test cases will use the supplied quantization matrix (with the
+    ``custom_quant_matrix`` flag set (12.4.5.3)).
 
 
 Generating test cases
