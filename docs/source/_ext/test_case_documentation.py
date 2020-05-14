@@ -12,6 +12,10 @@ Usage::
 
     .. test-case-documentation:: encoder
 
+    To create a reference to a documented test case:
+
+    * :encoder-test-case:`signal_range`
+    * :decoder-test-case:`signal_range`
 """
 
 import inspect
@@ -19,9 +23,10 @@ import inspect
 from textwrap import dedent
 
 from docutils import nodes
-from docutils.parsers.rst import Directive
 from docutils.statemachine import ViewList
 
+
+from sphinx.util.docutils import SphinxDirective
 from sphinx.util.nodes import nested_parse_with_titles
 
 from vc2_conformance.test_cases import (
@@ -35,7 +40,7 @@ TEST_CASE_REGISTRIES = {
 }
 
 
-class TestCaseDocumentation(Directive):
+class TestCaseDocumentation(SphinxDirective):
 
     required_arguments = 1  # 'encoder' or 'decoder'
 
@@ -61,9 +66,14 @@ class TestCaseDocumentation(Directive):
 
         out = []
         for tc_name, tc_docs, tc_file in sorted(test_cases):
-
             title = nodes.title(text="{} test case: ".format(tc_type.title()))
             title += nodes.literal(text=tc_name)
+
+            # This is a crude hack (i.e. creating the directive by adding some
+            # RST to a string...) but docutils/sphinx are sufficiently
+            # poorly documented to make this the only viable option after
+            # several hours of searching...
+            tc_docs = ".. {}-test-case:: {}\n\n{}".format(tc_type, tc_name, tc_docs,)
 
             section = nodes.section(ids=["test-case-{}-{}".format(tc_type, tc_name)])
             section += title
@@ -77,6 +87,8 @@ class TestCaseDocumentation(Directive):
 
 def setup(app):
     app.add_directive("test-case-documentation", TestCaseDocumentation)
+    app.add_crossref_type("encoder-test-case", "encoder-test-case")
+    app.add_crossref_type("decoder-test-case", "decoder-test-case")
 
     return {
         "version": "0.1",
