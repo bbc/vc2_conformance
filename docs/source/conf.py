@@ -37,7 +37,9 @@ extensions = [
     "numpydoc",
     "sphinxcontrib.inkscapeconverter",
     "sphinxcontrib.programoutput",
+    # Local extensions (in _ext/ directory)
     "test_case_documentation",
+    "enum_table",
 ]
 
 # -- Options for numpydoc/autodoc --------------------------------------------

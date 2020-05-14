@@ -20,13 +20,13 @@ features file. This file must contain a table, in Comma Separated Values (CSV)
 format enumerating codec configurations to be tested. This table is laid out as
 illustrated below:
 
-========================= ========== ========== ==========
-name                      config_1   config_2   ...
-========================= ========== ========== ==========
-parameter_1               value      value      ...
-parameter_2               value      value      ...
-...                       ...        ...        ...
-========================= ========== ========== ==========
+=========== ======== ======== ===
+name        config_1 config_2 ...
+=========== ======== ======== ===
+parameter_1 value    value    ...
+parameter_2 value    value    ...
+...         ...      ...      ...
+=========== ======== ======== ===
 
 The first row of the should provide a unique name for each codec configuration
 for which test cases are to be generated with the left-most cell containing the
@@ -36,14 +36,28 @@ configurations.
 The following parameters must be given for each codec configuration.
 
 ``level``
-    Integer. The VC-2 level number (see annex (C.3)) to report in the bit
-    stream. If not ``0`` (the 'unconstrained' level), the remaining parameters
-    below must be set to values compatible with this level, otherwise the test
-    case generator will reject the codec configuration.
+    Integer or alias. The VC-2 level number (see annex (C.3)) to report in the
+    bit stream. If not ``0`` (the 'unconstrained' level), the remaining
+    parameters below must be set to values compatible with this level,
+    otherwise the test case generator will reject the codec configuration.
+    
+    The following aliases may be used in place of an integer for additional
+    readability.
+    
+    .. enum-value-table:: vc2_data_tables.Levels
+        :value-heading: Level
+        :name-heading: Alias
 
 ``profile``
-    Integer. The VC-2 profile number (see annex (C.2)). ``0`` for 'low-delay'
-    or ``3`` for 'high quality'.
+    Integer or alias. The VC-2 profile number (see annex (C.2)). ``0`` for
+    'low-delay' or ``3`` for 'high quality'.
+    
+    The following aliases may be used in place of an integer for additional
+    readability.
+    
+    .. enum-value-table:: vc2_data_tables.Profiles
+        :value-heading: Profile
+        :name-heading: Alias
 
 ``major_version`` and ``minor_version``
     Integer. The version number to report in the bitstream (see section
@@ -51,12 +65,25 @@ The following parameters must be given for each codec configuration.
     the minor version ``0``.
 
 ``picture_coding_mode``
-    Integer. The picture coding mode to use (see section (11.5)). Either ``0``
-    (pictures are frames) or ``1`` (pictures are fields).
+    Integer or alias. The picture coding mode to use (see section (11.5)).
+    
+    The following aliases may be used in place of an integer for additional
+    readability.
+    
+    .. enum-value-table:: vc2_data_tables.PictureCodingModes
+        :value-heading: Picture Coding Mode
+        :name-heading: Alias
 
 ``base_video_format``
-    Integer. The base video format index to use (see section (11.3) and annex
+    Integer or alias. The base video format index to use (see section (11.3) and annex
     (B)).
+    
+    The following aliases may be used in place of an integer for additional
+    readability.
+    
+    .. enum-value-table:: vc2_data_tables.BaseVideoFormats
+        :value-heading: Base Video Format
+        :name-heading: Alias
     
     .. note::
     
@@ -73,14 +100,28 @@ The following parameters must be given for each codec configuration.
     the ``base_video_format``.
 
 ``color_diff_format_index``
-    Integer or ``default``. The colour difference subsampling mode to use (see
-    section (11.4.4)). ``0`` for 4:4:4, ``1`` for 4:2:2 and ``2`` for 4:2:0. If
-    ``default``, uses the mode specified by the ``base_video_format``.
+    Integer, alias or ``default``. The colour difference subsampling mode to
+    use (see section (11.4.4)). If ``default``, uses the mode specified by the
+    ``base_video_format``.
+    
+    The following aliases may be used in place of an integer for additional
+    readability.
+    
+    .. enum-value-table:: vc2_data_tables.ColorDifferenceSamplingFormats
+        :value-heading: Index
+        :name-heading: Alias
 
 ``source_sampling``
-    Integer or ``default``. The scan format to use (see section (11.4.5)).
-    ``0`` for progressive, ``1`` for interlaced. If ``default``, uses the mode
-    specified by the ``base_video_format``.
+    Integer, alias or ``default``. The scan format to use (see section
+    (11.4.5)). If ``default``, uses the mode specified by the
+    ``base_video_format``.
+    
+    The following aliases may be used in place of an integer for additional
+    readability.
+    
+    .. enum-value-table:: vc2_data_tables.SourceSamplingModes
+        :value-heading: Index
+        :name-heading: Alias
     
     .. note::
     
@@ -112,14 +153,36 @@ The following parameters must be given for each codec configuration.
     specified by the ``base_video_format``.
 
 ``color_primaries_index``, ``color_matrix_index`` and ``transfer_function_index``
-    Integers or ``default``. Colour specification options (see section
+    Integers, aliases or ``default``. Colour specification options (see section
     (11.4.10)). If ``default``, uses the mode specified by the
     ``base_video_format``.
+    
+    The following aliases may be used in place of an integer for additional
+    readability.
+    
+    .. enum-value-table:: vc2_data_tables.PresetColorPrimaries
+        :value-heading: Color Primaries Index
+        :name-heading: Alias
+    
+    .. enum-value-table:: vc2_data_tables.PresetColorMatrices
+        :value-heading: Color Matrix Index
+        :name-heading: Alias
+    
+    .. enum-value-table:: vc2_data_tables.PresetTransferFunctions
+        :value-heading: Transfer Function Index
+        :name-heading: Alias
 
 ``wavelet_index`` and ``wavelet_index_ho``
-    Integers. Wavelet transform types to use vertically and horizontally,
-    respectively (see sections (11.4.1) and (11.4.4.1)). For symmetric
-    transforms, these values must be the same.
+    Integers or aliases. Wavelet transform types to use vertically and
+    horizontally, respectively (see sections (11.4.1) and (11.4.4.1)). For
+    symmetric transforms, these values must be the same.
+    
+    The following aliases may be used in place of an integer for additional
+    readability.
+    
+    .. enum-value-table:: vc2_data_tables.WaveletFilters
+        :value-heading: Index
+        :name-heading: Alias
 
 ``dwt_depth`` and ``dwt_depth_ho``
     Integers. Wavelet transform depths to use for both dimensions and
