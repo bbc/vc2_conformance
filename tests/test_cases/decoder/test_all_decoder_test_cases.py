@@ -12,6 +12,8 @@ from vc2_conformance.test_cases import DECODER_TEST_CASE_GENERATOR_REGISTRY
 
 from vc2_conformance.codec_features import CodecFeatures
 
+from vc2_conformance.video_parameters import VideoParameters
+
 from sample_codec_features import MINIMAL_CODEC_FEATURES
 from smaller_real_pictures import alternative_real_pictures
 from alternative_level_constraints import alternative_level_1
@@ -76,6 +78,22 @@ with alternative_level_1():
                 # MINIMAL_CODEC_FEATURES, with some arbitrary encoding
                 # requirements)
                 CodecFeatures(MINIMAL_CODEC_FEATURES, level=Levels(1),),
+                # Very high, asymmetric bit depths.
+                #
+                # Here 'very high' means 32 bits and 48 bits (for luma and color
+                # difference). In practice no real codec is likely to use more than
+                # 16 bits since any video format requiring greater dynamic range is
+                # likely to need to turn to floating point anyway.
+                CodecFeatures(
+                    MINIMAL_CODEC_FEATURES,
+                    video_parameters=VideoParameters(
+                        MINIMAL_CODEC_FEATURES["video_parameters"],
+                        luma_offset=0,
+                        luma_excursion=(1 << 32) - 1,
+                        color_diff_offset=(1 << 48) // 2,
+                        color_diff_excursion=(1 << 48) - 1,
+                    ),
+                ),
             ]
         ]
 

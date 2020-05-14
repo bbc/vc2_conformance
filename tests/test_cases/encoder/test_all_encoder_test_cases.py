@@ -6,6 +6,8 @@ import numpy as np
 
 from vc2_conformance.codec_features import CodecFeatures
 
+from vc2_conformance.video_parameters import VideoParameters
+
 from vc2_conformance.test_cases import ENCODER_TEST_CASE_GENERATOR_REGISTRY
 
 from vc2_conformance.file_format import compute_dimensions_and_depths
@@ -20,7 +22,6 @@ from smaller_real_pictures import alternative_real_pictures
 # pictures with smaller ones (for performance reasons) during tests
 with alternative_real_pictures():
     ALL_TEST_CASES = [
-        # ALl tests run for frame and field containing pictures
         (
             codec_features,
             list(
@@ -30,10 +31,31 @@ with alternative_real_pictures():
             ),
         )
         for codec_features in [
+            # Both picture coding modes
             CodecFeatures(
-                MINIMAL_CODEC_FEATURES, picture_coding_mode=picture_coding_mode,
-            )
-            for picture_coding_mode in PictureCodingModes
+                MINIMAL_CODEC_FEATURES,
+                picture_coding_mode=PictureCodingModes.pictures_are_frames,
+            ),
+            CodecFeatures(
+                MINIMAL_CODEC_FEATURES,
+                picture_coding_mode=PictureCodingModes.pictures_are_fields,
+            ),
+            # Test with very high, asymmetric bit depths.
+            #
+            # Here 'very high' means 32 bits and 48 bits (for luma and color
+            # difference). In practice no real codec is likely to use more than
+            # 16 bits since any video format requiring greater dynamic range is
+            # likely to need to turn to floating point anyway.
+            CodecFeatures(
+                MINIMAL_CODEC_FEATURES,
+                video_parameters=VideoParameters(
+                    MINIMAL_CODEC_FEATURES["video_parameters"],
+                    luma_offset=0,
+                    luma_excursion=(1 << 32) - 1,
+                    color_diff_offset=(1 << 48) // 2,
+                    color_diff_excursion=(1 << 48) - 1,
+                ),
+            ),
         ]
     ]
 
