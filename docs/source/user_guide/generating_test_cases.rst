@@ -341,8 +341,7 @@ The test case generator produces a directory structure as outlined below:
             * ``<test-case-name>.vc2`` -- VC-2 bitstream to be decoded.
             * ``<test-case-name>_metadata.json`` -- Optional metadata file
               provided for some tests
-            * ``<test-case-name>_expected/`` -- Reference decoding of the
-              bitstream.
+            * ``<test-case-name>_expected/`` -- Reference decoding of the bitstream.
                 * ``picture_<N>.raw``
                 * ``picture_<N>.json``
         * ``encoder/`` -- Test raw video streams for encoders.
