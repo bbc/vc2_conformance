@@ -16,3 +16,4 @@ VC-2 standards.
    decoder_testing.rst
    encoder_testing.rst
    generating_static_analyses.rst
+   debugging.rst
