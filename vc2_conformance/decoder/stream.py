@@ -23,7 +23,6 @@ from vc2_data_tables import (
 )
 
 from vc2_conformance.decoder.exceptions import (
-    TrailingBytesAfterEndOfSequence,
     BadParseInfoPrefix,
     BadParseCode,
     InconsistentNextParseOffset,
@@ -53,6 +52,7 @@ from vc2_conformance.decoder.assertions import (
 from vc2_conformance.state import reset_state
 
 from vc2_conformance.decoder.io import (
+    is_end_of_stream,
     tell,
     byte_align,
     read_uint_lit,
@@ -64,12 +64,23 @@ from vc2_conformance.decoder.fragment_syntax import fragment_parse
 
 
 __all__ = [
+    "parse_stream",
     "parse_sequence",
     "output_picture",
     "auxiliary_data",
     "padding",
     "parse_info",
 ]
+
+
+@ref_pseudocode
+def parse_stream(state):
+    """
+    (10.3) Parse a complete VC-2 stream (consisting of several concatenated
+    sequences).
+    """
+    while not is_end_of_stream(state):
+        parse_sequence(state)
 
 
 @ref_pseudocode
@@ -153,12 +164,6 @@ def parse_sequence(state):
     if state["_picture_coding_mode"] == PictureCodingModes.pictures_are_fields:
         if state["_num_pictures_in_sequence"] % 2 != 0:
             raise OddNumberOfFieldsInSequence(state["_num_pictures_in_sequence"])
-    ## End not in spec
-
-    # (10.3) Check for any unused data in the stream
-    ## Begin not in spec
-    if state["current_byte"] is not None:
-        raise TrailingBytesAfterEndOfSequence()
     ## End not in spec
 
 

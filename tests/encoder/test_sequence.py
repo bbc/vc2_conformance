@@ -31,7 +31,7 @@ from vc2_conformance.state import State
 
 from vc2_conformance.decoder import (
     init_io,
-    parse_sequence,
+    parse_stream,
 )
 
 
@@ -50,7 +50,7 @@ def serialize_and_decode(sequence):
     f.seek(0)
     state = State(_output_picture_callback=output_picture_callback)
     init_io(state, f)
-    parse_sequence(state)
+    parse_stream(state)
 
     return decoded_pictures
 

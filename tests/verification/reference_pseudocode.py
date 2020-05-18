@@ -45,6 +45,13 @@ def clip(a, b, t):
 # 10: VC-2 Stream
 ################################################################################
 
+# Errata: This pseudocode function is absent in the spec
+def parse_stream(state):
+    """(10.3)"""
+    while not is_end_of_stream(state):
+        parse_sequence(state)
+
+
 # Errata: 'state' is created internally as an empty dict in the spec, not
 # passed in as an argument.
 def parse_sequence(state):

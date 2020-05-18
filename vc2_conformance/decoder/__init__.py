@@ -16,7 +16,7 @@ verified using this module::
 
     >>> from vc2_conformance._string_utils import wrap_paragraphs
     >>> from vc2_conformance.state import State
-    >>> from vc2_conformance.decoder import init_io, parse_sequence, ConformanceError
+    >>> from vc2_conformance.decoder import init_io, parse_stream, ConformanceError
 
     >>> # Create a callback to be called with picture data whenever a picture
     >>> # is decoded from the bitstream.
@@ -30,7 +30,7 @@ verified using this module::
 
     >>> # Decode and validate!
     >>> try:
-    ...     parse_sequence(state)
+    ...     parse_stream(state)
     ...     print("Bitstream is valid!")
     ... except ConformanceError as e:
     ...     print("Bitstream is NOT valid:")

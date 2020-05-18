@@ -51,7 +51,7 @@ from vc2_conformance.state import State
 
 from vc2_conformance.decoder import (
     init_io,
-    parse_sequence,
+    parse_stream,
     UnexpectedEndOfStream,
     InconsistentNextParseOffset,
 )
@@ -947,7 +947,7 @@ def test_iter_sequence_headers(codec_features):
         state = State()
         init_io(state, f)
         with pytest.raises((UnexpectedEndOfStream, InconsistentNextParseOffset)):
-            parse_sequence(state)
+            parse_stream(state)
         assert f.tell() == len(f.getvalue())
 
 

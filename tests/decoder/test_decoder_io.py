@@ -111,12 +111,12 @@ def test_is_end_of_stream():
     decoder.init_io(state, f)
 
     # At start of stream
-    assert decoder.is_end_of_stream() is False
+    assert decoder.is_end_of_stream(state) is False
 
     # Part-way through byte
     decoder.read_nbits(state, 4)
-    assert decoder.is_end_of_stream() is False
+    assert decoder.is_end_of_stream(state) is False
 
     # At end of stream
     decoder.read_nbits(state, 4)
-    assert decoder.is_end_of_stream() is False
+    assert decoder.is_end_of_stream(state) is True

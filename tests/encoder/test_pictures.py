@@ -1193,7 +1193,7 @@ def serialize_and_decode(sequence):
     f.seek(0)
     state = State(_output_picture_callback=output_picture_callback)
     decoder.init_io(state, f)
-    decoder.parse_sequence(state)
+    decoder.parse_stream(state)
 
     return decoded_pictures
 

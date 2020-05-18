@@ -54,8 +54,9 @@ displayed::
 
     Most recent call last:
 
-    * parse_sequence (10.4.1)
-      * parse_info (10.5.1)
+    * parse_stream (10.3)
+      * parse_sequence (10.4.1)
+        * parse_info (10.5.1)
 
     vc2-bitstream-validator: error: non-conformant bitstream (see above)
 
@@ -98,7 +99,7 @@ from vc2_conformance.state import State
 
 from vc2_conformance.decoder import (
     init_io,
-    parse_sequence,
+    parse_stream,
     ConformanceError,
     tell,
 )
@@ -175,8 +176,11 @@ class BitstreamValidator(object):
             self._update_status_line("Starting bitstream validation...")
 
         try:
-            parse_sequence(self._state)
+            parse_stream(self._state)
             self._hide_status_line()
+            if tell(self._state) == (0, 7):
+                sys.stdout.flush()
+                sys.stderr.write("Warning: 0 bytes read, bitstream is empty.\n")
             print(
                 "No errors found in bitstream. Verify decoded pictures to confirm conformance."
             )

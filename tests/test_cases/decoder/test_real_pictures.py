@@ -18,7 +18,7 @@ from vc2_conformance import file_format
 
 from vc2_conformance.decoder import (
     init_io,
-    parse_sequence,
+    parse_stream,
 )
 
 from vc2_conformance.test_cases.decoder.real_pictures import real_pictures
@@ -44,7 +44,7 @@ def encode_and_decode(sequence):
     pictures = []
     state = State(_output_picture_callback=lambda p, vp: pictures.append(p))
     init_io(state, f)
-    parse_sequence(state)
+    parse_stream(state)
 
     return pictures
 

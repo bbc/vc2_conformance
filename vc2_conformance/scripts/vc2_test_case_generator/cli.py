@@ -129,7 +129,7 @@ from vc2_conformance.state import State
 
 from vc2_conformance.decoder import (
     init_io,
-    parse_sequence,
+    parse_stream,
     ConformanceError,
 )
 
@@ -360,7 +360,7 @@ def check_codec_features_valid(codec_feature_sets):
         state = State()
         init_io(state, f)
         try:
-            parse_sequence(state)
+            parse_stream(state)
         except ConformanceError as e:
             sys.stderr.write(
                 "Error: Codec configuration {!r} is invalid:\n".format(name)
@@ -446,7 +446,7 @@ def output_decoder_test_case(output_dir, codec_features, test_case):
 
         state = State(_output_picture_callback=output_picture)
         init_io(state, f)
-        parse_sequence(state)
+        parse_stream(state)
 
     # Write metadata
     if test_case.metadata is not None:

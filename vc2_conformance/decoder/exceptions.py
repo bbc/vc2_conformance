@@ -171,19 +171,6 @@ class UnexpectedEndOfStream(ConformanceError):
         """
 
 
-class TrailingBytesAfterEndOfSequence(ConformanceError):
-    """
-    Reached an end of sequence marker but there are bytes still remaining in
-    the stream.
-    """
-
-    def explain(self):
-        return """
-            Trailing bytes were found following an end-of-sequence parse info
-            (10.4.1).
-        """
-
-
 class BadParseCode(ConformanceError):
     """
     parse_info (10.5.1) has been given an unrecognised parse code.

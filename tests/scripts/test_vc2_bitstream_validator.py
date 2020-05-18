@@ -4,11 +4,11 @@ import sys
 
 import traceback
 
-from textwrap import dedent
+from vc2_conformance._string_utils import wrap_paragraphs
 
 from vc2_conformance.state import State
 
-from vc2_conformance.decoder import parse_sequence
+from vc2_conformance.decoder import parse_stream
 
 from vc2_conformance.file_format import read
 
@@ -30,15 +30,13 @@ def test_format_parse_code_traceback():
     # initialised
 
     try:
-        parse_sequence(State())
+        parse_stream(State())
     except KeyError:
         exc_type, exc_value, exc_tb = sys.exc_info()
         tb = traceback.extract_tb(exc_tb)
 
     assert format_pseudocode_traceback(tb) == (
-        "* parse_sequence (10.4.1)\n"
-        "  * parse_info (10.5.1)\n"
-        "    * byte_align (A.2.4)"
+        "* parse_stream (10.3)\n" "  * is_end_of_stream (A.0.0)"
     )
 
 
@@ -145,6 +143,34 @@ class TestBitstreamValidator(object):
             picture, video_parameters, picture_coding_mode = read(output_name % i)
             assert picture["pic_num"] == expected_picture_number
 
+    def test_valid_multi_sequence_stream(
+        self, tmpdir, valid_bitstream, output_name, capsys,
+    ):
+        filename = str(tmpdir.join("multi_sequence.vc2"))
+
+        with open(filename, "wb") as f:
+            f.write(open(valid_bitstream, "rb").read() * 2)
+
+        v = BitstreamValidator(filename, True, 0, output_name)
+        assert v.run() == 0
+
+        # Check no error reported and that status line is shown
+        stdout, stderr = capsys.readouterr()
+        assert "%] Starting bitstream validation" in stderr
+        assert "%] Decoded picture written to {}".format(output_name % 0) in stderr
+        assert "%] Decoded picture written to {}".format(output_name % 1) in stderr
+        assert "%] Decoded picture written to {}".format(output_name % 2) in stderr
+        assert "%] Decoded picture written to {}".format(output_name % 3) in stderr
+        assert stdout == (
+            "No errors found in bitstream. "
+            "Verify decoded pictures to confirm conformance.\n"
+        )
+
+        # Check picture files are as expected
+        for i, expected_picture_number in enumerate([100, 101, 100, 101]):
+            picture, video_parameters, picture_coding_mode = read(output_name % i)
+            assert picture["pic_num"] == expected_picture_number
+
     def test_disabled_status_line(self, valid_bitstream, output_name, capsys):
         v = BitstreamValidator(valid_bitstream, False, 0, output_name)
         assert v.run() == 0
@@ -163,10 +189,25 @@ class TestBitstreamValidator(object):
         assert stdout == ""
         assert "No such file or directory" in stderr
 
-    def test_invalid_bitstream(self, filename, output_name, capsys):
+    def test_null_bitstream_warning(self, filename, output_name, capsys):
         # Create an empty file
         with open(filename, "wb"):
             pass
+
+        v = BitstreamValidator(filename, False, 0, output_name)
+        assert v.run() == 0
+
+        stdout, stderr = capsys.readouterr()
+
+        assert stderr == "Warning: 0 bytes read, bitstream is empty.\n"
+        assert stdout == (
+            "No errors found in bitstream. "
+            "Verify decoded pictures to confirm conformance.\n"
+        )
+
+    def test_invalid_bitstream(self, filename, output_name, capsys):
+        with open(filename, "wb") as f:
+            f.write(b"NOPE")
 
         v = BitstreamValidator(filename, False, 0, output_name)
         assert v.run() == 2
@@ -174,44 +215,42 @@ class TestBitstreamValidator(object):
         stdout, stderr = capsys.readouterr()
 
         assert (
-            stdout.strip()
-            == dedent(
+            wrap_paragraphs(stdout)
+            == wrap_paragraphs(
                 """
-            Conformance error at bit offset 0
-            =================================
+                Conformance error at bit offset 32
+                ==================================
 
-            Unexpectedly encountered the end of the stream.
-
-
-            Details
-            -------
-
-            A VC-2 Stream shall be a concatenation of one or more VC-2 sequences (10.3).
-            Sequences shall end with a parse info header with an end of sequence parse code
-            (0x10) (10.4.1)
-
-            Did the sequence omit a terminating parse info with the end of sequence (0x10)
-            parse code?
+                An invalid prefix, 0x4E4F5045, was encountered in a parse info
+                block (10.5.1). The expected prefix is 0x42424344.
 
 
-            Suggested bitstream viewer commands
-            -----------------------------------
+                Details
+                -------
 
-            To view the offending part of the bitstream:
+                Is the parse_info block byte aligned (10.5.1)?
 
-                vc2-bitstream-viewer {} --offset 0
+                Did the preceeding data unit over- or under-run the expected
+                length? For example, were any unused bits in a picture slice
+                filled with the correct number of padding bits (A.4.2)?
 
 
-            Pseudocode traceback
-            --------------------
+                Suggested bitstream viewer commands
+                -----------------------------------
 
-            Most recent call last:
+                To view the offending part of the bitstream:
 
-            * parse_sequence (10.4.1)
-              * parse_info (10.5.1)
-                * read_uint_lit (A.3.4)
-                  * read_nbits (A.3.3)
-                    * read_bit (A.2.3)
+                    vc2-bitstream-viewer {} --offset 32
+
+
+                Pseudocode traceback
+                --------------------
+
+                Most recent call last:
+
+                * parse_stream (10.3)
+                  * parse_sequence (10.4.1)
+                    * parse_info (10.5.1)
         """.format(  # noqa: E501
                     quote(filename)
                 )

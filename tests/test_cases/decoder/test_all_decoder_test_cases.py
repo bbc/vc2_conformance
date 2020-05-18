@@ -22,7 +22,7 @@ from vc2_conformance.state import State
 
 from vc2_conformance.decoder import (
     init_io,
-    parse_sequence,
+    parse_stream,
 )
 
 
@@ -134,4 +134,4 @@ def test_all_decoder_test_cases(codec_features, test_case):
 
     with alternative_level_1():
         init_io(state, f)
-        parse_sequence(state)
+        parse_stream(state)

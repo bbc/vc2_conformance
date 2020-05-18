@@ -16,7 +16,7 @@ import vc2_data_tables as tables
 from vc2_conformance.symbol_re import Matcher
 
 
-class TestParseSequence(object):
+class TestParseStreamAndParseSequence(object):
     @pytest.fixture
     def sh_bytes(self):
         # A sequence header
@@ -40,22 +40,6 @@ class TestParseSequence(object):
             + sh_bytes
         )
 
-    def test_trailing_bytes_after_end_of_sequence(
-        self, sh_data_unit_bytes, sh_parse_offset
-    ):
-        state = bytes_to_state(
-            sh_data_unit_bytes
-            + serialise_to_bytes(
-                bitstream.ParseInfo(
-                    parse_code=tables.ParseCodes.end_of_sequence,
-                    previous_parse_offset=sh_parse_offset,
-                )
-            )
-            + b"\x00"
-        )
-        with pytest.raises(decoder.TrailingBytesAfterEndOfSequence):
-            decoder.parse_sequence(state)
-
     def test_immediate_end_of_sequence(self, sh_data_unit_bytes):
         state = bytes_to_state(
             serialise_to_bytes(
@@ -63,7 +47,7 @@ class TestParseSequence(object):
             )
         )
         with pytest.raises(decoder.GenericInvalidSequence) as exc_info:
-            decoder.parse_sequence(state)
+            decoder.parse_stream(state)
 
         assert exc_info.value.parse_code is tables.ParseCodes.end_of_sequence
         assert exc_info.value.expected_parse_codes == [
@@ -81,7 +65,7 @@ class TestParseSequence(object):
             )
         )
         with pytest.raises(decoder.GenericInvalidSequence) as exc_info:
-            decoder.parse_sequence(state)
+            decoder.parse_stream(state)
 
         assert exc_info.value.parse_code is tables.ParseCodes.padding_data
         assert exc_info.value.expected_parse_codes == [
@@ -156,10 +140,10 @@ class TestParseSequence(object):
         state = bytes_to_state(serialise_to_bytes(seq))
         if exp_fail:
             with pytest.raises(decoder.OddNumberOfFieldsInSequence) as exc_info:
-                decoder.parse_sequence(state)
+                decoder.parse_stream(state)
             assert exc_info.value.num_fields_in_sequence == num_pictures
         else:
-            decoder.parse_sequence(state)
+            decoder.parse_stream(state)
 
     @pytest.mark.parametrize(
         "num_slices_to_send,exp_fail",
@@ -235,7 +219,7 @@ class TestParseSequence(object):
             with pytest.raises(
                 decoder.SequenceContainsIncompleteFragmentedPicture
             ) as exc_info:
-                decoder.parse_sequence(state)
+                decoder.parse_stream(state)
             first_fragment_offset = (
                 seq["data_units"][0]["parse_info"]["next_parse_offset"]
                 + tables.PARSE_INFO_HEADER_BYTES
@@ -244,7 +228,7 @@ class TestParseSequence(object):
             assert exc_info.value.fragment_slices_received == num_slices_to_send
             assert exc_info.value.fragment_slices_remaining == 6 - num_slices_to_send
         else:
-            decoder.parse_sequence(state)
+            decoder.parse_stream(state)
 
     @pytest.mark.parametrize(
         "num_slices_to_send,exp_fail",
@@ -328,7 +312,7 @@ class TestParseSequence(object):
             with pytest.raises(
                 decoder.PictureInterleavedWithFragmentedPicture
             ) as exc_info:
-                decoder.parse_sequence(state)
+                decoder.parse_stream(state)
             first_fragment_offset = (
                 seq["data_units"][0]["parse_info"]["next_parse_offset"]
                 + tables.PARSE_INFO_HEADER_BYTES
@@ -345,16 +329,17 @@ class TestParseSequence(object):
             assert exc_info.value.fragment_slices_received == num_slices_to_send
             assert exc_info.value.fragment_slices_remaining == 6 - num_slices_to_send
         else:
-            decoder.parse_sequence(state)
+            decoder.parse_stream(state)
 
     def test_output_picture(self):
         # This test adds a callback for output_picture and makes sure that both
         # fragments and pictures call it correctly (and that sanity-checks very
-        # loosely that decoding etc. is happening).
+        # loosely that decoding etc. is happening). Finally, it also checks
+        # that two concatenated sequences are read one after another.
 
         # A sequence with a HQ picture followed by a HQ fragment (both all
         # zeros)
-        seq = bitstream.Sequence(
+        seq1 = bitstream.Sequence(
             data_units=[
                 bitstream.DataUnit(
                     parse_info=bitstream.ParseInfo(
@@ -446,13 +431,64 @@ class TestParseSequence(object):
                 ),
             ]
         )
-        populate_parse_offsets(seq)
 
-        state = bytes_to_state(serialise_to_bytes(seq))
+        # Another (HQ) picture in a separate sequence
+        seq2 = bitstream.Sequence(
+            data_units=[
+                bitstream.DataUnit(
+                    parse_info=bitstream.ParseInfo(
+                        parse_code=tables.ParseCodes.sequence_header,
+                    ),
+                    sequence_header=bitstream.SequenceHeader(
+                        video_parameters=bitstream.SourceParameters(
+                            frame_size=bitstream.FrameSize(
+                                # Don't waste time on full-sized frames
+                                custom_dimensions_flag=True,
+                                frame_width=4,
+                                frame_height=2,
+                            ),
+                            clean_area=bitstream.CleanArea(
+                                custom_clean_area_flag=True,
+                                clean_width=4,
+                                clean_height=2,
+                            ),
+                            color_diff_sampling_format=bitstream.ColorDiffSamplingFormat(
+                                custom_color_diff_format_flag=True,
+                                color_diff_format_index=tables.ColorDifferenceSamplingFormats.color_4_2_2,  # noqa: E501
+                            ),
+                            # Output values will be treated as 8-bit (and thus all
+                            # decode to 128)
+                            signal_range=bitstream.SignalRange(
+                                custom_signal_range_flag=True,
+                                index=tables.PresetSignalRanges.video_8bit_full_range,
+                            ),
+                        ),
+                        picture_coding_mode=tables.PictureCodingModes.pictures_are_frames,
+                    ),
+                ),
+                bitstream.DataUnit(
+                    parse_info=bitstream.ParseInfo(
+                        parse_code=tables.ParseCodes.high_quality_picture,
+                    ),
+                    picture_parse=bitstream.PictureParse(
+                        picture_header=bitstream.PictureHeader(picture_number=12),
+                    ),
+                ),
+                bitstream.DataUnit(
+                    parse_info=bitstream.ParseInfo(
+                        parse_code=tables.ParseCodes.end_of_sequence,
+                    ),
+                ),
+            ]
+        )
+        populate_parse_offsets(seq1)
+        populate_parse_offsets(seq2)
+
+        state = bytes_to_state(serialise_to_bytes(seq1) + serialise_to_bytes(seq2))
         state["_output_picture_callback"] = Mock()
-        decoder.parse_sequence(state)
+        decoder.parse_stream(state)
 
-        assert state["_output_picture_callback"].call_count == 2
+        assert state["_output_picture_callback"].call_count == 3
 
         for i, (args, kwargs) in enumerate(
             state["_output_picture_callback"].call_args_list
