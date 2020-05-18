@@ -17,3 +17,4 @@ VC-2 standards.
    encoder_testing.rst
    generating_static_analyses.rst
    debugging.rst
+   limitations.rst

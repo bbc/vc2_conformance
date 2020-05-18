@@ -54,7 +54,10 @@ how the test pictures and bitstreams should be processed by the codec under
 test. We also describe the procedures for verifying that the codecs behaved as
 expected.
 
-Finally, in :ref:`guide-debugging` we provide some advice on how to approach
-the problem of debugging failing tests.
+In :ref:`guide-debugging` we provide some advice on how to approach the problem
+of debugging failing tests.
+
+Finally, in :ref:`guide-limitations` some of the limitations of the conformance
+test cases and procedures are enumerated.
 
 So, lets move on to :ref:`guide-installation`...
