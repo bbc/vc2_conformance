@@ -4,6 +4,8 @@ import os
 
 import re
 
+import logging
+
 from functools import partial
 
 from vc2_conformance._py2x_compat import makedirs
@@ -91,9 +93,9 @@ class TestLoadCodecFeatures(object):
     @pytest.mark.parametrize(
         "regex,exp_names",
         [
-            (".*", set(["hd", "minimal", "minimal-invalid"])),
+            (".*", set(["hd", "minimal", "minimal-invalid", "minimal-bad-color"])),
             (".*h.*", set(["hd"])),
-            (".*i.*", set(["minimal", "minimal-invalid"])),
+            (".*i.*", set(["minimal", "minimal-invalid", "minimal-bad-color"])),
         ],
     )
     def test_filtering(self, regex, exp_names):
@@ -159,10 +161,6 @@ def test_check_output_directories_empty(
         fn()
 
 
-# NB: This test is currently xfailing as impossible Level constraints are
-# causing test case generation itself to be impossible (i.e. not just resulting
-# in a non-conformant stream). Some rethinking of how level constraints are
-# dealt with for test case generation needs doing...
 @pytest.mark.parametrize(
     "name,exp_valid", [("minimal", True), ("minimal-invalid", False)],
 )
@@ -179,6 +177,17 @@ def test_check_codec_features_valid(capsys, name, exp_valid):
         out, err = capsys.readouterr()
         assert "minimal-invalid" in err
         assert "is invalid" in err
+
+
+def test_check_codec_features_valid_warning(caplog):
+    codec_feature_sets = read_codec_features_csv(open(CODEC_FEATURES_CSV))
+    codec_feature_sets = {
+        "minimal-bad-color": codec_feature_sets["minimal-bad-color"],
+    }
+    with caplog.at_level(logging.WARNING):
+        check_codec_features_valid(codec_feature_sets)
+    assert "minimal-bad-color" in caplog.text
+    assert "cannot be represented" in caplog.text
 
 
 @pytest.fixture(scope="module")

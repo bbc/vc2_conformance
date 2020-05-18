@@ -119,6 +119,8 @@ from vc2_conformance._string_utils import wrap_paragraphs
 
 from vc2_conformance import file_format
 
+from vc2_conformance.color_conversion import sanity_check_video_parameters
+
 from vc2_conformance.test_cases.decoder import static_grey
 
 from vc2_conformance.bitstream import autofill_and_serialise_sequence
@@ -330,6 +332,16 @@ def check_codec_features_valid(codec_feature_sets):
     for name, codec_features in codec_feature_sets.items():
         logging.info("Checking %r...", name)
         f = BytesIO()
+
+        # Sanity-check the color format (since this won't raise a validation
+        # error but will result in a useless gamut being available).
+        sanity = sanity_check_video_parameters(codec_features["video_parameters"])
+        if not sanity:
+            logging.warning(
+                "Color specification for codec configuration %r be malformed: %s",
+                name,
+                sanity.explain(),
+            )
 
         # Generate a minimal bitstream
         try:

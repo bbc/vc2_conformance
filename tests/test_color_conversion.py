@@ -3,13 +3,14 @@ import pytest
 import numpy as np
 
 from vc2_data_tables import (
+    BaseVideoFormats,
     PresetColorPrimaries,
     PresetColorMatrices,
     PresetTransferFunctions,
     ColorDifferenceSamplingFormats,
 )
 
-from vc2_conformance.video_parameters import VideoParameters
+from vc2_conformance.video_parameters import VideoParameters, set_source_defaults
 
 from vc2_conformance.vc2_math import intlog2
 
@@ -25,12 +26,15 @@ from vc2_conformance.color_conversion import (
     INVERSE_COLOR_MATRICES,
     int_to_float,
     float_to_int,
+    float_to_int_clipped,
     from_444,
     to_444,
     to_xyz,
     from_xyz,
     matmul_colors,
     swap_primaries,
+    ColorParametersSanity,
+    sanity_check_video_parameters,
 )
 
 
@@ -144,6 +148,8 @@ def test_matrix_conversions(index):
         ([64, 283, 502, 721, 940], [0.0, 0.25, 0.5, 0.75, 1.0], 64, 876,),
         # Video-range 10-bit Cx signal
         ([64, 288, 512, 736, 960], [-0.5, -0.25, 0.0, 0.25, 0.5], 512, 896,),
+        # Out of range values shouldn't be clipped
+        ([-255, 0, 255, 510], [-1.0, 0.0, 1.0, 2.0], 0, 255,),
     ],
 )
 def test_int_to_float_and_float_to_int(a_int, a_float, offset, excursion):
@@ -170,9 +176,9 @@ def test_int_to_float_and_float_to_int(a_int, a_float, offset, excursion):
         ([-2.0, -0.0731, 0.0, 1.0, 1.0947, 2.0], [0, 0, 64, 940, 1023, 1023], 64, 876,),
     ],
 )
-def test_float_to_int(a_float, a_int, offset, excursion):
+def test_float_to_int_clipped(a_float, a_int, offset, excursion):
     # Test the rounding and clipping behaviour of the float to ind conversion
-    a_int2 = float_to_int(a_float, offset, excursion)
+    a_int2 = float_to_int_clipped(a_float, offset, excursion)
     assert a_int2.dtype == np.int
     assert np.array_equal(a_int2, a_int)
 
@@ -416,3 +422,193 @@ def test_swap_primaries():
 
     assert not np.all(np.isclose(xyz_before, xyz_after))
     assert np.all(np.isclose(linear_rgb_before, linear_rgb_after))
+
+
+class TestColorParametersSanity(object):
+    def test_default(self):
+        assert ColorParametersSanity()
+
+    @pytest.mark.parametrize(
+        "param",
+        [
+            "luma_depth_sane",
+            "color_diff_depth_sane",
+            "black_sane",
+            "white_sane",
+            "red_sane",
+            "green_sane",
+            "blue_sane",
+            "color_diff_format_sane",
+            "luma_vs_color_diff_depths_sane",
+        ],
+    )
+    def test_params(self, param):
+        # Param should be considered as part of global sanity
+        cps = ColorParametersSanity(**{param: False})
+        assert not cps
+
+        # Param should be available via property
+        assert getattr(cps, param) is False
+        assert getattr(ColorParametersSanity(), param) is True
+
+    def test_explain_sane(self):
+        # Singular
+        assert ColorParametersSanity().explain() == "Color format is sensible."
+
+    def test_explain_depth_insane(self):
+        # Singular
+        cps = ColorParametersSanity(luma_depth_sane=False)
+        assert cps.explain() == (
+            "The luma_excursion value indicates "
+            "a video format using fewer than 8 bits. Hint: The *_excursion "
+            "field gives the range of legal values for a component (i.e. "
+            "max_value - min_value), not a number of bits."
+        )
+
+        # Plurals
+        cps = ColorParametersSanity(luma_depth_sane=False, color_diff_depth_sane=False)
+        assert cps.explain() == (
+            "The luma_excursion and color_diff_excursion values indicate "
+            "a video format using fewer than 8 bits. Hint: The *_excursion "
+            "field gives the range of legal values for a component (i.e. "
+            "max_value - min_value), not a number of bits."
+        )
+
+    def test_explain_color_insane(self):
+        cps = ColorParametersSanity(white_sane=False, red_sane=False, green_sane=False)
+        assert cps.explain() == (
+            "Some colours (e.g. white, red, green) cannot be represented "
+            "in the video format specified. Hint: Check luma_offset is a "
+            "near zero value, for Y C1 C2 formats check color_diff_offset "
+            "is near the center of the signal range and for RGB formats it "
+            "is near zero."
+        )
+
+    def test_explain_color_diff_format_insane(self):
+        cps = ColorParametersSanity(color_diff_format_sane=False)
+        assert cps.explain() == (
+            "A color subsampling format other than 4:4:4 has been used "
+            "for format using the RGB color matrix."
+        )
+
+    def test_explain_luma_vs_color_diff_depths_insane(self):
+        cps = ColorParametersSanity(luma_vs_color_diff_depths_sane=False)
+        assert cps.explain() == (
+            "Different (luma|color_diff)_offset and/or "
+            "(luma|color_diff)_excursion values have been specified for "
+            "format using the RGB color matrix."
+        )
+
+    def test_combined(self):
+        cps = ColorParametersSanity(
+            luma_depth_sane=False,
+            color_diff_depth_sane=False,
+            black_sane=False,
+            white_sane=False,
+            red_sane=False,
+            green_sane=False,
+            blue_sane=False,
+            color_diff_format_sane=False,
+            luma_vs_color_diff_depths_sane=False,
+        )
+        # One of each message, with blank lines between
+        assert len(list(cps.explain().split("\n"))) == 4 + 3
+
+
+class TestSanityCheckVideoParameters(object):
+    @pytest.mark.parametrize("base_video_format", BaseVideoFormats)
+    def test_all_base_video_formats_sensible(self, base_video_format):
+        # Sanity check that all base video formats are considered to make sense
+        video_parameters = set_source_defaults(base_video_format)
+        assert sanity_check_video_parameters(video_parameters)
+
+    @pytest.mark.parametrize("offset,excursion", [(0, 511), (16, 219)])
+    def test_sane_rgb_mode(self, offset, excursion):
+        video_parameters = VideoParameters(
+            color_diff_format_index=ColorDifferenceSamplingFormats.color_4_4_4,
+            luma_offset=offset,
+            luma_excursion=excursion,
+            color_diff_offset=offset,
+            color_diff_excursion=excursion,
+            color_primaries_index=PresetColorPrimaries.hdtv,
+            color_matrix_index=PresetColorMatrices.rgb,
+            transfer_function_index=PresetTransferFunctions.tv_gamma,
+        )
+        assert sanity_check_video_parameters(video_parameters)
+
+    @pytest.mark.parametrize("offset,excursion", [(0, 8), (0, 10), (0, 16)])
+    def test_low_bit_depth(self, offset, excursion):
+        video_parameters = VideoParameters(
+            color_diff_format_index=ColorDifferenceSamplingFormats.color_4_4_4,
+            luma_offset=offset,
+            luma_excursion=excursion,
+            color_diff_offset=offset,
+            color_diff_excursion=excursion,
+            color_primaries_index=PresetColorPrimaries.hdtv,
+            color_matrix_index=PresetColorMatrices.rgb,
+            transfer_function_index=PresetTransferFunctions.tv_gamma,
+        )
+        sanity = sanity_check_video_parameters(video_parameters)
+        assert not sanity.luma_depth_sane
+        assert not sanity.color_diff_depth_sane
+
+    @pytest.mark.parametrize(
+        "color_matrix_index,color_diff_offset",
+        [(PresetColorMatrices.hdtv, 0), (PresetColorMatrices.rgb, 512)],
+    )
+    def test_wrong_offset_for_matrix(self, color_matrix_index, color_diff_offset):
+        video_parameters = VideoParameters(
+            color_diff_format_index=ColorDifferenceSamplingFormats.color_4_4_4,
+            luma_offset=0,
+            luma_excursion=1023,
+            color_diff_offset=color_diff_offset,
+            color_diff_excursion=1023,
+            color_primaries_index=PresetColorPrimaries.hdtv,
+            color_matrix_index=color_matrix_index,
+            transfer_function_index=PresetTransferFunctions.tv_gamma,
+        )
+        sanity = sanity_check_video_parameters(video_parameters)
+        assert not all(
+            (
+                sanity.white_sane,
+                sanity.black_sane,
+                sanity.red_sane,
+                sanity.green_sane,
+                sanity.blue_sane,
+            )
+        )
+
+    @pytest.mark.parametrize(
+        "color_diff_format_index",
+        [
+            ColorDifferenceSamplingFormats.color_4_2_2,
+            ColorDifferenceSamplingFormats.color_4_2_0,
+        ],
+    )
+    def test_non_444_rgb_insane(self, color_diff_format_index):
+        video_parameters = VideoParameters(
+            color_diff_format_index=color_diff_format_index,
+            luma_offset=0,
+            luma_excursion=255,
+            color_diff_offset=0,
+            color_diff_excursion=255,
+            color_primaries_index=PresetColorPrimaries.hdtv,
+            color_matrix_index=PresetColorMatrices.rgb,
+            transfer_function_index=PresetTransferFunctions.tv_gamma,
+        )
+        sanity = sanity_check_video_parameters(video_parameters)
+        assert not sanity.color_diff_format_sane
+
+    def test_asymmetric_444_rgb_insane(self):
+        video_parameters = VideoParameters(
+            color_diff_format_index=ColorDifferenceSamplingFormats.color_4_4_4,
+            luma_offset=0,
+            luma_excursion=255,
+            color_diff_offset=0,
+            color_diff_excursion=512,
+            color_primaries_index=PresetColorPrimaries.hdtv,
+            color_matrix_index=PresetColorMatrices.rgb,
+            transfer_function_index=PresetTransferFunctions.tv_gamma,
+        )
+        sanity = sanity_check_video_parameters(video_parameters)
+        assert not sanity.luma_vs_color_diff_depths_sane

@@ -30,7 +30,7 @@ illustrated as follows::
       (Original Format)                                           (New Format)
        Integer Y C1 C2                                           Integer Y C1 C2
               |                                                         ^
-              | int_to_float                               float_to_int |
+              | int_to_float                       float_to_int_clipped |
               V                                                         |
     Floating Point Y C1 C2                                 Chroma Subsampled Y C1 C2
               |                                                         ^
@@ -57,6 +57,8 @@ implemented based on the specifications cited by the VC-2 specification.
 
     Whilst every effort has been made to ensure that these implementations are
     correct, these should be considered informative, not normative.
+
+.. autofunction:: float_to_int_clipped
 
 .. autofunction:: float_to_int
 
@@ -110,6 +112,7 @@ from vc2_conformance.vc2_math import intlog2
 __all__ = [
     "to_xyz",
     "from_xyz",
+    "float_to_int_clipped",
     "float_to_int",
     "int_to_float",
     "from_444",
@@ -601,18 +604,29 @@ def float_to_int(a, offset, excursion):
     -0.5 to +0.5 to integers (with the specified offset and excursion).
 
     Values which fall outside the range of the integer representation are
-    clipped.
+    *not* clipped. See :py:func:`float_to_int_clipped`.
     """
     a = np.array(a, dtype=float)
 
     # Scale/offset
     a = (a * excursion) + offset
 
-    # Convert to expected integer format/range
+    # Round to integer
     a = np.round(a).astype(int)
-    a = np.clip(a, 0, (2 ** (intlog2(excursion + 1))) - 1)
 
     return a
+
+
+def float_to_int_clipped(a, offset, excursion):
+    """
+    Convert (an array of) float sample values in the nominal range 0 to +1 or
+    -0.5 to +0.5 to integers (with the specified offset and excursion).
+
+    Values which fall outside the range of the integer representation are
+    clipped.
+    """
+    a = float_to_int(a, offset, excursion)
+    return np.clip(a, 0, (2 ** (intlog2(excursion + 1))) - 1)
 
 
 ################################################################################
@@ -820,15 +834,15 @@ def from_xyz(xyz, video_parameters):
     c2_subsampled = from_444(c2, video_parameters["color_diff_format_index"])
 
     # Convert to integer ranges
-    y_int = float_to_int(
+    y_int = float_to_int_clipped(
         y, video_parameters["luma_offset"], video_parameters["luma_excursion"],
     )
-    c1_int = float_to_int(
+    c1_int = float_to_int_clipped(
         c1_subsampled,
         video_parameters["color_diff_offset"],
         video_parameters["color_diff_excursion"],
     )
-    c2_int = float_to_int(
+    c2_int = float_to_int_clipped(
         c2_subsampled,
         video_parameters["color_diff_offset"],
         video_parameters["color_diff_excursion"],
@@ -878,3 +892,307 @@ def swap_primaries(xyz, video_parameters_before, video_parameters_after):
     m = np.matmul(linear_rgb_after_to_xyz, xyz_to_linear_rgb_before)
 
     return matmul_colors(m, xyz)
+
+
+class ColorParametersSanity(object):
+    """
+    Result of :py:func:`sanity_check_video_parameters`. Indicates the sanity
+    (or insanity) of a set of video parameters.
+
+    Truthy if sane, falsey otherwise.
+
+    Use the various properties to determine what is and is not sane.
+
+    Use the :py:meth:`explain` function to return a string with a human
+    readable explanation.
+    """
+
+    def __init__(
+        self,
+        luma_depth_sane=True,
+        color_diff_depth_sane=True,
+        black_sane=True,
+        white_sane=True,
+        red_sane=True,
+        green_sane=True,
+        blue_sane=True,
+        color_diff_format_sane=True,
+        luma_vs_color_diff_depths_sane=True,
+    ):
+        self._luma_depth_sane = luma_depth_sane
+        self._color_diff_depth_sane = color_diff_depth_sane
+        self._black_sane = black_sane
+        self._white_sane = white_sane
+        self._red_sane = red_sane
+        self._green_sane = green_sane
+        self._blue_sane = blue_sane
+        self._color_diff_format_sane = color_diff_format_sane
+        self._luma_vs_color_diff_depths_sane = luma_vs_color_diff_depths_sane
+
+    @property
+    def luma_depth_sane(self):
+        """
+        True iff the luma component has been assigned at least 8 bits.
+        """
+        return self._luma_depth_sane
+
+    @property
+    def color_diff_depth_sane(self):
+        """
+        True iff the color difference components have been assigned at least 8
+        bits.
+        """
+        return self._color_diff_depth_sane
+
+    @property
+    def black_sane(self):
+        """
+        If True, the format can represent (video) black.
+        """
+        return self._black_sane
+
+    @property
+    def white_sane(self):
+        """
+        If True, the format can represent (video) white.
+        """
+        return self._white_sane
+
+    @property
+    def red_sane(self):
+        """
+        If True, the format can represent (video) primary red.
+        """
+        return self._red_sane
+
+    @property
+    def green_sane(self):
+        """
+        If True, the format can represent (video) primary green.
+        """
+        return self._green_sane
+
+    @property
+    def blue_sane(self):
+        """
+        If True, the format can represent (video) primary blue.
+        """
+        return self._blue_sane
+
+    @property
+    def color_diff_format_sane(self):
+        """
+        True iff the color difference sampling format is appropriate for the
+        color format.
+
+        False when non-4:4:4 sampling is used for RGB formats.
+        """
+        return self._color_diff_format_sane
+
+    @property
+    def luma_vs_color_diff_depths_sane(self):
+        """
+        True iff the relative offsets/excursions of luma and color difference
+        components are appropriately matched.
+
+        False when not identical for RGB formats.
+        """
+        return self._luma_vs_color_diff_depths_sane
+
+    def __bool__(self):
+        """
+        True iff all sanity checks have come up sane.
+        """
+        return all(
+            (
+                self.luma_depth_sane,
+                self.color_diff_depth_sane,
+                self.black_sane,
+                self.white_sane,
+                self.red_sane,
+                self.green_sane,
+                self.blue_sane,
+                self.color_diff_format_sane,
+                self.luma_vs_color_diff_depths_sane,
+            )
+        )
+
+    def explain(self):
+        """
+        Return a human-readable explanation of why a video format insane video
+        format (or simply say that it is sane, if it is).
+        """
+        out = ""
+
+        insane_depths = []
+        if not self.luma_depth_sane:
+            insane_depths.append("luma")
+        if not self.color_diff_depth_sane:
+            insane_depths.append("color_diff")
+
+        if insane_depths:
+            out += (
+                "The {} value{} indicate{} a video format "
+                "using fewer than 8 bits. Hint: The *_excursion field "
+                "gives the range of legal values for a component (i.e. "
+                "max_value - min_value), not a number of bits.\n\n"
+            ).format(
+                " and ".join(
+                    "{}_excursion".format(component) for component in insane_depths
+                ),
+                "s" if len(insane_depths) != 1 else "",
+                "s" if len(insane_depths) == 1 else "",
+            )
+
+        insane_colors = [
+            color
+            for color in ["black", "white", "red", "green", "blue"]
+            if not getattr(self, "{}_sane".format(color))
+        ]
+
+        if insane_colors:
+            out += (
+                "Some colours (e.g. {}) cannot be represented "
+                "in the video format specified. "
+                "Hint: Check luma_offset is a near zero value, "
+                "for Y C1 C2 formats check color_diff_offset is near the "
+                "center of the signal range "
+                "and for RGB formats it is near zero.\n\n"
+            ).format(", ".join(insane_colors))
+
+        if not self.color_diff_format_sane:
+            out += (
+                "A color subsampling format other than 4:4:4 has been used "
+                "for format using the RGB color matrix.\n\n"
+            )
+
+        if not self.luma_vs_color_diff_depths_sane:
+            out += (
+                "Different (luma|color_diff)_offset and/or "
+                "(luma|color_diff)_excursion values have been specified "
+                "for format using the RGB color matrix.\n\n"
+            )
+
+        if out == "":
+            return "Color format is sensible."
+        else:
+            return out.strip()
+
+    def __repr__(self):
+        return "{}({})".format(
+            type(self).__name__,
+            ", ".join(
+                "{}=False".format(name)
+                for name in dir(self)
+                if (
+                    not name.startswith("_")
+                    and name.endswith("_sane")
+                    and getattr(self, name) is False
+                )
+            ),
+        )
+
+
+def sanity_check_video_parameters(video_parameters):
+    r"""
+    Given a set of
+    :py:class:`~vc2_conformance.video_parameters.VideoParameters`, check that a
+    set of video parameters could plausibly be used to encode a color signal
+    (regardless of whether the color specification itself is sensible).
+
+    Specifically, the following checks are carried out:
+
+    * Are the luma and color difference signals at least 8 bits?
+    * Can white, black and saturated primary red, green and blue be encoded?
+    * When the RGB color matrix is used:
+      * Is the color difference sampling mode 4:4:4?
+      * Are the luma and chroma components the same depth?
+
+    Returns a :py:class:`ColorParametersSanity` as a result.
+    """
+    # Check at least 8 bits
+    luma_depth_sane = video_parameters["luma_excursion"] >= 128
+    color_diff_depth_sane = video_parameters["color_diff_excursion"] >= 128
+
+    # Create 5 columns with black/white & RGB primaries as RGB values
+    linear_rgb_cols = np.array(
+        [
+            # Blk  Wht  Red  Grn  Blu
+            [0.0, 1.0, 1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0, 1.0, 0.0],
+            [0.0, 1.0, 0.0, 0.0, 1.0],
+        ]
+    )
+
+    # Convert to non-linear RGB
+    transfer_function = TRANSFER_FUNCTIONS[video_parameters["transfer_function_index"]]
+    eregeb_cols = transfer_function(linear_rgb_cols)
+
+    # Convert to Y C1 C2
+    color_matrix = COLOR_MATRICES[video_parameters["color_matrix_index"]]
+    yc1c2_cols = np.matmul(color_matrix, eregeb_cols)
+
+    # Check if the integer ranges overflow (NB: we still allow for tiny
+    # overflows due to rounding errors)
+    clipped_cols = np.all(
+        [
+            abs(
+                float_to_int(array, offset, excursion)
+                - float_to_int_clipped(array, offset, excursion)
+            )
+            <= 1
+            for array, offset, excursion in [
+                (
+                    yc1c2_cols[0],
+                    video_parameters["luma_offset"],
+                    video_parameters["luma_excursion"],
+                ),
+                (
+                    yc1c2_cols[1],
+                    video_parameters["color_diff_offset"],
+                    video_parameters["color_diff_excursion"],
+                ),
+                (
+                    yc1c2_cols[2],
+                    video_parameters["color_diff_offset"],
+                    video_parameters["color_diff_excursion"],
+                ),
+            ]
+        ],
+        axis=0,
+    )
+
+    black_sane = clipped_cols[0]
+    white_sane = clipped_cols[1]
+    red_sane = clipped_cols[2]
+    green_sane = clipped_cols[3]
+    blue_sane = clipped_cols[4]
+
+    # Check special format considerations for RGB signals
+    if video_parameters["color_matrix_index"] == PresetColorMatrices.rgb:
+        color_diff_format_sane = (
+            video_parameters["color_diff_format_index"]
+            == ColorDifferenceSamplingFormats.color_4_4_4
+        )
+
+        luma_vs_color_diff_depths_sane = video_parameters[
+            "luma_offset"
+        ] == video_parameters["color_diff_offset"] and (
+            video_parameters["luma_excursion"]
+            == video_parameters["color_diff_excursion"]
+        )
+    else:
+        color_diff_format_sane = True
+        luma_vs_color_diff_depths_sane = True
+
+    return ColorParametersSanity(
+        luma_depth_sane=luma_depth_sane,
+        color_diff_depth_sane=color_diff_depth_sane,
+        black_sane=black_sane,
+        white_sane=white_sane,
+        red_sane=red_sane,
+        green_sane=green_sane,
+        blue_sane=blue_sane,
+        color_diff_format_sane=color_diff_format_sane,
+        luma_vs_color_diff_depths_sane=luma_vs_color_diff_depths_sane,
+    )
