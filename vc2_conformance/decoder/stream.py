@@ -70,13 +70,6 @@ __all__ = [
 ]
 
 
-def reset_state(state):
-    """
-    Reset a :py:class:`~vc2_conformance.state.State` dictionary to only include
-    values retained between sequences in a VC-2 stream.
-    """
-
-
 @ref_pseudocode
 def parse_sequence(state):
     """
