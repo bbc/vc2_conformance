@@ -6,6 +6,8 @@ from copy import deepcopy
 
 from vc2_data_tables import ParseCodes
 
+from vc2_conformance.bitstream import Stream
+
 from vc2_conformance.test_cases import (
     TestCase,
     decoder_test_case_generator,
@@ -91,5 +93,5 @@ def padding_data(codec_features):
         ("dummy_end_of_sequence", make_dummy_end_of_sequence().ljust(32, b"\x00"),),
     ]:
         yield TestCase(
-            replace_padding_data(base_sequence, data), description,
+            Stream(sequences=[replace_padding_data(base_sequence, data)]), description,
         )

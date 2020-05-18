@@ -39,8 +39,8 @@ produce a :py:class:`EncoderTestSequence` object.
 .. autoclass:: EncoderTestSequence
 
 Decoder test case generators take a
-:py:class:`~vc2_conformance.codec_features.CodecFeatures` and
-produce a :py:class:`vc2_conformance.bitstream.Sequence` dictionary.
+:py:class:`~vc2_conformance.codec_features.CodecFeatures` and produce a
+:py:class:`vc2_conformance.bitstream.Stream` dictionary.
 
 In the simplest case, test case generator functions may be functions which
 return a single :py:class:`EncoderTestSequence` or

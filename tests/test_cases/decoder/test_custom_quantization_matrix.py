@@ -63,13 +63,13 @@ class TestDefaultQuantizationMatrix(object):
         assert default_quantization_matrix(codec_features) is None
 
     def test_uses_default_matrix_instead_of_custom(self):
-        sequence = default_quantization_matrix(
+        stream = default_quantization_matrix(
             MINIMAL_CODEC_FEATURES_WITH_CUSTOM_QUANT_MATRIX
         )
 
         custom_quant_matrix_flag_values = set()
 
-        to_visit = list(sequence["data_units"])
+        to_visit = list(stream["sequences"][0]["data_units"])
         while to_visit:
             d = to_visit.pop(0)
             if isinstance(d, dict):
@@ -212,9 +212,9 @@ class TestCustomQuantizationMatrix(object):
         matrices = {}
 
         for test_case in test_cases:
-            sequence = test_case.value
+            stream = test_case.value
 
-            to_visit = list(sequence["data_units"])
+            to_visit = list(stream["sequences"][0]["data_units"])
             while to_visit:
                 d = to_visit.pop(0)
                 if isinstance(d, dict):

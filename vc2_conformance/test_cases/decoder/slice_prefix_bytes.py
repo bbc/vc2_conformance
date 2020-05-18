@@ -2,6 +2,8 @@ import logging
 
 from vc2_data_tables import Profiles
 
+from vc2_conformance.bitstream import Stream
+
 from vc2_conformance.test_cases import (
     TestCase,
     decoder_test_case_generator,
@@ -157,4 +159,4 @@ def slice_prefix_bytes(codec_features):
                 hq_slice["slice_c1_length"] = 0
                 hq_slice["slice_c2_length"] = total_length
 
-        yield TestCase(sequence, description)
+        yield TestCase(Stream(sequences=[sequence]), description)

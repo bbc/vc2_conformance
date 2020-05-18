@@ -1,5 +1,7 @@
 from vc2_data_tables import ParseCodes
 
+from vc2_conformance.bitstream import Stream
+
 from vc2_conformance.test_cases import decoder_test_case_generator
 
 from vc2_conformance.encoder import make_sequence
@@ -42,4 +44,4 @@ def absent_next_parse_offset(codec_features):
         ):
             parse_info["next_parse_offset"] = 0
 
-    return sequence
+    return Stream(sequences=[sequence])

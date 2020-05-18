@@ -6,6 +6,8 @@ from copy import deepcopy
 
 from vc2_data_tables import ParseCodes
 
+from vc2_conformance.bitstream import Stream
+
 from vc2_conformance.test_cases import (
     TestCase,
     decoder_test_case_generator,
@@ -116,14 +118,18 @@ def source_parameters_encodings(codec_features):
 
         if base_video_format == best_base_video_format:
             yield TestCase(
-                replace_sequence_headers(base_sequence, sequence_header),
+                Stream(
+                    sequences=[replace_sequence_headers(base_sequence, sequence_header)]
+                ),
                 "custom_flags_combination_{}_base_video_format_{:d}".format(
                     i + 1, base_video_format,
                 ),
             )
         elif first_example_of_base_video_format:
             yield TestCase(
-                replace_sequence_headers(base_sequence, sequence_header),
+                Stream(
+                    sequences=[replace_sequence_headers(base_sequence, sequence_header)]
+                ),
                 "base_video_format_{:d}".format(base_video_format),
             )
 
@@ -160,4 +166,4 @@ def repeated_sequence_headers(codec_features):
         # header interleaving to accept it.
         return None
 
-    return sequence
+    return Stream(sequences=[sequence])

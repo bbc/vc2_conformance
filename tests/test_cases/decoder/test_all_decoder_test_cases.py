@@ -118,12 +118,15 @@ def test_all_decoder_test_cases(codec_features, test_case):
     # containing pictures with the correct format. Any JSON metadata must also
     # be seriallisable.
 
+    # Must return a Stream
+    assert isinstance(test_case.value, Stream)
+
     # Mustn't crash!
     json.dumps(test_case.metadata)
 
     # Serialise
     f = BytesIO()
-    autofill_and_serialise_stream(f, Stream(sequences=[test_case.value]))
+    autofill_and_serialise_stream(f, test_case.value)
     f.seek(0)
 
     # Deserialise/validate

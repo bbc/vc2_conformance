@@ -7,11 +7,10 @@ from vc2_data_tables import Profiles
 from vc2_conformance.state import State
 
 from vc2_conformance.bitstream import (
-    Stream,
     autofill_and_serialise_stream,
     BitstreamReader,
     Deserialiser,
-    parse_sequence,
+    parse_stream,
 )
 
 from vc2_conformance.test_cases.decoder.absent_next_parse_offset import (
@@ -32,23 +31,24 @@ def test_next_parse_offset_is_zero(profile, fragment_slice_count):
         profile=profile,
         fragment_slice_count=fragment_slice_count,
     )
-    sequence = absent_next_parse_offset(codec_features)
+    stream = absent_next_parse_offset(codec_features)
 
     # Serialise
     f = BytesIO()
-    autofill_and_serialise_stream(f, Stream(sequences=[sequence]))
+    autofill_and_serialise_stream(f, stream)
 
     # Deserialise
     f.seek(0)
     with Deserialiser(BitstreamReader(f)) as des:
-        parse_sequence(des, State())
-    decoded_sequence = des.context
+        parse_stream(des, State())
+    decoded_stream = des.context
 
     # Only the sequence header at the start should have a next_parse_offset
     # defined.
     next_parse_offset_is_zero = [
         data_unit["parse_info"]["next_parse_offset"] == 0
-        for data_unit in decoded_sequence["data_units"]
+        for seq in decoded_stream["sequences"]
+        for data_unit in seq["data_units"]
     ]
     assert not next_parse_offset_is_zero[0]
     assert all(next_parse_offset_is_zero[1:])

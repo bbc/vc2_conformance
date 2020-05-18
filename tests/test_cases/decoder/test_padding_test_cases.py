@@ -63,7 +63,8 @@ def test_padding_data():
         assert (
             sum(
                 1
-                for data_unit in test_case.value["data_units"]
+                for seq in test_case.value["sequences"]
+                for data_unit in seq["data_units"]
                 if data_unit["parse_info"]["parse_code"] == ParseCodes.padding_data
             )
             > 1

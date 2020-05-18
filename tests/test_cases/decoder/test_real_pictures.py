@@ -12,7 +12,7 @@ from vc2_data_tables import WaveletFilters
 
 from vc2_conformance.state import State
 
-from vc2_conformance.bitstream import Stream, autofill_and_serialise_stream
+from vc2_conformance.bitstream import autofill_and_serialise_stream
 
 from vc2_conformance import file_format
 
@@ -36,9 +36,9 @@ photograph.
 """
 
 
-def encode_and_decode(sequence):
+def encode_and_decode(stream):
     f = BytesIO()
-    autofill_and_serialise_stream(f, Stream(sequences=[sequence]))
+    autofill_and_serialise_stream(f, stream)
     f.seek(0)
 
     pictures = []
@@ -72,9 +72,9 @@ def test_real_pictures(codec_features):
     codec_features["video_parameters"] = video_parameters
 
     with alternative_real_pictures([LOVELL_IMAGE_PATH]):
-        sequence = real_pictures(codec_features)
+        stream = real_pictures(codec_features)
 
-    coded_pictures = encode_and_decode(sequence)
+    coded_pictures = encode_and_decode(stream)
 
     assert len(coded_pictures) == 1
     coded_picture = coded_pictures[0]

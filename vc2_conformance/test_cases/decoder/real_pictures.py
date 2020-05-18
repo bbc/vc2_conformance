@@ -2,6 +2,8 @@
 Real picture based test sequences.
 """
 
+from vc2_conformance.bitstream import Stream
+
 from vc2_conformance.encoder import make_sequence
 
 from vc2_conformance import picture_generators
@@ -27,9 +29,14 @@ def real_pictures(codec_features):
         rescaling, color conversion and encoding algorithms used are also basic
         in nature, potentially further reducing the picture quality.
     """
-    return make_sequence(
-        codec_features,
-        picture_generators.real_pictures(
-            codec_features["video_parameters"], codec_features["picture_coding_mode"],
-        ),
+    return Stream(
+        sequences=[
+            make_sequence(
+                codec_features,
+                picture_generators.real_pictures(
+                    codec_features["video_parameters"],
+                    codec_features["picture_coding_mode"],
+                ),
+            )
+        ]
     )

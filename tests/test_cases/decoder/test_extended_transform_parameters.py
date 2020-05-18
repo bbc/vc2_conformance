@@ -25,10 +25,12 @@ def test_version_2():
     assert len(list(extended_transform_parameters(codec_features))) == 0
 
 
-def find_extended_transform_parameters(sequence):
-    """Return all of the ExtendedTransformParameters objects in a sequence."""
+def find_extended_transform_parameters(stream):
+    """Return all of the ExtendedTransformParameters objects in a stream."""
     etps = []
-    to_visit = sequence["data_units"][:]
+    to_visit = [
+        data_unit for seq in stream["sequences"] for data_unit in seq["data_units"]
+    ]
     while to_visit:
         d = to_visit.pop(0)
         if isinstance(d, ExtendedTransformParameters):

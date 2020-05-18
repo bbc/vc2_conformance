@@ -14,6 +14,8 @@ from enum import Enum
 
 from vc2_data_tables import Profiles
 
+from vc2_conformance.bitstream import Stream
+
 from vc2_conformance._py2x_compat import zip
 
 from vc2_conformance.slice_sizes import slice_bytes
@@ -679,7 +681,9 @@ def slice_padding_data(codec_features):
                         state, sx, sy, slice, component, filler, byte_align,
                     )
 
-            yield TestCase(sequence, "{}_{}".format(component, explanation,))
+            yield TestCase(
+                Stream(sequences=[sequence]), "{}_{}".format(component, explanation,)
+            )
 
 
 @decoder_test_case_generator
@@ -782,7 +786,10 @@ def dangling_bounded_block_data(codec_features):
                             state, sx, sy, slice, component, dangle_type, magnitude,
                         )
 
-                yield TestCase(sequence, "{}_{}".format(dangle_type.name, component,))
+                yield TestCase(
+                    Stream(sequences=[sequence]),
+                    "{}_{}".format(dangle_type.name, component,),
+                )
             except UnsatisfiableBlockSizeError:
                 logging.warning(
                     (
@@ -834,23 +841,31 @@ def interlace_mode_and_pixel_aspect_ratio(codec_features):
         illustration above), the pictures will appear to have ragged edges.
     """
     yield TestCase(
-        make_sequence(
-            codec_features,
-            static_sprite(
-                codec_features["video_parameters"],
-                codec_features["picture_coding_mode"],
-            ),
+        Stream(
+            sequences=[
+                make_sequence(
+                    codec_features,
+                    static_sprite(
+                        codec_features["video_parameters"],
+                        codec_features["picture_coding_mode"],
+                    ),
+                )
+            ]
         ),
         "static_sequence",
     )
 
     yield TestCase(
-        make_sequence(
-            codec_features,
-            moving_sprite(
-                codec_features["video_parameters"],
-                codec_features["picture_coding_mode"],
-            ),
+        Stream(
+            sequences=[
+                make_sequence(
+                    codec_features,
+                    moving_sprite(
+                        codec_features["video_parameters"],
+                        codec_features["picture_coding_mode"],
+                    ),
+                )
+            ]
         ),
         "moving_sequence",
     )
@@ -870,11 +885,16 @@ def static_grey(codec_features):
     coding modes, this will also produce produce the smallest possible
     bitstream.
     """
-    return make_sequence(
-        codec_features,
-        mid_gray(
-            codec_features["video_parameters"], codec_features["picture_coding_mode"],
-        ),
+    return Stream(
+        sequences=[
+            make_sequence(
+                codec_features,
+                mid_gray(
+                    codec_features["video_parameters"],
+                    codec_features["picture_coding_mode"],
+                ),
+            )
+        ]
     )
 
 
@@ -931,11 +951,16 @@ def static_ramps(codec_features):
         because the D-Cinema transfer function allocates part of its nominal
         output range to over-saturated signals.
     """
-    return make_sequence(
-        codec_features,
-        linear_ramps(
-            codec_features["video_parameters"], codec_features["picture_coding_mode"],
-        ),
+    return Stream(
+        sequences=[
+            make_sequence(
+                codec_features,
+                linear_ramps(
+                    codec_features["video_parameters"],
+                    codec_features["picture_coding_mode"],
+                ),
+            )
+        ]
     )
 
 
@@ -948,9 +973,14 @@ def static_noise(codec_features):
 
     .. image:: /_static/user_guide/noise.png
     """
-    return make_sequence(
-        codec_features,
-        white_noise(
-            codec_features["video_parameters"], codec_features["picture_coding_mode"],
-        ),
+    return Stream(
+        sequences=[
+            make_sequence(
+                codec_features,
+                white_noise(
+                    codec_features["video_parameters"],
+                    codec_features["picture_coding_mode"],
+                ),
+            )
+        ]
     )

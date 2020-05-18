@@ -7,6 +7,8 @@ import logging
 
 from vc2_conformance.encoder import make_sequence
 
+from vc2_conformance.bitstream import Stream
+
 from vc2_conformance.picture_generators import (
     mid_gray,
     repeat_pictures,
@@ -153,5 +155,5 @@ def signal_range(codec_features):
             )
 
         yield TestCase(
-            sequence, component, metadata=metadata,
+            Stream(sequences=[sequence]), component, metadata=metadata,
         )

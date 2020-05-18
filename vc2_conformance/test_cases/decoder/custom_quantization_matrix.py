@@ -2,6 +2,8 @@ from itertools import count, repeat, cycle
 
 from vc2_data_tables import QUANTISATION_MATRICES
 
+from vc2_conformance.bitstream import Stream
+
 from vc2_conformance.codec_features import CodecFeatures
 
 from vc2_conformance.test_cases import TestCase, decoder_test_case_generator
@@ -66,11 +68,16 @@ def default_quantization_matrix(codec_features):
     # White noise signal used since it should put some energy into all
     # subbands so differences in quantisation should be evident. Also,
     # maximises the chances of quantisation being applied.
-    return make_sequence(
-        codec_features,
-        white_noise(
-            codec_features["video_parameters"], codec_features["picture_coding_mode"],
-        ),
+    return Stream(
+        sequences=[
+            make_sequence(
+                codec_features,
+                white_noise(
+                    codec_features["video_parameters"],
+                    codec_features["picture_coding_mode"],
+                ),
+            )
+        ]
     )
 
 
@@ -189,12 +196,18 @@ def custom_quantization_matrix(codec_features):
         # subbands so differences in quantisation should be evident. Also,
         # maximises the chances of quantisation being applied.
         yield TestCase(
-            make_sequence(
-                CodecFeatures(codec_features, quantization_matrix=quantization_matrix),
-                white_noise(
-                    codec_features["video_parameters"],
-                    codec_features["picture_coding_mode"],
-                ),
+            Stream(
+                sequences=[
+                    make_sequence(
+                        CodecFeatures(
+                            codec_features, quantization_matrix=quantization_matrix
+                        ),
+                        white_noise(
+                            codec_features["video_parameters"],
+                            codec_features["picture_coding_mode"],
+                        ),
+                    )
+                ]
             ),
             description,
         )

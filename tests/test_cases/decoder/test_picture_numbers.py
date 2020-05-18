@@ -24,11 +24,12 @@ def test_picture_numbers(picture_coding_mode, exp_odd_first_picture):
     for test_case in picture_numbers(codec_features):
         pic_nums = []
         test_cases[test_case.subcase_name] = pic_nums
-        for data_unit in test_case.value["data_units"]:
-            if "picture_parse" in data_unit:
-                pic_nums.append(
-                    data_unit["picture_parse"]["picture_header"]["picture_number"]
-                )
+        for seq in test_case.value["sequences"]:
+            for data_unit in seq["data_units"]:
+                if "picture_parse" in data_unit:
+                    pic_nums.append(
+                        data_unit["picture_parse"]["picture_header"]["picture_number"]
+                    )
 
     # Check expected cases are present
     #

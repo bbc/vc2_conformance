@@ -27,7 +27,7 @@ from vc2_conformance.bitstream import (
     BitstreamReader,
     MonitoredDeserialiser,
     to_bit_offset,
-    parse_sequence,
+    parse_stream,
     Stream,
     autofill_and_serialise_stream,
 )
@@ -77,7 +77,7 @@ def deserialise_and_measure_slice_data_unit_sizes(bitstream):
 
     def monitor(des, target, _value):
         # Dirty: Relies on implementation detail of vc2_fixeddicts...
-        if des.path(target)[2:] in (
+        if des.path(target)[4:] in (
             ["picture_parse", "wavelet_transform", "padding"],
             ["fragment_parse", "padding2"],
         ):
@@ -91,7 +91,7 @@ def deserialise_and_measure_slice_data_unit_sizes(bitstream):
 
     reader = BitstreamReader(BytesIO(bitstream))
     with MonitoredDeserialiser(monitor, reader) as des:
-        parse_sequence(des, State())
+        parse_stream(des, State())
 
     return out
 
@@ -169,7 +169,7 @@ class TestSlicePrefixBytes(object):
 
         for test_case in test_cases:
             f = BytesIO()
-            autofill_and_serialise_stream(f, Stream(sequences=[test_case.value]))
+            autofill_and_serialise_stream(f, test_case.value)
             data_unit_lengths = deserialise_and_measure_slice_data_unit_sizes(
                 f.getvalue()
             )
@@ -192,7 +192,7 @@ class TestSlicePrefixBytes(object):
 
         for test_case in test_cases:
             f = BytesIO()
-            autofill_and_serialise_stream(f, Stream(sequences=[test_case.value]))
+            autofill_and_serialise_stream(f, test_case.value)
             f.seek(0)
 
             log = []
@@ -202,7 +202,7 @@ class TestSlicePrefixBytes(object):
                     log.append(value)
 
             with MonitoredDeserialiser(log_prefix_bytes, BitstreamReader(f)) as des:
-                parse_sequence(des, State())
+                parse_stream(des, State())
             # Sanity check for test
             assert len(log) > 0
 

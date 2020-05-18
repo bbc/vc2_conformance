@@ -35,9 +35,8 @@ from vc2_conformance.bitstream import (
     LDSlice,
     hq_slice,
     ld_slice,
-    Stream,
     autofill_and_serialise_stream,
-    parse_sequence,
+    parse_stream,
 )
 
 from vc2_conformance import decoder
@@ -1092,7 +1091,7 @@ def test_slice_padding_data(profile, lossless):
         find_slice_padding_bytes(test_case.value)
         f = BytesIO()
 
-        autofill_and_serialise_stream(f, Stream(sequences=[test_case.value]))
+        autofill_and_serialise_stream(f, test_case.value)
 
         end_of_sequence = b"BBCD" + bytearray([ParseCodes.end_of_sequence])
         end_of_sequence_counts.append(f.getvalue().count(end_of_sequence))
@@ -1151,7 +1150,7 @@ class TestDanglingBoundedBlockData(object):
                 test_case.value,
                 vc2_default_values,
             ) as ser:
-                parse_sequence(ser, State())
+                parse_stream(ser, State())
 
             # Check that things are as expected
             if test_case.subcase_name.startswith("zero_dangling"):
@@ -1168,15 +1167,15 @@ class TestDanglingBoundedBlockData(object):
                 [expected_bits]
             )
 
-    def serialise_and_decode_pictures(self, sequence):
+    def serialise_and_decode_pictures(self, stream):
         f = BytesIO()
-        autofill_and_serialise_stream(f, Stream(sequences=[sequence]))
+        autofill_and_serialise_stream(f, stream)
 
         pictures = []
         state = State(_output_picture_callback=lambda pic, vp: pictures.append(pic))
         f.seek(0)
         decoder.init_io(state, f)
-        decoder.parse_sequence(state)
+        decoder.parse_stream(state)
 
         return pictures
 
@@ -1206,8 +1205,8 @@ class TestDanglingBoundedBlockData(object):
 
             # Zero the last non-zero transform value in every transform
             # component
-            modified_sequence = deepcopy(test_case.value)
-            to_visit = [modified_sequence]
+            modified_stream = deepcopy(test_case.value)
+            to_visit = [modified_stream]
             while to_visit:
                 d = to_visit.pop(0)
                 if isinstance(d, list):
@@ -1230,7 +1229,7 @@ class TestDanglingBoundedBlockData(object):
                             to_visit.append(value)
 
             pictures_without_dangle = self.serialise_and_decode_pictures(
-                modified_sequence
+                modified_stream
             )
 
             assert pictures_with_dangle != pictures_without_dangle

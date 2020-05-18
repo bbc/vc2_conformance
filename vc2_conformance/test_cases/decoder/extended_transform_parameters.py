@@ -7,6 +7,8 @@ from copy import deepcopy
 
 from vc2_data_tables import ParseCodes
 
+from vc2_conformance.bitstream import Stream
+
 from vc2_conformance.test_cases import (
     TestCase,
     decoder_test_case_generator,
@@ -109,7 +111,7 @@ def extended_transform_parameters(codec_features):
             wavelet_index_ho=codec_features["wavelet_index_ho"],
         )
         if changed:
-            yield TestCase(sequence, "asym_transform_index_flag")
+            yield TestCase(Stream(sequences=[sequence]), "asym_transform_index_flag")
 
     if True in allowed_values_for(
         LEVEL_CONSTRAINTS, "asym_transform_flag", constrained_values
@@ -120,4 +122,4 @@ def extended_transform_parameters(codec_features):
             dwt_depth_ho=codec_features["dwt_depth_ho"],
         )
         if changed:
-            yield TestCase(sequence, "asym_transform_flag")
+            yield TestCase(Stream(sequences=[sequence]), "asym_transform_flag")

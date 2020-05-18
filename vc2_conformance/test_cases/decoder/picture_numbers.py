@@ -1,5 +1,7 @@
 from vc2_data_tables import PictureCodingModes
 
+from vc2_conformance.bitstream import Stream
+
 from vc2_conformance.test_cases import (
     TestCase,
     decoder_test_case_generator,
@@ -57,12 +59,18 @@ def picture_numbers(codec_features):
 
     for description, picture_numbers in test_cases:
         yield TestCase(
-            make_sequence(
-                codec_features,
-                [
-                    dict(picture, pic_num=pic_num)
-                    for picture, pic_num in zip(mid_gray_pictures, picture_numbers)
-                ],
+            Stream(
+                sequences=[
+                    make_sequence(
+                        codec_features,
+                        [
+                            dict(picture, pic_num=pic_num)
+                            for picture, pic_num in zip(
+                                mid_gray_pictures, picture_numbers
+                            )
+                        ],
+                    )
+                ]
             ),
             description,
         )

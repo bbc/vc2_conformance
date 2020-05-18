@@ -50,10 +50,10 @@ class TestSliceSizeScaler(object):
             slices_x=2,
             slices_y=3,
         )
-        sequence = slice_size_scaler(codec_features)
+        stream = slice_size_scaler(codec_features)
 
         for state, _sx, _sy, hq_slice in iter_slices_in_sequence(
-            codec_features, sequence
+            codec_features, stream["sequences"][0]
         ):
             assert state["slice_size_scaler"] == exp_slice_size_scaler
 

@@ -1,5 +1,7 @@
 from vc2_data_tables import Profiles
 
+from vc2_conformance.bitstream import Stream
+
 from vc2_conformance.test_cases import decoder_test_case_generator
 
 from vc2_conformance.encoder import make_sequence
@@ -72,4 +74,4 @@ def slice_size_scaler(codec_features):
             assert hq_slice["slice_c2_length"] == 0
             hq_slice["slice_c2_length"] = 1
 
-    return sequence
+    return Stream(sequences=[sequence])

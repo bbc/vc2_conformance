@@ -96,33 +96,34 @@ def test_replace_sequence_headers():
 def test_source_parameters_encodings():
     codec_features = MINIMAL_CODEC_FEATURES
 
-    all_sequences = list(source_parameters_encodings(codec_features))
+    test_cases = list(source_parameters_encodings(codec_features))
 
     base_video_formats = set()
     flag_states = defaultdict(set)
     decoder_states_and_parameters = []
 
-    for sequence in all_sequences:
-        sh = sequence.value["data_units"][0]["sequence_header"]
+    for test_case in test_cases:
+        for sequence in test_case.value["sequences"]:
+            sh = sequence["data_units"][0]["sequence_header"]
 
-        # Capture all base video formats
-        base_video_formats.add(sh["base_video_format"])
+            # Capture all base video formats
+            base_video_formats.add(sh["base_video_format"])
 
-        # Capture all flag values
-        to_visit = [sh]
-        while to_visit:
-            d = to_visit.pop(0)
-            for field, value in d.items():
-                if field.endswith("_flag"):
-                    flag_states[field].add(value)
-                if isinstance(value, dict):
-                    to_visit.append(value)
+            # Capture all flag values
+            to_visit = [sh]
+            while to_visit:
+                d = to_visit.pop(0)
+                for field, value in d.items():
+                    if field.endswith("_flag"):
+                        flag_states[field].add(value)
+                    if isinstance(value, dict):
+                        to_visit.append(value)
 
-        # Capture actual resulting codec configuration
-        state = State()
-        with Serialiser(BitstreamWriter(BytesIO()), sh, vc2_default_values) as ser:
-            video_parameters = sequence_header(ser, state)
-        decoder_states_and_parameters.append((state, video_parameters))
+            # Capture actual resulting codec configuration
+            state = State()
+            with Serialiser(BitstreamWriter(BytesIO()), sh, vc2_default_values) as ser:
+                video_parameters = sequence_header(ser, state)
+            decoder_states_and_parameters.append((state, video_parameters))
 
     # Special cases: our MINIMAL_CODEC_FEATURES configuration overrides the
     # frame size, frame rate and clean area fields with tiny sizes and so these
@@ -173,19 +174,20 @@ def test_repeated_sequence_headers(level_sequence_restrictions, restricted_seque
 
     codec_features = MINIMAL_CODEC_FEATURES
 
-    sequence = repeated_sequence_headers(codec_features)
+    stream = repeated_sequence_headers(codec_features)
 
     if not restricted_sequence:
-        # All sequence headers must be identical
-        sh_count = 0
-        for data_unit in sequence["data_units"]:
-            if data_unit["parse_info"]["parse_code"] == ParseCodes.sequence_header:
-                sh_count += 1
+        for sequence in stream["sequences"]:
+            # All sequence headers must be identical
+            sh_count = 0
+            for data_unit in sequence["data_units"]:
+                if data_unit["parse_info"]["parse_code"] == ParseCodes.sequence_header:
+                    sh_count += 1
 
-                sh = data_unit["sequence_header"]
-                assert sh == sequence["data_units"][0]["sequence_header"]
+                    sh = data_unit["sequence_header"]
+                    assert sh == sequence["data_units"][0]["sequence_header"]
 
-        # Multiple sequence headers must be present
-        assert sh_count >= 3
+            # Multiple sequence headers must be present
+            assert sh_count >= 3
     else:
-        assert sequence is None
+        assert stream is None
