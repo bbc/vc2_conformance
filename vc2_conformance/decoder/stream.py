@@ -50,6 +50,8 @@ from vc2_conformance.decoder.assertions import (
     assert_parse_code_sequence_ended,
 )
 
+from vc2_conformance.state import reset_state
+
 from vc2_conformance.decoder.io import (
     tell,
     byte_align,
@@ -74,10 +76,9 @@ __all__ = [
 def parse_sequence(state):
     """
     (10.4.1) Parse a complete VC-2 sequence.
-
-    This version of the function has been modified to accept a state dictionary
-    as an argument since the spec
     """
+    reset_state(state)
+
     # (10.4.1) Check that the sequence starts with a sequence_header and ends
     # with and end_of_sequence.
     ## Begin not in spec

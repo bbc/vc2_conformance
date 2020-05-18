@@ -37,6 +37,8 @@ from vc2_data_tables import (
     PARSE_INFO_HEADER_BYTES,
 )
 
+from vc2_conformance.state import reset_state
+
 from vc2_conformance.video_parameters import (
     set_source_defaults,
     set_coding_parameters,
@@ -160,6 +162,8 @@ def parse_sequence(serdes, state):
     :py:mod:`~vc2_conformance.fixeddict`.  Provides a copy of the
     :py:class:`~vc2_conformance.state.State` in ``"_state"``.
     """
+    reset_state(state)
+
     serdes.computed_value("_state", state)
 
     serdes.declare_list("data_units")

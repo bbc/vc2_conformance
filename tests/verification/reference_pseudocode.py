@@ -46,10 +46,10 @@ def clip(a, b, t):
 ################################################################################
 
 # Errata: 'state' is created internally as an empty dict in the spec, not
-# passed in as an argument
+# passed in as an argument.
 def parse_sequence(state):
     """(10.4.1)"""
-    # state = {}  # Errata: see above
+    reset_state(state)  # Errata: see above
     parse_info(state)
     while not is_end_of_sequence(state):
         if is_seq_header(state):
