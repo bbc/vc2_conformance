@@ -390,6 +390,24 @@ class TestSerDes(object):
             serdes.computed_value("value", 321)
         assert serdes.cur_context == {"value": 123}
 
+    def test_is_target_complete_and_verify_target_complete(self, w):
+        serdes = SerDes(w, {"foo": 123, "bar": [1, 2, 3]})
+
+        # Value targets
+        assert serdes.is_target_complete("foo") is False
+        serdes.computed_value("foo", 123)
+        assert serdes.is_target_complete("foo") is True
+
+        # List targets
+        serdes.declare_list("bar")
+        assert serdes.is_target_complete("bar") is False
+        serdes.computed_value("bar", 1)
+        assert serdes.is_target_complete("bar") is False
+        serdes.computed_value("bar", 2)
+        assert serdes.is_target_complete("bar") is False
+        serdes.computed_value("bar", 3)
+        assert serdes.is_target_complete("bar") is True
+
     def test_verify_context_is_complete(self, w):
         serdes = SerDes(w)
 

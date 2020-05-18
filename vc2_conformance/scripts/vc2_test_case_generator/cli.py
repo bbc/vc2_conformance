@@ -123,7 +123,7 @@ from vc2_conformance.color_conversion import sanity_check_video_parameters
 
 from vc2_conformance.test_cases.decoder import static_grey
 
-from vc2_conformance.bitstream import autofill_and_serialise_sequence
+from vc2_conformance.bitstream import Stream, autofill_and_serialise_stream
 
 from vc2_conformance.state import State
 
@@ -345,7 +345,9 @@ def check_codec_features_valid(codec_feature_sets):
 
         # Generate a minimal bitstream
         try:
-            autofill_and_serialise_sequence(f, static_grey(codec_features,))
+            autofill_and_serialise_stream(
+                f, Stream(sequences=[static_grey(codec_features)])
+            )
         except UnsatisfiableCodecFeaturesError as e:
             sys.stderr.write(
                 "Error: Codec configuration {!r} is invalid:\n".format(name)
@@ -423,7 +425,7 @@ def output_decoder_test_case(output_dir, codec_features, test_case):
     # Serialise bitstream
     bitstream_filename = os.path.join(output_dir, "{}.vc2".format(test_case.name),)
     with open(bitstream_filename, "wb") as f:
-        autofill_and_serialise_sequence(f, test_case.value)
+        autofill_and_serialise_stream(f, Stream(sequences=[test_case.value]))
 
     # Decode model answer
     model_answer_directory = os.path.join(

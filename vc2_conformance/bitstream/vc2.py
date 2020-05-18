@@ -107,9 +107,11 @@ from vc2_conformance.bitstream.vc2_fixeddicts import (
     FragmentParse,
     DataUnit,
     Sequence,
+    Stream,
 )
 
 __all__ = [
+    "parse_stream",
     "parse_sequence",
     "auxiliary_data",
     "padding",
@@ -152,11 +154,43 @@ __all__ = [
 ################################################################################
 
 
+@context_type(Stream)
+@ref_pseudocode(deviation="serdes")
+def parse_stream(serdes, state):
+    """
+    (10.3) Parse a VC-2 whole stream containing multiple concatenated
+    sequences, discarding the contents.
+
+    Populates a :py:class:`~vc2_conformance.bitstream.vc2_fixeddicts.Stream`
+    :py:mod:`~vc2_conformance.fixeddict`.
+    """
+    serdes.declare_list("sequences")
+
+    # Here the logic for deciding when a sequence is 'over' is complicated by
+    # the fact that the pseudocode uses an EOF signal to determine this. In the
+    # Serialisation case, this obviously isn't suitable so we instead wait for
+    # the 'sequences' list to run out of entries.
+    #
+    ### while not is_end_of_stream(state):
+    ## Begin not in spec
+    while (
+        # Deserialisation case: stream is ended by an end-of-stream (NB
+        # BitstreamWriter.is_end_of_stream always returns True)
+        not serdes.io.is_end_of_stream()
+        # Serialisation case: stream is ended by running out of sequences to
+        # serialise...
+        or not serdes.is_target_complete("sequences")
+    ):
+        ## End not in spec
+        with serdes.subcontext("sequences"):
+            parse_sequence(serdes, state)
+
+
 @context_type(Sequence)
 @ref_pseudocode(deviation="serdes")
 def parse_sequence(serdes, state):
     """
-    (10.4.1) Parse a whole VC-2 sequence (i.e. file), discarding the contents.
+    (10.4.1) Parse a VC-2 sequence, discarding the contents.
 
     Populates a :py:class:`~vc2_conformance.bitstream.vc2_fixeddicts.Sequence`
     :py:mod:`~vc2_conformance.fixeddict`.  Provides a copy of the

@@ -75,6 +75,7 @@ __all__ = [
     "FragmentParse",
     "DataUnit",
     "Sequence",
+    "Stream",
 ]
 
 
@@ -736,3 +737,14 @@ Sequence = fixeddict(
 vc2_default_values[Sequence] = Sequence()
 
 vc2_fixeddict_nesting[Sequence] = [DataUnit]
+
+Stream = fixeddict(
+    "Stream", Entry("sequences", formatter=MultilineList(heading="")),  # Sequence
+)
+"""
+(10.3) A VC-2 stream.
+"""
+
+vc2_default_values[Stream] = Stream()
+
+vc2_fixeddict_nesting[Stream] = [Sequence]

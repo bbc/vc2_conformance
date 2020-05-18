@@ -10,7 +10,10 @@ Example usage
 -------------
 
     >>> from vc2_conformance.codec_features import CodecFeatures
-    >>> from vc2_conformance.bitstream import autofill_and_serialise_sequence
+    >>> from vc2_conformance.bitstream import (
+    ...     Stream,
+    ...     autofill_and_serialise_stream,
+    ... )
     >>> from vc2_conformance.encoder import make_sequence
 
     >>> # Create a Sequence containing a particular set of pictures for a
@@ -24,7 +27,7 @@ Example usage
 
     >>> # Serialise to a file
     >>> with open("bitstream.vc2", "wb") as f:
-    ...     autofill_and_serialise_sequence(f, sequence)
+    ...     autofill_and_serialise_stream(f, Stream(sequences=[sequence]))
 
 Level constraints
 -----------------

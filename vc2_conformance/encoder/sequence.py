@@ -89,8 +89,9 @@ def make_sequence(codec_features, pictures, *data_unit_patterns, **kwargs):
     Returns
     =======
     sequence : :py:class:`vc2_conformance.bitstream.Sequence`
-        The VC-2 bitstream sequence, ready for serialization using
-        :py:func:`~vc2_conformance.bitstream.vc2_autofill.autofill_and_serialise_sequence`.
+        The VC-2 bitstream sequence, ready for serialization as part of a
+        :py:class:`vc2_conformance.bitstream.Stream` using
+        :py:func:`~vc2_conformance.bitstream.vc2_autofill.autofill_and_serialise_stream`.
 
     Raises
     ======

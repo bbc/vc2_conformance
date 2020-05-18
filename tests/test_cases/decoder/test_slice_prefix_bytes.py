@@ -28,7 +28,8 @@ from vc2_conformance.bitstream import (
     MonitoredDeserialiser,
     to_bit_offset,
     parse_sequence,
-    autofill_and_serialise_sequence,
+    Stream,
+    autofill_and_serialise_stream,
 )
 
 from vc2_conformance.test_cases.decoder.slice_prefix_bytes import (
@@ -141,14 +142,18 @@ class TestSlicePrefixBytes(object):
 
         # Get length of sequence containing no prefix bytes
         f = BytesIO()
-        autofill_and_serialise_sequence(
+        autofill_and_serialise_stream(
             f,
-            make_sequence(
-                codec_features,
-                mid_gray(
-                    codec_features["video_parameters"],
-                    codec_features["picture_coding_mode"],
-                ),
+            Stream(
+                sequences=[
+                    make_sequence(
+                        codec_features,
+                        mid_gray(
+                            codec_features["video_parameters"],
+                            codec_features["picture_coding_mode"],
+                        ),
+                    )
+                ]
             ),
         )
         expected_data_unit_lengths = deserialise_and_measure_slice_data_unit_sizes(
@@ -164,7 +169,7 @@ class TestSlicePrefixBytes(object):
 
         for test_case in test_cases:
             f = BytesIO()
-            autofill_and_serialise_sequence(f, test_case.value)
+            autofill_and_serialise_stream(f, Stream(sequences=[test_case.value]))
             data_unit_lengths = deserialise_and_measure_slice_data_unit_sizes(
                 f.getvalue()
             )
@@ -187,7 +192,7 @@ class TestSlicePrefixBytes(object):
 
         for test_case in test_cases:
             f = BytesIO()
-            autofill_and_serialise_sequence(f, test_case.value)
+            autofill_and_serialise_stream(f, Stream(sequences=[test_case.value]))
             f.seek(0)
 
             log = []

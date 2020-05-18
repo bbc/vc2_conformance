@@ -18,7 +18,7 @@ from vc2_conformance.picture_generators import (
     repeat_pictures,
 )
 
-from vc2_conformance.bitstream import autofill_and_serialise_sequence
+from vc2_conformance.bitstream import Stream, autofill_and_serialise_stream
 
 from vc2_conformance.level_constraints import (
     LEVEL_SEQUENCE_RESTRICTIONS,
@@ -38,7 +38,7 @@ from vc2_conformance.decoder import (
 def serialize_and_decode(sequence):
     # Serialise
     f = BytesIO()
-    autofill_and_serialise_sequence(f, sequence)
+    autofill_and_serialise_stream(f, Stream(sequences=[sequence]))
 
     # Setup callback to capture decoded pictures
     decoded_pictures = []

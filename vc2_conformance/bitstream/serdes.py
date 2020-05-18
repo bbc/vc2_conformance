@@ -896,6 +896,40 @@ class SerDes(object):
         """
         self._set_context_value(target, value)
 
+    def _verify_target_complete(self, target):
+        """
+        Verify that a named target in the current context has been
+        (completely) used. Raises :py:exc:`UnusedTargetError` if not.
+        """
+        # Target not used at all
+        if target not in self._cur_context_indices:
+            raise UnusedTargetError(self.describe_path(target))
+
+        index = self._cur_context_indices[target]
+        value = self.cur_context[target]
+        if index is True:
+            # Target was used (and it is not a list)
+            pass
+        elif index != len(value):
+            # Target was used and was a list, but not all entries were
+            # used!
+            raise UnusedTargetError(
+                "{}[{!r}][{}:{}]".format(
+                    self.describe_path(), target, index, len(value)
+                )
+            )
+
+    def is_target_complete(self, target):
+        """
+        Test whether a target in the current context is complete, i.e. has been
+        fully used up. Returns True if so, False otherwise.
+        """
+        try:
+            self._verify_target_complete(target)
+            return True
+        except UnusedTargetError:
+            return False
+
     def _verify_context_is_complete(self):
         """
         Verify that the current context is 'complete'. That is, every entry in
@@ -906,23 +940,8 @@ class SerDes(object):
         ======
         :py:exc:`~.UnusedTargetError`
         """
-        for target, value in self.cur_context.items():
-            if target not in self._cur_context_indices:
-                # Target not used
-                raise UnusedTargetError(self.describe_path(target))
-            else:
-                index = self._cur_context_indices[target]
-                if index is True:
-                    # Target was used (and it is not a list)
-                    pass
-                elif index != len(value):
-                    # Target was used and was a list, but not all entries were
-                    # used!
-                    raise UnusedTargetError(
-                        "{}[{!r}][{}:{}]".format(
-                            self.describe_path(), target, index, len(value)
-                        )
-                    )
+        for target in self.cur_context:
+            self._verify_target_complete(target)
 
     def verify_complete(self):
         """

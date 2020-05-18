@@ -324,8 +324,16 @@ class BitstreamWriter(object):
         self._byte_offset += 1
 
     def is_end_of_stream(self):
-        """Always False. (A.0.0)"""
-        return False
+        """
+        Always True. (A.0.0)
+
+        .. note::
+
+            Strictly speaking this should return False when seeking to an
+            earlier part of the stream however this behaviour is not
+            implemented here for simplicity's sake.
+        """
+        return True
 
     def tell(self):
         """

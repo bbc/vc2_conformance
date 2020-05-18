@@ -46,7 +46,8 @@ from vc2_conformance.bitstream import (
     DataUnit,
     ParseInfo,
     Sequence,
-    autofill_and_serialise_sequence,
+    Stream,
+    autofill_and_serialise_stream,
 )
 
 from vc2_conformance.decoder.transform_data_syntax import dc_prediction
@@ -1181,7 +1182,7 @@ def serialize_and_decode(sequence):
     """
     # Serialise
     f = BytesIO()
-    autofill_and_serialise_sequence(f, sequence)
+    autofill_and_serialise_stream(f, Stream(sequences=[sequence]))
 
     # Setup callback to capture decoded pictures
     decoded_pictures = []

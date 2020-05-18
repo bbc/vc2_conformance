@@ -7,7 +7,8 @@ from vc2_data_tables import Profiles
 from vc2_conformance.state import State
 
 from vc2_conformance.bitstream import (
-    autofill_and_serialise_sequence,
+    Stream,
+    autofill_and_serialise_stream,
     BitstreamReader,
     Deserialiser,
     parse_sequence,
@@ -35,7 +36,7 @@ def test_next_parse_offset_is_zero(profile, fragment_slice_count):
 
     # Serialise
     f = BytesIO()
-    autofill_and_serialise_sequence(f, sequence)
+    autofill_and_serialise_stream(f, Stream(sequences=[sequence]))
 
     # Deserialise
     f.seek(0)

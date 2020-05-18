@@ -566,14 +566,16 @@ class TestBitstreamViewer(object):
 
         # Should include whole data structure and end as expected.
         assert capsys.readouterr().out == (
-            "                                                  +- data_units:\n"
+            "                                                  +- sequences:\n"
             "                                                  | +- 0:\n"
-            "                                                  | | +- parse_info:\n"
-            "000000000000:                                     | | | +- padding: 0b\n"
-            "000000000000: 01000010010000100100001101000100    | | | +- parse_info_prefix: Correct (0x42424344)\n"
-            "000000000032: 00010000                            | | | +- parse_code: end_of_sequence (0x10)\n"
-            "000000000040: 00000000000000000000000000000000    | | | +- next_parse_offset: 0\n"
-            "000000000072: 00000000000000000000000000000000    | | | +- previous_parse_offset: 0\n"
+            "                                                  | | +- data_units:\n"
+            "                                                  | | | +- 0:\n"
+            "                                                  | | | | +- parse_info:\n"
+            "000000000000:                                     | | | | | +- padding: 0b\n"
+            "000000000000: 01000010010000100100001101000100    | | | | | +- parse_info_prefix: Correct (0x42424344)\n"
+            "000000000032: 00010000                            | | | | | +- parse_code: end_of_sequence (0x10)\n"
+            "000000000040: 00000000000000000000000000000000    | | | | | +- next_parse_offset: 0\n"
+            "000000000072: 00000000000000000000000000000000    | | | | | +- previous_parse_offset: 0\n"
         )
 
     @pytest.mark.parametrize(
@@ -595,11 +597,13 @@ class TestBitstreamViewer(object):
         # Should include whole data structure and end as expected.
         assert capsys.readouterr().out == (
             "000000000000: <32 bits omitted>                   ...\n"
-            "                                                  +- data_units:\n"
+            "                                                  +- sequences:\n"
             "                                                  | +- 0:\n"
-            "                                                  | | +- parse_info:\n"
-            "000000000032: 00010000                            | | | +- parse_code: end_of_sequence (0x10)\n"
-            "000000000040: 00000000000000000000000000000000    | | | +- next_parse_offset: 0\n"
+            "                                                  | | +- data_units:\n"
+            "                                                  | | | +- 0:\n"
+            "                                                  | | | | +- parse_info:\n"
+            "000000000032: 00010000                            | | | | | +- parse_code: end_of_sequence (0x10)\n"
+            "000000000040: 00000000000000000000000000000000    | | | | | +- next_parse_offset: 0\n"
         )
 
     def test_filtered_display_show(self, capsys, padding_sequence_bitstream_fname):
@@ -610,11 +614,13 @@ class TestBitstreamViewer(object):
 
         assert capsys.readouterr().out == (
             "000000000000: <104 bits omitted>                  ...\n"
-            "                                                  +- data_units:\n"
+            "                                                  +- sequences:\n"
             "                                                  | +- 0:\n"
-            "                                                  | | +- padding:\n"
-            "000000000104:                                     | | | +- padding: 0b\n"
-            "000000000104: 1010101011111111                    | | | +- bytes: 0xAA_FF\n"
+            "                                                  | | +- data_units:\n"
+            "                                                  | | | +- 0:\n"
+            "                                                  | | | | +- padding:\n"
+            "000000000104:                                     | | | | | +- padding: 0b\n"
+            "000000000104: 1010101011111111                    | | | | | +- bytes: 0xAA_FF\n"
             "000000000120: <104 bits omitted>                  ...\n"
         )
 
@@ -626,43 +632,47 @@ class TestBitstreamViewer(object):
 
         assert capsys.readouterr().out == (
             "000000000000: <104 bits omitted>                  ...\n"
-            "                                                  +- data_units:\n"
+            "                                                  +- sequences:\n"
             "                                                  | +- 0:\n"
-            "                                                  | | +- padding:\n"
-            "000000000104:                                     | | | +- padding: 0b\n"
-            "000000000104: 1010101011111111                    | | | +- bytes: 0xAA_FF\n"
+            "                                                  | | +- data_units:\n"
+            "                                                  | | | +- 0:\n"
+            "                                                  | | | | +- padding:\n"
+            "000000000104:                                     | | | | | +- padding: 0b\n"
+            "000000000104: 1010101011111111                    | | | | | +- bytes: 0xAA_FF\n"
             "000000000120: <104 bits omitted>                  ...\n"
         )
 
     def test_show_internal_state(self, capsys, padding_sequence_bitstream_fname):
-        v = BitstreamViewer(padding_sequence_bitstream_fname, show_internal_state=True,)
+        v = BitstreamViewer(padding_sequence_bitstream_fname, show_internal_state=True)
         assert v.run() == 0
 
         assert capsys.readouterr().out == (
-            "                                                  +- data_units:\n"
+            "                                                  +- sequences:\n"
             "                                                  | +- 0:\n"
-            "                                                  | | +- parse_info:\n"
-            "000000000000:                                     | | | +- padding: 0b\n"
-            "000000000000: 01000010010000100100001101000100    | | | +- parse_info_prefix: Correct (0x42424344)\n"
-            "000000000032: 00110000                            | | | +- parse_code: padding_data (0x30)\n"
-            "000000000040: 00000000000000000000000000001111    | | | +- next_parse_offset: 15\n"
-            "000000000072: 00000000000000000000000000000000    | | | +- previous_parse_offset: 0\n"
-            "                                                  | | +- padding:\n"
-            "000000000104:                                     | | | +- padding: 0b\n"
-            "000000000104: 1010101011111111                    | | | +- bytes: 0xAA_FF\n"
+            "                                                  | | +- data_units:\n"
+            "                                                  | | | +- 0:\n"
+            "                                                  | | | | +- parse_info:\n"
+            "000000000000:                                     | | | | | +- padding: 0b\n"
+            "000000000000: 01000010010000100100001101000100    | | | | | +- parse_info_prefix: Correct (0x42424344)\n"
+            "000000000032: 00110000                            | | | | | +- parse_code: padding_data (0x30)\n"
+            "000000000040: 00000000000000000000000000001111    | | | | | +- next_parse_offset: 15\n"
+            "000000000072: 00000000000000000000000000000000    | | | | | +- previous_parse_offset: 0\n"
+            "                                                  | | | | +- padding:\n"
+            "000000000104:                                     | | | | | +- padding: 0b\n"
+            "000000000104: 1010101011111111                    | | | | | +- bytes: 0xAA_FF\n"
             "----------------------------------------------\n"
             "State:\n"
             "  parse_code: padding_data (0x30)\n"
             "  next_parse_offset: 15\n"
             "  previous_parse_offset: 0\n"
             "----------------------------------------------\n"
-            "                                                  | +- 1:\n"
-            "                                                  | | +- parse_info:\n"
-            "000000000120:                                     | | | +- padding: 0b\n"
-            "000000000120: 01000010010000100100001101000100    | | | +- parse_info_prefix: Correct (0x42424344)\n"
-            "000000000152: 00010000                            | | | +- parse_code: end_of_sequence (0x10)\n"
-            "000000000160: 00000000000000000000000000000000    | | | +- next_parse_offset: 0\n"
-            "000000000192: 00000000000000000000000000000000    | | | +- previous_parse_offset: 0\n"
+            "                                                  | | | +- 1:\n"
+            "                                                  | | | | +- parse_info:\n"
+            "000000000120:                                     | | | | | +- padding: 0b\n"
+            "000000000120: 01000010010000100100001101000100    | | | | | +- parse_info_prefix: Correct (0x42424344)\n"
+            "000000000152: 00010000                            | | | | | +- parse_code: end_of_sequence (0x10)\n"
+            "000000000160: 00000000000000000000000000000000    | | | | | +- next_parse_offset: 0\n"
+            "000000000192: 00000000000000000000000000000000    | | | | | +- previous_parse_offset: 0\n"
             "----------------------------------------------\n"
             "State:\n"
             "  parse_code: end_of_sequence (0x10)\n"
@@ -676,9 +686,9 @@ class TestBitstreamViewer(object):
             padding_sequence_bitstream_fname, shown_pseudocode_names=["padding"],
         )
         assert v.run() == 0
-        assert len(v._serdes.context["data_units"]) == 2
-        assert v._serdes.context["data_units"][0] is None
-        assert v._serdes.context["data_units"][1] is not None
+        assert len(v._serdes.context["sequences"][0]["data_units"]) == 2
+        assert v._serdes.context["sequences"][0]["data_units"][0] is None
+        assert v._serdes.context["sequences"][0]["data_units"][1] is not None
 
     def test_check_parse_info_prefix(
         self, capsys, bad_parse_info_prefix_bitstream_fname
@@ -691,11 +701,13 @@ class TestBitstreamViewer(object):
 
         out, err = capsys.readouterr()
         assert out == (
-            "                                                  +- data_units:\n"
+            "                                                  +- sequences:\n"
             "                                                  | +- 0:\n"
-            "                                                  | | +- parse_info:\n"
-            "000000000000:                                     | | | +- padding: 0b\n"
-            "000000000000: 11011110101011011011111011101111    | | | +- parse_info_prefix: INCORRECT (0xDEADBEEF)\n"
+            "                                                  | | +- data_units:\n"
+            "                                                  | | | +- 0:\n"
+            "                                                  | | | | +- parse_info:\n"
+            "000000000000:                                     | | | | | +- padding: 0b\n"
+            "000000000000: 11011110101011011011111011101111    | | | | | +- parse_info_prefix: INCORRECT (0xDEADBEEF)\n"
         )
         assert err.endswith(": error: invalid parse_info prefix (0xDEADBEEF)\n")
 
@@ -706,14 +718,16 @@ class TestBitstreamViewer(object):
         assert v.run() == 0
         out, err = capsys.readouterr()
         assert out == (
-            "                                                  +- data_units:\n"
+            "                                                  +- sequences:\n"
             "                                                  | +- 0:\n"
-            "                                                  | | +- parse_info:\n"
-            "000000000000:                                     | | | +- padding: 0b\n"
-            "000000000000: 11011110101011011011111011101111    | | | +- parse_info_prefix: INCORRECT (0xDEADBEEF)\n"
-            "000000000032: 00010000                            | | | +- parse_code: end_of_sequence (0x10)\n"
-            "000000000040: 00000000000000000000000000000000    | | | +- next_parse_offset: 0\n"
-            "000000000072: 00000000000000000000000000000000    | | | +- previous_parse_offset: 0\n"
+            "                                                  | | +- data_units:\n"
+            "                                                  | | | +- 0:\n"
+            "                                                  | | | | +- parse_info:\n"
+            "000000000000:                                     | | | | | +- padding: 0b\n"
+            "000000000000: 11011110101011011011111011101111    | | | | | +- parse_info_prefix: INCORRECT (0xDEADBEEF)\n"
+            "000000000032: 00010000                            | | | | | +- parse_code: end_of_sequence (0x10)\n"
+            "000000000040: 00000000000000000000000000000000    | | | | | +- next_parse_offset: 0\n"
+            "000000000072: 00000000000000000000000000000000    | | | | | +- previous_parse_offset: 0\n"
         )
         assert err == ""
 
@@ -723,18 +737,20 @@ class TestBitstreamViewer(object):
 
         out, err = capsys.readouterr()
         assert out == (
-            "                                                  +- data_units:\n"
+            "                                                  +- sequences:\n"
             "                                                  | +- 0:\n"
-            "                                                  | | +- parse_info:\n"
-            "000000000000:                                     | | | +- padding: 0b\n"
-            "000000000000: 01000010010000100100001101000100    | | | +- parse_info_prefix: Correct (0x42424344)\n"
-            "000000000032: 00010000                            | | | +- parse_code: end_of_sequence (0x10)\n"
+            "                                                  | | +- data_units:\n"
+            "                                                  | | | +- 0:\n"
+            "                                                  | | | | +- parse_info:\n"
+            "000000000000:                                     | | | | | +- padding: 0b\n"
+            "000000000000: 01000010010000100100001101000100    | | | | | +- parse_info_prefix: Correct (0x42424344)\n"
+            "000000000032: 00010000                            | | | | | +- parse_code: end_of_sequence (0x10)\n"
         )
         assert (
             re.match(
                 r"000000000040: 0000000000000000                    <next 16 bits>\n"
                 r".*: offset: 56\n"
-                r".*: target: data_units: 0: parse_info\n"
+                r".*: target: sequences: 0: data_units: 0: parse_info\n"
                 r".*: error: reached the end of the file while parsing parse_info \(10.5.1\)\n",
                 err,
             )
@@ -869,12 +885,14 @@ def test_integration(capsys, minimal_sequence_bitstream_fname):
     assert main([minimal_sequence_bitstream_fname]) == 0
 
     assert capsys.readouterr().out == (
-        "                                                  +- data_units:\n"
+        "                                                  +- sequences:\n"
         "                                                  | +- 0:\n"
-        "                                                  | | +- parse_info:\n"
-        "000000000000:                                     | | | +- padding: 0b\n"
-        "000000000000: 01000010010000100100001101000100    | | | +- parse_info_prefix: Correct (0x42424344)\n"
-        "000000000032: 00010000                            | | | +- parse_code: end_of_sequence (0x10)\n"
-        "000000000040: 00000000000000000000000000000000    | | | +- next_parse_offset: 0\n"
-        "000000000072: 00000000000000000000000000000000    | | | +- previous_parse_offset: 0\n"
+        "                                                  | | +- data_units:\n"
+        "                                                  | | | +- 0:\n"
+        "                                                  | | | | +- parse_info:\n"
+        "000000000000:                                     | | | | | +- padding: 0b\n"
+        "000000000000: 01000010010000100100001101000100    | | | | | +- parse_info_prefix: Correct (0x42424344)\n"
+        "000000000032: 00010000                            | | | | | +- parse_code: end_of_sequence (0x10)\n"
+        "000000000040: 00000000000000000000000000000000    | | | | | +- next_parse_offset: 0\n"
+        "000000000072: 00000000000000000000000000000000    | | | | | +- previous_parse_offset: 0\n"
     )

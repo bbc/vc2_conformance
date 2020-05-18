@@ -51,12 +51,19 @@ def deserialise(w, func, state=None, *args):
     return serdes.context
 
 
+def test_parse_default_stream(w):
+    seq_in = vc2.Stream()
+    with Serialiser(w, seq_in, vc2_default_values) as serdes:
+        vc2.parse_stream(serdes, State())
+    seq = deserialise(w, vc2.parse_stream)
+    assert str(seq) == ("Stream:\n" "  sequences: \n" "    ")
+
+
 def test_parse_default_sequence(w):
     seq_in = vc2.Sequence()
     with Serialiser(w, seq_in, vc2_default_values) as serdes:
         vc2.parse_sequence(serdes, State())
     seq = deserialise(w, vc2.parse_sequence)
-    print(str(seq))
     assert str(seq) == (
         "Sequence:\n"
         "  data_units: \n"
@@ -67,6 +74,74 @@ def test_parse_default_sequence(w):
         "        parse_code: end_of_sequence (0x10)\n"
         "        next_parse_offset: 0\n"
         "        previous_parse_offset: 0"
+    )
+
+
+def test_parse_stream(w):
+    stream_in = vc2.Stream(
+        sequences=[
+            vc2.Sequence(
+                data_units=[
+                    vc2.DataUnit(
+                        parse_info=vc2.ParseInfo(
+                            parse_code=tables.ParseCodes.padding_data,
+                            next_parse_offset=13,
+                        ),
+                        padding=vc2.Padding(),
+                    ),
+                    vc2.DataUnit(
+                        parse_info=vc2.ParseInfo(
+                            parse_code=tables.ParseCodes.end_of_sequence
+                        ),
+                    ),
+                ]
+            ),
+            vc2.Sequence(
+                data_units=[
+                    vc2.DataUnit(
+                        parse_info=vc2.ParseInfo(
+                            parse_code=tables.ParseCodes.end_of_sequence
+                        ),
+                    ),
+                ]
+            ),
+        ],
+    )
+    with Serialiser(w, stream_in, vc2_default_values) as serdes:
+        vc2.parse_stream(serdes, State())
+    stream = deserialise(w, vc2.parse_stream)
+    print(str(stream))
+    assert str(stream) == (
+        "Stream:\n"
+        "  sequences: \n"
+        "    0: Sequence:\n"
+        "      data_units: \n"
+        "        0: DataUnit:\n"
+        "          parse_info: ParseInfo:\n"
+        "            padding: 0b\n"
+        "            parse_info_prefix: Correct (0x42424344)\n"
+        "            parse_code: padding_data (0x30)\n"
+        "            next_parse_offset: 13\n"
+        "            previous_parse_offset: 0\n"
+        "          padding: Padding:\n"
+        "            padding: 0b\n"
+        "            bytes: 0x\n"
+        "        1: DataUnit:\n"
+        "          parse_info: ParseInfo:\n"
+        "            padding: 0b\n"
+        "            parse_info_prefix: Correct (0x42424344)\n"
+        "            parse_code: end_of_sequence (0x10)\n"
+        "            next_parse_offset: 0\n"
+        "            previous_parse_offset: 0\n"
+        "    1: Sequence:\n"
+        "      data_units: \n"
+        "        0: DataUnit:\n"
+        "          parse_info: ParseInfo:\n"
+        "            padding: 0b\n"
+        "            parse_info_prefix: Correct (0x42424344)\n"
+        "            parse_code: end_of_sequence (0x10)\n"
+        "            next_parse_offset: 0\n"
+        "            previous_parse_offset: 0"
     )
 
 

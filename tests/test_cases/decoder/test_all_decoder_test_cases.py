@@ -6,7 +6,7 @@ from io import BytesIO
 
 from vc2_data_tables import Profiles, Levels, PictureCodingModes
 
-from vc2_conformance.bitstream import autofill_and_serialise_sequence
+from vc2_conformance.bitstream import Stream, autofill_and_serialise_stream
 
 from vc2_conformance.test_cases import DECODER_TEST_CASE_GENERATOR_REGISTRY
 
@@ -123,7 +123,7 @@ def test_all_decoder_test_cases(codec_features, test_case):
 
     # Serialise
     f = BytesIO()
-    autofill_and_serialise_sequence(f, test_case.value)
+    autofill_and_serialise_stream(f, Stream(sequences=[test_case.value]))
     f.seek(0)
 
     # Deserialise/validate

@@ -635,7 +635,10 @@ class BitstreamViewer(object):
             # will display the state was it was after parsing the first field
             # of each data unit. Since this is a padding field, the state
             # should still be correct.
-            num_data_units = len(self._serdes.context["data_units"])
+            num_data_units = sum(
+                len(sequence["data_units"])
+                for sequence in self._serdes.context["sequences"]
+            )
             if self._last_num_data_units != num_data_units:
                 self._last_num_data_units = num_data_units
 
@@ -693,8 +696,12 @@ class BitstreamViewer(object):
             raise BitstreamViewer._TerminateSuccess()
 
         # Save memory by discarding previously deseriallised data units
-        if len(self._serdes.context["data_units"]) > 1:
-            self._serdes.context["data_units"][-2] = None
+        current_data_unit = True
+        for sequence in reversed(self._serdes.context["sequences"]):
+            for i in reversed(range(len(sequence["data_units"]))):
+                if not current_data_unit:
+                    sequence["data_units"][i] = None
+                current_data_unit = False
 
     def run(self):
         """
@@ -731,7 +738,7 @@ class BitstreamViewer(object):
             self._serdes = bitstream.MonitoredDeserialiser(
                 io=self._reader, monitor=self,
             )
-            bitstream.parse_sequence(self._serdes, self._state)
+            bitstream.parse_stream(self._serdes, self._state)
         except BitstreamViewer._TerminateSuccess:
             return_code = 0
             error_message = None

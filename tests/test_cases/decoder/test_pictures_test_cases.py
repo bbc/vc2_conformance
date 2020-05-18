@@ -35,7 +35,8 @@ from vc2_conformance.bitstream import (
     LDSlice,
     hq_slice,
     ld_slice,
-    autofill_and_serialise_sequence,
+    Stream,
+    autofill_and_serialise_stream,
     parse_sequence,
 )
 
@@ -1091,7 +1092,7 @@ def test_slice_padding_data(profile, lossless):
         find_slice_padding_bytes(test_case.value)
         f = BytesIO()
 
-        autofill_and_serialise_sequence(f, test_case.value)
+        autofill_and_serialise_stream(f, Stream(sequences=[test_case.value]))
 
         end_of_sequence = b"BBCD" + bytearray([ParseCodes.end_of_sequence])
         end_of_sequence_counts.append(f.getvalue().count(end_of_sequence))
@@ -1169,7 +1170,7 @@ class TestDanglingBoundedBlockData(object):
 
     def serialise_and_decode_pictures(self, sequence):
         f = BytesIO()
-        autofill_and_serialise_sequence(f, sequence)
+        autofill_and_serialise_stream(f, Stream(sequences=[sequence]))
 
         pictures = []
         state = State(_output_picture_callback=lambda pic, vp: pictures.append(pic))

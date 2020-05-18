@@ -23,37 +23,39 @@ Quick-start/teaser example
 --------------------------
 
 The following minimal example can be used to deserialise a complete VC-2
-bitstream sequence::
+bitstream::
 
     >>> from vc2_conformance.state import State
-    >>> from vc2_conformance.bitstream import Deserialiser, BitstreamReader, parse_sequence
+    >>> from vc2_conformance.bitstream import Deserialiser, BitstreamReader, parse_stream
 
     >>> with open("/path/to/bitstream.vc2", "rb") as f:
     ...     reader = BitstreamReader(f)
     ...     with Deserialiser(reader) as des:
-    ...         parse_sequence(des, State())
+    ...         parse_stream(des, State())
 
     >>> # Display in pretty-printed human-readable form
     >>> str(des.context)
-    Sequence:
-      data_units:
-        0: DataUnit:
-          parse_info: ParseInfo:
-            padding: 0b
-            parse_info_prefix: Correct (0x42424344)
-            parse_code: sequence_header (0x00)
-            next_parse_offset: 17
-            previous_parse_offset: 0
-          sequence_header: SequenceHeader:
-            padding: 0b
-            parse_parameters: ParseParameters:
-              major_version: 3
-              minor_version: 0
+    Stream:
+      sequences:
+        0: Sequence:
+          data_units:
+            0: DataUnit:
+              parse_info: ParseInfo:
+                padding: 0b
+                parse_info_prefix: Correct (0x42424344)
+                parse_code: sequence_header (0x00)
+                next_parse_offset: 17
+                previous_parse_offset: 0
+              sequence_header: SequenceHeader:
+                padding: 0b
+                parse_parameters: ParseParameters:
+                  major_version: 3
+                  minor_version: 0
     <...and so on...>
 
     >>> # Deserialised values are kept in a nested dictionary structure which can
     >>> # be accessed as usual:
-    >>> des.context["data_units"][0]["parse_info"]["parse_info_prefix"]
+    >>> des.context["sequences"][0]["data_units"][0]["parse_info"]["parse_info_prefix"]
     1111638852
 
 New users of this module should begin by reading the introduction to the
@@ -107,34 +109,37 @@ versions of the VC-2 pseudo code can be found in the :py:mod:`.vc2` submodule.
 Auto-fill logic
 ---------------
 
-The :py:func:`~vc2_conformance.vc2_autofill.autofill_and_serialise_sequence`
+The :py:func:`~vc2_conformance.vc2_autofill.autofill_and_serialise_stream`
 utility function is provided which can be used to automatically fill in
 bitstream fields to enable compact descriptions of VC-2 bitstreams to be
 constructed. For example, the following describes a valid bitstream with a
 single HD mid-grey picture::
 
-    from vc2_data_tables import ParseCodes, BaseVideoFormats
+    >>> from vc2_data_tables import ParseCodes, BaseVideoFormats
 
-    from vc2_conformance.bitstream import (
-        Sequence,
-        SequenceHeader,
-        ParseInfo,
-        BitstreamWriter,
-        autofill_and_serialise_sequence,
-    )
+    >>> from vc2_conformance.bitstream import (
+    ...     Stream,
+    ...     Sequence,
+    ...     SequenceHeader,
+    ...     ParseInfo,
+    ...     BitstreamWriter,
+    ...     autofill_and_serialise_stream,
+    ... )
 
-    seq = Sequence(data_units=[
-        DataUnit(
-            parse_info=ParseInfo(parse_code=ParseCodes.sequence_header),
-            sequence_header=SequenceHeader(
-                base_video_format=BaseVideoFormats.hd1080p_50
-            )
-        ),
-        DataUnit(parse_info=ParseInfo(parse_code=ParseCodes.high_quality_picture)),
-        DataUnit(parse_info=ParseInfo(parse_code=ParseCodes.end_of_sequence)),
-    ])
-    with open("bitstream.vc2", "wb") as f:
-        autofill_and_serialise_sequence(f, seq)
+    >>> stream = Stream(sequences=[
+    ...     Sequence(data_units=[
+    ...         DataUnit(
+    ...             parse_info=ParseInfo(parse_code=ParseCodes.sequence_header),
+    ...             sequence_header=SequenceHeader(
+    ...                 base_video_format=BaseVideoFormats.hd1080p_50
+    ...             )
+    ...         ),
+    ...         DataUnit(parse_info=ParseInfo(parse_code=ParseCodes.high_quality_picture)),
+    ...         DataUnit(parse_info=ParseInfo(parse_code=ParseCodes.end_of_sequence)),
+    ...     ])
+    ... ])
+    >>> with open("bitstream.vc2", "wb") as f:
+    ...     autofill_and_serialise_stream(f, stream)
 
 In the example above, all of the bitstream values will be filled with default
 values. In addition, the picture numbers and parse info offset fields will be

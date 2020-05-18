@@ -241,7 +241,7 @@ class TestBistreamWriter(object):
 
     def test_is_end_of_stream(self):
         w = bitstream.BitstreamWriter(BytesIO())
-        assert w.is_end_of_stream() is False
+        assert w.is_end_of_stream() is True
 
     def test_tell(self):
         w = bitstream.BitstreamWriter(BytesIO())

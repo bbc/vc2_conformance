@@ -14,7 +14,7 @@ from vc2_data_tables import (
 
 from vc2_conformance.state import State
 
-from vc2_conformance.bitstream import autofill_and_serialise_sequence
+from vc2_conformance.bitstream import Stream, autofill_and_serialise_stream
 
 from vc2_conformance.decoder import (
     init_io,
@@ -28,7 +28,7 @@ from sample_codec_features import MINIMAL_CODEC_FEATURES
 
 def encode_and_decode(sequence):
     f = BytesIO()
-    autofill_and_serialise_sequence(f, sequence)
+    autofill_and_serialise_stream(f, Stream(sequences=[sequence]))
     f.seek(0)
 
     pictures = []

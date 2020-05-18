@@ -38,12 +38,12 @@ def test_every_fixeddict_maps_to_one_function():
 
 
 def test_recursive():
-    # Sanity check: ensure the 'parse_sequence' type list which should
+    # Sanity check: ensure the 'parse_stream' type list which should
     # encompass every possible structure. If this test fails, it is likely one
     # or more fixeddicts do not correctly declare thier children using the
     # 'type' annotation.
     all_types = set(bitstream.vc2_default_values.keys())
     assert (
-        set(bitstream.pseudocode_function_to_fixeddicts_recursive["parse_sequence"])
+        set(bitstream.pseudocode_function_to_fixeddicts_recursive["parse_stream"])
         == all_types
     )
