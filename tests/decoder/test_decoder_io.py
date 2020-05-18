@@ -103,3 +103,20 @@ def test_tell():
     # At EOF
     decoder.read_nbits(state, 4)
     assert decoder.tell(state) == (2, 7)
+
+
+def test_is_end_of_stream():
+    f = BytesIO(b"\xFF")
+    state = State()
+    decoder.init_io(state, f)
+
+    # At start of stream
+    assert decoder.is_end_of_stream() is False
+
+    # Part-way through byte
+    decoder.read_nbits(state, 4)
+    assert decoder.is_end_of_stream() is False
+
+    # At end of stream
+    decoder.read_nbits(state, 4)
+    assert decoder.is_end_of_stream() is False

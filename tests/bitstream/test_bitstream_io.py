@@ -56,13 +56,15 @@ class TestBistreamReader(object):
         for _ in range(8):
             r.read_bit()
 
-    def test_read_past_eof(self):
+    def test_read_past_eof_and_is_end_of_stream(self):
         r = bitstream.BitstreamReader(BytesIO(b"\xA5\x0F"))
 
         for _ in range(16):
+            assert r.is_end_of_stream() is False
             r.read_bit()
 
         # Read past end
+        assert r.is_end_of_stream() is True
         with pytest.raises(EOFError):
             r.read_bit()
 
@@ -236,6 +238,10 @@ class TestBistreamWriter(object):
         # Ending the byte normally should flush automatically and retain
         # existing bits
         assert f.getvalue() == b"\x5F"
+
+    def test_is_end_of_stream(self):
+        w = bitstream.BitstreamWriter(BytesIO())
+        assert w.is_end_of_stream() is False
 
     def test_tell(self):
         w = bitstream.BitstreamWriter(BytesIO())

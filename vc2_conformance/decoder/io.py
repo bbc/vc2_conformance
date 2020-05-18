@@ -13,6 +13,7 @@ __all__ = [
     "record_bitstream_finish",
     "tell",
     "read_byte",
+    "is_end_of_stream",
     "read_bit",
     "byte_align",
     "read_bool",
@@ -127,6 +128,15 @@ def read_byte(state):
     else:
         # End of file
         state["current_byte"] = None
+
+
+@ref_pseudocode(deviation="inferred_implementation")
+def is_end_of_stream(state):
+    """
+    (A.0.0) Determine if we have reached the end of the stream (i.e. the end of
+    the file).
+    """
+    return state["current_byte"] is None
 
 
 @ref_pseudocode

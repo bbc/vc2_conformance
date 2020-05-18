@@ -91,6 +91,10 @@ class BitstreamReader(object):
             self._current_byte = None
             self._next_bit = 7
 
+    def is_end_of_stream(self):
+        """Check if we've reached the EOF. (A.0.0)"""
+        return self._current_byte is None
+
     def tell(self):
         """
         Report the current bit-position within the stream.
@@ -318,6 +322,10 @@ class BitstreamWriter(object):
         self._current_byte = 0
         self._next_bit = 7
         self._byte_offset += 1
+
+    def is_end_of_stream(self):
+        """Always False. (A.0.0)"""
+        return False
 
     def tell(self):
         """
