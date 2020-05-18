@@ -24,11 +24,6 @@ limited extent by the generated test cases. Some of these are listed below.
     generated to test this esoteric case, however, since this it is unlikely to
     be used in practice.
 
-**Concatenated sequences**
-    All test cases consist of a single VC-2 sequence. Streams consisting of
-    several sequences (10.3) are not tested. This is due to each stream being
-    considered a separately decodable entity with no state shared between them.
-
 **Auxiliary data-units**
     Auxiliary data units (10.4.4) are not tested. This is because the contents
     of such units are not defined by the VC-2 standard and so in the event that
