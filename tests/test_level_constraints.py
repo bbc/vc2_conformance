@@ -5,7 +5,7 @@ from vc2_conformance.level_constraints import (
     LEVEL_CONSTRAINT_ANY_VALUES,
 )
 
-from vc2_conformance._constraint_table import allowed_values_for
+from vc2_conformance.constraint_table import allowed_values_for
 
 
 def test_all_levels_have_constraint_table_entries():

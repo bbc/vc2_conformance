@@ -1,6 +1,6 @@
 # Constraints on bitstream values from levels. Each column of this table enumerates a combination of parameter values] which may be used simultaneously in a VC-2 stream,,,,,,,,,,,,,,,,,,,,,,
 # See vc2_conformance/level_constraints.py for meanings of the values in the table,,,,,,,,,,,,,,,,,,,,,,
-# See vc2_conformance/_constraint_table.py for details of how constraint tables are parsed and enforced,,,,,,,,,,,,,,,,,,,,,,
+# See vc2_conformance/constraint_table.py for details of how constraint tables are parsed and enforced,,,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,
 # (11.2.1),# Unconcstrained,# Sub-SD,# SD480i-60,# SD480p-30,# SD Interlaced,# SD Progressive,# HD Progressive,# HD Interlaced,# HD Interlaced as progressive,# D-Cinema 2K,# D-Cinema 4K,# UHDTV 4K,# UHDTV 8K,# 1080p60 over SDI,# 1080p50 over SDI,# 720p60 over SD SDI,# 720p50 over SD SDI,# 1080i60 over SD SDI,# 1080i50 over SD SDI,# 1440x1080i60 over SD SDI,# 1440x1080i50 over SD SDI,# UHD over HD
 level,0,1,2,"""","""","""",3,"""","""",4,5,6,7,64,"""",65,"""","""","""","""","""",66

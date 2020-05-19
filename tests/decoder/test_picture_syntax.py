@@ -2,7 +2,7 @@ import pytest
 
 from decoder_test_utils import serialise_to_bytes, bytes_to_state
 
-from vc2_conformance._constraint_table import ValueSet
+from vc2_conformance.constraint_table import ValueSet
 
 from vc2_conformance.state import State
 

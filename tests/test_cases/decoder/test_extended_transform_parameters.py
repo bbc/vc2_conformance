@@ -8,7 +8,7 @@ from vc2_conformance.codec_features import CodecFeatures
 
 from vc2_conformance.bitstream import ExtendedTransformParameters
 
-from vc2_conformance._constraint_table import ValueSet
+from vc2_conformance.constraint_table import ValueSet
 
 from vc2_conformance.level_constraints import LEVEL_CONSTRAINTS
 

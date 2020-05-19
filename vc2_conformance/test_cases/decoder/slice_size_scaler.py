@@ -8,7 +8,7 @@ from vc2_conformance.encoder import make_sequence
 
 from vc2_conformance.encoder.pictures import get_safe_lossy_hq_slice_size_scaler
 
-from vc2_conformance._constraint_table import allowed_values_for
+from vc2_conformance.constraint_table import allowed_values_for
 
 from vc2_conformance.level_constraints import LEVEL_CONSTRAINTS
 

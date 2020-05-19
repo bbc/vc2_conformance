@@ -24,7 +24,7 @@ from vc2_data_tables import (
     PresetColorSpecs,
 )
 
-from vc2_conformance._constraint_table import ValueSet, AnyValue
+from vc2_conformance.constraint_table import ValueSet, AnyValue
 
 from vc2_conformance.bitstream import (
     BitstreamWriter,

@@ -17,7 +17,7 @@ from vc2_data_tables import (
     PRESET_COLOR_SPECS,
 )
 
-from vc2_conformance._constraint_table import (
+from vc2_conformance.constraint_table import (
     filter_allowed_values,
     allowed_values_for,
 )
@@ -125,7 +125,7 @@ def iter_custom_options_dicts(
         ...     BASE_VIDEO_FORMAT_PARAMETERS,
         ...     PRESET_PIXEL_ASPECT_RATIOS,
         ... )
-        >>> from vc2_conformance._constraint_table import AnyValue
+        >>> from vc2_conformance.constraint_table import AnyValue
         >>> from vc2_conformance.bitstream import (
         ...     PixelAspectRatio,
         ... )
@@ -207,7 +207,7 @@ def iter_custom_options_dicts(
         The :py:class:`~vc2_conformance.video_parameters.VideoParameters`
         representing the desired video parameters to be represented. Only the
         entries mentioned in ``dict_type`` will be checked.
-    level_constraints_dict : {str: :py:class:`~vc2_conformance._constraint_table.ValueSet`, ...}
+    level_constraints_dict : {str: :py:class:`~vc2_conformance.constraint_table.ValueSet`, ...}
         A single dictionary of level constraints (i.e. a single column from
         :py:class:`vc2_conformance.level_constraints.LEVEL_CONSTRAINTS`).
     dict_type : :py:class:`~vc2_conformance.fixeddicts.fixeddict` type
@@ -380,7 +380,7 @@ def iter_color_spec_options(
         The :py:class:`~vc2_conformance.video_parameters.VideoParameters`
         representing the desired video parameters to be represented. Only the
         colour mode related entries mentioned in will be checked.
-    level_constraints_dict : {str: :py:class:`~vc2_conformance._constraint_table.ValueSet`, ...}
+    level_constraints_dict : {str: :py:class:`~vc2_conformance.constraint_table.ValueSet`, ...}
         A single dictionary of level constraints (i.e. a single column from
         :py:class:`vc2_conformance.level_constraints.LEVEL_CONSTRAINTS`).
     """
@@ -475,7 +475,7 @@ def iter_source_parameter_options(
     video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
         The :py:class:`~vc2_conformance.video_parameters.VideoParameters`
         representing the desired video parameters to be represented.
-    level_constraints_dict : {str: :py:class:`~vc2_conformance._constraint_table.ValueSet`, ...}
+    level_constraints_dict : {str: :py:class:`~vc2_conformance.constraint_table.ValueSet`, ...}
         A single dictionary of level constraints (i.e. a single column from
         :py:class:`vc2_conformance.level_constraints.LEVEL_CONSTRAINTS`). All
         generated parameter sets will meet the restrictions imposed (which may

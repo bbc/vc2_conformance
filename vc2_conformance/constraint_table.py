@@ -1,5 +1,5 @@
 """
-:py:mod:`vc2_conformance._constraint_table`
+:py:mod:`vc2_conformance.constraint_table`
 ===========================================
 
 Certain bitstream conformance rules are best expressed by enumerating valid
@@ -398,7 +398,7 @@ def read_constraints_from_csv(csv_filename):
 
     The read constraint table will be returned as a list of dictionaries (one
     per column) as expected by the functions in
-    :py:mod:`vc2_conformance._constraint_table`.
+    :py:mod:`vc2_conformance.constraint_table`.
     """
     out = []
 

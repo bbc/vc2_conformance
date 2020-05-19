@@ -55,7 +55,7 @@ this permits.
 Level constraint independence testing
 -------------------------------------
 
-Constraint tables (:py:mod:`vc2_conformance._constraint_table`) are expressed
+Constraint tables (:py:mod:`vc2_conformance.constraint_table`) are expressed
 as a series of 'columns', each of which describes a permitted set of
 parameters. For example, consider the following extract from the VC-2
 constraint table:

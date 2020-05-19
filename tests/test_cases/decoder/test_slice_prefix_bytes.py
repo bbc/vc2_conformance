@@ -11,7 +11,7 @@ from vc2_conformance.picture_generators import (
     mid_gray,
 )
 
-from vc2_conformance._constraint_table import AnyValue, ValueSet
+from vc2_conformance.constraint_table import AnyValue, ValueSet
 
 from vc2_conformance.level_constraints import LEVEL_CONSTRAINTS
 

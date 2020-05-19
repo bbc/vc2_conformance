@@ -5,7 +5,7 @@
 
 from vc2_conformance.metadata import ref_pseudocode
 
-from vc2_conformance._constraint_table import allowed_values_for
+from vc2_conformance.constraint_table import allowed_values_for
 
 from vc2_conformance.slice_sizes import slices_have_same_dimensions
 

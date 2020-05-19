@@ -6,7 +6,7 @@ from vc2_conformance.state import State
 
 from vc2_conformance.symbol_re import Matcher
 
-from vc2_conformance._constraint_table import ValueSet
+from vc2_conformance.constraint_table import ValueSet
 
 from vc2_conformance.decoder.exceptions import (
     ValueNotAllowedInLevel,

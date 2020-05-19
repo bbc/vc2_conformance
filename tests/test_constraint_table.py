@@ -2,7 +2,7 @@ import pytest
 
 import os
 
-from vc2_conformance._constraint_table import (
+from vc2_conformance.constraint_table import (
     ValueSet,
     AnyValue,
     filter_allowed_values,

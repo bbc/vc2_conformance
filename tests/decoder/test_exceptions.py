@@ -8,7 +8,7 @@ import vc2_data_tables as tables
 
 from vc2_conformance._string_utils import wrap_paragraphs
 
-from vc2_conformance._constraint_table import ValueSet
+from vc2_conformance.constraint_table import ValueSet
 
 from vc2_conformance.decoder import exceptions
 

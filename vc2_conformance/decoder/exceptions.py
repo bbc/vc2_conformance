@@ -739,7 +739,7 @@ class ValueNotAllowedInLevel(ConformanceError):
     The offending key and value will be placed in :py:attr:`key` and
     :py:attr:`value` respectively.
 
-    The allowed :py:class:`~vc2_conformance._constraint_table.ValueSet` will be
+    The allowed :py:class:`~vc2_conformance.constraint_table.ValueSet` will be
     placed in :py:attr:`allowed_values`.
     """
 
@@ -1543,7 +1543,7 @@ class QuantisationMatrixValueNotAllowedInLevel(ConformanceError):
     current level.
 
     The value and expected values (as a
-    :py:class:`~vc2_conformance._constraint_table.ValueSet`) will be passed as
+    :py:class:`~vc2_conformance.constraint_table.ValueSet`) will be passed as
     arguments along with the current level constraint dictionary.
     """
 

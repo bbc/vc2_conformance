@@ -9,7 +9,7 @@ restrictions defined by different levels.
 
 .. autodata:: LEVEL_SEQUENCE_RESTRICTIONS
 
-A :py:class:`vc2_conformance._constraint_table` giving the restrictions imposed
+A :py:class:`vc2_conformance.constraint_table` giving the restrictions imposed
 by VC-2's levels.
 
 .. autodata:: LEVEL_CONSTRAINTS
@@ -22,7 +22,7 @@ import os
 
 from collections import namedtuple
 
-from vc2_conformance._constraint_table import (
+from vc2_conformance.constraint_table import (
     read_constraints_from_csv,
     ValueSet,
 )
@@ -86,7 +86,7 @@ LEVEL_CONSTRAINTS = read_constraints_from_csv(
     os.path.join(os.path.dirname(__file__), "level_constraints.csv",)
 )
 """
-A :py:mod:`vc2_conformance._constraint_table` table of constraints which apply
+A :py:mod:`vc2_conformance.constraint_table` table of constraints which apply
 due to levels. Keys correspond to partiuclar bitstream values in sequence
 headers and transform parameters headers and are enumerated below:
 
@@ -205,8 +205,8 @@ LEVEL_CONSTRAINT_ANY_VALUES = {
 }
 """
 For keys in :py:data:`LEVEL_CONSTRAINTS` which may hold
-:py:class:`~vc2_conformance._constraint_table.AnyValue`, defines an explicit
-:py:class:`~vc2_conformance._constraint_table.ValueSet` defining all valid
+:py:class:`~vc2_conformance.constraint_table.AnyValue`, defines an explicit
+:py:class:`~vc2_conformance.constraint_table.ValueSet` defining all valid
 values. Where the range of allowed values is truly open ended, no value is
 provided in this table.
 """

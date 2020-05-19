@@ -9,7 +9,7 @@ from vc2_conformance.test_cases import (
     decoder_test_case_generator,
 )
 
-from vc2_conformance._constraint_table import allowed_values_for
+from vc2_conformance.constraint_table import allowed_values_for
 
 from vc2_conformance.level_constraints import LEVEL_CONSTRAINTS
 

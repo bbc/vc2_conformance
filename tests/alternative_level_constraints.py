@@ -6,7 +6,7 @@ from contextlib import contextmanager
 
 from vc2_data_tables import Levels
 
-from vc2_conformance._constraint_table import read_constraints_from_csv
+from vc2_conformance.constraint_table import read_constraints_from_csv
 
 from vc2_conformance.level_constraints import (
     LEVEL_CONSTRAINTS,

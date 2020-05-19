@@ -43,7 +43,7 @@ Some choices are left up to this encoder, such as how best to encode a set of
 video parameters in a sequence header. In these cases, the encoder must make
 choices which comply with the supplied level. Since levels are expressed as a
 table of constraints (see :py:class:`vc2_conformance.level_constraints` and
-:py:class:`vc2_conformance._constraint_table`), this process potentially
+:py:class:`vc2_conformance.constraint_table`), this process potentially
 requires the use of a global constraint solver.
 
 Fortunately, all existing VC-2 levels are specified such that, once the level

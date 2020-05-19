@@ -14,7 +14,7 @@ from vc2_conformance.level_constraints import LEVEL_CONSTRAINTS
 
 from vc2_conformance.symbol_re import WILDCARD, END_OF_SEQUENCE
 
-from vc2_conformance._constraint_table import allowed_values_for
+from vc2_conformance.constraint_table import allowed_values_for
 
 from vc2_conformance.decoder.exceptions import (
     ValueNotAllowedInLevel,

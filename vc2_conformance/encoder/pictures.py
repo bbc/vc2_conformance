@@ -101,7 +101,7 @@ from vc2_conformance.picture_encoding import picture_encode
 
 from vc2_conformance.codec_features import codec_features_to_trivial_level_constraints
 
-from vc2_conformance._constraint_table import allowed_values_for
+from vc2_conformance.constraint_table import allowed_values_for
 
 from vc2_conformance.level_constraints import LEVEL_CONSTRAINTS
 

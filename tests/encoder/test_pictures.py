@@ -58,7 +58,7 @@ from vc2_conformance import file_format
 
 from vc2_conformance.encoder.sequence_header import make_sequence_header_data_unit
 
-from vc2_conformance._constraint_table import ValueSet
+from vc2_conformance.constraint_table import ValueSet
 
 from vc2_conformance.level_constraints import LEVEL_CONSTRAINTS
 
