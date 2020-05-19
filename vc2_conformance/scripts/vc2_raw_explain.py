@@ -168,7 +168,7 @@ from vc2_conformance.file_format import (
 from vc2_conformance.color_conversion import int_to_float
 
 from vc2_conformance.py2x_compat import get_terminal_size
-from vc2_conformance._string_utils import indent, wrap_paragraphs
+from vc2_conformance.string_utils import indent, wrap_paragraphs
 
 
 def is_rgb_color(video_parameters):

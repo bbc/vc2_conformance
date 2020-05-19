@@ -6,7 +6,7 @@ from sample_codec_features import MINIMAL_CODEC_FEATURES
 
 from vc2_data_tables import WaveletFilters
 
-from vc2_conformance._string_utils import wrap_paragraphs
+from vc2_conformance.string_utils import wrap_paragraphs
 
 from vc2_conformance.encoder.exceptions import (
     MissingQuantizationMatrixError,

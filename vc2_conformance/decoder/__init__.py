@@ -14,7 +14,7 @@ Module usage
 The following snippet illustrates how a VC-2 bitstream might be decoded and
 verified using this module::
 
-    >>> from vc2_conformance._string_utils import wrap_paragraphs
+    >>> from vc2_conformance.string_utils import wrap_paragraphs
     >>> from vc2_conformance.state import State
     >>> from vc2_conformance.decoder import init_io, parse_stream, ConformanceError
 

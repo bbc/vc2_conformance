@@ -1,6 +1,6 @@
 import pytest
 
-from vc2_conformance._string_utils import (
+from vc2_conformance.string_utils import (
     indent,
     ellipsise,
     ellipsise_lossy,

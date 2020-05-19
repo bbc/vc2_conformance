@@ -9,7 +9,7 @@ to the standard.
 
 from textwrap import dedent
 
-from vc2_conformance._string_utils import wrap_paragraphs
+from vc2_conformance.string_utils import wrap_paragraphs
 
 from vc2_conformance.vc2_math import intlog2
 
@@ -110,7 +110,7 @@ class ConformanceError(Exception):
         failure.
 
         Should return a string which can be re-linewrapped by
-        :py:func:`vc2_conformance._string_utils.wrap_paragraphs`.
+        :py:func:`vc2_conformance.string_utils.wrap_paragraphs`.
 
         The first line will be used as a summary when the exception is printed
         using :py:func:`str`.

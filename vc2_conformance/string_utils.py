@@ -1,5 +1,5 @@
 """
-:py:mod:`vc2_conformance._string_utils`: String formatting utilities.
+:py:mod:`vc2_conformance.string_utils`: String formatting utilities.
 =====================================================================
 """
 

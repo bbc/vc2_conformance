@@ -1,4 +1,4 @@
-from vc2_conformance._string_utils import wrap_paragraphs
+from vc2_conformance.string_utils import wrap_paragraphs
 
 
 class UnsatisfiableCodecFeaturesError(ValueError):
@@ -16,7 +16,7 @@ class UnsatisfiableCodecFeaturesError(ValueError):
         Produce a detailed human readable explanation of the failure.
 
         Should return a string which can be re-linewrapped by
-        :py:func:`vc2_conformance._string_utils.wrap_paragraphs`.
+        :py:func:`vc2_conformance.string_utils.wrap_paragraphs`.
 
         The first line will be used as a summary when the exception is printed
         using :py:func:`str`.

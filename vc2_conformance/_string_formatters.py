@@ -15,7 +15,7 @@ formatter with some particular kind of behaviour. For example::
     '0x00001234'
 """
 
-from vc2_conformance._string_utils import indent, ellipsise
+from vc2_conformance.string_utils import indent, ellipsise
 
 __all__ = [
     "Number",
@@ -174,7 +174,7 @@ class Bits(object):
     """
     A formatter for :py:class:`bitarray.bitarray` objects. Shows the value as a
     string of the form '0b0101', using
-    :py:func:`~vc2_conformance._string_utils.ellipsise` to shorten very long,
+    :py:func:`~vc2_conformance.string_utils.ellipsise` to shorten very long,
     values.
 
     Parameters
@@ -183,7 +183,7 @@ class Bits(object):
         A prefix to add to the string
     context : int
     min_length : int
-        See :py:func:`~vc2_conformance._string_utils.ellipsise`.
+        See :py:func:`~vc2_conformance.string_utils.ellipsise`.
     show_length : int or bool
         If an integer, show the length of the bitarray in brackets if above the
         specified length (in bits). If a bool, force display (or hiding) of the
@@ -208,7 +208,7 @@ class Bytes(object):
     """
     A formatter for :py:class:`bytes` strings. Shows the value as a string of
     the form '0xAB_CD_EF', using
-    :py:func:`~vc2_conformance._string_utils.ellipsise` to shorten very long,
+    :py:func:`~vc2_conformance.string_utils.ellipsise` to shorten very long,
     values.
 
     Parameters
@@ -219,7 +219,7 @@ class Bytes(object):
         A string to place between each pair of hex digits.
     context : int
     min_length : int
-        See :py:func:`~vc2_conformance._string_utils.ellipsise`.
+        See :py:func:`~vc2_conformance.string_utils.ellipsise`.
     show_length : int or bool
         If an integer, show the length of the bitarray in brackets if above the
         specified length (in bytes). If a bool, force display (or hiding) of

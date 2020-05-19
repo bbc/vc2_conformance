@@ -6,7 +6,7 @@ from collections import OrderedDict
 
 import vc2_data_tables as tables
 
-from vc2_conformance._string_utils import wrap_paragraphs
+from vc2_conformance.string_utils import wrap_paragraphs
 
 from vc2_conformance.constraint_table import ValueSet
 

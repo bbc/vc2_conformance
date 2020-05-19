@@ -91,7 +91,7 @@ from vc2_conformance import __version__
 
 from vc2_conformance.py2x_compat import quote
 
-from vc2_conformance._string_utils import wrap_paragraphs
+from vc2_conformance.string_utils import wrap_paragraphs
 
 from vc2_conformance.file_format import write
 

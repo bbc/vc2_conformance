@@ -115,7 +115,7 @@ from vc2_conformance.py2x_compat import (
     makedirs,
 )
 
-from vc2_conformance._string_utils import wrap_paragraphs
+from vc2_conformance.string_utils import wrap_paragraphs
 
 from vc2_conformance import file_format
 

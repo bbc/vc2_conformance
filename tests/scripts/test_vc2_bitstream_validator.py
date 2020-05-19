@@ -4,7 +4,7 @@ import sys
 
 import traceback
 
-from vc2_conformance._string_utils import wrap_paragraphs
+from vc2_conformance.string_utils import wrap_paragraphs
 
 from vc2_conformance.state import State
 

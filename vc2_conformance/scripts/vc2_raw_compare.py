@@ -116,7 +116,7 @@ from vc2_data_tables import ColorDifferenceSamplingFormats
 
 from vc2_conformance import __version__
 
-from vc2_conformance._string_utils import indent
+from vc2_conformance.string_utils import indent
 
 from vc2_conformance.color_conversion import (
     from_xyz,

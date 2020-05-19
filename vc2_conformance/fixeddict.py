@@ -94,7 +94,7 @@ import sys
 
 from collections import OrderedDict
 
-from vc2_conformance._string_utils import indent
+from vc2_conformance.string_utils import indent
 
 
 __all__ = [
