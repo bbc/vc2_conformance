@@ -19,17 +19,7 @@ This Python package includes the following key components:
 from vc2_conformance.version import __version__
 
 # VC-2 pseudocode functions
-from vc2_conformance import vc2_math
-from vc2_conformance import arrays
-from vc2_conformance import quantization
-from vc2_conformance import parse_code_functions
-from vc2_conformance import slice_sizes
-from vc2_conformance import video_parameters
-from vc2_conformance import picture_decoding
-from vc2_conformance import picture_encoding
-
-# VC-2 datastructures
-from vc2_conformance import state
+from vc2_conformance import pseudocode
 
 # Conformance-checking VC-2 decoder implementation
 from vc2_conformance import decoder

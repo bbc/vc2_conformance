@@ -47,7 +47,7 @@ from vc2_conformance.bitstream.vc2 import (
 
 from vc2_conformance.bitstream.vc2_fixeddicts import vc2_default_values
 
-from vc2_conformance.state import State
+from vc2_conformance.pseudocode.state import State
 
 from vc2_conformance.decoder import (
     init_io,
@@ -56,7 +56,7 @@ from vc2_conformance.decoder import (
     InconsistentNextParseOffset,
 )
 
-from vc2_conformance.video_parameters import (
+from vc2_conformance.pseudocode.video_parameters import (
     VideoParameters,
     set_source_defaults,
 )

@@ -1,8 +1,8 @@
 import pytest
 
-from vc2_conformance.state import State
+from vc2_conformance.pseudocode.state import State
 
-from vc2_conformance.slice_sizes import slices_have_same_dimensions
+from vc2_conformance.pseudocode.slice_sizes import slices_have_same_dimensions
 
 
 @pytest.mark.parametrize(

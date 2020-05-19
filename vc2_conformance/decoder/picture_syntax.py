@@ -7,9 +7,9 @@ from vc2_conformance.metadata import ref_pseudocode
 
 from vc2_conformance.constraint_table import allowed_values_for
 
-from vc2_conformance.slice_sizes import slices_have_same_dimensions
+from vc2_conformance.pseudocode.slice_sizes import slices_have_same_dimensions
 
-from vc2_conformance.parse_code_functions import (
+from vc2_conformance.pseudocode.parse_code_functions import (
     is_ld_picture,
     is_ld_fragment,
     is_hq_picture,

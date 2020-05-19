@@ -21,7 +21,7 @@ from vc2_conformance.codec_features import CodecFeatures
 
 from sample_codec_features import MINIMAL_CODEC_FEATURES
 
-from vc2_conformance.state import State
+from vc2_conformance.pseudocode.state import State
 
 from vc2_conformance.bitstream import (
     BitstreamReader,

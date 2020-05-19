@@ -1,6 +1,6 @@
 import pytest
 
-from vc2_conformance import vc2_math
+from vc2_conformance.pseudocode import vc2_math
 
 
 @pytest.mark.parametrize(

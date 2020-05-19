@@ -17,7 +17,7 @@ from vc2_data_tables import (
     PresetTransferFunctions,
 )
 
-from vc2_conformance.video_parameters import (
+from vc2_conformance.pseudocode.video_parameters import (
     set_source_defaults,
     VideoParameters,
 )

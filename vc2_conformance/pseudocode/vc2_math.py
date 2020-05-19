@@ -1,6 +1,6 @@
 """
-:py:mod:`vc2_conformance.vc2_math`: Mathematical functions/operators
-====================================================================
+:py:mod:`vc2_conformance.pseudocode.vc2_math`: Mathematical functions/operators
+===============================================================================
 
 Defined by VC-2 in (5.5.3).
 

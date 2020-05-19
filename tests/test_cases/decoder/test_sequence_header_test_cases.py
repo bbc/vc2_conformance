@@ -12,7 +12,7 @@ from vc2_data_tables import (
     BASE_VIDEO_FORMAT_PARAMETERS,
 )
 
-from vc2_conformance.state import State
+from vc2_conformance.pseudocode.state import State
 
 from vc2_conformance.bitstream import (
     Serialiser,

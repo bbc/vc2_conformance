@@ -112,9 +112,9 @@ def assert_level_constraint(state, key, value):
     :py;exc:`vc2_conformance.decoder.exceptions.ValueNotAllowedInLevel`
     exception on failure.
 
-    Takes the current :py:class:`~vc2_conformance.state.State` instance from
+    Takes the current :py:class:`~vc2_conformance.pseudocode.state.State` instance from
     which the current
-    :py:attr:`~vc2_conformance.state.State._level_constrained_values` will be
+    :py:attr:`~vc2_conformance.pseudocode.state.State._level_constrained_values` will be
     created/updated.
     """
     state.setdefault("_level_constrained_values", OrderedDict())

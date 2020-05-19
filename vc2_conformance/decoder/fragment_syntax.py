@@ -5,7 +5,7 @@
 
 from vc2_conformance.metadata import ref_pseudocode
 
-from vc2_conformance.parse_code_functions import using_dc_prediction
+from vc2_conformance.pseudocode.parse_code_functions import using_dc_prediction
 
 from vc2_conformance.decoder.io import (
     tell,

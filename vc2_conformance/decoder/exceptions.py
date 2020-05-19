@@ -11,7 +11,7 @@ from textwrap import dedent
 
 from vc2_conformance.string_utils import wrap_paragraphs
 
-from vc2_conformance.vc2_math import intlog2
+from vc2_conformance.pseudocode.vc2_math import intlog2
 
 from vc2_data_tables import (
     PARSE_INFO_PREFIX,

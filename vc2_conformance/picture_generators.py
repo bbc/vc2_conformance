@@ -90,7 +90,7 @@ def read_as_xyz(filename):
     xyz : :py:class:`numpy.array`
         A (height, width, 3) array containing the loaded picture, upsampled to
         4:4:4 color subsampling and converted to CIE XYZ color values.
-    video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+    video_parameters : :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`
     picture_coding_mode : :py:class:`~vc2_data_tables.PictureCodingModes`
     """
     picture, video_parameters, picture_coding_mode = read(filename)

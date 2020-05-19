@@ -1,8 +1,8 @@
 """
-:py:mod:`vc2_conformance.picture_encoding`: Picture Encoding
-============================================================
+:py:mod:`vc2_conformance.pseudocode.picture_encoding`: Picture Encoding
+=======================================================================
 
-This module is the inverse of the :py:mod:`vc2_conformance.picture_decoding`
+This module is the inverse of the :py:mod:`vc2_conformance.pseudocode.picture_decoding`
 module and contains functions for performing wavelet analysis filtering.
 
 This functionality is not specified by the standard but is used to generate
@@ -11,7 +11,7 @@ simple bitstreams (and test cases) in this software (and its test suite).
 
 from vc2_data_tables import LIFTING_FILTERS, LiftingFilterTypes
 
-from vc2_conformance.arrays import (
+from vc2_conformance.pseudocode.arrays import (
     new_array,
     width,
     height,
@@ -19,12 +19,12 @@ from vc2_conformance.arrays import (
     column,
 )
 
-from vc2_conformance.slice_sizes import (
+from vc2_conformance.pseudocode.slice_sizes import (
     subband_width,
     subband_height,
 )
 
-from vc2_conformance.picture_decoding import (
+from vc2_conformance.pseudocode.picture_decoding import (
     filter_bit_shift,
     SYNTHESIS_LIFTING_FUNCTION_TYPES,
 )
@@ -50,7 +50,7 @@ def picture_encode(state, current_picture):
 
     Parameters
     ==========
-    state : :py:class:`vc2_conformance.state.State`
+    state : :py:class:`vc2_conformance.pseudocode.state.State`
         A state dictionary containing at least:
 
         * ``luma_width``
@@ -98,7 +98,7 @@ def dwt(state, picture):
 
     Parameters
     ==========
-    state : :py:class:`~vc2_conformance.state.State`
+    state : :py:class:`~vc2_conformance.pseudocode.state.State`
         A state dictionary containing at least the following:
 
         * ``wavelet_index``
@@ -238,7 +238,7 @@ def dwt_pad_addition(state, pic, c):
     """
     Inverse of idwt_pad_removal (15.4.5): pads a picture to a size compatible
     with wavelet filtering at the level specified by the provided
-    :py:class:`~vc2_conformance.state.State`.
+    :py:class:`~vc2_conformance.pseudocode.state.State`.
 
     Extra values are obtained by copying the final pixels in the existing rows
     and columns.
@@ -275,7 +275,7 @@ def remove_offset_component(state, comp_data, c):
 
     Parameters
     ==========
-    state : :py:class:`vc2_conformance.state.State`
+    state : :py:class:`vc2_conformance.pseudocode.state.State`
         Where ``luma_depth`` and ``color_diff_depth`` are defined.
     current_picture : {comp: [[pixel_value, ...], ...], ...}
         Will be mutated in-place.

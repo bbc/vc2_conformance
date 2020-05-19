@@ -132,7 +132,7 @@ from vc2_conformance.file_format import (
     write,
 )
 
-from vc2_conformance.video_parameters import VideoParameters
+from vc2_conformance.pseudocode.video_parameters import VideoParameters
 
 
 def read_pictures_with_only_one_metadata_file_required(filename_a, filename_b):
@@ -365,7 +365,7 @@ def generate_difference_mask_picture(deltas, video_parameters, picture_number=0)
     ==========
     deltas : {"Y": np.array, "C1": np.array, "C2": np.array}
         Deltas for each pixel in the input images.
-    video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+    video_parameters : :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`
     picture_number : int
 
     Returns

@@ -1,4 +1,4 @@
-from vc2_conformance.quantization import (
+from vc2_conformance.pseudocode.quantization import (
     forward_quant,
     inverse_quant,
 )

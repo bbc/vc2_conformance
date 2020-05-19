@@ -2,7 +2,7 @@ import pytest
 
 from vc2_data_tables import ParseCodes, PictureCodingModes
 
-from vc2_conformance.state import State
+from vc2_conformance.pseudocode.state import State
 
 from vc2_conformance.symbol_re import Matcher
 

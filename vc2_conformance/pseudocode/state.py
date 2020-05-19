@@ -1,6 +1,6 @@
 """
-:py:class:`vc2_conformance.state.State`
-=======================================
+:py:class:`vc2_conformance.pseudocode.state.State`
+==================================================
 
 A :py:mod:`fixeddict` for the 'state' object used by the pseudo code in the
 VC-2 spec.
@@ -176,7 +176,7 @@ between sequences in a stream.
 
 def reset_state(state):
     """
-    Reset a :py:class:`~vc2_conformance.state.State` dictionary to only include
+    Reset a :py:class:`~vc2_conformance.pseudocode.state.State` dictionary to only include
     values retained between sequences in a VC-2 stream. Modifies the dictionary
     in place.
     """

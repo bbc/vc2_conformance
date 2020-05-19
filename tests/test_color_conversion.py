@@ -10,9 +10,12 @@ from vc2_data_tables import (
     ColorDifferenceSamplingFormats,
 )
 
-from vc2_conformance.video_parameters import VideoParameters, set_source_defaults
+from vc2_conformance.pseudocode.video_parameters import (
+    VideoParameters,
+    set_source_defaults,
+)
 
-from vc2_conformance.vc2_math import intlog2
+from vc2_conformance.pseudocode.vc2_math import intlog2
 
 from vc2_conformance.color_conversion import (
     PrimaryChromacities,

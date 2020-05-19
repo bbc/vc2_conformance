@@ -1,7 +1,7 @@
 """
 Metadata about the VC-2 bitstream seriallisation/deseriallisation process.
 
-Specifically, records the relationship between VC-2 psudocode functions and
+Specifically, records the relationship between VC-2 pseudocode functions and
 fixeddict types.
 """
 

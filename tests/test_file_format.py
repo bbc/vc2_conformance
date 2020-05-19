@@ -8,7 +8,10 @@ import random
 
 import vc2_data_tables as tables
 
-from vc2_conformance.video_parameters import VideoParameters, set_source_defaults
+from vc2_conformance.pseudocode.video_parameters import (
+    VideoParameters,
+    set_source_defaults,
+)
 
 from vc2_conformance.file_format import (
     get_metadata_and_picture_filenames,

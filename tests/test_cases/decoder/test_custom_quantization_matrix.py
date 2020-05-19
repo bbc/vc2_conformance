@@ -10,7 +10,7 @@ from vc2_conformance.level_constraints import LEVEL_CONSTRAINTS
 
 from vc2_conformance.codec_features import CodecFeatures
 
-from vc2_conformance.video_parameters import VideoParameters
+from vc2_conformance.pseudocode.video_parameters import VideoParameters
 
 from vc2_conformance.test_cases.decoder.custom_quantization_matrix import (
     default_quantization_matrix,

@@ -106,7 +106,7 @@ from vc2_data_tables import (
     ColorDifferenceSamplingFormats,
 )
 
-from vc2_conformance.vc2_math import intlog2
+from vc2_conformance.pseudocode.vc2_math import intlog2
 
 
 __all__ = [
@@ -711,7 +711,7 @@ def to_xyz(y, c1, c2, video_parameters):
     y, c1, c2 : :py:class:`numpy.array`
         Three 2D :py:class:`numpy.array`\ s containing integer Y C1 C2 values
         for a picture.
-    video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+    video_parameters : :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`
         The VC-2 parameters describing the video format in use. The following
         fields are required:
 
@@ -787,7 +787,7 @@ def from_xyz(xyz, video_parameters):
     yxz : :py:class:`numpy.array`
         A 3D :py:class:`numpy.array` with dimensions ``(height, width, 3)``
         containing floating point CIE XYZ values for a picture.
-    video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+    video_parameters : :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`
         The VC-2 parameters describing the video format to produce. The following
         fields are required:
 
@@ -875,13 +875,13 @@ def swap_primaries(xyz, video_parameters_before, video_parameters_after):
     Parameters
     ==========
     xyz : :math:`3 \times 3` array (height, width, 3)
-    video_parameters_before : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
-    video_parameters_after : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+    video_parameters_before : :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`
+    video_parameters_after : :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`
 
     Returns
     =======
     xyz : :math:`3 \times 3` array (height, width, 3)
-    """
+    """  # noqa: E501
     xyz_to_linear_rgb_before = XYZ_TO_LINEAR_RGB[
         video_parameters_before["color_primaries_index"]
     ]
@@ -1096,7 +1096,7 @@ class ColorParametersSanity(object):
 def sanity_check_video_parameters(video_parameters):
     r"""
     Given a set of
-    :py:class:`~vc2_conformance.video_parameters.VideoParameters`, check that a
+    :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`, check that a
     set of video parameters could plausibly be used to encode a color signal
     (regardless of whether the color specification itself is sensible).
 

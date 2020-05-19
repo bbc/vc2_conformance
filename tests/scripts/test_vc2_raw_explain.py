@@ -21,7 +21,7 @@ from vc2_data_tables import (
     SourceSamplingModes,
 )
 
-from vc2_conformance.video_parameters import VideoParameters
+from vc2_conformance.pseudocode.video_parameters import VideoParameters
 
 from vc2_conformance.file_format import write
 

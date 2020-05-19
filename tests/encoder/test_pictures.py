@@ -24,13 +24,13 @@ from vc2_data_tables import (
 
 from sample_codec_features import MINIMAL_CODEC_FEATURES
 
-from vc2_conformance.arrays import width, height
+from vc2_conformance.pseudocode.arrays import width, height
 
-from vc2_conformance.state import State
+from vc2_conformance.pseudocode.state import State
 
 from vc2_conformance.codec_features import CodecFeatures
 
-from vc2_conformance.video_parameters import VideoParameters
+from vc2_conformance.pseudocode.video_parameters import VideoParameters
 
 from vc2_conformance.bitstream import (
     BitstreamWriter,

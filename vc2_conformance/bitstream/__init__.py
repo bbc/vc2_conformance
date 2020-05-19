@@ -25,7 +25,7 @@ Quick-start/teaser example
 The following minimal example can be used to deserialise a complete VC-2
 bitstream::
 
-    >>> from vc2_conformance.state import State
+    >>> from vc2_conformance.pseudocode.state import State
     >>> from vc2_conformance.bitstream import Deserialiser, BitstreamReader, parse_stream
 
     >>> with open("/path/to/bitstream.vc2", "rb") as f:

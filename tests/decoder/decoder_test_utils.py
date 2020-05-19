@@ -3,7 +3,7 @@ from io import BytesIO
 from vc2_conformance import bitstream
 from vc2_conformance import decoder
 
-from vc2_conformance.state import State
+from vc2_conformance.pseudocode.state import State
 
 
 def serialise_to_bytes(context, state=None, *args):

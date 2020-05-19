@@ -12,7 +12,7 @@ from vc2_data_tables import (
     ColorDifferenceSamplingFormats,
 )
 
-from vc2_conformance.state import State
+from vc2_conformance.pseudocode.state import State
 
 from vc2_conformance.bitstream import autofill_and_serialise_stream
 

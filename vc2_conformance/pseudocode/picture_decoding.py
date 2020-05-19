@@ -1,20 +1,20 @@
 """
-:py:mod:`vc2_conformance.picture_decoding`: (15) Picture Decoding
-=================================================================
+:py:mod:`vc2_conformance.pseudocode.picture_decoding`: (15) Picture Decoding
+============================================================================
 
 This module contains the wavelet synthesis filters and associated functions
 defined in the pseudocode of the VC-2 standard.
 
-See also :py:mod:`vc2_conformance.picture_encoding`.
+See also :py:mod:`vc2_conformance.pseudocode.picture_encoding`.
 """
 
 from vc2_conformance.metadata import ref_pseudocode
 
 from vc2_data_tables import LIFTING_FILTERS, LiftingFilterTypes
 
-from vc2_conformance.vc2_math import clip
+from vc2_conformance.pseudocode.vc2_math import clip
 
-from vc2_conformance.arrays import (
+from vc2_conformance.pseudocode.arrays import (
     new_array,
     width,
     height,
@@ -80,7 +80,7 @@ def idwt(state, coeff_data):
 
     Parameters
     ==========
-    state : :py:class:`~vc2_conformance.state.State`
+    state : :py:class:`~vc2_conformance.pseudocode.state.State`
         A state dictionary containing at least the following:
 
         * ``wavelet_index``
@@ -290,7 +290,7 @@ def offset_picture(state, current_picture):
 
     Parameters
     ==========
-    state : :py:class:`vc2_conformance.state.State`
+    state : :py:class:`vc2_conformance.pseudocode.state.State`
         Where ``luma_depth`` and ``color_diff_depth`` are defined.
     current_picture : {comp: [[pixel_value, ...], ...], ...}
         Will be mutated in-place.

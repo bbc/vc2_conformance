@@ -12,13 +12,13 @@ from vc2_conformance.test_cases import DECODER_TEST_CASE_GENERATOR_REGISTRY
 
 from vc2_conformance.codec_features import CodecFeatures
 
-from vc2_conformance.video_parameters import VideoParameters
+from vc2_conformance.pseudocode.video_parameters import VideoParameters
 
 from sample_codec_features import MINIMAL_CODEC_FEATURES
 from smaller_real_pictures import alternative_real_pictures
 from alternative_level_constraints import alternative_level_1
 
-from vc2_conformance.state import State
+from vc2_conformance.pseudocode.state import State
 
 from vc2_conformance.decoder import (
     init_io,

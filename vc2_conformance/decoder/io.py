@@ -43,7 +43,7 @@ def init_io(state, f):
 
     Parameters
     ----------
-    state : :py:class:`~vc2_conformance.state.State`
+    state : :py:class:`~vc2_conformance.pseudocode.state.State`
         The state dictionary to be initialised.
     f : file-like object
         The file to read the bitstream from.

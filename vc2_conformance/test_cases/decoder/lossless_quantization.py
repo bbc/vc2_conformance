@@ -17,7 +17,7 @@ from vc2_conformance.picture_generators import mid_gray
 
 from vc2_conformance.encoder import make_sequence
 
-from vc2_conformance.state import State
+from vc2_conformance.pseudocode.state import State
 
 from vc2_conformance.test_cases.decoder.common import (
     iter_transform_parameters_in_sequence,

@@ -23,7 +23,7 @@ from vc2_data_tables import (
 
 from vc2_conformance.level_constraints import LEVEL_SEQUENCE_RESTRICTIONS
 
-from vc2_conformance.video_parameters import (
+from vc2_conformance.pseudocode.video_parameters import (
     set_source_defaults,
     set_coding_parameters,
     preset_frame_rate,

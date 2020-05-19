@@ -5,18 +5,18 @@
 
 from vc2_conformance.metadata import ref_pseudocode
 
-from vc2_conformance.vc2_math import (
+from vc2_conformance.pseudocode.vc2_math import (
     intlog2,
     mean,
 )
 
-from vc2_conformance.arrays import (
+from vc2_conformance.pseudocode.arrays import (
     new_array,
     width,
     height,
 )
 
-from vc2_conformance.slice_sizes import (
+from vc2_conformance.pseudocode.slice_sizes import (
     subband_width,
     subband_height,
     slice_bytes,
@@ -26,7 +26,7 @@ from vc2_conformance.slice_sizes import (
     slice_bottom,
 )
 
-from vc2_conformance.parse_code_functions import (
+from vc2_conformance.pseudocode.parse_code_functions import (
     is_ld_picture,
     is_hq_picture,
     is_ld_fragment,
@@ -46,7 +46,7 @@ from vc2_conformance.decoder.io import (
     flush_inputb,
 )
 
-from vc2_conformance.quantization import inverse_quant
+from vc2_conformance.pseudocode.quantization import inverse_quant
 
 __all__ = [
     "initialize_wavelet_data",

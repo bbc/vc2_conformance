@@ -10,7 +10,7 @@ from vc2_data_tables import (
     PARSE_INFO_HEADER_BYTES,
 )
 
-from vc2_conformance.state import State
+from vc2_conformance.pseudocode.state import State
 
 from vc2_conformance.bitstream import (
     Serialiser,
@@ -65,7 +65,7 @@ def iter_slices_in_sequence(codec_features, sequence):
     """
     Iterate over all of the slices in a sequence.
 
-    Generates a series of (:py:class:`~vc2_conformance.state.State`, sx, sy,
+    Generates a series of (:py:class:`~vc2_conformance.pseudocode.state.State`, sx, sy,
     :py:class:`~vc2_conformance.bitstream.LDSlice` or
     :py:class:`~vc2_conformance.bitstream.HQSlice`) tuples, one for each slice
     present in the provided :py:class:`~vc2_conformance.bitstream.Sequence`.

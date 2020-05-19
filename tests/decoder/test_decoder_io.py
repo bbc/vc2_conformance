@@ -2,7 +2,7 @@ import pytest
 
 from io import BytesIO
 
-from vc2_conformance.state import State
+from vc2_conformance.pseudocode.state import State
 
 from vc2_conformance import decoder
 

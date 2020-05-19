@@ -6,7 +6,7 @@ import numpy as np
 
 from vc2_conformance.codec_features import CodecFeatures
 
-from vc2_conformance.video_parameters import VideoParameters
+from vc2_conformance.pseudocode.video_parameters import VideoParameters
 
 from vc2_conformance.test_cases import ENCODER_TEST_CASE_GENERATOR_REGISTRY
 

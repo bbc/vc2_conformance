@@ -1,6 +1,6 @@
 """
-:py:mod:`vc2_conformance.video_parameters`: Video parameter computation functions
-=================================================================================
+:py:mod:`vc2_conformance.pseudocode.video_parameters`: Video parameter computation functions
+============================================================================================
 
 Defined by VC-2 in (11).
 
@@ -39,7 +39,7 @@ from vc2_data_tables import (
     PRESET_COLOR_SPECS,
 )
 
-from vc2_conformance.vc2_math import intlog2
+from vc2_conformance.pseudocode.vc2_math import intlog2
 
 __all__ = [
     "VideoParameters",

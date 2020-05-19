@@ -5,7 +5,7 @@
 
 from vc2_conformance.metadata import ref_pseudocode
 
-from vc2_conformance.parse_code_functions import (
+from vc2_conformance.pseudocode.parse_code_functions import (
     is_seq_header,
     is_picture,
     is_fragment,
@@ -41,7 +41,7 @@ from vc2_conformance.decoder.exceptions import (
 
 from vc2_conformance.symbol_re import Matcher
 
-from vc2_conformance.picture_decoding import picture_decode
+from vc2_conformance.pseudocode.picture_decoding import picture_decode
 
 from vc2_conformance.decoder.assertions import (
     assert_in_enum,
@@ -49,7 +49,7 @@ from vc2_conformance.decoder.assertions import (
     assert_parse_code_sequence_ended,
 )
 
-from vc2_conformance.state import reset_state
+from vc2_conformance.pseudocode.state import reset_state
 
 from vc2_conformance.decoder.io import (
     is_end_of_stream,

@@ -8,7 +8,7 @@ from fractions import Fraction
 
 from vc2_data_tables import Profiles
 
-from vc2_conformance.state import State
+from vc2_conformance.pseudocode.state import State
 
 from vc2_conformance.encoder import make_sequence
 

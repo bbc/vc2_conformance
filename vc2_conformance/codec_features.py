@@ -40,11 +40,14 @@ from vc2_data_tables import (
     PresetTransferFunctions,
 )
 
-from vc2_conformance.video_parameters import set_source_defaults, picture_dimensions
+from vc2_conformance.pseudocode.video_parameters import (
+    set_source_defaults,
+    picture_dimensions,
+)
 
-from vc2_conformance.state import State
+from vc2_conformance.pseudocode.state import State
 
-from vc2_conformance.slice_sizes import slices_have_same_dimensions
+from vc2_conformance.pseudocode.slice_sizes import slices_have_same_dimensions
 
 from vc2_conformance.fixeddict import fixeddict, Entry
 
@@ -101,7 +104,7 @@ a collection of these, defining support for several picture formats.
 * ``picture_coding_mode``: The :py:class:`~vc2_data_tables.PictureCodingModes`
   to use.
 * ``video_parameters``: The
-  :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+  :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`
   describing the video format to use.
 * ``wavelet_index`` and ``wavelet_index_ho``: The
   :py:class:`~vc2_data_tables.WaveletFilters` to use.

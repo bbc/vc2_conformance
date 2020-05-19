@@ -1,6 +1,6 @@
 """
-:py:mod:`vc2_conformance.offsetting`: (15) Picture component offsetting routines
-================================================================================
+:py:mod:`vc2_conformance.pseudocode.offsetting`: (15) Picture component offsetting routines
+===========================================================================================
 
 This module collects picture component value offsetting functions from (15) and
 augments these with complementary de-offsetting functions (inferred from, but
@@ -9,7 +9,7 @@ not defined by the standard).
 
 from vc2_conformance.metadata import ref_pseudocode
 
-from vc2_conformance.arrays import (
+from vc2_conformance.pseudocode.arrays import (
     width,
     height,
 )
@@ -29,7 +29,7 @@ def offset_picture(state, current_picture):
 
     Parameters
     ==========
-    state : :py:class:`vc2_conformance.state.State`
+    state : :py:class:`vc2_conformance.pseudocode.state.State`
         Where ``luma_depth`` and ``color_diff_depth`` are defined.
     current_picture : {comp: [[pixel_value, ...], ...], ...}
         Will be mutated in-place.
@@ -61,7 +61,7 @@ def remove_offset_component(state, comp_data, c):
 
     Parameters
     ==========
-    state : :py:class:`vc2_conformance.state.State`
+    state : :py:class:`vc2_conformance.pseudocode.state.State`
         Where ``luma_depth`` and ``color_diff_depth`` are defined.
     current_picture : {comp: [[pixel_value, ...], ...], ...}
         Will be mutated in-place.

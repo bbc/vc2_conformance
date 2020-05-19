@@ -1,6 +1,6 @@
 """
-:py:mod:`vc2_conformance.arrays`: VC-2 style 2D array functions.
-================================================================
+:py:mod:`vc2_conformance.pseudocode.arrays`: VC-2 style 2D array functions.
+===========================================================================
 """
 
 from vc2_conformance.metadata import ref_pseudocode

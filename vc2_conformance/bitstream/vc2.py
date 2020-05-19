@@ -37,9 +37,9 @@ from vc2_data_tables import (
     PARSE_INFO_HEADER_BYTES,
 )
 
-from vc2_conformance.state import reset_state
+from vc2_conformance.pseudocode.state import reset_state
 
-from vc2_conformance.video_parameters import (
+from vc2_conformance.pseudocode.video_parameters import (
     set_source_defaults,
     set_coding_parameters,
     preset_frame_rate,
@@ -51,7 +51,7 @@ from vc2_conformance.video_parameters import (
     preset_color_spec,
 )
 
-from vc2_conformance.parse_code_functions import (
+from vc2_conformance.pseudocode.parse_code_functions import (
     is_seq_header,
     is_end_of_sequence,
     is_auxiliary_data,
@@ -64,9 +64,9 @@ from vc2_conformance.parse_code_functions import (
     is_fragment,
 )
 
-from vc2_conformance.vc2_math import intlog2
+from vc2_conformance.pseudocode.vc2_math import intlog2
 
-from vc2_conformance.slice_sizes import (
+from vc2_conformance.pseudocode.slice_sizes import (
     slice_bytes,
     slice_left,
     slice_right,
@@ -194,7 +194,7 @@ def parse_sequence(serdes, state):
 
     Populates a :py:class:`~vc2_conformance.bitstream.vc2_fixeddicts.Sequence`
     :py:mod:`~vc2_conformance.fixeddict`.  Provides a copy of the
-    :py:class:`~vc2_conformance.state.State` in ``"_state"``.
+    :py:class:`~vc2_conformance.pseudocode.state.State` in ``"_state"``.
     """
     reset_state(state)
 

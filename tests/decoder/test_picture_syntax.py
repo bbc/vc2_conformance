@@ -4,7 +4,7 @@ from decoder_test_utils import serialise_to_bytes, bytes_to_state
 
 from vc2_conformance.constraint_table import ValueSet
 
-from vc2_conformance.state import State
+from vc2_conformance.pseudocode.state import State
 
 from vc2_conformance import bitstream
 from vc2_conformance import decoder

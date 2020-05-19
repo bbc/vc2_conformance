@@ -12,11 +12,11 @@ from vc2_data_tables import (
     ColorDifferenceSamplingFormats,
 )
 
-from vc2_conformance.state import State
+from vc2_conformance.pseudocode.state import State
 
-from vc2_conformance.picture_encoding import picture_encode
+from vc2_conformance.pseudocode.picture_encoding import picture_encode
 
-from vc2_conformance.video_parameters import set_coding_parameters
+from vc2_conformance.pseudocode.video_parameters import set_coding_parameters
 
 from vc2_conformance.test_cases.encoder.signal_range import signal_range
 

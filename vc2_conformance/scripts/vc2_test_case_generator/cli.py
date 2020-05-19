@@ -125,7 +125,7 @@ from vc2_conformance.test_cases.decoder import static_grey
 
 from vc2_conformance.bitstream import autofill_and_serialise_stream
 
-from vc2_conformance.state import State
+from vc2_conformance.pseudocode.state import State
 
 from vc2_conformance.decoder import (
     init_io,

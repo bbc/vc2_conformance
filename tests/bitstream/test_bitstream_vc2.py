@@ -6,8 +6,8 @@ from bitarray import bitarray
 
 import vc2_data_tables as tables
 
-from vc2_conformance.state import State
-from vc2_conformance.video_parameters import VideoParameters
+from vc2_conformance.pseudocode.state import State
+from vc2_conformance.pseudocode.video_parameters import VideoParameters
 
 from vc2_conformance.bitstream import vc2
 

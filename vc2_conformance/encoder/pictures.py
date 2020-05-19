@@ -67,7 +67,7 @@ Internals
 ---------
 
 This module uses the pseudocode derrived
-:py:mod:`vc2_conformance.picture_encoding` module for its forward-DWT. This
+:py:mod:`vc2_conformance.pseudocode.picture_encoding` module for its forward-DWT. This
 module primarily consists of logic for assembling and quantizing picture
 slices.
 
@@ -89,15 +89,15 @@ from vc2_data_tables import (
 
 from vc2_conformance.metadata import ref_pseudocode
 
-from vc2_conformance.vc2_math import mean, intlog2
+from vc2_conformance.pseudocode.vc2_math import mean, intlog2
 
-from vc2_conformance.arrays import width, height
+from vc2_conformance.pseudocode.arrays import width, height
 
-from vc2_conformance.state import State
+from vc2_conformance.pseudocode.state import State
 
-from vc2_conformance.video_parameters import set_coding_parameters
+from vc2_conformance.pseudocode.video_parameters import set_coding_parameters
 
-from vc2_conformance.picture_encoding import picture_encode
+from vc2_conformance.pseudocode.picture_encoding import picture_encode
 
 from vc2_conformance.codec_features import codec_features_to_trivial_level_constraints
 
@@ -105,7 +105,7 @@ from vc2_conformance.constraint_table import allowed_values_for
 
 from vc2_conformance.level_constraints import LEVEL_CONSTRAINTS
 
-from vc2_conformance.slice_sizes import (
+from vc2_conformance.pseudocode.slice_sizes import (
     slice_bytes,
     slice_left,
     slice_right,
@@ -113,7 +113,7 @@ from vc2_conformance.slice_sizes import (
     slice_bottom,
 )
 
-from vc2_conformance.quantization import forward_quant
+from vc2_conformance.pseudocode.quantization import forward_quant
 
 from vc2_conformance.bitstream import (
     HQSlice,

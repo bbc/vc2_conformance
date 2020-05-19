@@ -6,7 +6,7 @@ from io import BytesIO
 
 import vc2_data_tables as tables
 
-from vc2_conformance.state import State
+from vc2_conformance.pseudocode.state import State
 
 from vc2_conformance.bitstream import vc2
 

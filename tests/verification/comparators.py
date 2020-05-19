@@ -141,8 +141,8 @@ class SerdesChangesOnly(NodeComparator):
        * ``byte_align`` -> ``serdes.byte_align``
        * ``flush_inputb`` -> ``serdes.bounded_block_end``
     9. Substitution of empty dictionary creation for creation of
-       :py:class:`vc2_conformance.state.State` or
-       :py:class:`vc2_conformance.video_parameters.VideoParameters` fixed dicts
+       :py:class:`vc2_conformance.pseudocode.state.State` or
+       :py:class:`vc2_conformance.pseudocode.video_parameters.VideoParameters` fixed dicts
        is allowed.
     """
 

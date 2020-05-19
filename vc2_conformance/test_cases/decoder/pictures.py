@@ -18,11 +18,11 @@ from vc2_conformance.bitstream import Stream
 
 from vc2_conformance.py2x_compat import zip
 
-from vc2_conformance.slice_sizes import slice_bytes
+from vc2_conformance.pseudocode.slice_sizes import slice_bytes
 
-from vc2_conformance.vc2_math import intlog2
+from vc2_conformance.pseudocode.vc2_math import intlog2
 
-from vc2_conformance.state import State
+from vc2_conformance.pseudocode.state import State
 
 from vc2_conformance.test_cases import (
     TestCase,
@@ -37,7 +37,7 @@ from vc2_conformance.picture_generators import (
     white_noise,
 )
 
-from vc2_conformance.picture_encoding import filter_bit_shift
+from vc2_conformance.pseudocode.picture_encoding import filter_bit_shift
 
 from vc2_conformance.encoder import make_sequence
 
@@ -96,7 +96,7 @@ def fill_hq_slice_padding(
 
     Parameters
     ==========
-    state : :py:class:`~vc2_conformance.state.State`
+    state : :py:class:`~vc2_conformance.pseudocode.state.State`
         A state dictionary containing at least ``slice_size_scaler``.
     sx, sy : int
         The slice coordinates. (Not used but present for consistency with
@@ -167,7 +167,7 @@ def fill_ld_slice_padding(
 
     Parameters
     ==========
-    state : :py:class:`~vc2_conformance.state.State`
+    state : :py:class:`~vc2_conformance.pseudocode.state.State`
         A state dictionary containing at least:
 
         * ``slices_x``
@@ -456,7 +456,7 @@ def cut_off_value_at_end_of_hq_slice(
 
     Parameters
     ==========
-    state : :py:class:`~vc2_conformance.state.State`
+    state : :py:class:`~vc2_conformance.pseudocode.state.State`
         A state dictionary containing at least ``slice_size_scaler``.
     sx, sy : int
         The slice coordinates. (Not used but present for consistency with
@@ -536,7 +536,7 @@ def cut_off_value_at_end_of_ld_slice(
 
     Parameters
     ==========
-    state : :py:class:`~vc2_conformance.state.State`
+    state : :py:class:`~vc2_conformance.pseudocode.state.State`
         A state dictionary containing at least:
 
         * ``slices_x``

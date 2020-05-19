@@ -100,7 +100,7 @@ Parameters
 pictures : [{"Y": [[s, ...], ...], "C1": ..., "C2": ..., "pic_num": int}, ...]
     A :py:class:`list` of dictionaries containing raw picture data in 2D arrays
     for each picture component.
-video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+video_parameters : :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`
     The video parameters associated with the test sequence.
 picture_coding_mode : :py:class:`~vc2_data_tables.PictureCodingModes`
     The picture coding mode associated with the test sequence.

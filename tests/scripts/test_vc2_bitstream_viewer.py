@@ -9,11 +9,13 @@ from shlex import split
 
 from bitarray import bitarray
 
-from vc2_conformance import bitstream, video_parameters
+from vc2_conformance import bitstream
+
+from vc2_conformance.pseudocode import video_parameters
 
 import vc2_data_tables as tables
 
-from vc2_conformance.state import State
+from vc2_conformance.pseudocode.state import State
 
 from vc2_conformance.scripts.vc2_bitstream_viewer import (
     relative_int,

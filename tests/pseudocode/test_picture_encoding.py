@@ -4,9 +4,9 @@ from copy import deepcopy
 
 import vc2_data_tables as tables
 
-from vc2_conformance.arrays import new_array, width, height
+from vc2_conformance.pseudocode.arrays import new_array, width, height
 
-from vc2_conformance.picture_decoding import (
+from vc2_conformance.pseudocode.picture_decoding import (
     picture_decode,
     oned_synthesis,
     h_synthesis,
@@ -15,7 +15,7 @@ from vc2_conformance.picture_decoding import (
     offset_picture,
 )
 
-from vc2_conformance.picture_encoding import (
+from vc2_conformance.pseudocode.picture_encoding import (
     picture_encode,
     oned_analysis,
     h_analysis,

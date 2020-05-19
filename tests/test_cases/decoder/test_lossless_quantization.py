@@ -6,11 +6,11 @@ from copy import deepcopy
 
 from io import BytesIO
 
-from vc2_conformance.quantization import inverse_quant
+from vc2_conformance.pseudocode.quantization import inverse_quant
 
 from vc2_conformance.bitstream import autofill_and_serialise_stream
 
-from vc2_conformance.state import State
+from vc2_conformance.pseudocode.state import State
 
 from vc2_conformance.decoder import init_io, parse_stream
 

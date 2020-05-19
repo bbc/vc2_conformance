@@ -17,7 +17,7 @@ from vc2_data_tables import (
     ParseCodes,
 )
 
-from vc2_conformance.state import State
+from vc2_conformance.pseudocode.state import State
 
 from vc2_conformance.bitstream.io import BitstreamWriter
 from vc2_conformance.bitstream.serdes import Serialiser

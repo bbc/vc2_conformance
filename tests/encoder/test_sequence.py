@@ -27,7 +27,7 @@ from vc2_conformance.level_constraints import (
 
 from sample_codec_features import MINIMAL_CODEC_FEATURES
 
-from vc2_conformance.state import State
+from vc2_conformance.pseudocode.state import State
 
 from vc2_conformance.decoder import (
     init_io,

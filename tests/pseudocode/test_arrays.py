@@ -1,6 +1,6 @@
 import pytest
 
-from vc2_conformance.arrays import (
+from vc2_conformance.pseudocode.arrays import (
     new_array,
     width,
     height,

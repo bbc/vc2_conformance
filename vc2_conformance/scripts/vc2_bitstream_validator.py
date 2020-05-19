@@ -95,7 +95,7 @@ from vc2_conformance.string_utils import wrap_paragraphs
 
 from vc2_conformance.file_format import write
 
-from vc2_conformance.state import State
+from vc2_conformance.pseudocode.state import State
 
 from vc2_conformance.decoder import (
     init_io,

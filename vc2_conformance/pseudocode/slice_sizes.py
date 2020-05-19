@@ -1,6 +1,6 @@
 """
-:py:mod:`vc2_conformance.slice_sizes`: Slice size computation functions
-=======================================================================
+:py:mod:`vc2_conformance.pseudocode.slice_sizes`: Slice size computation functions
+==================================================================================
 
 Defined by VC-2 in (13).
 

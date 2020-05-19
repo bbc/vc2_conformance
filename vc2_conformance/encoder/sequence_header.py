@@ -29,7 +29,7 @@ from vc2_conformance.level_constraints import (
 
 from vc2_conformance.codec_features import codec_features_to_trivial_level_constraints
 
-from vc2_conformance.video_parameters import set_source_defaults
+from vc2_conformance.pseudocode.video_parameters import set_source_defaults
 
 from vc2_conformance.bitstream import (
     DataUnit,
@@ -129,7 +129,7 @@ def iter_custom_options_dicts(
         >>> from vc2_conformance.bitstream import (
         ...     PixelAspectRatio,
         ... )
-        >>> from vc2_conformance.video_parameters import (
+        >>> from vc2_conformance.pseudocode.video_parameters import (
         ...     PixelAspectRatio,
         ...     set_source_defaults,
         ... )
@@ -199,12 +199,12 @@ def iter_custom_options_dicts(
 
     Parameters
     ==========
-    base_video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
-        The :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+    base_video_parameters : :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`
+        The :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`
         representing the current base video parameters. See
-        :py:func:`~vc2_conformance.video_parameters.set_source_defaults`.
-    video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
-        The :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+        :py:func:`~vc2_conformance.pseudocode.video_parameters.set_source_defaults`.
+    video_parameters : :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`
+        The :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`
         representing the desired video parameters to be represented. Only the
         entries mentioned in ``dict_type`` will be checked.
     level_constraints_dict : {str: :py:class:`~vc2_conformance.constraint_table.ValueSet`, ...}
@@ -372,12 +372,12 @@ def iter_color_spec_options(
 
     Parameters
     ==========
-    base_video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
-        The :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+    base_video_parameters : :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`
+        The :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`
         representing the current base video parameters. See
-        :py:func:`~vc2_conformance.video_parameters.set_source_defaults`.
-    video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
-        The :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+        :py:func:`~vc2_conformance.pseudocode.video_parameters.set_source_defaults`.
+    video_parameters : :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`
+        The :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`
         representing the desired video parameters to be represented. Only the
         colour mode related entries mentioned in will be checked.
     level_constraints_dict : {str: :py:class:`~vc2_conformance.constraint_table.ValueSet`, ...}
@@ -468,12 +468,12 @@ def iter_source_parameter_options(
 
     Parameters
     ==========
-    base_video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
-        The :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+    base_video_parameters : :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`
+        The :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`
         representing the current base video parameters. See
-        :py:func:`~vc2_conformance.video_parameters.set_source_defaults`.
-    video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
-        The :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+        :py:func:`~vc2_conformance.pseudocode.video_parameters.set_source_defaults`.
+    video_parameters : :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`
+        The :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`
         representing the desired video parameters to be represented.
     level_constraints_dict : {str: :py:class:`~vc2_conformance.constraint_table.ValueSet`, ...}
         A single dictionary of level constraints (i.e. a single column from
@@ -562,7 +562,7 @@ def rank_base_video_format_similarity(
 ):
     """
     Given a set of
-    :py:class:`~vc2_conformance.video_parameters.VideoParameters`, return an
+    :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`, return an
     ordered list of :py:class:`~vc2_data_tables.BaseVideoFormats` with the most
     similar format first and least similar last.
 
@@ -572,7 +572,7 @@ def rank_base_video_format_similarity(
 
     Parameters
     ==========
-    video_parameters : :py:class:`~vc2_conformance.video_parameters.VideoParameters`
+    video_parameters : :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`
         The video parameters against which to rank base video formats'
         similarity.
     base_video_formats : [:py:class:`~vc2_data_tables.BaseVideoFormats`, ...]

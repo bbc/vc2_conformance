@@ -1,6 +1,6 @@
 """
-:py:mod:`vc2_conformance.parse_code_functions`: Parse code classification functions
-===================================================================================
+:py:mod:`vc2_conformance.pseudocode.parse_code_functions`: Parse code classification functions
+==============================================================================================
 
 Defined by VC-2 in (Table 10.2).
 

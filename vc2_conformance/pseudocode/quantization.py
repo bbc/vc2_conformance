@@ -4,7 +4,7 @@ Quantization-related VC-2 pseudocode routines.
 
 from vc2_conformance.metadata import ref_pseudocode
 
-from vc2_conformance.vc2_math import sign
+from vc2_conformance.pseudocode.vc2_math import sign
 
 __all__ = [
     "inverse_quant",
