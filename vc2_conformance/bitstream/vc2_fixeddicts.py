@@ -10,7 +10,7 @@ from bitarray import bitarray
 
 from vc2_conformance.fixeddict import fixeddict, Entry
 
-from vc2_conformance._string_formatters import (
+from vc2_conformance.string_formatters import (
     Hex,
     Bool,
     Bits,

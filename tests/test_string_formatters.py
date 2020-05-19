@@ -2,7 +2,7 @@ import pytest
 
 from bitarray import bitarray
 
-from vc2_conformance._string_formatters import (
+from vc2_conformance.string_formatters import (
     Number,
     Hex,
     Dec,

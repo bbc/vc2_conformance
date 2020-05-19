@@ -7,7 +7,7 @@ VC-2 spec.
 
 """
 
-from vc2_conformance._string_formatters import Hex
+from vc2_conformance.string_formatters import Hex
 
 from vc2_data_tables import (
     ParseCodes,

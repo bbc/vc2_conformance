@@ -1,5 +1,5 @@
 r"""
-:py:mod:`vc2_conformance._string_formatters`: Value to string converters
+:py:mod:`vc2_conformance.string_formatters`: Value to string converters
 ========================================================================
 
 Functions which produce human-readable string representations of values of

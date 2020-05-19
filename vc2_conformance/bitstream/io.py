@@ -14,7 +14,7 @@ By contrast with the implementation defined by the VC-2 pseudo code:
 
 from bitarray import bitarray
 
-from vc2_conformance._string_formatters import Bytes
+from vc2_conformance.string_formatters import Bytes
 
 from vc2_conformance.bitstream.exceptions import OutOfRangeError
 
