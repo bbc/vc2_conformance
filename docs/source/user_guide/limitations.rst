@@ -24,6 +24,15 @@ limited extent by the generated test cases. Some of these are listed below.
     generated to test this esoteric case, however, since this it is unlikely to
     be used in practice.
 
+**Quantisation in lossless formats**
+    Lossless formats may use quantization where transform coefficients happen
+    to be multiples the quantisation factor. Because quantisation can, in the
+    general case, result in larger intermediate signals within a decoder, it is
+    not appropriate to use lossily encoded test signals to test a lossless
+    decoder's support for quantisation. As a result, a special test case is
+    provided for lossless decoders which uses quantisation but ensures safe
+    signal ranges.
+
 **Auxiliary data-units**
     Auxiliary data units (10.4.4) are not tested. This is because the contents
     of such units are not defined by the VC-2 standard and so in the event that

@@ -39,6 +39,28 @@ def make_dummy_end_of_sequence(previous_parse_offset=PARSE_INFO_HEADER_BYTES):
     return f.getvalue()
 
 
+def iter_transform_parameters_in_sequence(codec_features, sequence):
+    """
+    Iterate over all of the transform parameters in a sequence.
+
+    Generates a series of
+    :py:class:`~vc2_conformance.bitstream.TransformParameters` dicts, one for
+    each picture present in the provided
+    :py:class:`~vc2_conformance.bitstream.Sequence`.
+
+    NB: This function assumes the stream is conformant.
+    """
+    for data_unit in sequence["data_units"]:
+        # Get the TransformParameters for the current picture/fragment data
+        # unit
+        if "picture_parse" in data_unit:
+            tp = data_unit["picture_parse"]["wavelet_transform"]["transform_parameters"]
+            yield tp
+        elif "fragment_parse" in data_unit:
+            if "transform_parameters" in data_unit["fragment_parse"]:
+                yield data_unit["fragment_parse"]["transform_parameters"]
+
+
 def iter_slices_in_sequence(codec_features, sequence):
     """
     Iterate over all of the slices in a sequence.

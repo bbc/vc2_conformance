@@ -25,6 +25,7 @@ from vc2_conformance.picture_generators import (
 
 from vc2_conformance.test_cases.decoder.common import (
     make_dummy_end_of_sequence,
+    iter_transform_parameters_in_sequence,
     iter_slices_in_sequence,
 )
 
@@ -42,6 +43,37 @@ def test_make_dummy_end_of_sequence():
         des.context["data_units"][0]["parse_info"]["parse_code"]
         == ParseCodes.end_of_sequence
     )
+
+
+@pytest.mark.parametrize("profile", Profiles)
+@pytest.mark.parametrize("fragment_slice_count", [0, 3])
+def test_iter_transform_parameters_in_sequence(profile, fragment_slice_count):
+    codec_features = MINIMAL_CODEC_FEATURES.copy()
+    codec_features["profile"] = profile
+    codec_features["fragment_slice_count"] = fragment_slice_count
+    codec_features["slices_x"] = 3
+    codec_features["slices_y"] = 2
+    codec_features["picture_bytes"] = 100
+
+    num_pictures = 2
+
+    sequence = make_sequence(
+        codec_features,
+        repeat_pictures(
+            mid_gray(
+                codec_features["video_parameters"],
+                codec_features["picture_coding_mode"],
+            ),
+            num_pictures,
+        ),
+    )
+
+    transform_parameters = list(
+        iter_transform_parameters_in_sequence(codec_features, sequence)
+    )
+
+    # Should have found every slice
+    assert len(transform_parameters) == num_pictures
 
 
 @pytest.mark.parametrize("profile", Profiles)

@@ -10,3 +10,4 @@ from vc2_conformance.test_cases.decoder.absent_next_parse_offset import *
 from vc2_conformance.test_cases.decoder.slice_size_scaler import *
 from vc2_conformance.test_cases.decoder.custom_quantization_matrix import *
 from vc2_conformance.test_cases.decoder.concatenated_sequences import *
+from vc2_conformance.test_cases.decoder.lossless_quantization import *
