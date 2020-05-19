@@ -14,6 +14,12 @@ the normal Pytest test suite) automatically finds functions in the
 and checks they match the equivalent function in the VC-2 specification (which
 are copied out verbatim in ``tests/verification/reference_pseudocode.py``).
 
+.. note::
+
+    To ensure that :py:mod:`vc2_conformance.metadata` contains information
+    about all submodules of :py:mod:`vc2_conformance`, the ``conftest.py`` file
+    in this directory ensures all submodules of vc2_conformance are loaded.
+
 In some cases, a limited set of well-defined differences are allowed to exist
 between the specification and the code used in :py:mod:`vc2_conformance`. For
 example, docstrings need not match and in some cases, extra changes may be
