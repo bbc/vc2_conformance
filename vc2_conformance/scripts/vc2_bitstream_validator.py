@@ -89,7 +89,7 @@ from vc2_conformance import metadata
 
 from vc2_conformance import __version__
 
-from vc2_conformance._py2x_compat import quote
+from vc2_conformance.py2x_compat import quote
 
 from vc2_conformance._string_utils import wrap_paragraphs
 
@@ -106,7 +106,7 @@ from vc2_conformance.decoder import (
 
 from vc2_conformance.bitstream import to_bit_offset
 
-from vc2_conformance._py2x_compat import get_terminal_size
+from vc2_conformance.py2x_compat import get_terminal_size
 
 
 def format_pseudocode_traceback(tb):

@@ -16,7 +16,7 @@ from itertools import repeat
 
 from vc2_data_tables import ParseCodes
 
-from vc2_conformance._py2x_compat import zip
+from vc2_conformance.py2x_compat import zip
 
 from vc2_conformance.level_constraints import LEVEL_SEQUENCE_RESTRICTIONS
 

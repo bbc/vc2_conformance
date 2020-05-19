@@ -12,7 +12,7 @@ from vc2_conformance.decoder import parse_stream
 
 from vc2_conformance.file_format import read
 
-from vc2_conformance._py2x_compat import quote
+from vc2_conformance.py2x_compat import quote
 
 from vc2_conformance import bitstream
 

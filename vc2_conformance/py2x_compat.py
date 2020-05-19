@@ -1,5 +1,5 @@
 """
-:py:mod:`vc2_conformance._py2x_compat`: Python 2.x backward compatibility
+:py:mod:`vc2_conformance.py2x_compat`: Python 2.x backward compatibility
 =========================================================================
 
 This module contains backported or renamed implementations of Python 3.x

@@ -16,7 +16,7 @@ from vc2_data_tables import Profiles
 
 from vc2_conformance.bitstream import Stream
 
-from vc2_conformance._py2x_compat import zip
+from vc2_conformance.py2x_compat import zip
 
 from vc2_conformance.slice_sizes import slice_bytes
 

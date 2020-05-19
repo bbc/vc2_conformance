@@ -7,7 +7,7 @@ from textwrap import wrap, dedent
 
 import re
 
-from vc2_conformance._py2x_compat import zip_longest
+from vc2_conformance.py2x_compat import zip_longest
 
 
 def indent(text, prefix="  "):

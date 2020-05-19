@@ -110,7 +110,7 @@ from vc2_conformance.codec_features import (
 
 from vc2_conformance.encoder import UnsatisfiableCodecFeaturesError
 
-from vc2_conformance._py2x_compat import (
+from vc2_conformance.py2x_compat import (
     get_terminal_size,
     makedirs,
 )

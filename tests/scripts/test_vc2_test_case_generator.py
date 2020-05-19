@@ -8,7 +8,7 @@ import logging
 
 from functools import partial
 
-from vc2_conformance._py2x_compat import makedirs
+from vc2_conformance.py2x_compat import makedirs
 
 from vc2_conformance.codec_features import read_codec_features_csv
 
