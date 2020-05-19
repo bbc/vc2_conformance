@@ -10,6 +10,8 @@ from vc2_conformance.level_constraints import LEVEL_CONSTRAINTS
 
 from vc2_conformance.codec_features import CodecFeatures
 
+from vc2_conformance.video_parameters import VideoParameters
+
 from vc2_conformance.test_cases.decoder.custom_quantization_matrix import (
     default_quantization_matrix,
     quantization_matrix_from_generator,
@@ -46,9 +48,14 @@ class TestDefaultQuantizationMatrix(object):
                 MINIMAL_CODEC_FEATURES_WITH_CUSTOM_QUANT_MATRIX,
                 quantization_matrix=None,
             ),
-            # Lossless Mode
+            # Lossless mode with not enough bits for test pattern
             CodecFeatures(
                 MINIMAL_CODEC_FEATURES_WITH_CUSTOM_QUANT_MATRIX,
+                video_parameters=VideoParameters(
+                    MINIMAL_CODEC_FEATURES_WITH_CUSTOM_QUANT_MATRIX["video_parameters"],
+                    luma_excursion=4,
+                    color_diff_excursion=4,
+                ),
                 lossless=True,
                 picture_bytes=None,
             ),
@@ -62,10 +69,19 @@ class TestDefaultQuantizationMatrix(object):
     def test_skipped_cases(self, codec_features):
         assert default_quantization_matrix(codec_features) is None
 
-    def test_uses_default_matrix_instead_of_custom(self):
-        stream = default_quantization_matrix(
-            MINIMAL_CODEC_FEATURES_WITH_CUSTOM_QUANT_MATRIX
+    @pytest.mark.parametrize("lossless", [False, True])
+    def test_uses_default_matrix_instead_of_custom(self, lossless):
+        codec_features = CodecFeatures(
+            MINIMAL_CODEC_FEATURES_WITH_CUSTOM_QUANT_MATRIX,
+            lossless=lossless,
+            picture_bytes=(
+                None
+                if lossless
+                else MINIMAL_CODEC_FEATURES_WITH_CUSTOM_QUANT_MATRIX["picture_bytes"]
+            ),
         )
+
+        stream = default_quantization_matrix(codec_features)
 
         custom_quant_matrix_flag_values = set()
 
@@ -118,9 +134,14 @@ class TestCustomQuantizationMatrix(object):
     @pytest.mark.parametrize(
         "codec_features",
         [
-            # Lossless Mode
+            # Lossless mode with not enough bits for test pattern
             CodecFeatures(
                 MINIMAL_CODEC_FEATURES_WITH_CUSTOM_QUANT_MATRIX,
+                video_parameters=VideoParameters(
+                    MINIMAL_CODEC_FEATURES_WITH_CUSTOM_QUANT_MATRIX["video_parameters"],
+                    luma_excursion=4,
+                    color_diff_excursion=4,
+                ),
                 lossless=True,
                 picture_bytes=None,
             ),
@@ -134,6 +155,7 @@ class TestCustomQuantizationMatrix(object):
     def test_skipped_cases(self, codec_features):
         assert len(list(custom_quantization_matrix(codec_features))) == 0
 
+    @pytest.mark.parametrize("lossless", [False, True])
     @pytest.mark.parametrize(
         "asymmetric,constrain_level_zero,initial_quant_matrix,exp_matrices",
         [
@@ -189,7 +211,12 @@ class TestCustomQuantizationMatrix(object):
         ],
     )
     def test_generates_custom_quant_matrices(
-        self, asymmetric, constrain_level_zero, initial_quant_matrix, exp_matrices,
+        self,
+        lossless,
+        asymmetric,
+        constrain_level_zero,
+        initial_quant_matrix,
+        exp_matrices,
     ):
         codec_features = CodecFeatures(
             MINIMAL_CODEC_FEATURES_WITH_CUSTOM_QUANT_MATRIX,
@@ -199,6 +226,12 @@ class TestCustomQuantizationMatrix(object):
                 else WaveletFilters.fidelity
             ),
             quantization_matrix=initial_quant_matrix,
+            lossless=lossless,
+            picture_bytes=(
+                None
+                if lossless
+                else MINIMAL_CODEC_FEATURES_WITH_CUSTOM_QUANT_MATRIX["picture_bytes"]
+            ),
         )
 
         with temporary_level_override():

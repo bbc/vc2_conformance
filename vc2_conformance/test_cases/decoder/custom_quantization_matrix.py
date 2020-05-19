@@ -2,13 +2,9 @@ from itertools import count, repeat, cycle
 
 from vc2_data_tables import QUANTISATION_MATRICES
 
-from vc2_conformance.bitstream import Stream
-
 from vc2_conformance.codec_features import CodecFeatures
 
 from vc2_conformance.test_cases import TestCase, decoder_test_case_generator
-
-from vc2_conformance.encoder import make_sequence
 
 from vc2_conformance._constraint_table import allowed_values_for, ValueSet, AnyValue
 
@@ -16,7 +12,41 @@ from vc2_conformance.level_constraints import LEVEL_CONSTRAINTS
 
 from vc2_conformance.codec_features import codec_features_to_trivial_level_constraints
 
-from vc2_conformance.picture_generators import white_noise
+from vc2_conformance.test_cases.decoder.pictures import static_noise
+
+from vc2_conformance.test_cases.decoder.lossless_quantization import (
+    lossless_quantization,
+)
+
+from vc2_conformance.test_cases import normalise_test_case_generator
+
+
+def generate_test_stream(codec_features):
+    """
+    Generate an appropriate test sequence with the specified codec features
+    (i.e. quantisation matrix).
+
+    For lossy coding modes, a noise plate will be used. For lossless modes, the
+    lossless_quantization test stream will be used instead.
+    """
+    if codec_features["lossless"]:
+        # The special lossless quantization test signal is used for lossless
+        # modes since using white noise could result in transform values
+        # outside the legal range. (Lossy quantization can result in signal
+        # levels several orders of magnitude larger than a lossless encoding).
+        f = lossless_quantization
+    else:
+        # White noise is used for lossy coding modes as it trivially results in
+        # signal in every transform band.
+        f = static_noise
+
+    test_cases = list(normalise_test_case_generator(f, codec_features))
+    if len(test_cases) == 1:
+        return test_cases[0].value
+    else:
+        # Only occurs if the lossless_quantization generator fails to produce a
+        # test case. Nothing to be done, we just have to abandon the test case.
+        return None
 
 
 @decoder_test_case_generator
@@ -28,20 +58,24 @@ def default_quantization_matrix(codec_features):
     for the ``quantization_matrix`` codec features CSV entry but when a default
     quantization matrix is defined.
 
-    This test is also omitted for lossless codecs.
-
     .. note::
 
         This is the only test case which sets the ``custom_quant_matrix`` flag
         (12.4.5.3) to 0 when a ``quantization_matrix`` is supplied in the codec
         features CSV.
+
+    .. note::
+
+        For lossy coding modes, the encoded picture will contain a noise signal
+        (see the :decoder-test-case:`static_noise` test case).
+
+        For lossless coding modes, the encoded picture will be the test pattern
+        used by the :decoder-test-case:`lossless_quantization` test case. This
+        test pattern is designed to be losslessly encodable when some
+        quantization is applied.
     """
     # Skip if already using the default quantisation matrix
     if codec_features["quantization_matrix"] is None:
-        return None
-
-    # Skip for lossless codecs since no quantization is applied
-    if codec_features["lossless"]:
         return None
 
     # Skip if no default quantization matrix is defined for the codec in use
@@ -65,20 +99,7 @@ def default_quantization_matrix(codec_features):
     # the default quantization matrix to be used
     codec_features = CodecFeatures(codec_features, quantization_matrix=None,)
 
-    # White noise signal used since it should put some energy into all
-    # subbands so differences in quantisation should be evident. Also,
-    # maximises the chances of quantisation being applied.
-    return Stream(
-        sequences=[
-            make_sequence(
-                codec_features,
-                white_noise(
-                    codec_features["video_parameters"],
-                    codec_features["picture_coding_mode"],
-                ),
-            )
-        ]
-    )
+    return generate_test_stream(codec_features)
 
 
 def quantization_matrix_from_generator(codec_features, generator):
@@ -128,13 +149,19 @@ def custom_quantization_matrix(codec_features):
         the default quantisation matrix. This test case is only generated when
         a default quantization matrix is defined for the codec.
 
-    These test cases are only generated when permitted by the VC-2 level in use
-    and for lossy coding modes.
-    """
-    # Skip for lossless codecs since no quantization is applied
-    if codec_features["lossless"]:
-        return
+    These test cases are only generated when permitted by the VC-2 level in
+    use.
 
+    .. note::
+
+        For lossy coding modes, the encoded picture will contain a noise signal
+        (see the :decoder-test-case:`static_noise` test case).
+
+        For lossless coding modes, the encoded picture will be the test pattern
+        used by the :decoder-test-case:`lossless_quantization` test case. This
+        test pattern is designed to be losslessly encodable when some
+        quantization is applied.
+    """
     # Skip if the level disallows custom quantisation matrices
     constrained_values = codec_features_to_trivial_level_constraints(codec_features)
     constrained_values["custom_quant_matrix"] = True
@@ -192,22 +219,8 @@ def custom_quantization_matrix(codec_features):
         ):
             continue
 
-        # White noise signal used since it should put some energy into all
-        # subbands so differences in quantisation should be evident. Also,
-        # maximises the chances of quantisation being applied.
-        yield TestCase(
-            Stream(
-                sequences=[
-                    make_sequence(
-                        CodecFeatures(
-                            codec_features, quantization_matrix=quantization_matrix
-                        ),
-                        white_noise(
-                            codec_features["video_parameters"],
-                            codec_features["picture_coding_mode"],
-                        ),
-                    )
-                ]
-            ),
-            description,
+        stream = generate_test_stream(
+            CodecFeatures(codec_features, quantization_matrix=quantization_matrix,)
         )
+        if stream is not None:
+            yield TestCase(stream, description)
