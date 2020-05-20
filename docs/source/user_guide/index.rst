@@ -1,3 +1,5 @@
+.. _user-guide:
+
 VC-2 Conformance Testing Software User Guide
 ============================================
 
