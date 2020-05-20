@@ -1,8 +1,11 @@
+import os
+
 import sys
 
 from setuptools import setup, find_packages
 
-with open("vc2_conformance/version.py", "r") as f:
+version_file = os.path.join(os.path.dirname(__file__), "vc2_conformance", "version.py")
+with open(version_file, "r") as f:
     exec (f.read())  # noqa: E211
 
 install_requires = [
