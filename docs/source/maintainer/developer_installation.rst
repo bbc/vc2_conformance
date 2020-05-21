@@ -103,7 +103,7 @@ Running tests
 
 Test routines relating to the code in each repository can be found in the
 ``tests/`` directory of each repository. The test suites are built on `pytest
-<https://docs.pytest.org/en/latest/>`_ and may be executed as follows:
+<https://docs.pytest.org/en/latest/>`_ and may be executed as follows::
 
     $ py.test path/to/vc2_data_tables/tests/
     $ py.test path/to/vc2_bit_widths/tests/
