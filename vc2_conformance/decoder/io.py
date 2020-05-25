@@ -1,6 +1,46 @@
 """
-:py:mod:`vc2_conformance.io`: (A) VC-2 Data Coding Definitions
-==============================================================
+The :py:mod:`vc2_conformance.io` module implements I/O functions for reading
+bitstreams from file-like objects. The exposed functions implement the
+interface specified in annex (A).
+
+
+Initialisation
+--------------
+
+The :py:func:`init_io` function must be used to initialise a
+:py:class:`~vc2_conformance.pseudocode.state.State` dictionary so that it is
+ready to read a bitstream.
+
+.. autofunction:: init_io
+
+
+Determining stream position
+---------------------------
+
+The :py:func:`tell` function (below) is used by verification logic to report
+and check offsets of values within a bitstream. For example, it may be used to
+check ``next_parse_offset`` fields are correct (see
+:py:func:`vc2_conformance.decoder.stream.parse_info`).
+
+.. autofunction:: tell
+
+
+Bitstream recording
+-------------------
+
+The VC-2 specification sometimes requires that the coded bitstream
+representation of a particular set of repeated fields is consistent within a
+bitstream (e.g. see
+:py:func:`vc2_conformance.decoder.sequence_header.sequence_header`). To
+facilitate this test, the :py:func:`record_bitstream_start` and
+:py:func:`record_bitstream_finish` functions may be used to capture the
+bitstream bytes read within part of the bitstream.
+
+.. autofunction:: record_bitstream_start
+
+.. autofunction:: record_bitstream_finish
+
+
 """
 
 from vc2_conformance.metadata import ref_pseudocode
@@ -34,12 +74,17 @@ def init_io(state, f):
     """
     (A.2.1) Initialise the io-related variables in state.
 
-    This function should be called to initialise the IO-related parts of the
-    state dictionary to their initial state as specified by (A.2.1):
+    This function should be called exactly once to initialise the IO-related
+    parts of the state dictionary to their initial state as specified by
+    (A.2.1):
 
         ... a decoder is deemed to maintain a copy of the current byte,
         state[current_byte], and an index to the next bit (in the byte) to be
         read, state[next_bit] ...
+
+    As well as initialising the state["current_byte"] and state["next_bit"]
+    fields, this sets the (out-of-spec) state["_file"] entry to the provided
+    file-like object.
 
     Parameters
     ----------
@@ -61,8 +106,7 @@ def record_bitstream_start(state):
     into state["_read_bytes"] until :py:func:`record_bitstream_finish` is
     called.
 
-    Because this functionality is only required for recording bytes which are
-    part of sequence_headers, recordings must start byte aligned.
+    Recordings must start byte aligned.
     """
     assert state["next_bit"] == 7, "Recordings must always be byte aligned"
     assert state.get("_recorded_bytes") is None, "Cannot nest recordings"

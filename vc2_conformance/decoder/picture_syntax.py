@@ -1,6 +1,6 @@
 """
-:py:mod:`vc2_conformance.picture_syntax`: (12) Picture Syntax
-=============================================================
+The :py:mod:`vc2_conformance.decoder.picture_syntax` module contains pseudocode
+functions from (12) Picture syntax.
 """
 
 from vc2_conformance.metadata import ref_pseudocode

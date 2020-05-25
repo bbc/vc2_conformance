@@ -1,10 +1,13 @@
 """
-:py:mod:`vc2_conformance.decoder.exceptions`
-============================================
+The :py:mod:`vc2_conformance.decoder.exceptions` module defines a number of
+exceptions derrived from :py:exc:`ConformanceError` representing different
+conformance errors a bitstream may contain. These exceptions provide additional
+methods which return detailed human-readable information about the conformance
+error.
 
-The following exception types, all inheriting from :py:exc:`ConformanceError`,
-are thrown by this module when the provided bitstream is found not to conform
-to the standard.
+.. autoexception:: ConformanceError
+    :members:
+
 """
 
 from textwrap import dedent
@@ -98,7 +101,7 @@ def explain_parse_code_sequence_structure_restrictions(
 
 class ConformanceError(Exception):
     """
-    Base class for all bitstream conformance failiure exceptions.
+    Base class for all bitstream conformance failure exceptions.
     """
 
     def __str__(self):
@@ -126,7 +129,8 @@ class ConformanceError(Exception):
         This string may include the following :py:meth:`str.format`
         substitutions which should be filled in before display:
 
-        * ``{cmd}`` The command name of the bitstream viewer
+        * ``{cmd}`` The command name of the bitstream viewer (i.e. usually
+          ``vc2-bitstream-viewer``)
         * ``{file}`` The filename of the bitstream.
         * ``{offset}`` The bit offset of the next bit in the bitstream to be
           read.

@@ -1,6 +1,6 @@
 """
-:py:mod:`vc2_conformance.stream`: (10) VC-2 Stream Syntax
-=========================================================
+The :py:mod:`vc2_conformance.decoder.stream` module contains pseudocode functions from
+(10) VC-2 Stream Syntax.
 """
 
 from vc2_conformance.metadata import ref_pseudocode

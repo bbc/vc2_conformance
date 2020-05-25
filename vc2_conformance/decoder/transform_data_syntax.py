@@ -1,6 +1,6 @@
 """
-:py:mod:`vc2_conformance.transform_data_syntax`: (13) Transform Data Syntax
-===========================================================================
+The :py:mod:`vc2_conformance.decoder.transform_data_syntax` module contains pseudocode
+functions from (13) Transform data syntax.
 """
 
 from vc2_conformance.metadata import ref_pseudocode

@@ -1,6 +1,6 @@
 """
-:py:mod:`vc2_conformance.sequence_header`: (11) Sequence Header
-===============================================================
+The :py:mod:`vc2_conformance.decoder.sequence_header` module contains pseudocode
+functions from (11) Sequence Header.
 """
 
 from vc2_conformance.metadata import ref_pseudocode

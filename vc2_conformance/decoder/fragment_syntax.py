@@ -1,6 +1,6 @@
 """
-:py:mod:`vc2_conformance.fragment_syntax`: (14) Fragment Syntax
-===============================================================
+The :py:mod:`vc2_conformance.decoder.fragment_syntax` module contains pseudocode
+functions from (14) Fragment syntax.
 """
 
 from vc2_conformance.metadata import ref_pseudocode

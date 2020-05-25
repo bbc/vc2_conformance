@@ -38,5 +38,6 @@ turn.
    :maxdepth: 3
    :caption: Contents:
    
-   maintainer/overview.rst
    maintainer/developer_installation.rst
+   maintainer/overview.rst
+   maintainer/decoder.rst
