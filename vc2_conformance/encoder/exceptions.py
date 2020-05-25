@@ -1,3 +1,14 @@
+"""
+The exceptions defined in :py:mod:`vc2_conformance.encoder.exceptions` derive
+from :py:exc:`UnsatisfiableCodecFeaturesError` and are thrown when the
+presented encoder configuration makes encoding impossible. These exceptions
+provide detailed explanations of why encoding was not possible.
+
+.. autoexception:: UnsatisfiableCodecFeaturesError
+    :members:
+
+"""
+
 from vc2_conformance.string_utils import wrap_paragraphs
 
 

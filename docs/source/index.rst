@@ -41,3 +41,4 @@ turn.
    maintainer/developer_installation.rst
    maintainer/overview.rst
    maintainer/decoder.rst
+   maintainer/encoder.rst

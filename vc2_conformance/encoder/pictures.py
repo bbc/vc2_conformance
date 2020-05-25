@@ -1,75 +1,87 @@
 r"""
-VC-2 Picture Coding
-===================
+The :py:mod:`vc2_conformance.encoder.pictures` module contains simple routines
+for compressing pictures in a VC-2 bitstream.
 
-This module contains the "meaty bit" of an extremely simple VC-2 encoder. For
-most purposes, a (series of) :py:class:`~vc2_conformance.bitstream.DataUnit`\ s
-may be produced which encode an arbitrary picture using:
+The picture encoding behaviour used by the encoder is encapsulated by the
+:py:func:`make_picture_data_units` function which turns a series of pictures
+(given as raw pixel values) into a series of
+:py:class:`~vc2_conformance.bitstream.DataUnit`\ s:
 
 .. autofunction:: make_picture_data_units
 
-This codec is designed to operate in one of three modes:
 
-* Lossless mode: variable bitrate, qindex is always 0. Used when
-  :py:class:`~vc2_conformance.codec_features.CodecFeatures`\ ``["lossless"]``
-  is ``True``.
+Encoding algorithm
+------------------
 
-* Lossy mode: fixed bit rate, variable qindex. Used when
-  :py:class:`~vc2_conformance.codec_features.CodecFeatures`\ ``["lossless"]``
-  is ``False``.
+Lossless mode
+`````````````
 
-* Minimum qindex mode: fixed bit rate, variable qindex of at least the
-  specified quantization index. Used when
-  :py:class:`~vc2_conformance.codec_features.CodecFeatures`\ ``["lossless"]``
-  is ``False`` and the ``minimum_qindex`` argument is set to a non-zero value.
+In lossless mode, every slice's ``qindex`` will be set to 0 (no quantization)
+and all transform coefficients will be coded verbaitm (though trailing zeros
+will be coded implicitly).
+
+Slices will be sized as large as necessary, though as small as possible.
+
+The smallest ``slice_size_scaler`` possible will be used for each coded picture
+independently.
 
 .. note::
 
-    The lossless mode is only supported when using the high-quality profile.
-    This mode is not guaranteed to produce the smallest possible outputs.
-    Specifically, it is theoretically possible to apply quantization when all
-    values in a picture slice already fall on a quantizer boundary.
+    In principle, lossless modes may occasionally make use of quantization to
+    achieve better compression. For example where all transform coefficients
+    are a multiple of the same quantisation factor. This encoder, however, does
+    not do this.
 
-The basic lossy mode chooses the quantization index to use on a slice-by-slice
-basis. Quantization indices are tested starting at zero and stopping when the
-transform coefficients fit into the slice.
+Lossy mode
+``````````
+
+In lossy mode the ``qindex`` for each slice is chosen on a slice-by-slice
+basis. The encoder tests quantization indices starting at zero and stopping
+when the transform coefficients fit into the slice.
+
+Slices are sized such that the picture slice data in the bitstream totals
+:py:class:`~vc2_conformance.codec_features.CodecFeatures`\
+``["picture_bytes"]``.
+
+For the high quality profile, the smallest ``slice_size_scaler`` which can
+encode a slice where a single component consumes a whole slice is used for
+every picture.
+
+.. warning::
+
+    The total size of picture slice data may differ from
+    :py:class:`~vc2_conformance.codec_features.CodecFeatures`\
+    ``["picture_bytes"]`` by up to ``slice_size_scaler`` bytes (for high
+    quality profile formats) or one byte (for low delay profile formats). This
+    will occur when the number of bytes (or multiple of ``slice_size_scaler``
+    bytes) is not exactly divisible by the required number of picture bytes.
+
+.. warning::
+
+    The total number of bytes used to encode each picture, once other coding
+    overheads (such as headers) will be higher than
+    :py:class:`~vc2_conformance.codec_features.CodecFeatures`\
+    ``["picture_bytes"]``.
 
 .. note::
 
     This codec may not always produce highest quality pictures possible in
-    lossless modes. For example, sometimes chosing higher quantisation indices
-    can produce fewer coding artefacts, for example when VC-2 codecs are
-    cascaded. Simillarly, high quality may be obtained by chosing lower
-    quantisation indices while dropping certain coefficients entirely. Further,
-    in theory, better picture quality might be obtained by applying additional
-    'tweaks' to the quantized coefficients.
-
-The minimum qindex mode is intended for use when encoding specialised test
-patterns which should be quantized with a specific quantisation index. In this
-mode, the quantization indices are tested starting at this quantization index.
-When the specified minimum quantisation index is very large (as it is for these
-kinds of test patterns), this quantization index will (almost) always be
-chosen. It is the responsibility of the caller to verify that all slices were
-actually given the required quantization index.
-
-In both lossy modes, slices are sized such that the total size of the slice data for
-a whole picture (excluding other header data, e.g.  the transform parameters)
-is :py:class:`~vc2_conformance.codec_features.CodecFeatures`\
-``["picture_bytes"]``. It is the responsibility of the caller to ensure that
-this figure is chosen to be large enough to at least hold the slice header data
-(any sane choice will be). If high-quality picture slices larger than 255 bytes
-are used, a ``slice_size_scaler`` other than 1 will be used. In this case, the
-total picture size may differ from the size specified by at most
-``slice_size_scaler`` bytes.
+    lossy modes. For example, sometimes chosing higher quantisation indices can
+    produce fewer coding artefacts, particularly in concatenated coding
+    applications. Simillarly, higher picture quality may sometimes be obtained
+    by setting later transform coefficients to zero enabling a lower
+    quantization index to be used. Other more sophisticated schemes may also
+    directly tweak transform coefficients.
 
 
-Internals
----------
+Use of pseudocode
+-----------------
 
-This module uses the pseudocode derrived
-:py:mod:`vc2_conformance.pseudocode.picture_encoding` module for its forward-DWT. This
-module primarily consists of logic for assembling and quantizing picture
-slices.
+This module uses the pseudocode-derrived
+:py:mod:`vc2_conformance.pseudocode.picture_encoding` module for its
+forward-DWT and :py:mod:`vc2_conformance.pseudocode.quantization` for
+quantization. Other pseudocode routines are also used where possible, for
+example for computing slice dimensions.
 
 """
 

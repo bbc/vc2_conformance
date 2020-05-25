@@ -1,7 +1,26 @@
 """
-Routines for generating sensible
-:py:class:`~vc2_conformance.bitstream.SequenceHeader` dictionaries ready for
-serialisation given a description of an arbitrary video format.
+The :py:mod:`vc2_conformance.encoder.encoder.sequence_header` module contains
+routines for encoding a set of video format and codec parameters into sequence
+headers.
+
+The :py:func:`make_sequence_header_data_unit` function is used generate
+sequence headers by the encoder:
+
+.. autofunction:: make_sequence_header_data_unit
+
+In practice there are often many potential sequence header encodings for a
+given set of video parameters. For example, when a video format closely matches
+a predefined base video format, the various ``custom_*_flag`` overrides may
+largely be omitted. This is optional, however, and an encoder is free to use
+these overrides explicitly even when they're not required.
+
+The :py:func:`make_sequence_header_data_unit` function always attempts to use a
+compact encoding it can. Some test cases, however may wish to use less compact
+encodings and so to support this the :py:func:`iter_sequence_headers` function
+is provided:
+
+.. autofunction:: iter_sequence_headers
+
 """
 
 from functools import partial
