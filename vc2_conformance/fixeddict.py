@@ -99,8 +99,6 @@ arguments which will be included in the generated type's docstring::
     ... )
 
     >>> print(ParseInfo.__doc__)
-    ParseInfo(...)
-    <BLANKLINE>
     A deserialised parse info block.
     <BLANKLINE>
     Parameters
@@ -315,8 +313,7 @@ def fixeddict(name, *entries, **kwargs):
     __dict__["__init__"] = __init__
 
     __dict__["help"] = help
-    __dict__["__doc__"] = "{}(...)\n\n{}\n\nParameters\n==========\n{}\n".format(
-        name,
+    __dict__["__doc__"] = "{}\n\nParameters\n==========\n{}\n".format(
         help if help is not None else "A :py:mod:`~vc2_conformance.fixeddict`.",
         "\n".join(
             (

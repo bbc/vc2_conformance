@@ -234,8 +234,6 @@ class TestFixedDict(object):
             Undocumented.__doc__
             == dedent(
                 """
-            Undocumented(...)
-
             A :py:mod:`~vc2_conformance.fixeddict`.
 
             Parameters
@@ -268,8 +266,6 @@ class TestFixedDict(object):
             Documented.__doc__
             == dedent(
                 """
-            Documented(...)
-
             A partially documented fixeddict.
 
             How nice?
