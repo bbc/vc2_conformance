@@ -68,13 +68,10 @@ so::
     >>> from vc2_data_tables import ParseCodes  # An IntEnum
     >>> ParseInfo = fixeddict(
     ...     "ParseInfo",
-    ...     Entry("parse_info_prefix",
-                  formatter=Hex(8))
-    ...     Entry("parse_code",
-    ...           enum=ParseCodes,
-    ...           formatter=Hex(2)),
-    ...     Entry("next_parse_offset")
-    ...     Entry("previous_parse_offset")
+    ...     Entry("parse_info_prefix", formatter=Hex(8)),
+    ...     Entry("parse_code", enum=ParseCodes, formatter=Hex(2)),
+    ...     Entry("next_parse_offset"),
+    ...     Entry("previous_parse_offset"),
 
     >>> pi = ParseInfo(
     ...     parse_info_prefix=0x42424344,
@@ -88,11 +85,43 @@ so::
        parse_code: end_of_sequence (0x10)
        next_parse_offset: 0
        previous_parse_offset: 0
+
+Finally, documentation can optionally be added in the form of ``help``
+arguments which will be included in the generated type's docstring::
+
+    >>> ParseInfo = fixeddict(
+    ...     "ParseInfo",
+    ...     Entry("parse_info_prefix", formatter=Hex(8), help="Always 0x42424344"),
+    ...     Entry("parse_code", enum=ParseCodes, formatter=Hex(2)),
+    ...     Entry("next_parse_offset"),
+    ...     Entry("previous_parse_offset"),
+    ...     help="A deserialised parse info block.",
+    ... )
+
+    >>> print(ParseInfo.__doc__)
+    ParseInfo(...)
+    <BLANKLINE>
+    A deserialised parse info block.
+    <BLANKLINE>
+    Parameters
+    ==========
+    parse_info_prefix
+        Always 0x42424344
+    parse_code
+    next_parse_offset
+    previous_parse_offset
+
+The 'help' values provided can be accessed as corresponding ``help`` attributes
+on the :py:func:`fixeddict` type and :py:class:`Entry` objects. These
+attributes will be ``None`` when no help value was provided.
+
 """
 
 import sys
 
 from collections import OrderedDict
+
+from textwrap import dedent
 
 from vc2_conformance.string_utils import indent
 
@@ -148,6 +177,8 @@ class Entry(object):
             If ``formatter`` or ``friendly_formatter`` are provided in addition
             to ``enum``, they will override the functions implicitly defined by
             ``enum``.
+        help : str
+            Optional documentation string.
         """
         self.name = name
 
@@ -172,6 +203,9 @@ class Entry(object):
 
         self.formatter = kwargs.pop("formatter", str)
         self.friendly_formatter = kwargs.pop("friendly_formatter", None)
+        self.help = kwargs.pop("help", None)
+        if self.help is not None:
+            self.help = dedent(self.help).strip()
 
         if kwargs:
             raise TypeError(
@@ -254,7 +288,11 @@ def fixeddict(name, *entries, **kwargs):
     # Extract keyword-only arguments
     module = kwargs.pop("module", None)
     qualname = kwargs.pop("qualname", None)
+    help = kwargs.pop("help", None)
     assert not kwargs, "Got unexpected keyword arguments: {}".format(", ".join(kwargs))
+
+    if help is not None:
+        help = dedent(help).strip()
 
     # Collect the list of Entry instances defined for this class
     # {name: Entry, ...}
@@ -276,10 +314,18 @@ def fixeddict(name, *entries, **kwargs):
 
     __dict__["__init__"] = __init__
 
-    __dict__[
-        "__doc__"
-    ] = "{}(...)\n\nA :py:mod:`~vc2_conformance.fixeddict`.\n\nParameters\n==========\n{}\n".format(
-        name, "\n".join(entry.name for entry in entry_objs.values()),
+    __dict__["help"] = help
+    __dict__["__doc__"] = "{}(...)\n\n{}\n\nParameters\n==========\n{}\n".format(
+        name,
+        help if help is not None else "A :py:mod:`~vc2_conformance.fixeddict`.",
+        "\n".join(
+            (
+                "{}\n{}".format(entry.name, indent(entry.help, "    "))
+                if entry.help is not None
+                else entry.name
+            )
+            for entry in entry_objs.values()
+        ),
     )
 
     def __setitem__(self, key, value):

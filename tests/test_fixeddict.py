@@ -2,6 +2,8 @@ import pytest
 
 from enum import IntEnum
 
+from textwrap import dedent
+
 from vc2_conformance.fixeddict import fixeddict, Entry, FixedDictKeyError
 
 import pickle
@@ -65,6 +67,19 @@ class TestEntry(object):
 
         v = Entry("v", formatter=str.lower, friendly_formatter=str.upper)
         assert v.to_string("Foo") == "FOO (foo)"
+
+    def test_help(self):
+        v = Entry("v")
+        assert v.help is None
+
+        v = Entry(
+            "v",
+            help="""
+            foo
+            bar
+        """,
+        )
+        assert v.help == "foo\nbar"
 
 
 MyFixedDict = fixeddict(
@@ -212,3 +227,61 @@ class TestFixedDict(object):
         unpickled_d2 = pickle.loads(pickle.dumps(d2))
         assert d2 == unpickled_d2
         assert type(d2) is type(unpickled_d2)
+
+    def test_docstring_no_help(self):
+        Undocumented = fixeddict("Undocumented", Entry("foo"), Entry("bar"),)
+        assert (
+            Undocumented.__doc__
+            == dedent(
+                """
+            Undocumented(...)
+
+            A :py:mod:`~vc2_conformance.fixeddict`.
+
+            Parameters
+            ==========
+            foo
+            bar
+        """
+            ).lstrip()
+        )
+
+    def test_docstring_with_help(self):
+        Documented = fixeddict(
+            "Documented",
+            Entry(
+                "foo",
+                help="""
+                Lots
+                of
+                help!
+            """,
+            ),
+            Entry("bar", help="Some help"),
+            help="""
+                A partially documented fixeddict.
+
+                How nice?
+            """,
+        )
+        assert (
+            Documented.__doc__
+            == dedent(
+                """
+            Documented(...)
+
+            A partially documented fixeddict.
+
+            How nice?
+
+            Parameters
+            ==========
+            foo
+                Lots
+                of
+                help!
+            bar
+                Some help
+        """
+            ).lstrip()
+        )
