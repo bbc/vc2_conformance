@@ -86,15 +86,16 @@ so::
        next_parse_offset: 0
        previous_parse_offset: 0
 
-Finally, documentation can optionally be added in the form of ``help``
-arguments which will be included in the generated type's docstring::
+Finally, documentation can optionally be added in the form of ``help`` and
+``help_type`` arguments which will be included in the generated type's
+docstring::
 
     >>> ParseInfo = fixeddict(
     ...     "ParseInfo",
-    ...     Entry("parse_info_prefix", formatter=Hex(8), help="Always 0x42424344"),
-    ...     Entry("parse_code", enum=ParseCodes, formatter=Hex(2)),
-    ...     Entry("next_parse_offset"),
-    ...     Entry("previous_parse_offset"),
+    ...     Entry("parse_info_prefix", formatter=Hex(8), help_type="int", help="Always 0x42424344"),
+    ...     Entry("parse_code", enum=ParseCodes, formatter=Hex(2), help_type="int"),
+    ...     Entry("next_parse_offset", help_type="int"),
+    ...     Entry("previous_parse_offset", help_type="int"),
     ...     help="A deserialised parse info block.",
     ... )
 
@@ -103,16 +104,16 @@ arguments which will be included in the generated type's docstring::
     <BLANKLINE>
     Parameters
     ==========
-    parse_info_prefix
+    parse_info_prefix : int
         Always 0x42424344
-    parse_code
-    next_parse_offset
-    previous_parse_offset
+    parse_code : int
+    next_parse_offset : int
+    previous_parse_offset : int
 
-The 'help' values provided can be accessed as corresponding ``help`` attributes
-on the :py:func:`fixeddict` type and :py:class:`Entry` objects. These
-attributes will be ``None`` when no help value was provided.
-
+The 'help' and 'help_type' values provided can be accessed as corresponding
+``help`` and ``help_type`` attributes on the :py:func:`fixeddict` type and
+:py:class:`Entry` objects. These attributes will be ``None`` when no help value
+was provided.
 """
 
 import sys
@@ -177,6 +178,8 @@ class Entry(object):
             ``enum``.
         help : str
             Optional documentation string.
+        help_type : str
+            Optional string describing the type of the entry.
         """
         self.name = name
 
@@ -201,9 +204,14 @@ class Entry(object):
 
         self.formatter = kwargs.pop("formatter", str)
         self.friendly_formatter = kwargs.pop("friendly_formatter", None)
+
         self.help = kwargs.pop("help", None)
         if self.help is not None:
             self.help = dedent(self.help).strip()
+
+        self.help_type = kwargs.pop("help_type", None)
+        if self.help_type is not None:
+            self.help_type = dedent(self.help_type).strip()
 
         if kwargs:
             raise TypeError(
@@ -316,10 +324,10 @@ def fixeddict(name, *entries, **kwargs):
     __dict__["__doc__"] = "{}\n\nParameters\n==========\n{}\n".format(
         help if help is not None else "A :py:mod:`~vc2_conformance.fixeddict`.",
         "\n".join(
-            (
-                "{}\n{}".format(entry.name, indent(entry.help, "    "))
-                if entry.help is not None
-                else entry.name
+            "{}{}{}".format(
+                entry.name,
+                (" : " + entry.help_type if entry.help_type is not None else ""),
+                (("\n" + indent(entry.help, "    ")) if entry.help is not None else ""),
             )
             for entry in entry_objs.values()
         ),

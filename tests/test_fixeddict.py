@@ -81,6 +81,19 @@ class TestEntry(object):
         )
         assert v.help == "foo\nbar"
 
+    def test_help_type(self):
+        v = Entry("v")
+        assert v.help_type is None
+
+        v = Entry(
+            "v",
+            help_type="""
+            foo
+            bar
+        """,
+        )
+        assert v.help_type == "foo\nbar"
+
 
 MyFixedDict = fixeddict(
     "MyFixedDict",
@@ -255,7 +268,7 @@ class TestFixedDict(object):
                 help!
             """,
             ),
-            Entry("bar", help="Some help"),
+            Entry("bar", help="Some help", help_type="int"),
             help="""
                 A partially documented fixeddict.
 
@@ -276,7 +289,7 @@ class TestFixedDict(object):
                 Lots
                 of
                 help!
-            bar
+            bar : int
                 Some help
         """
             ).lstrip()
