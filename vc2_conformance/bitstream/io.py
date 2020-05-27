@@ -1,15 +1,31 @@
 """
-:py:mod:`vc2_conformance.bitstream.io`:: Low-level bitstream IO
-===============================================================
+The :py:mod:`vc2_conformance.bitstream.io` module contains low-level wrappers
+for file-like objects which facilitate bitwise read and write operations of the
+kinds used by VC-2's bitstream format.
 
-Low-level wrappers for file-like objects which facilitate bitwise read and
-write operations of the kinds used by VC-2's bitstream format.
+The :py:class:`BitstreamReader` and :py:class:`BitstreamWriter` classes provide
+equivalent methods for the various ``read_*`` pseudocode functions defined in
+the VC-2 specification, along with a few additional utility methods.
 
-By contrast with the implementation defined by the VC-2 pseudo code:
+.. note::
 
-* Writing is implemented, as well as reading
-* More appropriate Python data types are returned
-* During writing, bounds checking is performed.
+    These methods are designed to be 'safe' meaning that if out-of-range values
+    are provided an error will be produced (rather than an unexpected value
+    being written/read).
+
+.. autoclass:: BitstreamReader
+    :members:
+
+.. autoclass:: BitstreamWriter
+    :members:
+
+The following utility functions are also provided for converting between
+offsets given as ``(bytes, bits)`` pairs and offsets given in bytes.
+
+.. autofunction:: to_bit_offset
+
+.. autofunction:: from_bit_offset
+
 """
 
 from bitarray import bitarray

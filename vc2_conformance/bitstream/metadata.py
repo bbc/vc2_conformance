@@ -1,8 +1,19 @@
 """
-Metadata about the VC-2 bitstream seriallisation/deseriallisation process.
+The :py:mod:`vc2_conformance.bitstream.metadata` module contains metadata about
+the relationship between VC-2 pseudocode functions and deserialised
+:py:mod:`~vc2_conformance.fixeddict` structures. These are used by the
+:ref:`vc2-bitstream-viewer` command to produce richer output and during
+documentation generation.
 
-Specifically, records the relationship between VC-2 pseudocode functions and
-fixeddict types.
+.. autodata:: pseudocode_function_to_fixeddicts
+    :annotation:
+
+.. autodata:: pseudocode_function_to_fixeddicts_recursive
+    :annotation:
+
+.. autodata:: fixeddict_to_pseudocode_function
+    :annotation:
+
 """
 
 from vc2_conformance.bitstream import vc2
@@ -24,7 +35,7 @@ pseudocode_function_to_fixeddicts = {}
 """
 For the subset of pseudocode functions in the VC-2 spec dedicated to
 serialisation/deseriallisation, gives the corresponding fixeddict type in
-:py:mod:`vc2_fixeddicts`.
+:py:mod:`vc2_conformance.bitstream.vc2_fixeddicts`.
 
 A dictionary of the shape ``{function_name: [type, ...], ...}``.
 """
@@ -58,7 +69,7 @@ fixeddict_to_pseudocode_function = {
     if function_name != "slice"
 }
 """
-Provides a mapping from :py:mod:`vc2_fixeddicts` types to the name of the
+Provides a mapping from :py:mod:`vc2_conformance.bitstream.vc2_fixeddicts` types to the name of the
 corresponding pseudocode function which may be used to seriallise/deseriallise
 from/to it.
 """

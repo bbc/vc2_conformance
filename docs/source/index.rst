@@ -42,3 +42,5 @@ turn.
    maintainer/overview.rst
    maintainer/decoder.rst
    maintainer/encoder.rst
+   maintainer/bitstream.rst
+   maintainer/bitstream_internals.rst

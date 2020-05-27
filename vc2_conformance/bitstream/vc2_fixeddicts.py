@@ -1,9 +1,17 @@
 r"""
-:py:mod:`vc2_conformance.bitstream.vc2_fixeddicts`: VC-2 Bitstream Structures
-=============================================================================
-
+The :py:mod:`vc2_conformance.bitstream.vc2_fixeddicts` module contains
 :py:mod:`~vc2_conformance.fixeddict` definitions for holding VC-2 bitstream
-values in a hierarchy which strongly mimics the bitstream structure.
+values in a hierarchy which strongly mimics the bitstream structure. These
+names are re-exported in the :py:mod:`vc2_conformance.bitstream` module for
+convenience. See :ref:`bitstream-fixeddicts` for a listing.
+
+It also provides the following metadata structures:
+
+.. autodata:: vc2_fixeddict_nesting
+    :annotation:
+
+.. autodata:: vc2_default_values
+    :annotation:
 """
 
 from bitarray import bitarray
@@ -115,24 +123,35 @@ should be treated as the default value to use for list entries.
 
 ParseInfo = fixeddict(
     "ParseInfo",
-    Entry("padding", formatter=Bits()),
+    Entry(
+        "padding",
+        formatter=Bits(),
+        help_type=":py:class:`~bitarray.bitarray`",
+        help="Byte alignment padding bits.",
+    ),
     Entry(
         "parse_info_prefix",
         friendly_formatter=(
             lambda prefix: "Correct" if prefix == PARSE_INFO_PREFIX else "INCORRECT"
         ),
         formatter=Hex(8),
+        help_type="int",
     ),
-    Entry("parse_code", enum=ParseCodes, formatter=Hex(2)),
-    Entry("next_parse_offset"),
-    Entry("previous_parse_offset"),
-    # Computed value: The byte offset of the start of this parse_info block in
-    # the bitstream.
-    Entry("_offset"),
+    Entry("parse_code", enum=ParseCodes, formatter=Hex(2), help_type="int"),
+    Entry("next_parse_offset", help_type="int"),
+    Entry("previous_parse_offset", help_type="int"),
+    Entry(
+        "_offset",
+        help_type="int",
+        help="""
+            Computed value. The byte offset of the start of this parse_info
+            block in the bitstream.
+        """,
+    ),
+    help="""
+        (10.5.1) Parse info header defined by ``parse_info()``.
+    """,
 )
-"""
-(10.5.1) Parse info header defined by ``parse_info()``.
-"""
 
 vc2_default_values[ParseInfo] = ParseInfo(
     padding=bitarray(),
@@ -148,14 +167,14 @@ vc2_default_values[ParseInfo] = ParseInfo(
 
 ParseParameters = fixeddict(
     "ParseParameters",
-    Entry("major_version"),
-    Entry("minor_version"),
-    Entry("profile", enum=Profiles),
-    Entry("level", enum=Levels),
+    Entry("major_version", help_type="int"),
+    Entry("minor_version", help_type="int"),
+    Entry("profile", enum=Profiles, help_type=":py:class:`~vc2_data_tables.Profiles`"),
+    Entry("level", enum=Levels, help_type=":py:class:`~vc2_data_tables.Levels`"),
+    help="""
+        (11.2.1) Sequence header defined by ``parse_parameters()``.
+    """,
 )
-"""
-(11.2.1) Sequence header defined by ``parse_parameters()``.
-"""
 
 vc2_default_values[ParseParameters] = ParseParameters(
     major_version=3,
@@ -166,13 +185,13 @@ vc2_default_values[ParseParameters] = ParseParameters(
 
 FrameSize = fixeddict(
     "FrameSize",
-    Entry("custom_dimensions_flag", formatter=Bool()),
-    Entry("frame_width"),
-    Entry("frame_height"),
+    Entry("custom_dimensions_flag", formatter=Bool(), help_type="bool"),
+    Entry("frame_width", help_type="int"),
+    Entry("frame_height", help_type="int"),
+    help="""
+        (11.4.3) Frame size override defined by ``frame_size()``.
+    """,
 )
-"""
-(11.4.3) Frame size override defined by ``frame_size()``.
-"""
 
 vc2_default_values[FrameSize] = FrameSize(
     custom_dimensions_flag=False, frame_width=1, frame_height=1,
@@ -180,13 +199,17 @@ vc2_default_values[FrameSize] = FrameSize(
 
 ColorDiffSamplingFormat = fixeddict(
     "ColorDiffSamplingFormat",
-    Entry("custom_color_diff_format_flag", formatter=Bool()),
-    Entry("color_diff_format_index", enum=ColorDifferenceSamplingFormats),
+    Entry("custom_color_diff_format_flag", formatter=Bool(), help_type="bool"),
+    Entry(
+        "color_diff_format_index",
+        enum=ColorDifferenceSamplingFormats,
+        help_type=":py:class:`~vc2_data_tables.ColorDifferenceSamplingFormats`",
+    ),
+    help="""
+        (11.4.4) Color-difference sampling override defined by
+        ``color_diff_sampling_format()``.
+    """,
 )
-"""
-(11.4.4) Color-difference sampling override defined by
-``color_diff_sampling_format()``.
-"""
 
 vc2_default_values[ColorDiffSamplingFormat] = ColorDiffSamplingFormat(
     custom_color_diff_format_flag=False,
@@ -195,12 +218,16 @@ vc2_default_values[ColorDiffSamplingFormat] = ColorDiffSamplingFormat(
 
 ScanFormat = fixeddict(
     "ScanFormat",
-    Entry("custom_scan_format_flag", formatter=Bool()),
-    Entry("source_sampling", enum=SourceSamplingModes),
+    Entry("custom_scan_format_flag", formatter=Bool(), help_type="bool"),
+    Entry(
+        "source_sampling",
+        enum=SourceSamplingModes,
+        help_type=":py:class:`~vc2_data_tables.SourceSamplingModes`",
+    ),
+    help="""
+        (11.4.5) Scan format override defined by ``scan_format()``.
+    """,
 )
-"""
-(11.4.5) Scan format override defined by ``scan_format()``.
-"""
 
 vc2_default_values[ScanFormat] = ScanFormat(
     custom_scan_format_flag=False, source_sampling=SourceSamplingModes.progressive,
@@ -208,14 +235,18 @@ vc2_default_values[ScanFormat] = ScanFormat(
 
 FrameRate = fixeddict(
     "FrameRate",
-    Entry("custom_frame_rate_flag", formatter=Bool()),
-    Entry("index", enum=PresetFrameRates),
-    Entry("frame_rate_numer"),
-    Entry("frame_rate_denom"),
+    Entry("custom_frame_rate_flag", formatter=Bool(), help_type="bool"),
+    Entry(
+        "index",
+        enum=PresetFrameRates,
+        help_type=":py:class:`~vc2_data_tables.PresetFrameRates`",
+    ),
+    Entry("frame_rate_numer", help_type="int"),
+    Entry("frame_rate_denom", help_type="int"),
+    help="""
+        (11.4.6) Frame-rate override defined by ``frame_rate()``.
+    """,
 )
-"""
-(11.4.6) Frame-rate override defined by ``frame_rate()``.
-"""
 
 vc2_default_values[FrameRate] = FrameRate(
     custom_frame_rate_flag=False,
@@ -226,15 +257,20 @@ vc2_default_values[FrameRate] = FrameRate(
 
 PixelAspectRatio = fixeddict(
     "PixelAspectRatio",
-    Entry("custom_pixel_aspect_ratio_flag", formatter=Bool()),
-    Entry("index", enum=PresetPixelAspectRatios),
-    Entry("pixel_aspect_ratio_numer"),
-    Entry("pixel_aspect_ratio_denom"),
+    Entry("custom_pixel_aspect_ratio_flag", formatter=Bool(), help_type="bool"),
+    Entry(
+        "index",
+        enum=PresetPixelAspectRatios,
+        help_type=":py:class:`~vc2_data_tables.PresetPixelAspectRatios`",
+    ),
+    Entry("pixel_aspect_ratio_numer", help_type="int"),
+    Entry("pixel_aspect_ratio_denom", help_type="int"),
+    help="""
+        (11.4.7) Pixel aspect ratio override defined by
+        ``pixel_aspect_ratio()`` (errata: also listed as ``aspect_ratio()`` in
+        some parts of the spec).
+    """,
 )
-"""
-(11.4.7) Pixel aspect ratio override defined by ``pixel_aspect_ratio()``
-(errata: also listed as ``aspect_ratio()`` in some parts of the spec).
-"""
 
 vc2_default_values[PixelAspectRatio] = PixelAspectRatio(
     custom_pixel_aspect_ratio_flag=False,
@@ -245,15 +281,15 @@ vc2_default_values[PixelAspectRatio] = PixelAspectRatio(
 
 CleanArea = fixeddict(
     "CleanArea",
-    Entry("custom_clean_area_flag", formatter=Bool()),
-    Entry("clean_width"),
-    Entry("clean_height"),
-    Entry("left_offset"),
-    Entry("top_offset"),
+    Entry("custom_clean_area_flag", formatter=Bool(), help_type="bool"),
+    Entry("clean_width", help_type="int"),
+    Entry("clean_height", help_type="int"),
+    Entry("left_offset", help_type="int"),
+    Entry("top_offset", help_type="int"),
+    help="""
+        (11.4.8) Clean areas override defined by ``clean_area()``.
+    """,
 )
-"""
-(11.4.8) Clean areas override defined by ``clean_area()``.
-"""
 
 vc2_default_values[CleanArea] = CleanArea(
     custom_clean_area_flag=False,
@@ -265,16 +301,20 @@ vc2_default_values[CleanArea] = CleanArea(
 
 SignalRange = fixeddict(
     "SignalRange",
-    Entry("custom_signal_range_flag", formatter=Bool()),
-    Entry("index", enum=PresetSignalRanges),
-    Entry("luma_offset"),
-    Entry("luma_excursion"),
-    Entry("color_diff_offset"),
-    Entry("color_diff_excursion"),
+    Entry("custom_signal_range_flag", formatter=Bool(), help_type="bool"),
+    Entry(
+        "index",
+        enum=PresetSignalRanges,
+        help_type=":py:class:`~vc2_data_tables.PresetSignalRanges`",
+    ),
+    Entry("luma_offset", help_type="int"),
+    Entry("luma_excursion", help_type="int"),
+    Entry("color_diff_offset", help_type="int"),
+    Entry("color_diff_excursion", help_type="int"),
+    help="""
+        (11.4.9) Signal range override defined by ``signal_range()``.
+    """,
 )
-"""
-(11.4.9) Signal range override defined by ``signal_range()``.
-"""
 
 vc2_default_values[SignalRange] = SignalRange(
     custom_signal_range_flag=False,
@@ -287,12 +327,16 @@ vc2_default_values[SignalRange] = SignalRange(
 
 ColorPrimaries = fixeddict(
     "ColorPrimaries",
-    Entry("custom_color_primaries_flag", formatter=Bool()),
-    Entry("index", enum=PresetColorPrimaries),
+    Entry("custom_color_primaries_flag", formatter=Bool(), help_type="bool"),
+    Entry(
+        "index",
+        enum=PresetColorPrimaries,
+        help_type=":py:class:`~vc2_data_tables.PresetColorPrimaries`",
+    ),
+    help="""
+        (11.4.10.2) Colour primaries override defined by ``color_primaries()``.
+    """,
 )
-"""
-(11.4.10.2) Colour primaries override defined by ``color_primaries()``.
-"""
 
 vc2_default_values[ColorPrimaries] = ColorPrimaries(
     custom_color_primaries_flag=False, index=PresetColorPrimaries.hdtv,
@@ -301,12 +345,16 @@ vc2_default_values[ColorPrimaries] = ColorPrimaries(
 
 ColorMatrix = fixeddict(
     "ColorMatrix",
-    Entry("custom_color_matrix_flag", formatter=Bool()),
-    Entry("index", enum=PresetColorMatrices),
+    Entry("custom_color_matrix_flag", formatter=Bool(), help_type="bool"),
+    Entry(
+        "index",
+        enum=PresetColorMatrices,
+        help_type=":py:class:`~vc2_data_tables.PresetColorMatrices`",
+    ),
+    help="""
+        (11.4.10.3) Colour matrix override defined by ``color_matrix()``.
+    """,
 )
-"""
-(11.4.10.3) Colour matrix override defined by ``color_matrix()``.
-"""
 
 vc2_default_values[ColorMatrix] = ColorMatrix(
     custom_color_matrix_flag=False, index=PresetColorMatrices.hdtv,
@@ -314,12 +362,17 @@ vc2_default_values[ColorMatrix] = ColorMatrix(
 
 TransferFunction = fixeddict(
     "TransferFunction",
-    Entry("custom_transfer_function_flag", formatter=Bool()),
-    Entry("index", enum=PresetTransferFunctions),
+    Entry("custom_transfer_function_flag", formatter=Bool(), help_type="bool"),
+    Entry(
+        "index",
+        enum=PresetTransferFunctions,
+        help_type=":py:class:`~vc2_data_tables.PresetTransferFunctions`",
+    ),
+    help="""
+        (11.4.10.4) Transfer function override defined by
+        ``transfer_function()``.
+    """,
 )
-"""
-(11.4.10.4) Transfer function override defined by ``transfer_function()``.
-"""
 
 vc2_default_values[TransferFunction] = TransferFunction(
     custom_transfer_function_flag=False, index=PresetTransferFunctions.tv_gamma,
@@ -327,15 +380,19 @@ vc2_default_values[TransferFunction] = TransferFunction(
 
 ColorSpec = fixeddict(
     "ColorSpec",
-    Entry("custom_color_spec_flag", formatter=Bool()),
-    Entry("index", enum=PresetColorSpecs),
-    Entry("color_primaries"),  # ColorPrimaries
-    Entry("color_matrix"),  # ColorMatrix
-    Entry("transfer_function"),  # TransferFunction
+    Entry("custom_color_spec_flag", formatter=Bool(), help_type="bool"),
+    Entry(
+        "index",
+        enum=PresetColorSpecs,
+        help_type=":py:class:`~vc2_data_tables.PresetColorSpecs`",
+    ),
+    Entry("color_primaries", help_type=":py:class:`ColorPrimaries`"),
+    Entry("color_matrix", help_type=":py:class:`ColorMatrix`"),
+    Entry("transfer_function", help_type=":py:class:`TransferFunction`"),
+    help="""
+        (11.4.10.1) Colour specification override defined by ``color_spec()``.
+    """,
 )
-"""
-(11.4.10.1) Colour specification override defined by ``color_spec()``.
-"""
 
 vc2_default_values[ColorSpec] = ColorSpec(
     custom_color_spec_flag=False, index=PresetColorSpecs.hdtv,
@@ -345,18 +402,20 @@ vc2_fixeddict_nesting[ColorSpec] = [ColorPrimaries, ColorMatrix, TransferFunctio
 
 SourceParameters = fixeddict(
     "SourceParameters",
-    Entry("frame_size"),  # FrameSize
-    Entry("color_diff_sampling_format"),  # ColorDiffSamplingFormat
-    Entry("scan_format"),  # ScanFormat
-    Entry("frame_rate"),  # FrameRate
-    Entry("pixel_aspect_ratio"),  # PixelAspectRatio
-    Entry("clean_area"),  # CleanArea
-    Entry("signal_range"),  # SignalRange
-    Entry("color_spec"),  # ColorSpec
+    Entry("frame_size", help_type=":py:class:`FrameSize`"),
+    Entry(
+        "color_diff_sampling_format", help_type=":py:class:`ColorDiffSamplingFormat`"
+    ),
+    Entry("scan_format", help_type=":py:class:`ScanFormat`"),
+    Entry("frame_rate", help_type=":py:class:`FrameRate`"),
+    Entry("pixel_aspect_ratio", help_type=":py:class:`PixelAspectRatio`"),
+    Entry("clean_area", help_type=":py:class:`CleanArea`"),
+    Entry("signal_range", help_type=":py:class:`SignalRange`"),
+    Entry("color_spec", help_type=":py:class:`ColorSpec`"),
+    help="""
+        (11.4.1) Video format overrides defined by ``source_parameters()``.
+    """,
 )
-"""
-(11.4.1) Video format overrides defined by ``source_parameters()``.
-"""
 
 vc2_default_values[SourceParameters] = SourceParameters()
 
@@ -373,15 +432,28 @@ vc2_fixeddict_nesting[SourceParameters] = [
 
 SequenceHeader = fixeddict(
     "SequenceHeader",
-    Entry("padding", formatter=Bits()),
-    Entry("parse_parameters"),  # ParseParameters
-    Entry("base_video_format", enum=BaseVideoFormats),
-    Entry("video_parameters"),  # SourceParameters
-    Entry("picture_coding_mode", enum=PictureCodingModes),
+    Entry(
+        "padding",
+        formatter=Bits(),
+        help_type=":py:class:`~bitarray.bitarray`",
+        help="Byte alignment padding bits.",
+    ),
+    Entry("parse_parameters", help_type=":py:class:`ParseParameters`"),
+    Entry(
+        "base_video_format",
+        enum=BaseVideoFormats,
+        help_type=":py:class:`~vc2_data_tables.BaseVideoFormats`",
+    ),
+    Entry("video_parameters", help_type=":py:class:`SourceParameters`"),
+    Entry(
+        "picture_coding_mode",
+        enum=PictureCodingModes,
+        help_type=":py:class:`~vc2_data_tables.PictureCodingModes`",
+    ),
+    help="""
+        (11.1) Sequence header defined by ``sequence_header()``.
+    """,
 )
-"""
-(11.1) Sequence header defined by ``sequence_header()``.
-"""
 
 vc2_default_values[SequenceHeader] = SequenceHeader(
     padding=bitarray(),
@@ -398,22 +470,34 @@ vc2_fixeddict_nesting[SequenceHeader] = [ParseParameters, SourceParameters]
 
 AuxiliaryData = fixeddict(
     "AuxiliaryData",
-    Entry("padding", formatter=Bits()),
-    Entry("bytes", formatter=Bytes()),
+    Entry(
+        "padding",
+        formatter=Bits(),
+        help_type=":py:class:`~bitarray.bitarray`",
+        help="Byte alignment padding bits.",
+    ),
+    Entry("bytes", formatter=Bytes(), help_type="bytes"),
+    help="""
+        (10.4.4) Auxiliary data block (as per auxiliary_data()).
+    """,
 )
-"""
-(10.4.4) Auxiliary data block (as per auxiliary_data()).
-"""
 
 vc2_default_values[AuxiliaryData] = AuxiliaryData(padding=bitarray(), bytes=b"",)
 
 
 Padding = fixeddict(
-    "Padding", Entry("padding", formatter=Bits()), Entry("bytes", formatter=Bytes()),
+    "Padding",
+    Entry(
+        "padding",
+        formatter=Bits(),
+        help_type=":py:class:`~bitarray.bitarray`",
+        help="Byte alignment padding bits.",
+    ),
+    Entry("bytes", formatter=Bytes(), help_type="bytes"),
+    help="""
+        (10.4.5) Padding data block (as per padding()).
+    """,
 )
-"""
-(10.4.5) Padding data block (as per padding()).
-"""
 
 vc2_default_values[Padding] = Padding(padding=bitarray(), bytes=b"",)
 
@@ -424,15 +508,19 @@ vc2_default_values[Padding] = Padding(padding=bitarray(), bytes=b"",)
 
 ExtendedTransformParameters = fixeddict(
     "ExtendedTransformParameters",
-    Entry("asym_transform_index_flag"),
-    Entry("wavelet_index_ho", enum=WaveletFilters),
-    Entry("asym_transform_flag"),
-    Entry("dwt_depth_ho"),
+    Entry("asym_transform_index_flag", help_type="bool"),
+    Entry(
+        "wavelet_index_ho",
+        enum=WaveletFilters,
+        help_type=":py:class:`~vc2_data_tables.WaveletFilters`",
+    ),
+    Entry("asym_transform_flag", help_type="bool"),
+    Entry("dwt_depth_ho", help_type="int"),
+    help="""
+        (12.4.4.1) Extended (horizontal-only) wavelet transform parameters
+        defined by ``extended_transform_parameters()``.
+    """,
 )
-"""
-(12.4.4.1) Extended (horizontal-only) wavelet transform parameters defined by
-``extended_transform_parameters()``.
-"""
 
 vc2_default_values[ExtendedTransformParameters] = ExtendedTransformParameters(
     asym_transform_index_flag=False,
@@ -443,16 +531,17 @@ vc2_default_values[ExtendedTransformParameters] = ExtendedTransformParameters(
 
 SliceParameters = fixeddict(
     "SliceParameters",
-    Entry("slices_x"),
-    Entry("slices_y"),
-    Entry("slice_bytes_numerator"),
-    Entry("slice_bytes_denominator"),
-    Entry("slice_prefix_bytes"),
-    Entry("slice_size_scaler"),
+    Entry("slices_x", help_type="int"),
+    Entry("slices_y", help_type="int"),
+    Entry("slice_bytes_numerator", help_type="int"),
+    Entry("slice_bytes_denominator", help_type="int"),
+    Entry("slice_prefix_bytes", help_type="int"),
+    Entry("slice_size_scaler", help_type="int"),
+    help="""
+        (12.4.5.2) Slice dimension parameters defined by
+        ``slice_parameters()``.
+    """,
 )
-"""
-(12.4.5.2) Slice dimension parameters defined by ``slice_parameters()``.
-"""
 
 vc2_default_values[SliceParameters] = SliceParameters(
     slices_x=1,
@@ -464,11 +553,18 @@ vc2_default_values[SliceParameters] = SliceParameters(
 )
 
 QuantMatrix = fixeddict(
-    "QuantMatrix", Entry("custom_quant_matrix"), Entry("quant_matrix"),  # [int, ...]
+    "QuantMatrix",
+    Entry("custom_quant_matrix", help_type="bool"),
+    Entry(
+        "quant_matrix",
+        help_type="[int, ...]",
+        help="Quantization matrix values in bitstream order.",
+    ),
+    help="""
+        (12.4.5.3) Custom quantisation matrix override defined by
+        ``quant_matrix()``.
+    """,
 )
-"""
-(12.4.5.3) Custom quantisation matrix override defined by ``quant_matrix()``.
-"""
 
 vc2_default_values[QuantMatrix] = QuantMatrix(
     custom_quant_matrix=False, quant_matrix=0,
@@ -476,15 +572,23 @@ vc2_default_values[QuantMatrix] = QuantMatrix(
 
 TransformParameters = fixeddict(
     "TransformParameters",
-    Entry("wavelet_index", enum=WaveletFilters),
-    Entry("dwt_depth"),
-    Entry("extended_transform_parameters"),  # ExtendedTransformParameters
-    Entry("slice_parameters"),  # SliceParameters
-    Entry("quant_matrix"),  # QuantMatrix
+    Entry(
+        "wavelet_index",
+        enum=WaveletFilters,
+        help_type=":py:class:`~vc2_data_tables.WaveletFilters`",
+    ),
+    Entry("dwt_depth", help_type="int"),
+    Entry(
+        "extended_transform_parameters",
+        help_type=":py:class:`ExtendedTransformParameters`",
+    ),
+    Entry("slice_parameters", help_type=":py:class:`SliceParameters`"),
+    Entry("quant_matrix", help_type=":py:class:`QuantMatrix`"),
+    help="""
+        (12.4.1) Wavelet transform parameters defined by
+        ``transform_parameters()``.
+    """,
 )
-"""
-(12.4.1) Wavelet transform parameters defined by ``transform_parameters()``.
-"""
 
 vc2_default_values[TransformParameters] = TransformParameters(
     wavelet_index=WaveletFilters.haar_with_shift, dwt_depth=0,
@@ -506,22 +610,44 @@ vc2_fixeddict_nesting[TransformParameters] = [
 
 LDSlice = fixeddict(
     "LDSlice",
-    Entry("qindex"),
-    Entry("slice_y_length"),
-    # Transform coefficients (in bitstream order)
-    Entry("y_transform", formatter=List()),
-    Entry("c_transform", formatter=List()),
-    # Unused bits from bounded blocks
-    Entry("y_block_padding", formatter=Bits()),
-    Entry("c_block_padding", formatter=Bits()),
-    # Computed value: The slice coordinates.
-    Entry("_sx"),
-    Entry("_sy"),
+    Entry("qindex", help_type="int"),
+    Entry("slice_y_length", help_type="int"),
+    Entry(
+        "y_transform",
+        formatter=List(),
+        help_type="[int, ...]",
+        help="""
+            Slice luma transform coefficients in bitstream order.
+        """,
+    ),
+    Entry(
+        "c_transform",
+        formatter=List(),
+        help_type="[int, ...]",
+        help="""
+            Slice interleaved colordifference transform coefficients in
+            bitstream order.
+        """,
+    ),
+    Entry(
+        "y_block_padding",
+        formatter=Bits(),
+        help_type=":py:class:`~bitarray.bitarray`",
+        help="Unused bits from y_transform bounded block.",
+    ),
+    Entry(
+        "c_block_padding",
+        formatter=Bits(),
+        help_type=":py:class:`~bitarray.bitarray`",
+        help="Unused bits from c_transform bounded block.",
+    ),
+    Entry("_sx", help_type="int", help="Computed value. Slice coordinates."),
+    Entry("_sy", help_type="int", help="Computed value. Slice coordinates."),
+    help="""
+        (13.5.3.1) The data associated with a single low-delay slice, defined
+        by ``ld_slice()``.
+    """,
 )
-"""
-(13.5.3.1) The data associated with a single low-delay slice, defined by
-``ld_slice()``.
-"""
 
 vc2_default_values[LDSlice] = LDSlice(
     qindex=0,
@@ -534,27 +660,54 @@ vc2_default_values[LDSlice] = LDSlice(
 
 HQSlice = fixeddict(
     "HQSlice",
-    Entry("prefix_bytes", formatter=Bytes()),
-    Entry("qindex"),
-    Entry("slice_y_length"),
-    Entry("slice_c1_length"),
-    Entry("slice_c2_length"),
-    # Transform coefficients (in bitstream order)
-    Entry("y_transform", formatter=List()),
-    Entry("c1_transform", formatter=List()),
-    Entry("c2_transform", formatter=List()),
-    # Unused bits from bounded blocks
-    Entry("y_block_padding", formatter=Bits()),
-    Entry("c1_block_padding", formatter=Bits()),
-    Entry("c2_block_padding", formatter=Bits()),
-    # Computed value: The slice coordinates.
-    Entry("_sx"),
-    Entry("_sy"),
+    Entry("prefix_bytes", formatter=Bytes(), help_type="bytes"),
+    Entry("qindex", help_type="int"),
+    Entry("slice_y_length", help_type="int"),
+    Entry("slice_c1_length", help_type="int"),
+    Entry("slice_c2_length", help_type="int"),
+    Entry(
+        "y_transform",
+        formatter=List(),
+        help_type="[int, ...]",
+        help="Slice luma transform coefficients in bitstream order.",
+    ),
+    Entry(
+        "c1_transform",
+        formatter=List(),
+        help_type="[int, ...]",
+        help="Slice color difference 1 transform coefficients in bitstream order.",
+    ),
+    Entry(
+        "c2_transform",
+        formatter=List(),
+        help_type="[int, ...]",
+        help="Slice color difference 2 transform coefficients in bitstream order.",
+    ),
+    Entry(
+        "y_block_padding",
+        formatter=Bits(),
+        help_type=":py:class:`~bitarray.bitarray`",
+        help="Unused bits in y_transform bounded block",
+    ),
+    Entry(
+        "c1_block_padding",
+        formatter=Bits(),
+        help_type=":py:class:`~bitarray.bitarray`",
+        help="Unused bits in c1_transform bounded block",
+    ),
+    Entry(
+        "c2_block_padding",
+        formatter=Bits(),
+        help_type=":py:class:`~bitarray.bitarray`",
+        help="Unused bits in c2_transform bounded block",
+    ),
+    Entry("_sx", help_type="int", help="Computed value. Slice coordinates."),
+    Entry("_sy", help_type="int", help="Computed value. Slice coordinates."),
+    help="""
+        (13.5.4) The data associated with a single high-quality slice, defined
+        by ``hq_slice()``.
+    """,
 )
-"""
-(13.5.4) The data associated with a single high-quality slice, defined by
-``hq_slice()``.
-"""
 
 vc2_default_values[HQSlice] = HQSlice(
     prefix_bytes=b"",
@@ -575,25 +728,44 @@ vc2_default_values[HQSlice] = HQSlice(
 ################################################################################
 
 
-PictureHeader = fixeddict("PictureHeader", Entry("picture_number"),)
-"""
-(12.2) Picture header information defined by ``picture_header()``.
-"""
+PictureHeader = fixeddict(
+    "PictureHeader",
+    Entry("picture_number", help_type="int"),
+    help="""
+        (12.2) Picture header information defined by ``picture_header()``.
+    """,
+)
 
 vc2_default_values[PictureHeader] = PictureHeader(picture_number=0,)
 
 TransformData = fixeddict(
     "TransformData",
-    Entry("ld_slices", formatter=List(formatter=Object())),  # [LDSlice, ...]
-    Entry("hq_slices", formatter=List(formatter=Object())),  # [HQSlice, ...]
-    # Computed value: A copy of the State dictionary held when processing this
-    # transform data. May be used to work out how the deseriallised values
-    # correspond to transform components within the slices above.
-    Entry("_state"),
+    Entry(
+        "ld_slices",
+        formatter=List(formatter=Object()),
+        help_type="[:py:class:`LDSlice`, ...]",
+    ),
+    Entry(
+        "hq_slices",
+        formatter=List(formatter=Object()),
+        help_type="[:py:class:`HQSlice`, ...]",
+    ),
+    Entry(
+        "_state",
+        help_type=":py:class:`~vc2_conformance.pseudocode.state.State`",
+        help="""
+            Computed value. A copy of the
+            :py:class:`~vc2_conformance.pseudocode.state.State` dictionary held
+            when processing this transform data. May be used to work out how
+            the deseriallised values correspond to transform components within
+            the slices above.
+        """,
+    ),
+    help="""
+        (13.5.2) Transform coefficient data slices read by
+        ``transform_data()``.
+    """,
 )
-"""
-(13.5.2) Transform coefficient data slices read by ``transform_data()``.
-"""
 
 vc2_default_values[TransformData] = TransformData()
 
@@ -601,13 +773,19 @@ vc2_fixeddict_nesting[TransformData] = [LDSlice, HQSlice]
 
 WaveletTransform = fixeddict(
     "WaveletTransform",
-    Entry("transform_parameters"),  # TransformParameters
-    Entry("padding", formatter=Bits()),
-    Entry("transform_data"),  # TransformData
+    Entry("transform_parameters", help_type=":py:class:`TransformParameters`"),
+    Entry(
+        "padding",
+        formatter=Bits(),
+        help_type=":py:class:`~bitarray.bitarray`",
+        help="Byte alignment padding bits.",
+    ),
+    Entry("transform_data", help_type=":py:class:`TransformData`"),
+    help="""
+        (12.3) Wavelet parameters and coefficients defined by
+        ``wavelet_transform()``.
+    """,
 )
-"""
-(12.3) Wavelet parameters and coefficients defined by ``wavelet_transform()``.
-"""
 
 vc2_default_values[WaveletTransform] = WaveletTransform(padding=bitarray(),)
 
@@ -615,14 +793,24 @@ vc2_fixeddict_nesting[WaveletTransform] = [TransformParameters, TransformData]
 
 PictureParse = fixeddict(
     "PictureParse",
-    Entry("padding1", formatter=Bits()),
-    Entry("picture_header"),  # PictureHeader
-    Entry("padding2", formatter=Bits()),
-    Entry("wavelet_transform"),  # WaveletTransform
+    Entry(
+        "padding1",
+        formatter=Bits(),
+        help_type=":py:class:`~bitarray.bitarray`",
+        help="Picture header byte alignment padding bits.",
+    ),
+    Entry("picture_header", help_type=":py:class:`PictureHeader`"),
+    Entry(
+        "padding2",
+        formatter=Bits(),
+        help_type=":py:class:`~bitarray.bitarray`",
+        help="Wavelet transform byte alignment padding bits.",
+    ),
+    Entry("wavelet_transform", help_type=":py:class:`WaveletTransform`"),
+    help="""
+        (12.1) A picture data unit defined by ``picture_parse()``
+    """,
 )
-"""
-(12.1) A picture data unit defined by ``picture_parse()``
-"""
 
 vc2_default_values[PictureParse] = PictureParse(
     padding1=bitarray(), padding2=bitarray(),
@@ -637,15 +825,15 @@ vc2_fixeddict_nesting[PictureParse] = [PictureHeader, WaveletTransform]
 
 FragmentHeader = fixeddict(
     "FragmentHeader",
-    Entry("picture_number"),
-    Entry("fragment_data_length"),
-    Entry("fragment_slice_count"),
-    Entry("fragment_x_offset",),
-    Entry("fragment_y_offset",),
+    Entry("picture_number", help_type="int"),
+    Entry("fragment_data_length", help_type="int"),
+    Entry("fragment_slice_count", help_type="int"),
+    Entry("fragment_x_offset", help_type="int"),
+    Entry("fragment_y_offset", help_type="int"),
+    help="""
+        (14.2) Fragment header defined by ``fragment_header()``.
+    """,
 )
-"""
-(14.2) Fragment header defined by ``fragment_header()``.
-"""
 
 vc2_default_values[FragmentHeader] = FragmentHeader(
     picture_number=0,
@@ -657,16 +845,31 @@ vc2_default_values[FragmentHeader] = FragmentHeader(
 
 FragmentData = fixeddict(
     "FragmentData",
-    Entry("ld_slices", formatter=List(formatter=Object())),  # LDSlice
-    Entry("hq_slices", formatter=List(formatter=Object())),  # HQSlice
-    # Computed value: A copy of the State dictionary held when processing this
-    # fragment data. May be used to work out how the deseriallised values
-    # correspond to transform components within the slices above.
-    Entry("_state"),
+    Entry(
+        "ld_slices",
+        formatter=List(formatter=Object()),
+        help_type="[:py:class:`LDSlice`, ...]",
+    ),
+    Entry(
+        "hq_slices",
+        formatter=List(formatter=Object()),
+        help_type="[:py:class:`HQSlice`, ...]",
+    ),
+    Entry(
+        "_state",
+        help_type=":py:class:`~vc2_conformance.pseudocode.state.State`",
+        help="""
+            Computed value. A copy of the
+            :py:class:`~vc2_conformance.pseudocode.state.State` dictionary held
+            when processing this fragment data. May be used to work out how the
+            deseriallised values correspond to transform components within the
+            slices above.
+        """,
+    ),
+    help="""
+        (14.4) Transform coefficient data slices read by ``fragment_data()``.
+    """,
 )
-"""
-(14.4) Transform coefficient data slices read by ``fragment_data()``.
-"""
 
 vc2_default_values[FragmentData] = FragmentData()
 
@@ -674,16 +877,26 @@ vc2_fixeddict_nesting[FragmentData] = [LDSlice, HQSlice]
 
 FragmentParse = fixeddict(
     "FragmentParse",
-    Entry("padding1", formatter=Bits()),
-    Entry("fragment_header"),  # FragmentHeader
-    Entry("padding2", formatter=Bits()),
-    Entry("transform_parameters"),  # TransformParameters
-    Entry("fragment_data"),  # FragmentData
+    Entry(
+        "padding1",
+        formatter=Bits(),
+        help_type=":py:class:`~bitarray.bitarray`",
+        help="Fragment header byte alignment padding bits.",
+    ),
+    Entry("fragment_header", help_type=":py:class:`FragmentHeader`"),
+    Entry(
+        "padding2",
+        formatter=Bits(),
+        help_type=":py:class:`~bitarray.bitarray`",
+        help="Transform parameter or fragment data byte alignment padding bits.",
+    ),
+    Entry("transform_parameters", help_type=":py:class:`TransformParameters`"),
+    Entry("fragment_data", help_type=":py:class:`FragmentData`"),
+    help="""
+        (14.1) A fragment data unit defined by ``fragment_parse()`` containing
+        part of a picture.
+    """,
 )
-"""
-(14.1) A fragment data unit defined by ``fragment_parse()`` containing part of a
-picture.
-"""
 
 vc2_default_values[FragmentParse] = FragmentParse(
     padding1=bitarray(), padding2=bitarray(),
@@ -701,17 +914,18 @@ vc2_fixeddict_nesting[FragmentParse] = [
 
 DataUnit = fixeddict(
     "DataUnit",
-    Entry("parse_info"),  # ParseInfo
-    Entry("sequence_header"),  # SequenceHeader
-    Entry("picture_parse"),  # PictureParse
-    Entry("fragment_parse"),  # FragmentParse
-    Entry("auxiliary_data"),  # AuxiliaryData
-    Entry("padding"),  # Padding
+    Entry("parse_info", help_type=":py:class:`ParseInfo`"),
+    Entry("sequence_header", help_type=":py:class:`SequenceHeader`"),
+    Entry("picture_parse", help_type=":py:class:`PictureParse`"),
+    Entry("fragment_parse", help_type=":py:class:`FragmentParse`"),
+    Entry("auxiliary_data", help_type=":py:class:`AuxiliaryData`"),
+    Entry("padding", help_type=":py:class:`Padding`"),
+    help="""
+        A data unit (e.g. sequence header or picture) and its associated parse
+        info.  Based on the values read by parse_sequence() (10.4.1) in each
+        iteration.
+    """,
 )
-"""
-A data unit (e.g. sequence header or picture) and its associated parse info.
-Based on the values read by parse_sequence() (10.4.1) in each iteration.
-"""
 
 vc2_default_values[DataUnit] = DataUnit()
 
@@ -726,24 +940,40 @@ vc2_fixeddict_nesting[DataUnit] = [
 
 Sequence = fixeddict(
     "Sequence",
-    Entry("data_units", formatter=MultilineList(heading="")),  # DataUnit
-    # Computed value: The State object being populated by the parser.
-    Entry("_state"),
+    Entry(
+        "data_units",
+        formatter=MultilineList(heading=""),
+        help_type="[:py:class:`DataUnit`, ...]",
+    ),
+    Entry(
+        "_state",
+        help_type=":py:class:`~vc2_conformance.pseudocode.state.State`",
+        help="""
+            Computed value. The
+            :py:class:`~vc2_conformance.pseudocode.state.State` object being
+            populated by the parser.
+        """,
+    ),
+    help="""
+        (10.4.1) A VC-2 sequence.
+    """,
 )
-"""
-(10.4.1) A VC-2 sequence.
-"""
 
 vc2_default_values[Sequence] = Sequence()
 
 vc2_fixeddict_nesting[Sequence] = [DataUnit]
 
 Stream = fixeddict(
-    "Stream", Entry("sequences", formatter=MultilineList(heading="")),  # Sequence
+    "Stream",
+    Entry(
+        "sequences",
+        formatter=MultilineList(heading=""),
+        help_type="[:py:class:`Sequence`, ...]",
+    ),
+    help="""
+        (10.3) A VC-2 stream.
+    """,
 )
-"""
-(10.3) A VC-2 stream.
-"""
 
 vc2_default_values[Stream] = Stream()
 

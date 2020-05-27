@@ -500,8 +500,8 @@ def iter_source_parameter_options(
         generated parameter sets will meet the restrictions imposed (which may
         include preventing any cases being generated).
 
-    Generates
-    =========
+    Yields
+    ======
     source_parameters : :py:class:`vc2_conformance.bitstream.SourceParameters`
         A series of :py:class:`vc2_conformance.bitstream.SourceParameters`
         dictionaries, starting with the simplest (fewest custom overrides
@@ -676,8 +676,8 @@ def iter_sequence_headers(codec_features):
     ==========
     codec_features : :py:class:`~vc2_conformance.codec_features.CodecFeatures`
 
-    Generates
-    =========
+    Yields
+    ======
     sequence_header : :py:class:`~vc2_conformance.bitstream.SequenceHeader`
     """
     picture_coding_mode = codec_features["picture_coding_mode"]

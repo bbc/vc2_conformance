@@ -25,6 +25,8 @@ from textwrap import dedent
 from docutils import nodes
 from docutils.statemachine import ViewList
 
+from docutils_utils import make_from_rst
+
 
 from sphinx.util.docutils import SphinxDirective
 from sphinx.util.nodes import nested_parse_with_titles
@@ -66,19 +68,28 @@ class TestCaseDocumentation(SphinxDirective):
 
         out = []
         for tc_name, tc_docs, tc_file in sorted(test_cases):
-            title = nodes.title(text="{} test case: ".format(tc_type.title()))
-            title += nodes.literal(text=tc_name)
 
             # This is a crude hack (i.e. creating the directive by adding some
             # RST to a string...) but docutils/sphinx are sufficiently
             # poorly documented to make this the only viable option after
             # several hours of searching...
-            tc_docs = ".. {}-test-case:: {}\n\n{}".format(tc_type, tc_name, tc_docs,)
 
             section = nodes.section(ids=["test-case-{}-{}".format(tc_type, tc_name)])
+
+            title = nodes.title()
+            title += nodes.Text("{} test case: ".format(tc_type.title()))
+            title += nodes.literal(text=tc_name)
             section += title
+
+            section += nodes.Text("")  # Required to make ref below work...
             nested_parse_with_titles(
                 self.state, ViewList(tc_docs.splitlines(), tc_file), section,
+            )
+
+            out.append(
+                make_from_rst(
+                    self.state, ".. {}-test-case:: {}".format(tc_type, tc_name)
+                )
             )
             out.append(section)
 

@@ -1,30 +1,11 @@
 r"""
-:py:mod:`vc2_conformance.bitstream.serdes`: A bitstream seriallisation/deserialisation framework
-================================================================================================
+The :py:mod:`vc2_conformance.bitstream.serdes` module provides a framework for
+transforming a set of functions designed to process a bitstream (e.g. the VC-2
+specification's pseudocode) into general-purpose bitstream serialisers,
+deserialisers and analysers.
 
-.. currentmodule:: vc2_conformance.bitstream
-
-A module which can be used to transform a set of functions designed to process
-a bitstream (as in VC-2 specification) into general-purpose bitstream
-serialisers, deserialisers and analysers.
-
-
-Underlying idea and motivation
-------------------------------
-
-In addition to providing a VC-2 conformance-checking decoder, this library is
-also required to perform the following tasks:
-
-* Display conforming and non-conforming bitstreams in a human readable fashion
-  to facilitate debugging of encoders.
-* Generate arbitrary conforming and non-conforming bitstreams.
-
-As a consequence, it is important to be able to both serialise and deserialise
-VC-2 bitstreams, including bit streams containing non-conforming values. In
-order to minimise the chances of inconsistencies between the VC-2 specification
-and any serialiser/deserialiser, this module implements a framework for
-transforming the VC-2 specification pseudocode into robust, general purpose
-serialisers/deserialisers.
+The following sections introduce the design and operation of this module in
+detail.
 
 A basic bitstream serialiser
 ````````````````````````````
@@ -66,14 +47,15 @@ placeholders with a suitable global variables like so::
             video_parameters[frame_height] = write_uint(new_frame_height)
 
 We have now transformed the VC-2 pseudocode bitstream *reader* function into a
-*writer* function. What's more by setting the global variables appropriately it
-is possible to use this function as a general-purpose bitstream serialiser.
+*writer* function. What's more, by just changing the values of global variables
+we created it is possible to use this function as a general-purpose bitstream
+serialiser.
 
 
 A basic deserialiser
 ````````````````````
 
-Unfortunately, the original bitstream reader pseudo code from the VC-2
+Unfortunately, the original bitstream reader pseudocode from the VC-2
 specification is not quite usable as a general-purpose bitstream deserialiser:
 
 * The reader does not capture every value read from the bitstream in a variable
@@ -87,15 +69,15 @@ limitations. We redefine the ``read_*`` functions to take an additional
 argument naming a global variable where the read values will be stored, in
 addition to being returned, giving the following pseudocode::
 
-    got_custom_dimensions_flag = None
-    got_frame_width = None
-    got_frame_height = None
+    read_custom_dimensions_flag = None
+    read_frame_width = None
+    read_frame_height = None
 
     frame_size(video_parameters):
-        custom_dimensions_flag = read_bool(got_custom_dimensions_flag)
+        custom_dimensions_flag = read_bool(read_custom_dimensions_flag)
         if(custom_dimensions_flag == True)
-            video_parameters[frame_width] = read_uint(got_frame_width)
-            video_parameters[frame_height] = read_uint(got_frame_height)
+            video_parameters[frame_width] = read_uint(read_frame_width)
+            video_parameters[frame_height] = read_uint(read_frame_height)
 
 This small change ensures that every value read from the bitstream is captured
 in a global variable which we can later examine and which is orthogonal to
@@ -114,16 +96,17 @@ arguments: a name of a global variable.
 
 This module defines the :py:class:`SerDes` interface which can be used by the
 VC-2 pseudocode specifications to drive both bitstream serialisation and
-deserialisation.
+deserialisation. To use it, we replace the ``read_*`` or ``write_*`` calls
+with ``serdes.*`` calls.
 
-Translating the ``frame_size`` function into valid Python which takes a
+Translating the ``frame_size`` function into valid Python and taking a
 :py:class:`SerDes` instance as an argument we arrive at the following code::
 
     def frame_size(serdes, video_parameters):
         custom_dimensions_flag = serdes.bool("custom_dimensions_flag")
         if(custom_dimensions_flag == True)
-            video_parameters["frame_width"] = serdes.uint("got_frame_width")
-            video_parameters["frame_height"] = serdes.uint("got_frame_height")
+            video_parameters["frame_width"] = serdes.uint("frame_width")
+            video_parameters["frame_height"] = serdes.uint("frame_height")
 
 To deserialise (read) a bitstream we use the :py:class:`Deserialiser`
 implementation of :py:class:`SerDes` like so::
@@ -191,7 +174,7 @@ we've seen above. To collect together related values we can use
 
     def source_parameters(serdes):
         video_parameters = {}
-        with serdes.subcontext("video_parameters"):
+        with serdes.subcontext("frame_size"):
             frame_size(serdes, video_parameters)
         with serdes.subcontext("color_diff_sampling_format"):
             color_diff_sampling_format(serdes, video_parameters)
@@ -206,7 +189,7 @@ This results in a nested dictionary structure::
     >>> from pprint import pprint
     >>> pprint(des.context)
     {
-        "video_parameters": {
+        "frame_size": {
             "custom_dimensions_flag": True,
             "frame_width": 1920,
             "frame_height": 1080,

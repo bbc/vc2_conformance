@@ -14,58 +14,13 @@ The ``:value-heading:`` and ``:name-heading:`` options default to "Value" and
 
 from importlib import import_module
 
-from docutils import nodes
 from docutils.parsers.rst import Directive
 
-
-def make_row(entries):
-    row = nodes.row()
-
-    for node in entries:
-        entry = nodes.entry("", node)
-        row += entry
-
-    return row
-
-
-def make_text(text):
-    return nodes.paragraph(text=text)
-
-
-def make_literal(text):
-    return nodes.paragraph("", "", nodes.literal(text=text))
-
-
-def make_table(headings, values, colwidths=None):
-    """
-    Make a table with the specified headings and values (given as docutils
-    nodes). If colwidths is None, uses '1' for all columns, otherwise must be a
-    list of integer weights.
-    """
-    table = nodes.table()
-
-    tgroup = nodes.tgroup(cols=len(headings))
-    table += tgroup
-
-    if colwidths is None:
-        for i in range(len(headings)):
-            tgroup += nodes.colspec(colwidth=1)
-    else:
-        assert len(colwidths) == len(headings)
-        for colwidth in colwidths:
-            tgroup += nodes.colspec(colwidth=colwidth)
-
-    thead = nodes.thead("", make_row(headings))
-    tgroup += thead
-
-    tbody = nodes.tbody()
-    tgroup += tbody
-
-    for row_nodes in values:
-        assert len(row_nodes) == len(headings)
-        tbody += make_row(row_nodes)
-
-    return table
+from docutils_utils import (
+    make_text,
+    make_literal,
+    make_table,
+)
 
 
 class EnumValueTable(Directive):

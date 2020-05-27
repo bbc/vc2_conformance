@@ -40,6 +40,8 @@ extensions = [
     # Local extensions (in _ext/ directory)
     "test_case_documentation",
     "enum_table",
+    "fixeddict",
+    "bitstream_fixeddicts",
 ]
 
 # -- Options for numpydoc/autodoc --------------------------------------------

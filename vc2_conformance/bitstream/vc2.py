@@ -1,24 +1,22 @@
-"""
-:py:mod:`vc2_conformance.bitstream.vc2`: VC-2 bitstream pseudocode
-==================================================================
+r"""
+The :py:mod:`vc2_conformance.bitstream.vc2` module contains a set of
+:py:class:`.SerDes`-using (see :py:mod:`~vc2_conformance.bitstream.serdes`)
+functions which follow the pseudo-code in the VC-2 specification as closely as
+possible. All pseudocode functions are re-exported by the
+:py:mod:`vc2_conformance.bitstream` module.
 
-.. currentmodule:: vc2_conformance.bitstream
+See the table in :ref:`bitstream-fixeddicts` which relates these functions to
+their matching :py:mod:`~vc2_conformance.fixeddict`\ s.
 
-This module consists of a set of :py:class:`SerDes`-using (see
-:py:mod:`.serdes`) functions which follow the pseudo-code in the VC-2
-specification as closely as possible. The following deviations from the
-spec pseudo-code are allowed:
+In this module, all functions are derived from the pseudocode by:
 
-* Replacing ``read_*`` calls with :py:class:`SerDes` calls.
-* Addition of :py:class:`SerDes` annotations.
-* Removal of decoding functionality (retaining only the parts required for
+* Replacing ``read_*`` calls with :py:class:`.SerDes` calls.
+* Adding :py:class:`.SerDes` annotations.
+* Removing of decoding functionality (retaining only the code required for
   bitstream deserialisation).
 
-For parsing complete bitstreams, the :py:func:`parse_sequence` function should
-be used.
-
-.. autofunction:: parse_sequence
-
+Consistency with the VC-2 pseudocode is checked by the test suite (see
+:py:mod:`verification`).
 """
 
 from vc2_conformance.metadata import ref_pseudocode

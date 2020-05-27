@@ -1,12 +1,41 @@
 """
-:py:mod:`vc2_conformance.bitstream.vc2_autofill`: VC-2 bitstream value auto-fill utilities
-==========================================================================================
+The :py:mod:`vc2_conformance.bitstream.autofill` module provides auto-fill
+routines for automatically computing certain values for the context
+dictionaries used by the :py:mod:`vc2_conformance.bitstream.vc2`
+:py:mod:`~vc2_conformance.bitstream.serdes` functions. These values include the
+picture number and parse offset fields which can't default to a simple fixed
+value.
 
-This module provides auto-fill routines for automatically computing certain
-values for the context dictionaries used by the
-:py:mod:`vc2_conformance.bitstream.vc2`
-:py:mod:`~vc2_conformance.bitstream.serdes` functions.
-"""  # noqa: E501
+In the common case, the :py:func:`autofill_and_serialise_stream` function may
+be used to serialise a complete :py:class:`~vc2_conformance.bitstream.Stream`,
+with sensible defaults provided for all fields (including picture numbers and
+next/previous parse offsets).
+
+.. autofunction:: autofill_and_serialise_stream
+
+Autofill value routines
+-----------------------
+
+The following functions implement autofill routines for specific bitstream
+values.
+
+.. autofunction:: autofill_picture_number
+
+.. autofunction:: autofill_parse_offsets
+
+.. autofunction:: autofill_parse_offsets_finalize
+
+
+Autofill value dictionary
+-------------------------
+
+.. autodata:: vc2_default_values_with_auto
+    :annotation:
+
+.. autodata:: AUTO
+    :annotation:
+
+"""
 
 from copy import deepcopy
 
@@ -49,15 +78,15 @@ __all__ = [
 AUTO = Sentinel("AUTO")
 """
 A constant which may be placed in a
-:py:mod;`~vc2_conformance.bitstream.vc2_fixeddicts` fixed dictionary field to
-indicate that :py:func:`autofill` should automatically compute a value for that
-field.
+:py:mod:`~vc2_conformance.bitstream.vc2_fixeddicts` fixed dictionary field to
+indicate that the various ``autofill_*`` functions in this module should
+automatically compute a value for that field.
 """
 
 vc2_default_values_with_auto = deepcopy(vc2_default_values)
 """
-Like :py:data:`vc2_conformance.bitstreams.vc2_default_values` but with 'AUTO'
-set as the default value for all fields which support it.
+Like :py:data:`vc2_conformance.bitstreams.vc2_default_values` but with
+:py:data:`AUTO` set as the default value for all fields which support it.
 """
 
 vc2_default_values_with_auto[ParseInfo]["next_parse_offset"] = AUTO
@@ -120,7 +149,7 @@ def autofill_picture_number(stream, initial_picture_number=0):
 
 def autofill_parse_offsets(stream):
     """
-    Given a :py:class:`~vc2_conformance.bitstream.vc2_fixeddicts.Stream`,
+    Given a :py:class:`~vc2_conformance.bitstream.Stream`,
     find and fill in all next_parse_offset and previous_parse_offset fields
     which are absent or contain the :py:data:`AUTO` sentinel.
 
@@ -180,10 +209,10 @@ def autofill_parse_offsets_finalize(
 
     Parameters
     ==========
-    bitstream_writer : :py:class:`~vc2_conformance.bitstream.BitstreamWriter`
-        A :py:class:`~vc2_conformance.bitstream.BitstreamWriter` set up to
+    bitstream_writer : :py:class:`~vc2_conformance.bitstream.io.BitstreamWriter`
+        A :py:class:`~vc2_conformance.bitstream.io.BitstreamWriter` set up to
         write to the already-serialised bitstream.
-    stream : :py:class:`~vc2_conformance.bitstream.vc2_fixeddicts.Stream`
+    stream : :py:class:`~vc2_conformance.bitstream.Stream`
         The context dictionary used to serialies the bitstream. Since computed
         values added to these dictionaries by the serialisation process, it may
         be necessary to use the dictionary provided by
@@ -242,15 +271,27 @@ def autofill_and_serialise_stream(file, stream):
     file : file-like object
         A file open for binary writing. The seriallised bitstream will be
         written to this file.
-    stream : :py:class:`~vc2_conformance.bitstream.vc2_fixeddicts.Stream`
-        The stream to be serialised. Unspecified values will be filled in
-        from :py:data:`vc2_default_values_with_auto`. Supported fields
-        containing :py:class:`AUTO` will be autofilled with suitably computed
-        values using:
+    stream : :py:class:`~vc2_conformance.Stream`
+        The stream to be serialised. Unspecified values will be auto-filled if
+        possible. See :ref:`bitstream-fixeddicts` for the default auto-fill
+        values.
 
-        * :py:func:`autofill_picture_number`
-        * :py:func:`autofill_parse_offsets`
-        * :py:func:`autofill_parse_offsets_finalize`
+        .. note::
+
+            Internally, auto-fill values are taken from
+            :py:data:`vc2_default_values_with_auto`.
+
+            Supported fields containing the special value :py:class:`AUTO` will
+            be autofilled with suitably computed values. Specifically:
+
+            * Picture numbers will set to incrementing values (starting at 0,
+              or continuing from the value used by the previous picture) by
+              :py:func:`autofill_picture_number`.
+            * Next and previous parse offsets will be calculated automatically
+              by
+              :py:func:`autofill_parse_offsets`
+              and
+              :py:func:`autofill_parse_offsets_finalize`.
     """
     autofill_picture_number(stream)
     (
