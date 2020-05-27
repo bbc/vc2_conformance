@@ -43,4 +43,11 @@ turn.
    maintainer/decoder.rst
    maintainer/encoder.rst
    maintainer/bitstream.rst
+   maintainer/test_cases.rst
+
+.. toctree::
+   :maxdepth: 3
+   :caption: Contents:
+   
    maintainer/bitstream_internals.rst
+

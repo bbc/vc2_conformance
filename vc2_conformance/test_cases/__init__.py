@@ -1,76 +1,102 @@
 r"""
-:py:mod:`vc2_conformance.test_cases`: Test case generation routines for VC-2 codecs
-==================================================================================
+The :py:mod:`vc2_conformance.test_cases` module contains routines for
+generating test cases for VC-2 encoder and decoder implementations.
 
-This module contains routines for generating test cases for VC-2 encoder and
-decoder implementations.
-
-Test cases are generated on-demand for specific sets of
-:py:class:`~vc2_conformance.codec_features.CodecFeatures` by test
-case generators. A test case generator is a function which takes a
-:py:class:`~vc2_conformance.codec_features.CodecFeatures` as an
-argument and returns or yields test pictures or bitstreams.
-
-Test case generators are registered with one of two :py:class:`Registry`
-objects:
-
-.. autodata:: ENCODER_TEST_CASE_GENERATOR_REGISTRY
-
-.. autodata:: DECODER_TEST_CASE_GENERATOR_REGISTRY
-
-Test case generator functions are registered with these registries by
-decorating them using the :py:func:`encoder_test_case_generator` and
-:py:func:`decoder_test_case_generator` decorators.
-
-.. autodata:: encoder_test_case_generator
-
-.. autodata:: decoder_test_case_generator
-
+A description of each test case generator can be found in
+:ref:`encoder-test-cases` and :ref:`decoder-test-cases` in the user guide.
 
 Test case generators
 --------------------
 
-Test case generator functions are divided into encoder and decoder test cases.
+Test case generators are generator functions which take a
+:py:class:`~vc2_conformance.codec_features.CodecFeatures` dictionary as their
+only argument and produce picture sequences (for encoders) or bitstreams (for
+decoders). Test case generators may take one of the following forms:
 
-Encoder test case generators take a
-:py:class:`~vc2_conformance.codec_features.CodecFeatures` and
-produce a :py:class:`EncoderTestSequence` object.
+* Function which returns a single test case
+* Function which returns a single test case or None (indicating no test case
+  was produced)
+* Generator function which yields multiple test cases.
+
+A test case can be one of:
+
+* For encoder test cases, a picture sequence in the form of an
+  :py:class:`EncoderTestSequence` object.
+* For decoder test cases, a bitstream in the form of a
+  :py:class:`~vc2_conformance.bitstream.Stream` object which can be serialised
+  using
+  :py:func:`~vc2_conformance.bitstream.vc2_autofill.autofill_and_serialise_stream`.
+* A :py:class:`TestCase` object containing one of the above as its
+  :py:attr:`~TestCase.value`.
+
+Test case generators may prefer to output :py:class:`TestCase` objects when
+multiple test cases are produced so that each testcase can be given its own
+'subcase' name. In addition, test cases may be accompanied by an freeform JSON
+serialisable metadata object when :py:class:`TestCase` objects are produced.
+
+.. autoclass:: TestCase
+    :members:
+    :undoc-members:
+
+All test case generator functions are run via
+:py:func:`normalise_test_case_generator` which normalises the function into the
+form of a generator which yields :py:class:`TestCase` objects. This also
+populates the :py:attr:`~TestCase.case_name` field of the generated
+:py:class:`TestCase` automatically with the test case generator's function
+name.
+
+.. autofunction:: normalise_test_case_generator
+
+
+Encoder test case generators
+----------------------------
+
+Encoder test case generators are located in
+:py:mod:`vc2_conformance.test_cases.encoder` must be decorated with the
+:py:data:`vc2_conformance.test_cases.encoder_test_case_generator` decorator,
+take a :py:class:`~vc2_conformance.codec_features.CodecFeatures` and produce
+:py:class:`EncoderTestSequence` objects.
+
+.. autodata:: encoder_test_case_generator
+    :annotation:
 
 .. autoclass:: EncoderTestSequence
 
-Decoder test case generators take a
-:py:class:`~vc2_conformance.codec_features.CodecFeatures` and produce a
-:py:class:`vc2_conformance.bitstream.Stream` dictionary.
+Decoder test case generators
+----------------------------
 
-In the simplest case, test case generator functions may be functions which
-return a single :py:class:`EncoderTestSequence` or
-:py:class:`~vc2_conformance.bitstream.Sequence` object (or None to indicate no
-suitable test case is available).  Alternatively case generators may also
-``yield`` a series of several related values.
+Decoder test case generators are located in
+:py:mod:`vc2_conformance.test_cases.decoder` must be decorated with the
+:py:data:`vc2_conformance.test_cases.decoder_test_case_generator` decorator,
+take a :py:class:`~vc2_conformance.codec_features.CodecFeatures` and produce
+:py:class:`vc2_conformance.bitstream.Stream` dictionaries which can be
+serialised using
+:py:func:`~vc2_conformance.bitstream.vc2_autofill.autofill_and_serialise_stream`.
 
-Test cases are assigned a name based on the name of the function which produced
-them. Where a test case generator generates several test cases, these are
-automatically assigned sequential identifiers. Alternatively, test case
-generators may wrap returned test cases in :py:class:`TestCase` objects in
-which custom names are provided. Additionally, JSON-serialisable metadata may
-be attached to a :py:class:`TestCase`.
-
-.. autoclass:: TestCase
-
-The :py:class:`normalise_test_case_generator` function is provided which
-normalises a test case generator function into a generator function producing
-:py:class:`TestCase` objects.
-
-.. autofunction:: normalise_test_case_generator
+.. autodata:: decoder_test_case_generator
+    :annotation:
 
 
 Test case generator registries
 ------------------------------
 
-The :py:class;`Registry` class implements a registry of test case generators.
+All test case generators are registered (by the
+:py:data:`encoder_test_case_generator` and
+:py:data:`decoder_test_case_generator` decorators) with one of two
+:py:class:`Registry` singletons:
+
+.. autodata:: ENCODER_TEST_CASE_GENERATOR_REGISTRY
+    :annotation:
+
+.. autodata:: DECODER_TEST_CASE_GENERATOR_REGISTRY
+    :annotation:
+
+The :py:class:`Registry` class implements a registry of test case generators
+which the :ref:`vc2-test-case-generator` script uses to generate a complete set
+of test cases.
 
 .. autoclass:: Registry
-
+    :members:
 
 """
 
@@ -90,7 +116,7 @@ __all__ = [
 
 
 EncoderTestSequence = namedtuple(
-    "TestPictureSequence", "pictures,video_parameters,picture_coding_mode"
+    "EncoderTestSequence", "pictures,video_parameters,picture_coding_mode"
 )
 """
 A sequence of pictures to be encoded by a VC-2 encoder under test.
@@ -108,40 +134,70 @@ picture_coding_mode : :py:class:`~vc2_data_tables.PictureCodingModes`
 
 
 class TestCase(object):
-    def __init__(self, value, subcase_name=None, case_name=None, metadata=None):
-        """
-        A test case, produced by a test case generator function.
+    """
+    A test case, produced by a test case generator function.
 
-        Parameters
-        ==========
-        value : object
-            A value containing the test case itself. (For example a bitstream
-            or picture).
-        subcase_name : str or None
-            An identifier for the sub-case if this test case has several
-            sub-cases.
-        case_name : str or None
-            The name of the test case. If None, the ``case_name`` will be
-            populated automatically.
-        metadata : object or None
-            Optional JSON-serialisable metadata associated with this test case.
-            The meaning and formatting of of this metadata is left to the
-            individual test case to define.
-        """
-        self.value = value
-        self.subcase_name = subcase_name
-        self.case_name = case_name
-        self.metadata = metadata
+    Parameters
+    ==========
+    value : :py:class:`EncoderTestSequence` or :py:class:`~vc2_conformance.bitstream.Stream`
+        A value containing the test case itself. An
+        :py:class:`EncoderTestSequence` for encoder test cases or
+        :py:class:`~vc2_conformance.bitstream.Stream` for decoder test cases.
+    subcase_name : str or None
+        An identifier for the sub-case if this test case has several
+        sub-cases.
+    case_name : str or None
+        The name of the test case. If None, the ``case_name`` will be
+        populated automatically with the name of the test case generator
+        function which returned it.
+    metadata : object or None
+        Optional JSON-serialisable metadata associated with this test case.
+        The meaning and formatting of of this metadata is left to the
+        individual test case to define.
+    """
+
+    def __init__(self, value, subcase_name=None, case_name=None, metadata=None):
+        self._value = value
+        self._subcase_name = subcase_name
+        self._case_name = case_name
+        self._metadata = metadata
 
     @property
     def name(self):
         """
-        A human-readable name for this test case
+        The complete name of this test case. Constructed from the
+        :py:attr:`case_name` and  :py:attr:`subcase_name` attributes.
+
+        A string of the form ``"case_name"`` or ``"case_name[subcase_name]"``.
         """
         if self.subcase_name is None:
             return self.case_name
         else:
             return "{}[{}]".format(self.case_name, self.subcase_name)
+
+    @property
+    def case_name(self):
+        return self._case_name
+
+    @case_name.setter
+    def case_name(self, value):
+        self._case_name = value
+
+    @property
+    def subcase_name(self):
+        return self._subcase_name
+
+    @subcase_name.setter
+    def subcase_name(self, value):
+        self._subcase_name = value
+
+    @property
+    def value(self):
+        return self._value
+
+    @property
+    def metadata(self):
+        return self._metadata
 
     def __repr__(self):
         return "<{} {}>".format(type(self).__name__, self.name,)
@@ -211,7 +267,7 @@ class Registry(object):
     def generate_test_cases(self, *args, **kwargs):
         """
         Run every test case generator registered with this registry, passing
-        each generator the supplied arguments. Iterates over the generated
+        each generator the supplied arguments. Generates all
         :py:class:`TestCase` objects.
         """
         for test_case_generator in self._test_case_generators:
@@ -222,8 +278,9 @@ class Registry(object):
 
     def iter_independent_generators(self, *args, **kwargs):
         """
-        Produce a series of generator functions which may be called in parallel
-        (e.g. using :py:mod:`multiprocessing`), which generate test cases.
+        Produce a series of generator functions which may be called in
+        parallel. Each returned zero-argument function should be called and
+        will generate a series of :py:class:`TestCase` objects.
         """
         for test_case_generator in self._test_case_generators:
             yield partial(
@@ -232,8 +289,9 @@ class Registry(object):
 
     def iter_registered_functions(self):
         """
-        Iterates over the functions registered with this registry. Only
-        intended for use during documentation generation.
+        Iterates over the raw functions registered with this registry.
+
+        Only intended for use during documentation generation.
         """
         for test_case_generator in self._test_case_generators:
             yield test_case_generator
