@@ -1,18 +1,17 @@
 r"""
-:py:mod:`vc2_conformance.string_formatters`: Value to string converters
-========================================================================
+The :py:mod:`vc2_conformance.string_formatters` module contains a series of
+utilities for generating value-to-string formatting functions.
 
-Functions which produce human-readable string representations of values of
-various types (e.g. particular hex representations of integers).
-
-A formatter is a callable which takes a value and returns a string
-representation of that value. Many of the classes in this module construct a
-formatter with some particular kind of behaviour. For example::
+When we say 'string formatter' we mean a function/callable which takes a value
+and returns a string representation of that value. Many of the classes in this
+module construct a formatter with some particular kind of behaviour. For
+example::
 
     >>> # Create a formatter for producing 8-digit hex numbers
     >>> hex32_formatter = Hex(8)
     >>> hex32_formatter(0x1234)
     '0x00001234'
+
 """
 
 from vc2_conformance.string_utils import indent, ellipsise
