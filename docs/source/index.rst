@@ -50,4 +50,5 @@ turn.
    :caption: Contents:
    
    maintainer/bitstream_internals.rst
+   maintainer/fixeddict.rst
 
