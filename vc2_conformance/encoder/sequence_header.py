@@ -37,7 +37,7 @@ from vc2_data_tables import (
 )
 
 from vc2_conformance.constraint_table import (
-    filter_allowed_values,
+    filter_constraint_table,
     allowed_values_for,
 )
 
@@ -692,11 +692,11 @@ def iter_sequence_headers(codec_features):
     for base_video_format in base_video_formats:
         base_video_parameters = set_source_defaults(base_video_format)
 
-        level_constraints_dicts = filter_allowed_values(
+        filtered_constraint_table = filter_constraint_table(
             LEVEL_CONSTRAINTS,
             dict(constrained_values, base_video_format=base_video_format),
         )
-        for level_constraints_dict in level_constraints_dicts:
+        for level_constraints_dict in filtered_constraint_table:
             for source_parameters in iter_source_parameter_options(
                 base_video_parameters, video_parameters, level_constraints_dict
             ):

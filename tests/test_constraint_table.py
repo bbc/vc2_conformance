@@ -5,7 +5,7 @@ import os
 from vc2_conformance.constraint_table import (
     ValueSet,
     AnyValue,
-    filter_allowed_values,
+    filter_constraint_table,
     is_allowed_combination,
     allowed_values_for,
     read_constraints_from_csv,
@@ -304,32 +304,32 @@ class TestAnyValue(object):
         assert str(AnyValue()) == "{<any value>}"
 
 
-class TestFilterAllowedValues(object):
+class TestFilterConstraintTable(object):
     def test_empty(self):
-        assert filter_allowed_values([], {}) == []
+        assert filter_constraint_table([], {}) == []
 
     def test_allow_subset(self):
         allowed_values = [{"foo": ValueSet(123), "bar": ValueSet()}]
-        assert filter_allowed_values(allowed_values, {"foo": 123}) == allowed_values
+        assert filter_constraint_table(allowed_values, {"foo": 123}) == allowed_values
 
     def test_disallow_superset(self):
         allowed_values = [{"foo": ValueSet(123)}]
-        assert filter_allowed_values(allowed_values, {"foo": 123, "bar": 321}) == []
+        assert filter_constraint_table(allowed_values, {"foo": 123, "bar": 321}) == []
 
     def test_allow_matching(self):
         allowed_values = [{"foo": ValueSet(123), "bar": ValueSet(321)}]
         assert (
-            filter_allowed_values(allowed_values, {"foo": 123, "bar": 321})
+            filter_constraint_table(allowed_values, {"foo": 123, "bar": 321})
             == allowed_values
         )
 
     def test_disallow_mismatching(self):
         allowed_values = [{"foo": ValueSet(321)}]
-        assert filter_allowed_values(allowed_values, {"foo": 123}) == []
+        assert filter_constraint_table(allowed_values, {"foo": 123}) == []
 
     def test_disallow_no_completely_matching_set(self):
         allowed_values = [{"foo": ValueSet(123)}, {"bar": ValueSet(321)}]
-        assert filter_allowed_values(allowed_values, {"foo": 123, "bar": 321}) == []
+        assert filter_constraint_table(allowed_values, {"foo": 123, "bar": 321}) == []
 
     def test_remove_non_matching_combinations(self):
         allowed_values = [
@@ -339,7 +339,9 @@ class TestFilterAllowedValues(object):
             {"foo": ValueSet(321)},
             {"bar": ValueSet(321)},
         ]
-        assert filter_allowed_values(allowed_values, {"foo": 123}) == allowed_values[:3]
+        assert (
+            filter_constraint_table(allowed_values, {"foo": 123}) == allowed_values[:3]
+        )
 
 
 class TestIsAllowedCombination(object):

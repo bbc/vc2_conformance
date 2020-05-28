@@ -75,10 +75,54 @@ requirements.
 .. autoclass:: AnyValue
 
 
-Constraint testing functions
-----------------------------
+Constraint tables
+-----------------
 
-.. autofunction:: filter_allowed_values
+A 'constraint table' is defined as a list of 'allowed combination' dictionaries.
+
+An 'allowed combination' dictionary defines a :py:class:`ValueSet` for every
+permitted key.
+
+For example, the following is a constraint table containing three allowed
+combination dictionaries::
+
+    >>> real_foods = [
+    ...     {"type": ValueSet("tomato"), "color": ValueSet("red")},
+    ...     {"type": ValueSet("apple"), "color": ValueSet("red", "green")},
+    ...     {"type": ValueSet("beetroot"), "color": ValueSet("purple")},
+    ... ]
+
+A set of values satisfies a constraint table if there is at least one allowed
+combination dictionary which contains the specified combination of values. For
+example, the following two dictionaries satisfy the constraint table::
+
+    {"type": "apple", "color": "red"}
+
+    {"color": "red"}
+
+The first satisfies the constraint table because the combination of values
+given appears in the second entry of the constraint table.
+
+The second satisfies the constraint table because, even though it does not
+define a value for every key, the key it does define is included in both the
+first and second entries.
+
+Meanwhile, the following dictionaries do *not* satisfy the constraint table::
+
+    {"type": "apple", "color": "purple"}
+
+    {"type": "beetroot", "color": "purple", "pickleable": True}
+
+The first of these contains values which, in isolation, would be permitted by
+the second and third entries of the table but which are not present together in
+any table entries. Consequently, this value does not satisfy the table.
+
+The second contains a 'pickleable' key which is not present in any of the
+allowed combinations in constraint table and so does not satisfy the table.
+
+The functions below may be used to interrogate a constraint table.
+
+.. autofunction:: filter_constraint_table
 
 .. autofunction:: is_allowed_combination
 
@@ -102,7 +146,7 @@ from vc2_data_tables.csv_readers import is_ditto
 __all__ = [
     "ValueSet",
     "AnyValue",
-    "filter_allowed_values",
+    "filter_constraint_table",
     "is_allowed_combination",
     "allowed_values_for",
     "read_constraints_from_csv",
@@ -389,58 +433,63 @@ class AnyValue(ValueSet):
         return "{<any value>}"
 
 
-def filter_allowed_values(allowed_values, values):
+def filter_constraint_table(constraint_table, values):
     """
-    Return the subset of ``allowed_values`` entries which match all of the
-    values in ``values``.
+    Return the subset of ``constraint_table`` entries which match all of the
+    values in ``values``. That is, with the entries whose constraints are not
+    met by the provided values removed.
     """
     return [
-        combination
-        for combination in allowed_values
+        allowed_combination
+        for allowed_combination in constraint_table
         if all(
-            key in combination and value in combination[key]
+            key in allowed_combination and value in allowed_combination[key]
             for key, value in values.items()
         )
-        or len(combination) == 0  # Special case: 'catch all' rule
+        or len(allowed_combination) == 0  # Special case: 'catch all' rule
     ]
 
 
-def is_allowed_combination(allowed_values, values):
+def is_allowed_combination(constraint_table, values):
     """
-    Check to see if the candidate dictionary holds a permissible collection of
-    values according to the provided constraint table. A valid candidate may
-    only contain a subset of the fields defined by the constraints in the
-    constraint table.
+    Check to see if the ``values`` dictionary holds an allowed combination of
+    values according to the provided constraint table.
+
+    .. note::
+
+        A candidate containing only a subset of the keys listed in the
+        constraint table is allowed if the fields it does define are a
+        permitted combination.
 
     Parameters
     ==========
-    allowed_values: [{key: :py:class:`ValueSet`, ...}, ...]
+    constraint_table: [{key: :py:class:`ValueSet`, ...}, ...]
     values : {key: value}
     """
-    return len(filter_allowed_values(allowed_values, values)) > 0
+    return len(filter_constraint_table(constraint_table, values)) > 0
 
 
-def allowed_values_for(allowed_values, key, values={}, any_value=AnyValue()):
+def allowed_values_for(constraint_table, key, values={}, any_value=AnyValue()):
     """
-    Return the :py:class:`ValueSet` which matches the allowable values which
-    might be added to the specified key given the existing values in
-    ``values``.
+    Return a :py:class:`ValueSet` which matches all allowed values for the
+    specified key, given the existing values defined in ``values``.
 
     Parameters
     ==========
-    allowed_values : [{key: :py:class:`ValueSet`, ...}, ...]
+    constraint_table : [{key: :py:class:`ValueSet`, ...}, ...]
     key : key
     values : {key: value, ...}
         Optional. The values already chosen. (Default: assume nothing chosen).
     any_value : :py:class:`ValueSet`
-        Optional. If :py:class:`AnyValue` is allowed, this will be substituted
-        instead. This may be useful when :py:class:`AnyValue` is actually just
-        short-hand for a more concrete set of values.
+        Optional. If provided and :py:class:`AnyValue` is allowed, this value
+        will be substituted instead. This may be useful when
+        :py:class:`AnyValue` is being used as a short-hand for a more concrete
+        set of values.
     """
     out = ValueSet()
 
-    for allowed in filter_allowed_values(allowed_values, values):
-        out += allowed.get(key, ValueSet())
+    for allowed_combination in filter_constraint_table(constraint_table, values):
+        out += allowed_combination.get(key, ValueSet())
 
     if isinstance(out, AnyValue):
         return any_value
