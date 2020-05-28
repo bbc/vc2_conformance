@@ -53,4 +53,5 @@ turn.
    maintainer/fixeddict.rst
    maintainer/string_formatters.rst
    maintainer/string_utils.rst
+   maintainer/py2x_compat.rst
 

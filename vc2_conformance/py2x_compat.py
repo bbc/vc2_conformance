@@ -1,21 +1,77 @@
 """
-:py:mod:`vc2_conformance.py2x_compat`: Python 2.x backward compatibility
-=========================================================================
+The :py:mod:`vc2_conformance.py2x_compat` module provides backported
+implementations of various functions from Python 3 which are used by this
+software.
 
-This module contains backported or renamed implementations of Python 3.x
-standard library routines which are not available in Python 2.x.
+
+.. py:function:: zip_longest
+
+    In Python 3.x an alias for :py:func:`itertools.zip_longest`, in Python
+    2.x, an alias for ``itertools.izip_longest``.
+
+
+.. py:function:: get_terminal_size
+
+    In Python 3.x an alias for :py:func:`shutil.get_terminal_size`, in Python
+    2.x, a dummy function always returning ``(80, 20)``.
+
+
+.. py:function:: wraps
+
+    In Python 3.x an alias for :py:func:`functools.wraps`. In Python 2.x, an
+    alternative implementation of ``functools.wraps`` which includes the Python
+    3.x behaviour of setting the ``__wrapped__`` attribute to allow
+    introspection of wrapped functions (see :py:func:`unwrap`).
+
+
+.. py:function:: unwrap
+
+    In Python 3.x an alias for :py:func:`inspect.unwrap`. In Python 2.x a
+    backported implementation of that function. Relies on the backported
+    :py:func:`wraps` implementation provided by this module.
+
+
+.. py:function:: quote
+
+    In Python 3.x an alias for :py:func:`shlex.quote`, in Python
+    2.x, an alias for ``pipes.quote``.
+
+
+.. py:function:: string_types
+
+    A tuple enumerating the native string-like types.  In Python 3.x, ``(str,
+    )``, in Python 2.x, ``(str, unicode)``.
+
+
+.. py:function:: gcd
+
+    In Python 3.x an alias for :py:func:`math.gcd`, in Python
+    2.x, an alias for ``fractions.gcd``.
+
+
+.. py:function:: zip
+
+    In Python 3.x an alias for :py:func:`zip`, in Python
+    2.x, an alias for ``itertools.izip``.
+
+
+.. py:function:: makedirs
+
+    In Python 3.x an alias for :py:func:`os.makedirs`. In Python 2.x, a
+    backport of this function which includes the ``exist_ok`` argument.
+
 """
 
 __all__ = [
-    "zip_longest",  # itertools.zip_longest
-    "get_terminal_size",  # shutil.get_terminal_size
-    "wraps",  # functools.wraps
-    "unwrap",  # inspect.unwrap
-    "quote",  # shlex.quote
-    "string_types",  # (str, ) in Python 3.x or (str, unicode) in Python 2.x
-    "gcd",  # math.gcd
-    "zip",  # zip in Python 3.x or itertools.izip in Python 2.x
-    "makedirs",  # Adds 'exist_ok' argument to Python 2.x version
+    "zip_longest",
+    "get_terminal_size",
+    "wraps",
+    "unwrap",
+    "quote",
+    "string_types",
+    "gcd",
+    "zip",
+    "makedirs",
 ]
 
 import os
