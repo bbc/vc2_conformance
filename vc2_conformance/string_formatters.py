@@ -1,14 +1,20 @@
 r"""
-The :py:mod:`vc2_conformance.string_formatters` module contains a series of
-utilities for generating value-to-string formatting functions.
+The :py:mod:`vc2_conformance.string_formatters` module contains facilities for
+formatting (or pretty printing) Python values as strings.
 
 When we say 'string formatter' we mean a function/callable which takes a value
-and returns a string representation of that value. Many of the classes in this
-module construct a formatter with some particular kind of behaviour. For
-example::
+and returns a string representation of that value. Instances of the classes in
+this module act as formatters. For example, the :py:class:`Hex` class may be
+used as a formatter for n-digit hexadecimal integers::
+
+    >>> from vc2_conformance.string_formatters import Hex
 
     >>> # Create a formatter for producing 8-digit hex numbers
     >>> hex32_formatter = Hex(8)
+
+    >>> # Format some values
+    >>> hex32_formatter(0)
+    '0x00000000'
     >>> hex32_formatter(0x1234)
     '0x00001234'
 
@@ -35,6 +41,9 @@ class Number(object):
     """
     A formatter which uses Python's built-in :py:meth:`str.format` method to
     apply formatting.
+
+    This formatter is quite low level, see :py:class:`Hex`, :py:class:`Dec`,
+    :py:class:`Oct` and :py:class:`Bin` for ready to use derivatives.
 
     Parameters
     ==========
