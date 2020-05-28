@@ -7,8 +7,6 @@ from textwrap import wrap, dedent
 
 import re
 
-from vc2_conformance.py2x_compat import zip_longest
-
 
 def indent(text, prefix="  "):
     """Indent the string 'text' with the prefix string 'prefix'."""
@@ -83,59 +81,6 @@ def ellipsise_lossy(text, max_length=80):
         before_length = (max_length - 3) // 2
         after_length = (max_length - 3) - before_length
         return "{}...{}".format(text[:before_length], text[-after_length:])
-
-
-def table(table_strings, column_sep="  ", indent_prefix="  "):
-    """
-    Concatenate and lay out a table of strings.
-
-    Takes a list-of-lists-of-strings with inner lists representing rows of
-    strings.
-
-    If all values fit on a single line, produces an aligned 2D layout like so::
-
-        123    0    0
-          1  123   12
-         12    4  123
-
-    If any of the values don't fit on to a single line, a flat representation
-    is used::
-
-        (y=0, x=0):
-          multi-line
-          string
-        (y=0, x=1):
-          multi-line
-          string
-        (y=0, x=2):
-          multi-line
-          string
-        (y=1, x=0):
-          multi-line
-          string
-        (y=1, x=1):
-          multi-line
-          string
-        (y=1, x=2):
-          multi-line
-          string
-    """
-    if any("\n" in s for line in table_strings for s in line):
-        return "\n".join(
-            "(y={}, x={}):\n{}".format(y, x, indent(s, indent_prefix))
-            for y, line in enumerate(table_strings)
-            for x, s in enumerate(line)
-        )
-    else:
-        cols = zip_longest(*table_strings)
-        col_widths = [max(map(len, filter(None, col))) for col in cols]
-
-        return "\n".join(
-            column_sep.join(
-                "{:>{}s}".format(s, col_widths[i]) for i, s in enumerate(row)
-            )
-            for row in table_strings
-        )
 
 
 RE_HEADING_UNDERLINE = re.compile(r"^[-=]+$")

@@ -4,7 +4,6 @@ from vc2_conformance.string_utils import (
     indent,
     ellipsise,
     ellipsise_lossy,
-    table,
     split_into_line_wrap_blocks,
     wrap_blocks,
     wrap_paragraphs,
@@ -74,35 +73,6 @@ def test_ellipsise(string, expected):
 )
 def test_ellipsise_lossy(string, max_length, expected):
     assert ellipsise_lossy(string, max_length) == expected
-
-
-@pytest.mark.parametrize(
-    "tabular_strings,expected",
-    [
-        # Empty
-        ([], ""),
-        # Single line
-        ([["foo"]], "foo"),
-        ([["foo", "x"]], "foo  x"),
-        # Multiple lines
-        ([["foo"], ["x"]], "foo\n  x"),
-        ([["foo", "x"], ["y", "1234"]], "foo     x\n  y  1234"),
-        # Different numbers of values on each row
-        ([["foo"], ["y", "1234"]], "foo\n  y  1234"),
-        # Multi-line values
-        ([["foo\nbar"]], "(y=0, x=0):\n  foo\n  bar"),
-        (
-            [["foo\nbar", "baz\nqux"], ["quo\nqak"]],
-            (
-                "(y=0, x=0):\n  foo\n  bar\n"
-                "(y=0, x=1):\n  baz\n  qux\n"
-                "(y=1, x=0):\n  quo\n  qak"
-            ),
-        ),
-    ],
-)
-def test_table(tabular_strings, expected):
-    assert table(tabular_strings) == expected
 
 
 class TestSplitIntoLineWrapBlocks(object):
