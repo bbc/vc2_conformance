@@ -54,4 +54,5 @@ turn.
    maintainer/string_formatters.rst
    maintainer/string_utils.rst
    maintainer/py2x_compat.rst
+   maintainer/file_format.rst
 

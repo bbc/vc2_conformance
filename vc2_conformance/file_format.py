@@ -1,53 +1,37 @@
 """
-:py:mod:`vc2_conformance.file_format`: Image File Format
-========================================================
+The :py:mod:`vc2_conformance.file_format` module contains functions for reading
+and writing raw pictures and their metadata as files.
 
-This module contains functions for reading and writing pictures and their
-display metadata as files.
+Picture and metadata files must come in pairs with the raw planar picture data
+file having the extension '.raw' and the metadata file having the extension
+'.json'. See :ref:`file-format` for a description of the file format.
 
-Picture and metadata files must come in pairs with the picture data file having
-the extension '.raw' and the metadata file having the extension '.json'.
+..
+    NB: If you're reading this the 'file-format' reference above probably isn't
+    clickable :). It points to the documentation in
+    ``docs/source/user_guide/file_format.rst``.
 
+The following functions may be used to read and write picture/metadata files:
 
-Picture Data Format
--------------------
+.. autofunction:: read
 
-Pictures are stored as raw planar data, i.e.::
+.. autofunction:: write
 
-    +---+---+-- --+---+---+---+-- --+---+---+---+-- --+---+
-    | Y | Y | ... | Y | Cb| Cb| ... | Cb| Cr| Cr| ... | Cr|
-    +---+---+-- --+---+---+---+-- --+---+---+---+-- --+---+
+The above functions are just wrappers around the following functions which read
+and write picture and metadata files in isolation:
 
-Sample values for each component are stored in raster-scan order.
+.. autofunction:: read_metadata
 
-Sample values are stored in the smallest possible power-of-two number of bytes.
-For example:
+.. autofunction:: read_picture
 
-* 6 or 8 bit-per-sample values are stored as one byte per sample
-* 10 or 16 bit-per-sample values are stored as two bytes per sample
-* 17, 24 or 32 bit-per-sample values are stored as four bytes per sample
+.. autofunction:: write_metadata
 
-Sample values are LSB aligned and zero padded. For example, 10 bit values will
-be stored as 16 bit values with the most significant 6 bits set to zero.
+.. autofunction:: write_picture
 
-Multi-byte values are stored with little-endian byte ordering (the first byte
-of a value in the file contains the least significant 8 bits).
+Finally, the following function may be used to get the filenames for both parts
+of a picture/metadata file pair:
 
-The dimensions and bit depth of each component is not encoded in the picture
-data file and must be obtained from an associated metadata file.
-
-
-Metadata Format
----------------
-
-Picture metadata is stored as an UTF-8 encoded JSON object. This JSON object
-with the following fields:
-
-* ``video_parameters``: A
-  :py:class:`vc2_conformance.pseudocode.video_parameters.VideoParameters` object.
-* ``picture_coding_mode``: The picture coding mode (11.5)
-* ``picture_number``: The picture number as a string (in base 10) because JSON
-  always uses floats. (12.2) (14.2)
+.. autofunction:: get_metadata_and_picture_filenames
 
 """
 
