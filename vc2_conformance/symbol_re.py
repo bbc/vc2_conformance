@@ -1,39 +1,86 @@
 """
-:py:class:`vc2_conformance.symbol_re`: Regular expressions for VC-2 sequences
-=============================================================================
+The :py:mod:`vc2_conformance.symbol_re` module contains a regular expression
+matching system for sequences of data unit types in VC-2 bitstreams.
 
-This module contains logic for checking sequences of abstract symbols conform
-to a particular pattern as defined by a regular expression. In addition, it may
-also be used to geneate sequences conforming to such patterns.
+This module has two main applications: checking the order of data units during
+validation and generating valid sequences during bitstream generation.
 
-The intended usage of this module is to verify or generate sequences of VC-2
-data units which conform to the restrictions imposed by the VC-2 standard or
-level.
+During bitstream validation (see :py:mod:`vc2_conformance.decoder`) the
+validator must check that sequences contain the right pattern of data unit
+types. For example, some levels might require bitstreams to include a sequence
+header between each picture while others may require fragmented and
+non-fragmented picture types are not used in the same stream. These rules are
+described by regular expressions which are evaluated by this module.
 
-.. note::
+During bitstream generation, the encoder (see
+:py:mod:`vc2_conformance.encoder`) must produce sequences conforming to the
+above patterns. To facilitate this, this module can also *generate* sequence
+orderings which fulfil the rules described by regular expressions.
 
-    In the context of software development the term 'regular expression' is
-    often used to refer to just the specific application of string pattern
-    matching. This module instead refers to the generalised meaning of 'regular
-    expressions' where a regular expressions may match patterns in any sequence
-    of symbols.
 
-Examples
---------
+Regular expressions of symbols
+------------------------------
 
-In the following pair of examples, :py:class:`~vc2_data_tables.ParseCodes` name
-strings are used as symbols in sequences representing sequences of VC-2 data
-units.
+Unlike string-matching regular expression libraries (e.g. :py:mod:`re`) which
+match sequences of characters, this module is designed to match sequences of
+'symbols' where each symbol is just a string like ``"sequence_header"`` or
+``high_quality_picture``.
 
-The example below shows how a :py:class:`Matcher` may be used to check that a
-sequence of data units follows a predefined pattern.
+As an example, we might write the following regular expression to describe the
+rule 'all sequences must start with a sequence header and end with an
+end of sequence data unit'::
+
+    sequence_header .* end_of_sequence
+
+In the regular expression syntax used by this module, whitespace is ignored but
+otherwise follows the typical form for regular expressions. For example, ``.``
+is a wildcard which matches any symbol and ``*`` means 'zero or more
+occurrences of the previous pattern'.
+
+This regular expression would match the following sequence of symbols (data
+unit type names)::
+
+    "sequence_header"
+    "high_quality_picture"
+    "sequence_header"
+    "high_quality_picture"
+    "end_of_sequence"
+
+But would not match the following sequence (because it does not start with a
+sequence header)::
+
+    "high_quality_picture"
+    "sequence_header"
+    "high_quality_picture"
+    "end_of_sequence"
+
+
+Matching VC-2 sequences
+-----------------------
+
+The :py:class:`Matcher` class implements a regular expression matching state
+machine, taking the regular expression to be matched as its argument.  By
+convention, we use the parse code names defined in
+:py:class:`~vc2_data_tables.ParseCodes` as symbols to represent each type of
+data unit in a VC-2 sequence.
+
+.. enum-value-table:: vc2_data_tables.ParseCodes
+    :value-heading: Data unit parse code
+    :name-heading: Symbol
+
+In this example below we'll create a :py:class:`Matcher` which checks if a
+sequence consists of alternating sequence headers and high quality picture data
+units::
 
     >>> from vc2_conformance.symbol_re import Matcher
 
-    >>> # Checking the sequence of data units within a VC-2 sequence consist of
-    >>> # alternating sequence_headers and HQ pictures eventually ending with
-    >>> # an end-of-sequence marker.
     >>> m = Matcher("(sequence_header high_quality_picture)* end_of_sequence")
+
+This :py:class:`Matcher` instances is then be used to check if a sequence
+matches the required pattern by feeding it symbols one at a time via the
+:py:meth:`~Matcher.match_symbol` method. This returns True so long as the
+sequence matches to expression::
+
     >>> m.match_symbol("sequence_header")
     True
     >>> m.match_symbol("high_quality_picture")
@@ -42,14 +89,29 @@ sequence of data units follows a predefined pattern.
     True
     >>> m.match_symbol("high_quality_picture")
     True
+
+When we reach the end of the sequence, the :py:meth:`~Matcher.is_complete`
+method will check to see if the regular expression has completely matched the
+sequence (i.e. it isn't expecting any other data units)::
+
+    >>> # Missing the required end_of_sequence!
+    >>> m.is_complete()
+    False
+
+    >>> # Now complete
     >>> m.match_symbol("end_of_sequence")
     True
     >>> m.is_complete()
     True
 
-    >>> # If the pattern does not match that specified in the pattern, this
-    >>> # will be detected
+When a non-matching sequence is encountered, the
+:py:meth:`Matcher.valid_next_symbols` method may be used to enumerate which
+symbols the regular expression matcher was expecting. For example::
+
+    >>> # NB: Each Matcher can only be used once so we must create a new one
+    >>> # for this new sequence!
     >>> m = Matcher("(sequence_header high_quality_picture)* end_of_sequence")
+
     >>> m.match_symbol("sequence_header")
     True
     >>> m.match_symbol("high_quality_picture")
@@ -58,40 +120,33 @@ sequence of data units follows a predefined pattern.
     False
     >>> m.valid_next_symbols()
     {"sequence_header", "end_of_sequence"}
-    >>> m.is_complete()
-    False
 
-The example below shows how we may use :py:func:`make_matching_sequence` to
-fill-in additional data units in a sequence to make it conform to a particular
-set of patterns.
+
+Generating VC-2 sequences
+-------------------------
+
+This module provides the :py:func:`make_matching_sequence` function which can
+generate minimal sequences matching a set of regular expressions. For example,
+say we wish to generate a sequence containing three pictures matching the
+regular expression we used in our previous example::
 
     >>> from vc2_conformance.symbol_re import make_matching_sequence
 
-    >>> # Suppose we want some sequence which contains two high_quality_picture
-    >>> # data units but we don't really care about the rest...
-    >>> desired_sequence = ["high_quality_picture", "high_quality_picture"]
+    >>> from pprint import pprint
+    >>> pprint(make_matching_sequence(
+    ...     ["high_quality_picture"]*3,
+    ...     "(sequence_header high_quality_picture)* end_of_sequence",
+    ... ))
+    ['sequence_header',
+     'high_quality_picture',
+     'sequence_header',
+     'high_quality_picture',
+     'sequence_header',
+     'high_quality_picture',
+     'end_of_sequence']
 
-    >>> # ...and we're required to match the following patterns...
-    >>> required_patterns = [
-    ...     # The VC-2 main specification simply requires that a sequence start
-    ...     # with a sequence_header and end with an end-of-sequence
-    ...     "sequence_header .* end_of_sequence $",
-    ...     # A particular level may force the sequence to begin with a
-    ...     # sequence header and aux data block followed by alternating
-    ...     # sequence headers and pictures.
-    ...     "sequence_header auxiliary_data (sequence_header high_quality_picture)+ end_of_sequence $",
-    ... ]
-
-    >>> # We can generate a suitable sequence like so:
-    >>> for sym in make_matching_sequence(desired_sequence, *required_patterns):
-    ...     print(sym)
-    sequence_header
-    auxiliary_data
-    sequence_header
-    high_quality_picture
-    sequence_header
-    high_quality_picture
-    end_of_sequence
+Here, the sequence headers and the final end of sequence data units have been
+added automatically.
 
 API
 ---
@@ -99,39 +154,59 @@ API
 .. autoclass:: Matcher
     :members:
 
+.. autofunction:: make_matching_sequence
+
 .. autodata:: WILDCARD
 
 .. autodata:: END_OF_SEQUENCE
 
-.. autoexc:: SymbolRegexSyntaxError
+.. autoexception:: SymbolRegexSyntaxError
 
-.. autofunction:: make_matching_sequence
+.. autoexception:: ImpossibleSequenceError
 
-.. autoexc:: ImpossibleSequenceError
 
-Implementation overview
------------------------
+Internals
+---------
 
-This module internally consists of two parts:
+Beyond the parts exposed by the public API above, this module internally is
+built on top of two main parts:
 
-* A parser which parses the regular expression syntax described in the
-  :py:class:`Matcher` docstring  into an Non-deterministic Finite-state
-  Automaton (NFA).
-* An NFA evaluator which uses the compiled NFA to test if a sequence of
-  symbols match the pattern.
+* A parser which parses the regular expression syntax accepted by
+  :py:class:`Matcher` into an Abstract Syntax Tree (AST)
+* A Non-deterministic Finite-state Automaton (NFA) representation which is
+  constructed from the AST using Thompson's constructions.
 
-The regular expression syntax is first tokenized by :py:func:`tokenize_regex`
-and then parsed using :py:func:`parse_regex` into an Abstract Syntax Tree
-(AST). This is implemented as a simple 'recursive descent parser'. The
-resultant AST is converted into an NFA by :py:func:`NFA.from_ast` using
-Thompson's constructions.
+The parser is broken into two stages: a simple tokenizer/lexer
+(:py:func:`tokenize_regex`) and a recursive descent parser
+(:py:func:`parse_expression`). A utility function combining these steps is
+provided by :py:func:`parse_regex`.
 
-Since this matching module will only be used with very simple regular
-expressions and very short sequences (i.e. likely to be tens of symbols long),
-the NFA is not further converted into a Deterministic Finite-state Automaton
-(DFA) nor minimised. Instead, :py:class:`Matcher` uses the NFA-form of the
-regular expression to match sequences directly.
-"""  # noqa: E501
+.. autofunction:: tokenize_regex
+
+.. autofunction:: parse_expression
+
+.. autofunction:: parse_regex
+
+The parser outputs an AST constructed from the following
+elements:
+
+.. autoclass:: Symbol
+
+.. autoclass:: Star
+
+.. autoclass:: Concatenation
+
+.. autoclass:: Union
+
+An NFA can be constructed from an AST using the :py:meth:`NFA.from_ast` class
+method.
+
+.. autoclass:: NFA
+    :members:
+
+.. autoclass:: NFANode
+    :members:
+"""
 
 
 import re
@@ -219,7 +294,7 @@ def tokenize_regex(regex_string):
 
 
 Symbol = namedtuple("Symbol", "symbol")
-"""AST node for a symbol."""
+"""Leaf AST node for a symbol."""
 
 Star = namedtuple("Star", "expr")
 """AST node for a Kleene Star pattern (``*``)."""
@@ -335,7 +410,7 @@ def parse_regex(regex_string):
 
 class NFANode(object):
     """
-    A node (a.k.a.) state in a Non-deterministic Finite-state Automaton (NFA).
+    A node (i.e. state) in a Non-deterministic Finite-state Automaton (NFA).
 
     Attributes
     ==========
@@ -380,8 +455,8 @@ class NFANode(object):
                     visited.add(other)
 
     def follow(self, symbol):
-        """
-        Iterate over the :py:class:`NFANode`s reachable from this node
+        r"""
+        Iterate over the :py:class:`NFANode`\ s reachable from this node
         following the given symbol.
         """
         visited = set()
@@ -396,6 +471,11 @@ class NFA(object):
     """
     A Non-deterministic Finite-state Automaton (NFA) with a labelled 'start'
     and 'final' state.
+
+    Attributes
+    ==========
+    start : :py:class:`NFANode`
+    final : :py:class:`NFANode`
     """
 
     def __init__(self, start=None, final=None):
@@ -467,6 +547,12 @@ class Matcher(object):
     sequence has been passed to :py:meth:`match_symbol`, :py:meth:`is_complete`
     should be used to check that a complete pattern has been matched.
 
+    .. note::
+
+        Each instance of :py:class:`Matcher` can only be used to match a single
+        sequence. To match another sequence a new :py:class:`Matcher` must be
+        created.
+
     Parameters
     ==========
     pattern : str
@@ -507,7 +593,7 @@ class Matcher(object):
     """
 
     def __init__(self, pattern):
-        # This object explicitly executes the NFA of the provided regular
+        # This object directly executes the NFA of the provided regular
         # expression. The 'cur_states' set holds the set of states we've
         # reached in the NFA.
         self.nfa = NFA.from_ast(parse_regex(pattern))
@@ -518,6 +604,9 @@ class Matcher(object):
         Attempt to match the next symbol in the sequence.
 
         Returns True if the symbol matched and False otherwise.
+
+        If no symbol was matched, the state machine will not be advanced (i.e.
+        you can try again with a different symbol as if nothing happened).
         """
         new_states = set()
         for nfa in self.cur_states:
@@ -584,38 +673,38 @@ def make_matching_sequence(initial_sequence, *patterns, **kwargs):
     matches the supplied set of patterns. The new sequence will be a copy of
     the supplied sequence with additional symbols inserted where necessary.
 
-    Find the shortest sequence of symbols which is matched by the
-    supplied set of regular expressions.
-
     Parameters
     ==========
     initial_sequence : [symbol, ...]
         The minimal set of entries which must be included in the sequence, in
         the order they are required to appear.
     patterns : str
-        A series of regular expression specificeations (as accepted by
-        :py:class:`Matcher`) which the generated sequence must simultaneously
-        satisfy.
+        A series of one or more regular expression specifications (as accepted
+        by :py:class:`Matcher`) which the generated sequence must
+        simultaneously satisfy.
     depth_limit : int
-        Keyword-only argument specifying the maximum number of non-target data
-        units to try including before giving up. Defaults to 4.
+        Keyword-only argument specifying the maximum number of consecutive
+        symbols to try inserting before giving up on finding a matching
+        sequence. Defaults to 4.
     symbol_priority : [symbol, ...]
         Keyword-only argument. If supplied, orders possible symbols from most
         to least preferable. Though this function will always return a sequence
-        of the shortest possible length, where several equal-length sequences
-        are possible, this argument may be used to influence which is returned.
-        Where some candidate symbols do not appear in the list they will be
-        treated as being at the end of the list (i.e. lowest priority) in
-        alphabetical order.  If this argument is not supplied (or is empty),
-        'wildcard' entries will be filled with the :py:data:`WILDCARD` sentinel
+        of the shortest possible length, when several equal-length sequences
+        would be valid, this argument may be used to influence which is
+        returned.  Any symbols not appearing in the list
+        will be given the lowest priority, and sorted in alphabetical order.
+        If this argument is not supplied (or is empty), whenever 'wildcard'
+        value (``.``) is required by a regular expression, the
+        :py:data:`WILDCARD` sentinel will be inserted into the output sequence
         rather than a concrete symbol.
 
     Returns
     =======
     matching_sequence : [symbol, ...]
-        A sequence of symbols which satisfies all of the supplied patterns.
-        This will contain a superset of the sequence in ``initial_sequence``
-        where additional symbols may have been inserted.
+        The shortest sequence of symbols which satisfies all of the supplied
+        regular expression patterns.  This will contain a superset of the
+        sequence in ``initial_sequence``, that is one where additional symbols
+        may have been inserted but none are removed or reordered.
 
     Raises
     ======
@@ -633,7 +722,7 @@ def make_matching_sequence(initial_sequence, *patterns, **kwargs):
             )
         )
 
-    # Perform a breadth-first search of the pattern space
+    # This function performs a breadth-first search of the pattern space.
 
     # Queue of candidates to try
     #     (symbols_so_far, symbols_remaining, matchers, this_depth_limit)
@@ -683,7 +772,7 @@ def make_matching_sequence(initial_sequence, *patterns, **kwargs):
                 continue
 
         # If we reach this point the current symbol in the provided sequence
-        # was not matched by all of the matchers. We must now try to inserting
+        # was not matched by all of the matchers. We must now try inserting
         # some other symbol into the sequence and see if it lets us get any
         # further.
 

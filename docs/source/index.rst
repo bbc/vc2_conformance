@@ -56,4 +56,5 @@ turn.
    maintainer/py2x_compat.rst
    maintainer/file_format.rst
    maintainer/dimensions_and_depths.rst
+   maintainer/symbol_re.rst
 
