@@ -41,10 +41,6 @@ import json
 
 import numpy as np
 
-from collections import OrderedDict, namedtuple
-
-from vc2_conformance.pseudocode.vc2_math import intlog2
-
 from vc2_data_tables import (
     ColorDifferenceSamplingFormats,
     PictureCodingModes,
@@ -54,18 +50,15 @@ from vc2_data_tables import (
     PresetTransferFunctions,
 )
 
-from vc2_conformance.pseudocode.state import State
-from vc2_conformance.pseudocode.video_parameters import (
-    VideoParameters,
-    set_coding_parameters,
-)
+from vc2_conformance.pseudocode.video_parameters import VideoParameters
+
+from vc2_conformance.dimensions_and_depths import compute_dimensions_and_depths
 
 
 __all__ = [
     "read",
     "write",
     "get_metadata_and_picture_filenames",
-    "compute_dimensions_and_depths",
     "read_metadata",
     "read_picture",
     "write_metadata",
@@ -149,64 +142,6 @@ def read(filename):
         )
 
     return (picture, video_parameters, picture_coding_mode)
-
-
-DimensionsAndDepths = namedtuple(
-    "DimensionsAndDepths", "width,height,depth_bits,bytes_per_sample",
-)
-"""
-A set of picture component dimensions and bit depths.
-
-Parameters
-==========
-width, height : int
-    The dimensions of the picture.
-depth_bits : int
-    The number of bits per pixel.
-bytes_per_sample : int
-    The number of bytes used to store each pixel value.
-"""
-
-
-def compute_dimensions_and_depths(video_parameters, picture_coding_mode):
-    """
-    Compute the dimensions, bit depth and bytes-per-sample of a picture.
-
-    Parameters
-    ==========
-    video_parameters : :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`
-    picture_coding_mode : :py:class:`~vc2_data_tables.PictureCodingModes`
-
-    Returns
-    =======
-    OrderedDict
-        An ordered dictionary mapping from component name ("Y", "C1" and "C2")
-        to a :py:class:`DimensionsAndDepths`(width, height, depth_bits,
-        bytes_per_sample) namedtuple.
-    """
-    state = State()
-    set_coding_parameters(state, video_parameters, picture_coding_mode)
-
-    out = OrderedDict()
-
-    for component in ["Y", "C1", "C2"]:
-        if component == "Y":
-            width = state["luma_width"]
-            height = state["luma_height"]
-            depth_bits = state["luma_depth"]
-        else:
-            width = state["color_diff_width"]
-            height = state["color_diff_height"]
-            depth_bits = state["color_diff_depth"]
-
-        bytes_per_sample = (depth_bits + 7) // 8  # Round up to whole number of bytes
-        bytes_per_sample = 1 << intlog2(bytes_per_sample)  # Round up to power of two
-
-        out[component] = DimensionsAndDepths(
-            width, height, depth_bits, bytes_per_sample
-        )
-
-    return out
 
 
 def write_picture(picture, video_parameters, picture_coding_mode, file):

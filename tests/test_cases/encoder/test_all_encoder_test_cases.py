@@ -10,7 +10,7 @@ from vc2_conformance.pseudocode.video_parameters import VideoParameters
 
 from vc2_conformance.test_cases import ENCODER_TEST_CASE_GENERATOR_REGISTRY
 
-from vc2_conformance.file_format import compute_dimensions_and_depths
+from vc2_conformance.dimensions_and_depths import compute_dimensions_and_depths
 
 from vc2_data_tables import PictureCodingModes
 

@@ -55,4 +55,5 @@ turn.
    maintainer/string_utils.rst
    maintainer/py2x_compat.rst
    maintainer/file_format.rst
+   maintainer/dimensions_and_depths.rst
 

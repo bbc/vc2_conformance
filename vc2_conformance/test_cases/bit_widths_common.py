@@ -7,7 +7,7 @@ import os
 
 from vc2_data_tables import QUANTISATION_MATRICES
 
-from vc2_conformance.file_format import compute_dimensions_and_depths
+from vc2_conformance.dimensions_and_depths import compute_dimensions_and_depths
 
 from vc2_bit_widths.helpers import (
     quantisation_index_bound,

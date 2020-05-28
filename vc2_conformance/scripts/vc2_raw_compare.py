@@ -126,11 +126,12 @@ from vc2_conformance.color_conversion import (
 
 from vc2_conformance.file_format import (
     get_metadata_and_picture_filenames,
-    compute_dimensions_and_depths,
     read_metadata,
     read_picture,
     write,
 )
+
+from vc2_conformance.dimensions_and_depths import compute_dimensions_and_depths
 
 from vc2_conformance.pseudocode.video_parameters import VideoParameters
 

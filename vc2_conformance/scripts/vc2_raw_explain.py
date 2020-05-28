@@ -162,8 +162,9 @@ from vc2_conformance.file_format import (
     get_metadata_and_picture_filenames,
     get_picture_filename_pattern,
     read_metadata,
-    compute_dimensions_and_depths,
 )
+
+from vc2_conformance.dimensions_and_depths import compute_dimensions_and_depths
 
 from vc2_conformance.color_conversion import int_to_float
 

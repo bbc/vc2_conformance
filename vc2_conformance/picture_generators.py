@@ -46,10 +46,9 @@ import numpy as np
 
 from PIL import Image
 
-from vc2_conformance.file_format import (
-    read,
-    compute_dimensions_and_depths,
-)
+from vc2_conformance.file_format import read
+
+from vc2_conformance.dimensions_and_depths import compute_dimensions_and_depths
 
 from vc2_data_tables import (
     PictureCodingModes,

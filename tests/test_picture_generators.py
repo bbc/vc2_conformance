@@ -27,7 +27,7 @@ from vc2_conformance.color_conversion import (
     XYZ_TO_LINEAR_RGB,
 )
 
-from vc2_conformance.file_format import compute_dimensions_and_depths
+from vc2_conformance.dimensions_and_depths import compute_dimensions_and_depths
 
 from vc2_conformance_data import POINTER_SPRITE_FILENAME
 
