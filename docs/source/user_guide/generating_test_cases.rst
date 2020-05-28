@@ -31,7 +31,8 @@ parameter_2 value    value    ...
 The first row of the should provide a unique name for each codec configuration
 for which test cases are to be generated with the left-most cell containing the
 text ``name``. The remaining rows specify the parameters which define the codec
-configurations.
+configurations. Rows whose first column starts with a ``#`` are ignored (i.e.
+treated as comments).
 
 The following parameters must be given for each codec configuration.
 
@@ -246,7 +247,19 @@ The following parameters must be given for each codec configuration.
     
     Quantisation matrix values, if provided, should be given in the same order
     they would appear in the stream as defined by the ``quant_matrix``
-    pseudocode function (12.4.5.3).
+    pseudocode function (12.4.5.3). For example for a transform with
+    dwt_depth = 1 and dwt_depth_ho = 2, the following value::
+    
+        0 1 2 3 4 5
+    
+    Describes the following quantization matrix::
+    
+        {
+            0: {"L": 0},
+            1: {"H": 1},
+            2: {"H": 2},
+            3: {"HL": 3, "LH": 4, "HH": 5},
+        }
     
     If a non ``default`` value is given, the majority (though not all)
     generated test cases will use the supplied quantization matrix (with the

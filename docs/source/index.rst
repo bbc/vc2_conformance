@@ -57,4 +57,6 @@ turn.
    maintainer/file_format.rst
    maintainer/dimensions_and_depths.rst
    maintainer/symbol_re.rst
+   maintainer/codec_features.rst
+   maintainer/constraint_table.rst
 

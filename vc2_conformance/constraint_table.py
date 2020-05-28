@@ -1,19 +1,16 @@
-"""
-:py:mod:`vc2_conformance.constraint_table`
-===========================================
-
-Certain bitstream conformance rules are best expressed by enumerating valid
-combinations of values -- e.g. restrictions imposed by VC-2's levels. This
-module provides various tools for testing combinations of values against these
-tables of constraints.
+r"""
+The :py:mod:`vc2_conformance.constraint_table` module describes a constraint
+system which is used to describe restrictions imposed by VC-2 levels. See
+:py:data:`vc2_conformance.level_constraints.LEVEL_CONSTRAINTS` for the actual
+level constraints table.
 
 Tutorial
 --------
 
 Constraint tables enumerate allowed combinations of values as a list of
-dictionaries containing :py;class:`ValueSet` objects.  are described using as a
-list of dictionaries defining acceptable combinations. Take for eaxmple the
-following example::
+dictionaries containing :py:class:`ValueSet` objects. Each dictionary describes
+a valid combination of values. In the contrived running example below we'll
+define valid food-color combinations (rather than VC-2 codec options)::
 
     >>> real_foods = [
     ...     {"type": ValueSet("tomato"), "color": ValueSet("red")},
@@ -24,43 +21,62 @@ following example::
 We can check dictionaries of values against this permitted list of
 combinations using :py:func:`is_allowed_combination`::
 
+    >>> # Allowed combinations
     >>> is_allowed_combination(real_foods, {"type": "tomato", "color": "red"})
     True
     >>> is_allowed_combination(real_foods, {"type": "apple", "color": "red"})
     True
     >>> is_allowed_combination(real_foods, {"type": "apple", "color": "green"})
     True
+
+    >>> # Purple apples? I don't think so...
     >>> is_allowed_combination(real_foods, {"type": "apple", "color": "purple"})
     False
 
-We can also check subsets of values, for example::
+But we don't have to check a complete set of values. For example, we can check if a
+particular color is valid for any foodstuff::
 
-    >>> is_allowed_combination(real_foods, {"type": "apple"})
-    True
-    >>> is_allowed_combination(real_foods, {"color": "purple"})
+    >>> is_allowed_combination(real_foods, {"color": "red"})
     True
     >>> is_allowed_combination(real_foods, {"color": "yellow"})
     False
 
-This behaviour means that if properties are being read incrementally we can
-detect the first value to leave the allowed range. We can also use
-:py:func:`allowed_values_for` to determine acceptable values for a particular
-field given the current rules. For example::
+This behaviour allows us to detect the first non-constraint-satisfying value
+when values are obtained sequentially (as they are for a VC-2 bitstream). The
+bitstream validator (:py:mod:`vc2_conformance.decoder`) uses this functionality
+to check bitstream values conform to the constraints imposed by a specified
+VC-2 level.
 
-    >>> allowed_values_for(real_foods, "color")
-    ValueSet('red', 'green', 'purple')
+Given an incomplete set of values, we can use :py:func:`allowed_values_for` to
+discover what values are permissible for values we've not yet assigned. For
+example:
+
+    >>> # If we have an apple, what colours can it be?
     >>> allowed_values_for(real_foods, "color", {"type": "apple"})
     ValueSet('red', 'green')
+
+    >>> # If we have something red, what might it be?
     >>> allowed_values_for(real_foods, "type", {"color": "red"})
     ValueSet('apple', 'tomato')
 
+This functionality is used by the test case generators and encoder
+(:py:mod:`vc2_conformance.test_cases` and :py:mod:`vc2_conformance.encoder`) to
+discover combinations of bitstream features which satisfy particular level
+requirements.
 
-API
----
+
+:py:class:`ValueSet`\ s
+-----------------------
 
 .. autoclass:: ValueSet
+    :members:
+    :special-members: __init__, __contains__, __eq__, __add__, __iter__, __str__
 
 .. autoclass:: AnyValue
+
+
+Constraint testing functions
+----------------------------
 
 .. autofunction:: filter_allowed_values
 
@@ -69,8 +85,8 @@ API
 .. autofunction:: allowed_values_for
 
 
-Reading from CSV
-----------------
+CSV format
+----------
 
 A Constraint table can be read from CSV files using the following function:
 
@@ -101,12 +117,53 @@ class ValueSet(object):
 
     def __init__(self, *values_and_ranges):
         """
+        Create a :py:class:`ValueSet` containing the specified set of values::
+
+            >>> no_values = ValueSet()
+            >>> 100 in no_values
+            False
+
+            >>> single_value = ValueSet(100)
+            >>> 100 in single_value
+            True
+            >>> 200 in single_value
+            False
+
+            >>> range_of_values = ValueSet((10, 20))
+            >>> 9 in range_of_values
+            False
+            >>> 10 in range_of_values
+            True
+            >>> 11 in range_of_values
+            True
+            >>> 20 in range_of_values  # NB: Range is inclusive
+            True
+            >>> 21 in range_of_values
+            False
+
+            >>> many_values = ValueSet(100, 200, (300, 400))
+            >>> 100 in many_values
+            True
+            >>> 200 in many_values
+            True
+            >>> 300 in many_values
+            True
+            >>> 350 in many_values
+            True
+            >>> 500 in many_values
+            False
+
+            >>> non_numeric = ValueSet("foo", "bar", "baz")
+            >>> "foo" in non_numeric
+            True
+            >>> "nope" in non_numeric
+            False
+
         Parameters
         ==========
         *values_and_ranges : value, or (lower_value, upper_value)
-            Sets the initial set of values and ranges to be matched
+            Sets the initial set of values and (inclusive) ranges to be matched
         """
-
         # Individual values explicitly included in this value set
         self._values = set()
 
@@ -151,7 +208,13 @@ class ValueSet(object):
 
     def __contains__(self, value):
         """
-        Test if a value is a member of this set.
+        Test if a value is a member of this set. For example::
+
+            >>> value_set = ValueSet(1, 2, 3)
+            >>> 1 in value_set
+            True
+            >>> 100 in value_set
+            False
         """
         if value in self._values:
             return True
@@ -208,6 +271,13 @@ class ValueSet(object):
         """
         Combine two :py:class:`ValueSet` objects into a single object
         containing the union of both of their values.
+
+        For example::
+
+            >>> a = ValueSet(123)
+            >>> b = ValueSet((10, 20))
+            >>> a + b
+            ValueSet(123, (10, 20))
         """
         if isinstance(other, AnyValue):
             return AnyValue()
@@ -229,7 +299,7 @@ class ValueSet(object):
     def __iter__(self):
         """
         Iterate over the values and (lower_bound, upper_bound) tuples in this
-        value set.
+        value set in no particular order.
         """
         for value in self._values:
             yield value
@@ -239,7 +309,7 @@ class ValueSet(object):
     def iter_values(self):
         """
         Iterate over the values (including the enumerated values of ranges) in
-        this value set.
+        this value set in no particular order.
         """
         for value in self._values:
             yield value
@@ -253,6 +323,13 @@ class ValueSet(object):
     def __str__(self):
         """
         Produce a human-readable description of the permitted values.
+
+        For example::
+
+            >>> print(ValueSet())
+            {<no values>}
+            >>> print(ValueSet(1, 2, 3, (10, 20)))
+            {1, 2, 3, 10-20}
         """
         values_and_ranges = sorted([(v,) for v in self._values] + list(self._ranges))
         if len(values_and_ranges) == 0:
@@ -372,7 +449,7 @@ def allowed_values_for(allowed_values, key, values={}, any_value=AnyValue()):
 
 
 def read_constraints_from_csv(csv_filename):
-    r"""
+    r'''
     Reads a table of constraints from a CSV file.
 
     The CSV file should be arranged with each row describing a particular value
@@ -383,23 +460,25 @@ def read_constraints_from_csv(csv_filename):
 
     The first column will be treated as the keys being constrained, remaining
     columns should contain allowed combinations of values. Each of these values
-    will be converted into a :py:class:`ValueSet` as follows::
+    will be converted into a :py:class:`ValueSet` as follows:
 
     * Values which contain integers will be converted to ``int``
     * Values which contain 'TRUE' or 'FALSE' will be converted to ``bool``
     * Values containing a pair of integers separated by a ``-`` will be treated
       as an incusive range.
     * Several comma-separated instances of the above will be combined into a
-      single :py:class:`ValueSet`.
+      single :py:class:`ValueSet`. (Cells containing comma-separated values
+      will need to be enclosed in double quotes (``"``) in the CSV).
     * The value 'any' will be substituted for :py:class:`AnyValue`.
     * Empty cells will be converted into empty :py:class:`ValueSet`\ s.
     * Cells which contain only a pair of quotes (e.g. ``"``, i.e. ditto) will
-      be assigned the same value as the column to their left.
+      be assigned the same value as the column to their left. (This is encoded
+      using four double quotes (``""""``) in CSV format).
 
     The read constraint table will be returned as a list of dictionaries (one
     per column) as expected by the functions in
     :py:mod:`vc2_conformance.constraint_table`.
-    """
+    '''
     out = []
 
     with open(csv_filename) as f:

@@ -1,18 +1,24 @@
 """
-Codec feature definitions
-=========================
+The :py:mod:`vc2_conformance.codec_features` module defines the
+:py:class:`CodecFeatures` :py:mod:`~vc2_conformance.fixeddict` which is used to
+describe codec and video format configurations. These are used to control the
+test case generators (:py:mod:`vc2_conformance.test_cases`) and encoder
+(:py:mod:`vc2_conformance.encoder`).
 
-Tests are generated to target a codecs implementing a particular set of
-features. The :py:class:`CodecFeatures`
-:py:class:`~vc2_conformance.fixeddict.fixeddict` enumerates specific
-combinations of features supported by a codec.
+.. autofixeddict:: CodecFeatures
 
-.. autoclass:: CodecFeatures
+The :py:func:`read_codec_features_csv` may be used to read these structures
+from a CSV. This functionality is used by the :ref:`vc2-test-case-generator`
+script.
 
 .. autofunction:: read_codec_features_csv
 
 .. autoexception:: InvalidCodecFeaturesError
 
+Finally, the following function may be used when determining level-related
+restrictions which apply to a set of :py:class:`CodecFeatures`.
+
+.. autofunction:: codec_features_to_trivial_level_constraints
 """
 
 import csv
@@ -93,44 +99,56 @@ A definition of a set of coding features supported by a video codec
 implementation. In practice, a particular codec's feature set may be defined by
 a collection of these, defining support for several picture formats.
 
-* ``name``: A unique, human-readable name to identify this collection of
-  features (e.g. 'uhd_over_hd_sdi').
-* ``level``: The :py:class:`~vc2_data_tables.Levels` giving the codec level
-  this feature set shold correspond with.
-* ``profile``: The :py:class:`~vc2_data_tables.Profiles` giving the VC-2
-  profile to use.
-* ``major_version`` and ``minor_version``: The VC-2 major and minor version
-  numbers to use.
-* ``picture_coding_mode``: The :py:class:`~vc2_data_tables.PictureCodingModes`
-  to use.
-* ``video_parameters``: The
-  :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`
-  describing the video format to use.
-* ``wavelet_index`` and ``wavelet_index_ho``: The
-  :py:class:`~vc2_data_tables.WaveletFilters` to use.
-* ``dwt_depth`` and ``dwt_depth_ho``: The transform depths to use.
-* ``slices_x`` and ``slices_y``: The number of picture slices, horizontally and
-  vertically.
-* ``fragment_slice_count``: If fragmented pictures are in use, should be
-  non-zero and contain the maximum number of slices to include in each
-  fragment. Otherwise, should be zero.
-* ``lossless``: If True, lossless variable-bit-rate coding will be used. If
-  false, fixed-rate lossy coding is used.
-* ``picture_bytes``: When ``lossless`` is False, this gives the number of bytes
-  per picture to use. Slices will be assigned (as close to) the same number of
-  bytes each as possible. If ``lossless` is True, this value should be None.
-* ``quantization_matrix``: None or a hierarchy of dictionaries as constructed
-  by the ``quant_matrix`` pseudocode function (12.4.5.3). If None, the default
-  quantization matrix will be used.
+Parameters
+==========
+name : str
+    A unique, human-readable name to identify this collection of features (e.g.
+    ``"uhd_over_hd_sdi"``).
+level : :py:class:`~vc2_data_tables.Levels`
+    The VC-2 level. The user is responsible for choosing settings below which
+    actually conform to this level.
+profile : :py:class:`~vc2_data_tables.Profiles`
+    The VC-2 profile to use.
+major_version, minor_version : int
+    The VC-2 major and minor version numbers to use.
+picture_coding_mode : :py:class:`~vc2_data_tables.PictureCodingModes`
+    The picture coding mode to use.
+video_parameters : :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`
+    The video format to use.
+wavelet_index, wavelet_index_ho : :py:class:`~vc2_data_tables.WaveletFilters`
+    The wavelet transform to use. For symmetric transforms, both values must be
+    equal.
+dwt_depth and dwt_depth_ho : int
+    The transform depths to use. For symmetric transforms, dwt_depth_ho must be
+    zero.
+slices_x and slices_y : int
+    The number of picture slices, horizontally and vertically.
+fragment_slice_count : int
+    If fragmented pictures are in use, should be non-zero and contain the
+    maximum number of slices to include in each fragment. Otherwise, should be
+    zero.
+lossless : bool
+    If True, lossless variable-bit-rate coding will be used. If false,
+    fixed-rate lossy coding is used.
+picture_bytes : int or None
+    When ``lossless`` is False, this gives the number of bytes per picture to
+    use. Slices will be assigned (as close to) the same number of bytes each as
+    possible. If ``lossless` is True, this value should be None.
+quantization_matrix : None or {level: {orient: value, ...}, ...}
+    None or a hierarchy of dictionaries as constructed by the ``quant_matrix``
+    pseudocode function (12.4.5.3). If None, the default quantization matrix
+    will be used.
 """
 
 
 def read_dict_list_csv(csvfile):
     """
-    Read a CSV whose contents consists of a series of dictionaries whose
-    columns define dictionaries of values defined by their rows. For example::
+    Read a CSV whose first column contains key names and each subsequent column
+    describes a dictionary with corresponding values.
 
-        a,one,ay
+    For example::
+
+        a,one,ayy
         b,two,bee
         c,three,see
 
@@ -143,7 +161,7 @@ def read_dict_list_csv(csvfile):
                 "c": "three",
             },
             {
-                "a": "ay",
+                "a": "ayy",
                 "b": "bee",
                 "c": "see",
             },
@@ -283,149 +301,13 @@ class InvalidCodecFeaturesError(ValueError):
 
 def read_codec_features_csv(csvfile):
     """
-    Read a set of :py:class:`CodecFeatures` dictionaries from a CSV file.
+    Read a set of :py:class:`CodecFeatures` from a CSV file in the format
+    described by :ref:`codec-features`.
 
-    The CSV file must be laid out as illustrated below:
-
-        ========================= ===================  ===================
-        name                      lossy_mode           lossless_mode
-        ========================= ===================  ===================
-        # (11.2.1)
-        level                     unconstrained        unconstrained
-        profile                   high_quality         high_quality
-        major_version             3                    3
-        minor_version             0                    0
-        # (11.1)
-        base_video_format         hd1080p_50           hd1080p_50
-        picture_coding_mode       pictures_are_frames  pictures_are_frames
-        # (11.4.3)
-        frame_width               default              default
-        frame_height              default              default
-        # (11.4.4)
-        color_diff_format_index   default              default
-        # (11.4.5)
-        source_sampling           default              default
-        top_field_first           default              default
-        # (11.4.6)
-        frame_rate_numer          default              default
-        frame_rate_denom          default              default
-        # (11.4.7)
-        pixel_aspect_ratio_numer  default              default
-        pixel_aspect_ratio_denom  default              default
-        # (11.4.8)
-        clean_width               default              default
-        clean_height              default              default
-        left_offset               default              default
-        top_offset                default              default
-        # (11.4.9)
-        luma_offset               default              default
-        luma_excursion            default              default
-        color_diff_offset         default              default
-        color_diff_excursion      default              default
-        # (11.4.10)
-        color_primaries_index     default              default
-        color_matrix_index        default              default
-        transfer_function_index   default              default
-        # (12.4.1) and (12.4.4.1)
-        wavelet_index             le_gall_5_3          haar_no_shift
-        wavelet_index_ho          le_gall_5_3          haar_no_shift
-        dwt_depth                 2                    2
-        dwt_depth_ho              0                    0
-        # (12.4.5.2)
-        slices_x                  120                  120
-        slices_y                  108                  108
-        # (14)
-        fragment_slice_count      60                   60
-        #
-        lossless                  FALSE                TRUE
-        picture_bytes             1036800
-        # (12.4.5.3)
-        quantization_matrix       default              default
-        ========================= ===================  ===================
-
-    Column B onward contain configurations which a codec claims to support.
-    Each row defines the value of a particular codec feature (except empty rows
-    or rows starting with a ``#`` which are ignored).
-
-    The following rows must be defined:
-
-    * ``level`` (int or :py:class:`~vc2_data_tables.Levels` name)
-    * ``profile`` (int or :py:class:`~vc2_data_tables.Profiles` name)
-    * ``major_version`` (int)
-    * ``minor_version`` (int)
-    * ``base_video_format`` (int or :py:class:`~vc2_data_tables.BaseVideoFormats` name)
-    * ``picture_coding_mode`` (int or :py:class:`~vc2_data_tables.PictureCodingModes` name)
-    * ``frame_width`` (int or ``default``)
-    * ``frame_height`` (int or ``default``)
-    * ``color_diff_format_index`` (int or
-      :py:class:`~vc2_data_tables.ColorDifferenceSamplingFormats` name or
-      ``default``)
-    * ``source_sampling`` (int or
-      :py:class:`~vc2_data_tables.SourceSamplingModes` name or
-      ``default``)
-    * ``top_field_first`` (``TRUE``, ``FALSE`` or ``default``)
-    * ``frame_rate_numer`` (int or ``default``)
-    * ``frame_rate_denom`` (int or ``default``)
-    * ``pixel_aspect_ratio_numer`` (int or ``default``)
-    * ``pixel_aspect_ratio_denom`` (int or ``default``)
-    * ``clean_width`` (int or ``default``)
-    * ``clean_height`` (int or ``default``)
-    * ``left_offset`` (int or ``default``)
-    * ``top_offset`` (int or ``default``)
-    * ``luma_offset`` (int or ``default``)
-    * ``luma_excursion`` (int or ``default``)
-    * ``color_diff_offset`` (int or ``default``)
-    * ``color_diff_excursion`` (int or ``default``)
-    * ``color_primaries_index`` (int or
-      :py:class:`~vc2_data_tables.PresetColorPrimaries` name or
-      ``default``)
-    * ``color_matrix_index`` (int or
-      :py:class:`~vc2_data_tables.PresetColorMatrices` name or
-      ``default``)
-    * ``transfer_function_index`` (int or
-      :py:class:`~vc2_data_tables.PresetTransferFunctions` name or
-      ``default``)
-    * ``wavelet_index`` (int or
-      :py:class:`~vc2_data_tables.WaveletFilters` name)
-    * ``wavelet_index_ho`` (int or
-      :py:class:`~vc2_data_tables.WaveletFilters` name)
-    * ``dwt_depth`` (int)
-    * ``dwt_depth_ho`` (int)
-    * ``slices_x`` (int)
-    * ``slices_y`` (int)
-    * ``fragment_slice_count`` (int)
-    * ``lossless`` (``TRUE`` or ``FALSE``)
-    * ``picture_bytes`` (int or absent)
-    * ``quantization_matrix`` (whitespace separated ints)
-
-    The 'name' row may be used to specify a human-readable name for a
-    particular configuration.
-
-    Parameters related to video formatting may be set to ``default``. In this
-    case, the value specified in the ``base_video_format`` row will be used.
-    Otherwise, the base video format will be overridden.
-
-    The ``base_video_format`` specified is provided purely as a shorthand for
-    entering values into this table. The value specified here may not
-    correspond to the ``base_video_format`` value which is encoded into
-    bitstreams.
-
-    The ``fragment_slice_count`` row, non-zero, indicates fragmented pictures
-    should be used and gives the maximum number of slices to include in each
-    fragment. If the value is zero, fragmented pictures will not be used.
-
-    The ``lossless`` row specifies if (variable length) lossless coding should
-    be used. If True, the ``picture_bytes`` field must be left empty. If
-    ``lossless`` is set to ``FALSE``, fixed-bitrate lossy compression is used
-    with ``picture_bytes`` giving the number of bytes to compress each picture
-    into. All slices will have the same size (to within 1 byte).
-
-    The ``quantization_matrix`` row may be set to ``default`` to specify tha
-    the default quantisation matrix for the wavelet is to be used.
-    Alternatively, it may be set to a series of ``dwt_depth + dwt_depth_ho +
-    1`` whitespace separated integers. These correspond to the quantisation
-    matrix values in bitstream order as defined by the ``quant_matrix``
-    pseudocode function (12.4.5.3).
+    ..
+        If you're reading this, you probably can't click on the reference
+        above... It points to the 'Defining codec features' section of
+        ``docs/user_guide/generating_test_cases.rst``
 
     Parameters
     ==========
@@ -441,6 +323,14 @@ def read_codec_features_csv(csvfile):
     ======
     :py:exc:`InvalidCodecFeaturesError`
         Raised if the provided CSV contains invalid or incomplete data.
+
+        .. note::
+
+            Validation largely extends only to syntactic issues (e.g. invalid
+            integer values, 'picture_bytes' being specified for lossless
+            formats etc). It does not include validation of 'deeper' issues
+            such as too-small picture_bytes values or parameters not being
+            permitted by the specified level.
     """
     csv_columns = read_dict_list_csv(csvfile)
 
@@ -584,8 +474,8 @@ def read_codec_features_csv(csvfile):
 
 def codec_features_to_trivial_level_constraints(codec_features):
     """
-    Returns the values a given set of :py:class:`CodecFeatures` trivially fixes
-    in a :py:mod:`~vc2_conformance.level_constraints` table.
+    Returns the some of the values a given :py:class:`CodecFeatures` would
+    assign in a :py:mod:`~vc2_conformance.level_constraints` table.
 
     Parameters
     ==========
@@ -608,15 +498,19 @@ def codec_features_to_trivial_level_constraints(codec_features):
         * slices_y
         * slices_have_same_dimensions
         * custom_quant_matrix
-        * Low delay profile only:
-            * slice_bytes_numerator
-            * slice_bytes_denominator
-        * High quality profile only:
-            * slice_prefix_bytes
+
+        In addition for the low delay profile only:
+
+        * slice_bytes_numerator
+        * slice_bytes_denominator
+
+        In addition for the high quality profile only:
+
+        * slice_prefix_bytes
 
         .. note::
 
-            In principle, more keys would be determined however a line in the
+            In principle, more keys could be determined however a line in the
             sand is required for what is considered 'simple' to determine and
             what requires re-implementing much of the codec. We draw the line
             at these values since all of them are straight-forward to work out.
@@ -661,7 +555,8 @@ def codec_features_to_trivial_level_constraints(codec_features):
         constrained_values["slice_bytes_denominator"] = slice_bytes.denominator
     elif codec_features["profile"] == Profiles.high_quality:
         # TODO: At the moment the test case generator cannot generate streams
-        # which include prefix bytes we assume it is zero below...
+        # which include prefix bytes (except when it hand-generates such
+        # streams) we assume it is zero below...
         constrained_values["slice_prefix_bytes"] = 0
 
     # Determine custom quantisation matrix values
