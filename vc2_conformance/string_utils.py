@@ -1,6 +1,6 @@
 """
-:py:mod:`vc2_conformance.string_utils`: String formatting utilities.
-=====================================================================
+The :py:mod:`vc2_conformance.string_utils` module contains a selection of
+general purpose string formatting routines.
 """
 
 from textwrap import wrap, dedent
@@ -9,8 +9,17 @@ import re
 
 
 def indent(text, prefix="  "):
-    """Indent the string 'text' with the prefix string 'prefix'."""
-    return "{}{}".format(prefix, ("\n{}".format(prefix)).join(text.split("\n")),)
+    """
+    Indent the string 'text' with the prefix string 'prefix'.
+
+    .. note::
+
+        This function is provided partly because Python 2.x doesn't include
+        :py:func:`textwrap.indent` in its standard library and partly to
+        provide an indent function with sensible defaults (i.e. 2 character
+        indent, and always indent every line).
+    """
+    return "{}{}".format(prefix, ("\n{}".format(prefix)).join(text.split("\n")))
 
 
 def ellipsise(text, context=4, min_length=8):
@@ -20,8 +29,8 @@ def ellipsise(text, context=4, min_length=8):
     version with some of the repeated characters replaced with '...'.
 
     Exactly one shortening operation will be carried out (on the longest run)
-    meaning that so long as the original string length is known, it is still
-    possible to determine the full length string from the ellipsised version.
+    meaning that so long as the original string length is known, no ambiguity
+    is introduced in the ellipsised version.
 
     For example::
 
@@ -90,10 +99,10 @@ RE_PREFIX_AND_BLOCK = re.compile(r"^([*]\s+|[0-9]+[.]\s+|\s*)(.*)$")
 
 def split_into_line_wrap_blocks(text, wrap_indented_blocks=False):
     """
-    Split a multi-line string into blocks of text which should be line-wrapped
-    independently.
+    Deindent and split a multi-line markdown-style string into blocks of text
+    which can be line-wrapped independently.
 
-    For example given a Python string defined like so::
+    For example given a markdown-style string defined like so::
 
         '''
             A markdown style title
@@ -214,7 +223,7 @@ def wrap_blocks(blocks, width=None, wrap_indented_blocks=False):
     Expects a list of (first_line_indent, remaining_line_indent, text) tuples
     to output.
 
-    If 'width' is None, assumes an infinate line width.
+    If 'width' is None, assumes an infinite line width.
 
     If 'wrap_indented_blocks' is False (the default) indented (markdown-style)
     code blocks will not be line wrapped while other indented blocks (e.g.
@@ -241,11 +250,11 @@ def wrap_blocks(blocks, width=None, wrap_indented_blocks=False):
 
 def wrap_paragraphs(text, width=None, wrap_indented_blocks=False):
     """
-    Re-wrap a string containing one or more hard-line-wrapped paragraphs,
+    Re-line-wrap a markdown-style string with hard-line-wrapped paragraphs,
     bullet points, numbered lists and code blocks (see
     :py:func:`split_into_line_wrap_blocks`).
 
-    If 'width' is None, assumes an infinate line width.
+    If 'width' is None, assumes an infinite line width.
 
     If 'wrap_indented_blocks' is False (the default) indented (markdown-style)
     code blocks will not be line wrapped while other indented blocks (e.g.

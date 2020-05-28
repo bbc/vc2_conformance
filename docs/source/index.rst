@@ -52,4 +52,5 @@ turn.
    maintainer/bitstream_internals.rst
    maintainer/fixeddict.rst
    maintainer/string_formatters.rst
+   maintainer/string_utils.rst
 
