@@ -60,4 +60,5 @@ turn.
    maintainer/codec_features.rst
    maintainer/constraint_table.rst
    maintainer/level_constraints.rst
+   maintainer/picture_generators.rst
 

@@ -1,19 +1,19 @@
 """
-Picture generators
-==================
+The :py:mod:`vc2_conformance.picture_generators` module contains routines for
+generating video sequences for arbitrary VC-2 video formats.
 
-This module contains routines for generating video test sequences for arbitrary
-VC-2 video formats. These sequences are intended to test various aspects of a
-codec's signal processing behaviour as opposed to testing bitstream syntax and
-semantics.
+The picture generators in this module are used to generate encoder and decoder
+test cases (:py:mod:`vc2_conformance.test_cases`).
 
-Generators
-----------
+All picture generator functions take a
+:py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`, and
+:py:class:`~vc2_data_tables.PictureCodingModes` as their arguments, defining the
+desired VC-2 video format. They then yield a sequence of ``{"Y": [[int, ...],
+...], "C1": [[int, ...], ...], "C2": [[int, ...], ...], "pic_num": int}``
+dictionaries containing integer picture component values, ready for encoding or
+writing to a file.
 
-Test sequence generators take the form of Python generator functions which
-yield a series of ``{"Y": [[int, ...], ...], "C1": [[int, ...], ...], "C2":
-[[int, ...], ...], "pic_num": int}`` dictionaries containing integer picture
-component values. These must then be encoded by a suitable VC-2 encoder.
+The following picture generators are provided.
 
 .. autofunction:: moving_sprite
 
@@ -25,10 +25,17 @@ component values. These must then be encoded by a suitable VC-2 encoder.
 
 .. autofunction:: linear_ramps
 
-The following function may be used to produce longer sequences by repeating the
-pictures produced by the above generators:
+Longer sequences may be produced by repeating the pictures produced by the
+above generators:
 
 .. autofunction:: repeat_pictures
+
+.. note::
+
+    Where the picture coding mode indicates that pictures represents fields
+    (not frames), an even number of pictures (i.e. a whole number of frames) is
+    always generated. This means that, for example, a single-frame picture
+    generator will generate *two* pictures for these formats.
 
 """
 
@@ -377,8 +384,8 @@ def read_and_adapt_pointer_sprite(video_parameters):
 
 def repeat_pictures(pictures, count):
     """
-    Repeat the sequence of pictures in an iterable of, renumbering the elements
-    along the way.
+    Repeat a sequence of pictures produced by a picture generator to produce a
+    longer sequence.
     """
     for pic_num, picture in enumerate(list(pictures) * count):
         picture = deepcopy(picture)
@@ -422,7 +429,7 @@ def moving_sprite(video_parameters, picture_coding_mode, num_frames=10):
     This sequence consists of a 128 by 128 pixel sprite (shown below) on a
     black background which traverses the screen from left-to-right moving 16
     pixels to the right every frame (or 8 every field). By default the sequence
-    is 10 frames (but not necessarily 10 pictures) long.
+    is 10 frames long.
 
     .. image:: /_static/test_images/pointer.png
 
@@ -553,8 +560,11 @@ def mid_gray(video_parameters, picture_coding_mode):
     A video sequence containing exactly one empty mid-gray frame.
 
     'Mid gray' is defined as having each color component set to the integer
-    value exactly half-way along its range. The actual color will differ
-    depending on the color model used and the signal offsets specified.
+    value exactly half-way along its range. When encoded using VC-2 all
+    transform coefficients will be zero.
+
+    The actual color will differ depending on the color model used and the
+    signal offsets specified, though typically a gray color is produced.
     """
 
     dd = compute_dimensions_and_depths(video_parameters, picture_coding_mode)
@@ -582,6 +592,12 @@ def white_noise(video_parameters, picture_coding_mode, num_frames=1, seed=0):
     """
     A video sequence containing uniformly distributed pseudo-random full-range
     signal values.
+
+    .. note::
+
+        Because all picture components are filled with noise, the resulting
+        pictures will contain 'color' noise rather than black-and-white noise.
+        This may include out-of-gamut signals.
 
     By default a single frame is produced, but the ``num_frames`` argument may
     be used to specify more.
@@ -616,7 +632,9 @@ def white_noise(video_parameters, picture_coding_mode, num_frames=1, seed=0):
 def linear_ramps(video_parameters, picture_coding_mode):
     """
     An video sequence containing exactly one frame with a series of linear
-    color ramps.
+    color ramps (illustrated below).
+
+    .. image:: /_static/test_images/linear_ramps.png
 
     The frame is split into horizontal bands which contain, top to bottom:
 
@@ -624,6 +642,11 @@ def linear_ramps(video_parameters, picture_coding_mode):
     * A black-to-red linear ramp
     * A black-to-green linear ramp
     * A black-to-blue linear ramp
+
+    The color ramps are linear in intensity. For most color formats (using
+    a non-linear transfer function) this produces a non-linear ramp in coded
+    pixel values. Further, the ramp will not be perceptually linear since human
+    vision does not have a linear response.
 
     This is provided for the purposes of checking that metadata related to
     color is correctly passed through for display purposes.
