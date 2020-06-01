@@ -64,7 +64,8 @@ Decoder Test Cases
 ------------------
 
 The purpose of each test case (or group of test cases), along with advice on
-debugging failing tests is provided below.
+debugging failing tests is provided below. In all test cases, the bitstream
+provided is a valid bitstream permitted by the spec.
 
 ..
     The following directive automatically extracts the test case documentation
