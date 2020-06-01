@@ -372,7 +372,7 @@ def assert_plausibly_linear_ramps_image(frame, transfer_function_index):
     # strong transfer functions)
     if transfer_function_index in (
         PresetTransferFunctions.hybrid_log_gamma,
-        PresetTransferFunctions.perceptual_quality,
+        PresetTransferFunctions.perceptual_quantizer,
     ):
         atol = 0.35
     else:

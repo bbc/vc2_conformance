@@ -472,7 +472,7 @@ TRANSFER_FUNCTIONS = {
     PresetTransferFunctions.extended_gamut: extended_gamut_transfer_function,
     PresetTransferFunctions.linear: linear_transfer_function,
     PresetTransferFunctions.d_cinema: d_cinema_transfer_function,
-    PresetTransferFunctions.perceptual_quality: pq_transfer_function,
+    PresetTransferFunctions.perceptual_quantizer: pq_transfer_function,
     PresetTransferFunctions.hybrid_log_gamma: hlg_transfer_function,
 }
 """
