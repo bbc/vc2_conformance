@@ -1,4 +1,4 @@
 Pseudocode usage metadata
 =========================
 
-.. automodule:: vc2_conformance.metadata
+.. automodule:: vc2_conformance.pseudocode.metadata
