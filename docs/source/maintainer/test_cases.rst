@@ -1,3 +1,5 @@
+.. _maintainer-test-case-generator:
+
 VC-2 codec test case generation
 ===============================
 

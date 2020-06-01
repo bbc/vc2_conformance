@@ -1,3 +1,5 @@
+.. _maintainer-decoder:
+
 Reference decoder and bitstream vaidator
 ========================================
 

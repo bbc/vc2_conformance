@@ -1,3 +1,5 @@
+.. _maintainer-encoder:
+
 Internal VC-2 encoder
 =====================
 
