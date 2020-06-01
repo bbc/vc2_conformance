@@ -3,7 +3,7 @@ The :py:mod:`vc2_conformance.decoder.sequence_header` module contains pseudocode
 functions from (11) Sequence Header.
 """
 
-from vc2_conformance.metadata import ref_pseudocode
+from vc2_conformance.pseudocode.metadata import ref_pseudocode
 
 from vc2_data_tables import (
     BaseVideoFormats,

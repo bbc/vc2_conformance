@@ -1,4 +1,4 @@
-from vc2_conformance import metadata
+from vc2_conformance.pseudocode import metadata
 
 import sys
 import inspect

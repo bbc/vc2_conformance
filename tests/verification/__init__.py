@@ -10,13 +10,13 @@ specification.
 
 The ``tests/verification/test_equivalence.py`` test script (which is part of
 the normal Pytest test suite) automatically finds functions in the
-:py:mod:`vc2_conformance` codebase (using :py:mod:`vc2_conformance.metadata`)
+:py:mod:`vc2_conformance` codebase (using :py:mod:`vc2_conformance.pseudocode.metadata`)
 and checks they match the equivalent function in the VC-2 specification (which
 are copied out verbatim in ``tests/verification/reference_pseudocode.py``).
 
 .. note::
 
-    To ensure that :py:mod:`vc2_conformance.metadata` contains information
+    To ensure that :py:mod:`vc2_conformance.pseudocode.metadata` contains information
     about all submodules of :py:mod:`vc2_conformance`, the ``conftest.py`` file
     in this directory ensures all submodules of vc2_conformance are loaded.
 

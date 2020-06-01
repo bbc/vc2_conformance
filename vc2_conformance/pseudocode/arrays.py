@@ -3,7 +3,7 @@
 ===========================================================================
 """
 
-from vc2_conformance.metadata import ref_pseudocode
+from vc2_conformance.pseudocode.metadata import ref_pseudocode
 
 
 __all__ = [

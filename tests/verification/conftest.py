@@ -25,7 +25,7 @@ def pytest_assertrepr_compare(op, left, right):
 
 
 # Ensure all vc2_conformance submodules are loaded (and therefore all
-# vc2_conformance.metadata annotations are populated)
+# vc2_conformance.pseudocode.metadata annotations are populated)
 for _module_loader, name, _ispkg in pkgutil.walk_packages(onerror=lambda err: None):
     if name.startswith("vc2_conformance."):
         importlib.import_module(name)

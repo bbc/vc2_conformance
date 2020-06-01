@@ -8,7 +8,7 @@ These functions all take a 'state' dictionary containing at least
 ``parse_code`` which should be an int or :py:class:`ParseCodes` enum value.
 """
 
-from vc2_conformance.metadata import ref_pseudocode
+from vc2_conformance.pseudocode.metadata import ref_pseudocode
 
 __all__ = [
     "is_seq_header",

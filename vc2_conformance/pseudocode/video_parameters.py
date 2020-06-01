@@ -21,7 +21,7 @@ dictionary-like object with the following entries:
 * ``"color_diff_depth"``
 """
 
-from vc2_conformance.metadata import ref_value, ref_pseudocode
+from vc2_conformance.pseudocode.metadata import ref_pseudocode
 
 from vc2_conformance.fixeddict import fixeddict, Entry
 
@@ -92,7 +92,6 @@ VideoParameters = fixeddict(
     Entry("transfer_function_index", enum=PresetTransferFunctions),
 )
 """(11.4) Video parameters struct."""
-ref_value(VideoParameters, "11.4")
 
 
 @ref_pseudocode(deviation="inferred_implementation")

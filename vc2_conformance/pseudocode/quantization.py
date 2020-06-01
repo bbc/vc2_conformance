@@ -2,7 +2,7 @@
 Quantization-related VC-2 pseudocode routines.
 """
 
-from vc2_conformance.metadata import ref_pseudocode
+from vc2_conformance.pseudocode.metadata import ref_pseudocode
 
 from vc2_conformance.pseudocode.vc2_math import sign
 

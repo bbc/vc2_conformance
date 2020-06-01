@@ -139,7 +139,7 @@ from textwrap import wrap
 
 from vc2_conformance import __version__
 
-from vc2_conformance import metadata
+from vc2_conformance.pseudocode import metadata
 
 from vc2_conformance import bitstream
 

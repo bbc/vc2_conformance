@@ -1,5 +1,5 @@
 """
-The :py:mod:`vc2_conformance.metadata` module is used to record the
+The :py:mod:`vc2_conformance.pseudocode.metadata` module is used to record the
 relationship between the code in the :py:mod:`vc2_conformance` software and the
 VC-2 specification documents. This metadata has two important uses:
 
@@ -16,7 +16,7 @@ Functions in the codebase which implement a pseudocode function in the
 specification may be labelled as such using a :py:func:`ref_pseudocode`
 decorator::
 
-    >>> from vc2_conformance.metadata import ref_pseudocode
+    >>> from vc2_conformance.pseudocode.metadata import ref_pseudocode
 
     >>> @ref_pseudocode
     ... def parse_info(state):
@@ -38,7 +38,7 @@ Constants in this codebase may be cross-referenced against the spec using
 :py:func:`ref_value`. This takes the value being referenced along with the
 specification reference as minimal arguments. For example::
 
-    >>> from vc2_conformance.metadata import ref_value
+    >>> from vc2_conformance.pseudocode.metadata import ref_value
 
     >>> PARSE_INFO_PREFIX = ref_value(0x42424344, "10.5.1")
 
@@ -50,7 +50,7 @@ As a convenience, :py:class:`enum.Enum` instances can also be annotated by the
 :py:func:`ref_enum` decorator::
 
     >>> from enum import Enum
-    >>> from vc2_conformance.metadata import ref_enum
+    >>> from vc2_conformance.pseudocode.metadata import ref_enum
 
     >>> @ref_enum
     ... class PictureCodingModes(IntEnum):

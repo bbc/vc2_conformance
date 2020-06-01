@@ -3,7 +3,7 @@ The :py:mod:`vc2_conformance.decoder.transform_data_syntax` module contains pseu
 functions from (13) Transform data syntax.
 """
 
-from vc2_conformance.metadata import ref_pseudocode
+from vc2_conformance.pseudocode.metadata import ref_pseudocode
 
 from vc2_conformance.pseudocode.vc2_math import (
     intlog2,

@@ -54,7 +54,7 @@ decode a complete stream.
 The pseudocode is automatically verified for consistency with the VC-2
 specification by the conformance software test suite. Verified pseudocode
 functions are annotated with the
-:py:func:`~vc2_conformance.metadata.ref_pseudocode` decorator. See
+:py:func:`~vc2_conformance.pseudocode.metadata.ref_pseudocode` decorator. See
 :py:mod:`verification` (in the ``tests/`` directory) for details on the
 automated verification process. All bitstream validation logic, which doesn't
 form part of the specified pseudocode, appears between ``## Begin not in spec``

@@ -3,7 +3,7 @@ The :py:mod:`vc2_conformance.decoder.picture_syntax` module contains pseudocode
 functions from (12) Picture syntax.
 """
 
-from vc2_conformance.metadata import ref_pseudocode
+from vc2_conformance.pseudocode.metadata import ref_pseudocode
 
 from vc2_conformance.constraint_table import allowed_values_for
 

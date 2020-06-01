@@ -3,7 +3,7 @@ The :py:mod:`vc2_conformance.decoder.stream` module contains pseudocode function
 (10) VC-2 Stream Syntax.
 """
 
-from vc2_conformance.metadata import ref_pseudocode
+from vc2_conformance.pseudocode.metadata import ref_pseudocode
 
 from vc2_conformance.pseudocode.parse_code_functions import (
     is_seq_header,

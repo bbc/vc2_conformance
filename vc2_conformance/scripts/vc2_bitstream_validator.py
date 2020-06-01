@@ -85,7 +85,7 @@ from argparse import ArgumentParser
 
 from textwrap import dedent
 
-from vc2_conformance import metadata
+from vc2_conformance.pseudocode import metadata
 
 from vc2_conformance import __version__
 

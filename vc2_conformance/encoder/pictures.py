@@ -99,7 +99,7 @@ from vc2_data_tables import (
     ParseCodes,
 )
 
-from vc2_conformance.metadata import ref_pseudocode
+from vc2_conformance.pseudocode.metadata import ref_pseudocode
 
 from vc2_conformance.pseudocode.vc2_math import mean, intlog2
 

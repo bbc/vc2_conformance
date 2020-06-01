@@ -38,7 +38,7 @@ pseudocode functions which determines if all slices will contain the same
 number of samples or not.
 """
 
-from vc2_conformance.metadata import ref_pseudocode
+from vc2_conformance.pseudocode.metadata import ref_pseudocode
 
 __all__ = [
     "subband_width",

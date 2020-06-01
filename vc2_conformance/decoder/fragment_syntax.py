@@ -3,7 +3,7 @@ The :py:mod:`vc2_conformance.decoder.fragment_syntax` module contains pseudocode
 functions from (14) Fragment syntax.
 """
 
-from vc2_conformance.metadata import ref_pseudocode
+from vc2_conformance.pseudocode.metadata import ref_pseudocode
 
 from vc2_conformance.pseudocode.parse_code_functions import using_dc_prediction
 

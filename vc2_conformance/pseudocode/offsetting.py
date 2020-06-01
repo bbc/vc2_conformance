@@ -7,7 +7,7 @@ augments these with complementary de-offsetting functions (inferred from, but
 not defined by the standard).
 """
 
-from vc2_conformance.metadata import ref_pseudocode
+from vc2_conformance.pseudocode.metadata import ref_pseudocode
 
 from vc2_conformance.pseudocode.arrays import (
     width,

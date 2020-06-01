@@ -8,7 +8,7 @@ Defined by VC-2 in (5.5.3).
 
 import math
 
-from vc2_conformance.metadata import ref_pseudocode
+from vc2_conformance.pseudocode.metadata import ref_pseudocode
 
 __all__ = [
     "intlog2_float",

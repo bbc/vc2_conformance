@@ -8,7 +8,7 @@ defined in the pseudocode of the VC-2 standard.
 See also :py:mod:`vc2_conformance.pseudocode.picture_encoding`.
 """
 
-from vc2_conformance.metadata import ref_pseudocode
+from vc2_conformance.pseudocode.metadata import ref_pseudocode
 
 from vc2_data_tables import LIFTING_FILTERS, LiftingFilterTypes
 

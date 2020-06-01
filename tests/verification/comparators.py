@@ -42,7 +42,7 @@ class Identical(NodeComparator):
     differences:
 
     1. Their docstrings may be different.
-    2. A :py:func:`vc2_conformance.metadata.ref_pseudocode` decorator may be
+    2. A :py:func:`vc2_conformance.pseudocode.metadata.ref_pseudocode` decorator may be
        present in the second function.
     3. Constants from  the :py:mod:`vc2_data_tables` module may be
        used in place of numerical literals.
@@ -103,7 +103,7 @@ class SerdesChangesOnly(NodeComparator):
     differences are allowed:
 
     1. Differing docstrings. (Justification: has no effect on behaviour.)
-    2. The addition of a :py:func:`vc2_conformance.metadata.ref_pseudocode`
+    2. The addition of a :py:func:`vc2_conformance.pseudocode.metadata.ref_pseudocode`
        decorator to the second function. (Justification: has no effect on
        behaviour.)
     3. The addition of a :py:func:`vc2_conformance.bitstream.serdes.context_type`

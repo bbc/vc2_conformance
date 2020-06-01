@@ -19,7 +19,7 @@ Consistency with the VC-2 pseudocode is checked by the test suite (see
 :py:mod:`verification`).
 """
 
-from vc2_conformance.metadata import ref_pseudocode
+from vc2_conformance.pseudocode.metadata import ref_pseudocode
 
 from vc2_conformance.bitstream.serdes import context_type
 

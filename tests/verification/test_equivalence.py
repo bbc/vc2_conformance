@@ -20,7 +20,7 @@ from verification import reference_pseudocode
 
 
 # Force loading of all submodules (and thus registration of metadata)
-from vc2_conformance.metadata import referenced_values
+from vc2_conformance.pseudocode.metadata import referenced_values
 
 # The directory the test scripts reside in
 test_dir = os.path.normcase(
@@ -32,7 +32,7 @@ test_dir = os.path.normcase(
 
 def is_function_with_deviation(referenced_value, deviation):
     """
-    Test if a :py:class:`vc2_conformance.metadata.ReferencedValue` refers to a
+    Test if a :py:class:`vc2_conformance.pseudocode.metadata.ReferencedValue` refers to a
     function with the specified deviation (and isn't part of the test suite).
     """
     if not isinstance(referenced_value.value, FunctionType):
