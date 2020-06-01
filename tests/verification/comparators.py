@@ -119,11 +119,13 @@ class SerdesChangesOnly(NodeComparator):
     6. The addition of the following methods calls in the second function
        (Justification: these method calls have no effect on behaviour but are
        required to set the serdes state):
+
         * :py:meth:`vc2_conformance.bitstream.serdes.SerDes.subcontext_enter`
         * :py:meth:`vc2_conformance.bitstream.serdes.SerDes.subcontext_leave`
         * :py:meth:`vc2_conformance.bitstream.serdes.SerDes.set_context_type`
         * :py:meth:`vc2_conformance.bitstream.serdes.SerDes.declare_list`
         * :py:meth:`vc2_conformance.bitstream.serdes.SerDes.computed_value`
+
     7. The substitution of an assignment to ``state.bits_left`` with a call to
        :py:meth:`vc2_conformance.bitstream.serdes.SerDes.bounded_block_begin`
        in the second function, taking the assigned value as argument.
@@ -133,6 +135,7 @@ class SerdesChangesOnly(NodeComparator):
        allowed with an additional first argument (for the target name).
        (Justification: these functions have the equivalent effect in the
        bitstream IO system).
+
         * ``read_bool`` -> ``serdes.bool``
         * ``read_nbits`` -> ``serdes.nbits``
         * ``read_uint_lit`` -> ``serdes.uint_lit`` or ``serdes.bytes``
@@ -140,6 +143,7 @@ class SerdesChangesOnly(NodeComparator):
         * ``read_sint`` or ``read_sintb`` -> ``serdes.sint``
         * ``byte_align`` -> ``serdes.byte_align``
         * ``flush_inputb`` -> ``serdes.bounded_block_end``
+
     9. Substitution of empty dictionary creation for creation of
        :py:class:`vc2_conformance.pseudocode.state.State` or
        :py:class:`vc2_conformance.pseudocode.video_parameters.VideoParameters`

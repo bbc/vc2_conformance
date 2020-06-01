@@ -1,31 +1,32 @@
-import pytest
-
-import sys
-import inspect
-
 # These tests check that the VC-2 pseudocode implementations in vc2_conformance
 # are equivalent to the published VC-2 pseudocode.
 #
 # See the introductory documentation in tests/verification/__init__.py for a
 # complete introduction.
 
-import os
-
+import pytest
 
 from verification.comparators import Identical, SerdesChangesOnly
 from verification.compare import compare_functions
 
 from verification import reference_pseudocode
 
-
 from vc2_conformance.pseudocode.metadata import pseudocode_derived_functions
 
-# The directory the test scripts reside in
-test_dir = os.path.normcase(
-    os.path.normpath(
-        os.path.join(inspect.getsourcefile(sys.modules[__name__]), "..", "..",)
-    )
+
+@pytest.mark.parametrize(
+    # Name included to make pytest print it visible in the list of tests
+    "_name,deviation",
+    [(pdf.name, pdf.deviation) for pdf in pseudocode_derived_functions],
 )
+def test_deviations(_name, deviation):
+    # Make sure that no unexpected deviation types have been specified
+    assert deviation in (
+        None,
+        "serdes",
+        "alternative_implementation",
+        "inferred_implementation",
+    )
 
 
 @pytest.mark.parametrize(

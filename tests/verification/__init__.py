@@ -15,6 +15,12 @@ are copied out verbatim in ``tests/verification/reference_pseudocode.py``).
     about all submodules of :py:mod:`vc2_conformance`, the ``conftest.py`` file
     in this directory ensures all submodules of vc2_conformance are loaded.
 
+
+.. _verification-deviation-types:
+
+Pseudocode deviations
+---------------------
+
 In some cases, a limited set of well-defined differences are allowed to exist
 between the specification and the code used in :py:mod:`vc2_conformance`. For
 example, docstrings need not match and in some cases, extra changes may be
@@ -24,18 +30,33 @@ used depends on the ``deviation`` parameter given in the metadata as follows:
 * ``deviation=None``: :py:class:`verification.comparators.Identical`
 * ``deviation="serdes"``: :py:class:`verification.comparators.SerdesChangesOnly`
 
-Functions marked with all other ``deviation`` values will not undergo automatic
-verification.
+Functions marked with the following additional ``deviation`` values will not
+undergo automatic verification, but are used to indicate other kinds of
+pseudocode derived function:
+
+* ``deviation="alternative_implementation"``: An alternative, orthogonal
+  implementation intended to perform the same role as an existing pseudocode
+  function.
+* ``deviation="inferred_implementation"``: A function whose existence is
+  implied or whose behaviour is explained in prose and therefore has no
+  corresponding pseudocode definition.
+
+
+
+
+Amendment comments
+------------------
 
 In some cases it is necessary for an implementation to differ arbitrarily from
-the standard. For example, additional type checks may be added or certain
-actions may be disabled (e.g. picture decoding during bitstream
-deserialisation). Such deviations must be marked by special 'amendment
-comments' which start with two or more ``#`` characters. For example::
+the standard (i.e. to make 'amendments'). For example, additional type checks
+may be added or picture decoding functions disabled when not required. Such
+amendments must be marked by special 'amendment comments' which start with
+either two or three ``#`` characters, as shown by the snippet below::
 
     def example_function(a, b):
-        # The following lines are not part of the standard and so must be
-        # ignored when checking for equivalence
+        # The following lines are not part of the standard and so are marked by
+        # an amendment comment to avoid the pseudocode equivalence checking
+        # logic complaining about them
         ## Begin not in spec
         if b <= 0:
             raise Exception("'b' cannot be zero or negative!")
