@@ -64,7 +64,7 @@ import ast
 
 class NodeComparator(object):
     """
-    A :py:class:`ast.AST` visitor object (similar to
+    An :py:class:`ast.AST` visitor object (similar to
     :py:class:`ast.NodeVisitor` which simultaneously walks two ASTs, testing
     them for equivalence.
 
@@ -176,7 +176,7 @@ class NodeComparator(object):
         n1, n2 : :py:class:`ast.AST`
             The nodes to compare
         ignore_fields : [str, ...]
-            A list of field names to ignore while comparign the AST nodes.
+            A list of field names to ignore while comparing the AST nodes.
         filter_fields : {fieldname: fn or (fn, fn) ...}
             When a list-containing field is encountered, functions may be
             provided for pre-filtering the entries of the lists being compared.

@@ -271,7 +271,7 @@ def compare_sources(ref_source, imp_source, comparator):
         :py:func:`verification.amendment_comments.undo_amendments` prior to
         comparison.
     comparator : :py:class:`verification.node_comparator.NodeComparator`
-        The comparator to use to test for equivalence.
+        The comparator instance to use to test for equivalence.
 
     Returns
     =======
@@ -384,7 +384,7 @@ def compare_functions(ref_func, imp_func, comparator):
         :py:func:`verification.amendment_comments.undo_amendments` prior to
         comparison.
     comparator : :py:class:`verification.node_comparator.NodeComparator`
-        The comparator to use to test for equivalence.
+        The comparator instance to use to test for equivalence.
 
     Returns
     =======

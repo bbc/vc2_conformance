@@ -1,12 +1,7 @@
 """
-``tests/``:py:mod:`verification`: Automated Static Code Verification
-====================================================================
-
-.. py:currentmodule:: verification
-
-This module (and embedded tests) implement automatic checks that the code in
-:py:mod:`vc2_conformance` matches the pseudocode definitions in the VC-2
-specification.
+The ``tests/``:py:mod:`verification` module (and embedded tests) implement
+automatic checks that the code in :py:mod:`vc2_conformance` matches the
+pseudocode definitions in the VC-2 specification.
 
 The ``tests/verification/test_equivalence.py`` test script (which is part of
 the normal Pytest test suite) automatically finds functions in the

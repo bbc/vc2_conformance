@@ -63,4 +63,5 @@ turn.
    maintainer/picture_generators.rst
    maintainer/color_conversion.rst
    maintainer/pseudocode.rst
+   maintainer/verification.rst
 
