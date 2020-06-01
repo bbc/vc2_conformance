@@ -1,4 +1,4 @@
-Constraints tables
-==================
+Constraint tables
+=================
 
 .. automodule:: vc2_conformance.constraint_table

@@ -1,20 +1,34 @@
 """
-:py:mod:`vc2_conformance.level_constraints`
-===========================================
+The :py:mod:`vc2_conformance.level_constraints` module contains definitions of
+constraints imposed on VC-2 bitstreams by the various VC-2 level
+specifications.
 
-A :py:class:`vc2_conformance.symbol_re` expression giving the sequence
-restrictions defined by different levels.
+Sequence data unit ordering restrictions
+----------------------------------------
+
+Levels may restrict the ordering or choice of data unit types within a
+bitstream. These restrictions are described using
+:py:mod:`~vc2_conformance.symbol_re` regular expressions provided in
+:py:data:`LEVEL_SEQUENCE_RESTRICTIONS`.
+
+.. autodata:: LEVEL_SEQUENCE_RESTRICTIONS
+    :annotation: = {level: LevelSequenceRestrictions, ...}
 
 .. autoclass:: LevelSequenceRestrictions
 
-.. autodata:: LEVEL_SEQUENCE_RESTRICTIONS
 
-A :py:class:`vc2_conformance.constraint_table` giving the restrictions imposed
-by VC-2's levels.
+Coding parameter restrictions
+-----------------------------
+
+Levels impose various restrictions on bitstream parameters and values. These
+restrictions are collected into a constraint table (see
+:py:mod:`~vc2_conformance.constraint_table`) in :py:data:`LEVEL_CONSTRAINTS`.
 
 .. autodata:: LEVEL_CONSTRAINTS
+    :annotation: = <constraint table>
 
 .. autodata:: LEVEL_CONSTRAINT_ANY_VALUES
+    :annotation: = {key: ValueSet, ...}
 
 """
 
@@ -66,9 +80,9 @@ Parameters
 sequence_restriction_explanation : str
     A human readable explanation of the restriction imposed (informative).
 sequence_restriction_regex : str
-    A :py:class:`vc2_conformance.symbol_re` pattern describing the sequence
-    ordering allowed. Each symbol will be a
-    :py:class:`~vc2_data_tables.ParseCodes` name string.
+    A regular expression describing the sequence ordering allowed which can be
+    matched using a :py:class:`~vc2_conformance.symbol_re.Matcher`. Each symbol
+    is a :py:class:`~vc2_data_tables.ParseCodes` name string.
 """
 
 LEVEL_SEQUENCE_RESTRICTIONS = read_lookup_from_csv(
@@ -78,7 +92,8 @@ LEVEL_SEQUENCE_RESTRICTIONS = read_lookup_from_csv(
 )
 """
 A lookup from :py:class:`Levels` to :py:class:`LevelSequenceRestrictions`
-describing the restrictions on sequences imposed by each VC-2 level.
+(loaded from ``vc2_conformance/level_sequence_restrictions.csv``) describing the
+restrictions on sequences imposed by each VC-2 level.
 """
 
 
@@ -86,9 +101,11 @@ LEVEL_CONSTRAINTS = read_constraints_from_csv(
     os.path.join(os.path.dirname(__file__), "level_constraints.csv",)
 )
 """
-A :py:mod:`vc2_conformance.constraint_table` table of constraints which apply
-due to levels. Keys correspond to partiuclar bitstream values in sequence
-headers and transform parameters headers and are enumerated below:
+A constraint table (see :py:mod:`vc2_conformance.constraint_table`) loaded
+from ``vc2_conformance/level_constraints.csv``.
+
+Constraints which apply due to levels. Keys correspond to particular bitstream
+values or properties and are enumerated below:
 
 * (11.2.1)
     * ``level``: int (from the :py:class:`Levels` enum)
@@ -207,6 +224,6 @@ LEVEL_CONSTRAINT_ANY_VALUES = {
 For keys in :py:data:`LEVEL_CONSTRAINTS` which may hold
 :py:class:`~vc2_conformance.constraint_table.AnyValue`, defines an explicit
 :py:class:`~vc2_conformance.constraint_table.ValueSet` defining all valid
-values. Where the range of allowed values is truly open ended, no value is
-provided in this table.
+values, for example when the key refers to an enumerated value. Where the range
+of allowed values is truly open ended, no value is provided in this dictionary.
 """
