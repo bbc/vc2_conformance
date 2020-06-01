@@ -34,7 +34,7 @@ class TestFragmentHeader(object):
 
         # Required only when not failing
         state["_num_pictures_in_sequence"] = 0
-        state["_picture_coding_mode"] = tables.PictureCodingModes.pictures_are_frames
+        state["picture_coding_mode"] = tables.PictureCodingModes.pictures_are_frames
 
         if exp_fail:
             with pytest.raises(decoder.FragmentedPictureRestarted) as exc_info:
@@ -54,7 +54,7 @@ class TestFragmentHeader(object):
         fh3 = serialise_to_bytes(bitstream.FragmentHeader(picture_number=1003))
 
         state = bytes_to_state(fh1 + fh2 + fh3)
-        state["_picture_coding_mode"] = tables.PictureCodingModes.pictures_are_frames
+        state["picture_coding_mode"] = tables.PictureCodingModes.pictures_are_frames
         state["_num_pictures_in_sequence"] = 0
         state["_fragment_slices_remaining"] = 0
 
@@ -79,7 +79,7 @@ class TestFragmentHeader(object):
         state["_last_picture_number"] = 1000
         state["_last_picture_number_offset"] = (-1, 4)
         state["_picture_initial_fragment_offset"] = (-1, 0)
-        state["_picture_coding_mode"] = tables.PictureCodingModes.pictures_are_frames
+        state["picture_coding_mode"] = tables.PictureCodingModes.pictures_are_frames
         state["_num_pictures_in_sequence"] = 0
         state["_fragment_slices_remaining"] = 1
         state["fragment_slices_received"] = 0

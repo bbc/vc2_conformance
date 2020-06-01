@@ -130,8 +130,9 @@ def test_all_decoder_test_cases(codec_features, test_case):
     f.seek(0)
 
     # Deserialise/validate
-    def output_picture_callback(picture, video_parameters):
+    def output_picture_callback(picture, video_parameters, picture_coding_mode):
         assert video_parameters == codec_features["video_parameters"]
+        assert picture_coding_mode == codec_features["picture_coding_mode"]
 
     state = State(_output_picture_callback=output_picture_callback,)
 

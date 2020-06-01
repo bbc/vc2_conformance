@@ -66,7 +66,11 @@ def parse_sequence(state):
             picture_parse(state)
             # Errata: picture decoding/output not shown in spec
             picture_decode(state)
-            output_picture(state, state["current_picture"], state["video_parameters"])
+            output_picture(
+                state["current_picture"],
+                state["video_parameters"],
+                state["picture_coding_mode"],
+            )
         elif is_fragment(state):
             # Errata: is 'fragment' in the spec
             fragment_parse(state)
@@ -74,7 +78,9 @@ def parse_sequence(state):
             if state["fragmented_picture_done"]:
                 picture_decode(state)
                 output_picture(
-                    state, state["current_picture"], state["video_parameters"]
+                    state["current_picture"],
+                    state["video_parameters"],
+                    state["picture_coding_mode"],
                 )
         elif is_auxiliary_data(state):
             auxiliary_data(state)
@@ -201,8 +207,9 @@ def sequence_header(state):
     parse_parameters(state)
     base_video_format = read_uint(state)
     video_parameters = source_parameters(state, base_video_format)
-    picture_coding_mode = read_uint(state)
-    set_coding_parameters(state, video_parameters, picture_coding_mode)
+    # Errata: picture_coding_mode now captured in state, not argument
+    state["picture_coding_mode"] = read_uint(state)
+    set_coding_parameters(state, video_parameters)
     return video_parameters
 
 
@@ -339,13 +346,16 @@ def transfer_function(state, video_parameters):
         preset_transfer_function(video_parameters, index)
 
 
-def set_coding_parameters(state, video_parameters, picture_coding_mode):
+# Errata: picture_coding_mode now captured in state, not argument
+def set_coding_parameters(state, video_parameters):
     """(11.6.1)"""
-    picture_dimensions(state, video_parameters, picture_coding_mode)
+    # Errata: picture_coding_mode now captured in state, not argument
+    picture_dimensions(state, video_parameters)
     video_depth(state, video_parameters)
 
 
-def picture_dimensions(state, video_parameters, picture_coding_mode):
+# Errata: picture_coding_mode now captured in state, not argument
+def picture_dimensions(state, video_parameters):
     """(11.6.2)"""
     state["luma_width"] = video_parameters["frame_width"]
     state["luma_height"] = video_parameters["frame_height"]
@@ -357,7 +367,8 @@ def picture_dimensions(state, video_parameters, picture_coding_mode):
     if color_diff_format_index == 2:
         state["color_diff_width"] //= 2
         state["color_diff_height"] //= 2
-    if picture_coding_mode == 1:
+    # Errata: picture_coding_mode now captured in state, not argument
+    if state["picture_coding_mode"] == 1:
         state["luma_height"] //= 2
         state["color_diff_height"] //= 2
 

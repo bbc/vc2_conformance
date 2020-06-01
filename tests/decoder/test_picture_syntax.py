@@ -20,7 +20,7 @@ def test_picture_header_picture_numbering_sanity_check():
     ph3 = serialise_to_bytes(bitstream.PictureHeader(picture_number=1003))
 
     state = bytes_to_state(ph1 + ph2 + ph3)
-    state["_picture_coding_mode"] = tables.PictureCodingModes.pictures_are_frames
+    state["picture_coding_mode"] = tables.PictureCodingModes.pictures_are_frames
     state["_num_pictures_in_sequence"] = 0
 
     decoder.picture_header(state)

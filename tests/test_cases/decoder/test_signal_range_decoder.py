@@ -32,7 +32,7 @@ def encode_and_decode(stream):
     f.seek(0)
 
     pictures = []
-    state = State(_output_picture_callback=lambda p, vp: pictures.append(p))
+    state = State(_output_picture_callback=lambda p, vp, pcm: pictures.append(p))
     init_io(state, f)
     parse_stream(state)
 

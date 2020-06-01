@@ -121,23 +121,21 @@ def sequence_header(state):
 
     video_parameters = source_parameters(state, base_video_format)
 
-    picture_coding_mode = read_uint(state)
-
-    # The picture coding mode is used in various assertions about other parts
-    # of the bitstream and so is captured here.
-    state["_picture_coding_mode"] = picture_coding_mode  ## Not in spec
+    state["picture_coding_mode"] = read_uint(state)
 
     # (11.5) Ensure picture coding mode is valid
     ## Begin not in spec
-    assert_in_enum(picture_coding_mode, PictureCodingModes, BadPictureCodingMode)
+    assert_in_enum(
+        state["picture_coding_mode"], PictureCodingModes, BadPictureCodingMode
+    )
     ## End not in spec
 
     # (C.3) Check level allows this picture coding mode
     ## Begin not in spec
-    assert_level_constraint(state, "picture_coding_mode", picture_coding_mode)
+    assert_level_constraint(state, "picture_coding_mode", state["picture_coding_mode"])
     ## End not in spec
 
-    set_coding_parameters(state, video_parameters, picture_coding_mode)
+    set_coding_parameters(state, video_parameters)
 
     # Errata: The spec only says the frame_height must be an integer multiple
     # of the color_diff_height but, in addition, the luma_height should be a

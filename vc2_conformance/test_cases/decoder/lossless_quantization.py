@@ -78,7 +78,7 @@ def check_for_signal_clipping(sequence):
     state = State()
     may_have_clipped = [False]
 
-    def output_picture_callback(picture, video_parameters):
+    def output_picture_callback(picture, video_parameters, picture_coding_mode):
         components_and_depths = [
             ("Y", state["luma_depth"]),
             ("C1", state["color_diff_depth"]),

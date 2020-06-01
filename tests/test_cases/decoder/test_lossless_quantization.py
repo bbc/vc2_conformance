@@ -151,7 +151,7 @@ class TestLosslessQuantization(object):
             f.seek(0)
 
             # Decode
-            def output_picture_callback(picture, video_parameters):
+            def output_picture_callback(picture, video_parameters, picture_coding_mode):
                 pictures[override_qindex].append(picture)
 
             state = State(_output_picture_callback=output_picture_callback)

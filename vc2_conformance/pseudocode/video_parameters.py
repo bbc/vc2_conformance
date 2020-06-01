@@ -6,7 +6,9 @@ bitstream-reading) logic for computing video parameters. This predominantly
 consists of preset-loading and component dimension calculation routines.
 
 For functions below which take a 'state' argument, this should be a
-dictionary-like object with the following entries:
+dictionary-like object (e.g.
+:py:class:`~vc2_conformance.pseudocode.state.State`) with the following
+entries:
 
 * ``"frame_width"``
 * ``"frame_height"``
@@ -16,6 +18,7 @@ dictionary-like object with the following entries:
 * ``"color_diff_height"``
 * ``"luma_depth"``
 * ``"color_diff_depth"``
+* ``"picture_coding_mode"``
 """
 
 from vc2_conformance.pseudocode.metadata import ref_pseudocode
@@ -162,14 +165,14 @@ def set_source_defaults(base_video_format):
 
 
 @ref_pseudocode
-def set_coding_parameters(state, video_parameters, picture_coding_mode):
+def set_coding_parameters(state, video_parameters):
     """(11.6.1) Set picture coding mode parameter."""
-    picture_dimensions(state, video_parameters, picture_coding_mode)
+    picture_dimensions(state, video_parameters)
     video_depth(state, video_parameters)
 
 
 @ref_pseudocode
-def picture_dimensions(state, video_parameters, picture_coding_mode):
+def picture_dimensions(state, video_parameters):
     """(11.6.2) Compute the picture component dimensions in global state."""
     state["luma_width"] = video_parameters["frame_width"]
     state["luma_height"] = video_parameters["frame_height"]
@@ -183,7 +186,7 @@ def picture_dimensions(state, video_parameters, picture_coding_mode):
         state["color_diff_width"] //= 2
         state["color_diff_height"] //= 2
 
-    if picture_coding_mode == PictureCodingModes.pictures_are_fields.value:
+    if state["picture_coding_mode"] == PictureCodingModes.pictures_are_fields.value:
         state["luma_height"] //= 2
         state["color_diff_height"] //= 2
 

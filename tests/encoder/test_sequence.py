@@ -43,7 +43,7 @@ def serialize_and_decode(sequence):
     # Setup callback to capture decoded pictures
     decoded_pictures = []
 
-    def output_picture_callback(picture, video_parameters):
+    def output_picture_callback(picture, video_parameters, picture_coding_mode):
         decoded_pictures.append(picture)
 
     # Feed to conformance checking decoder

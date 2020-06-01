@@ -433,11 +433,11 @@ def output_decoder_test_case(output_dir, codec_features, test_case):
     with open(bitstream_filename, "rb") as f:
         index = [0]
 
-        def output_picture(picture, video_parameters):
+        def output_picture(picture, video_parameters, picture_coding_mode):
             file_format.write(
                 picture,
                 video_parameters,
-                codec_features["picture_coding_mode"],
+                picture_coding_mode,
                 os.path.join(
                     model_answer_directory, "picture_{}.raw".format(index[0]),
                 ),

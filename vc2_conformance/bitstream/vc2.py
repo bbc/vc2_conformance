@@ -213,14 +213,22 @@ def parse_sequence(serdes, state):
                 picture_parse(serdes, state)
             # No need to perform the IDWT
             ### picture_decode(state)
-            ### output_picture(state, state["current_picture"], state["video_parameters"])
+            ### output_picture(
+            ###     state["current_picture"],
+            ###     state["video_parameters"],
+            ###     state["picture_coding_mode"],
+            ### )
         elif is_fragment(state):
             with serdes.subcontext("fragment_parse"):
                 fragment_parse(serdes, state)
             # No need to perform the IDWT
             ### if state["fragmented_picture_done"]:
             ###     picture_decode(state)
-            ###     output_picture(state, state["current_picture"], state["video_parameters"])
+            ###     output_picture(
+            ###         state["current_picture"],
+            ###         state["video_parameters"],
+            ###         state["picture_coding_mode"],
+            ###     )
         elif is_auxiliary_data(state):
             with serdes.subcontext("auxiliary_data"):
                 auxiliary_data(serdes, state)
@@ -303,8 +311,8 @@ def sequence_header(serdes, state):
 
     with serdes.subcontext("video_parameters"):
         video_parameters = source_parameters(serdes, state, base_video_format)
-    picture_coding_mode = serdes.uint("picture_coding_mode")
-    set_coding_parameters(state, video_parameters, picture_coding_mode)
+    state["picture_coding_mode"] = serdes.uint("picture_coding_mode")
+    set_coding_parameters(state, video_parameters)
 
     return video_parameters
 

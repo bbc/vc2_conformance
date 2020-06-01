@@ -37,6 +37,12 @@ State = fixeddict(
     ),
     Entry("next_parse_offset", help_type="int", help="Set by (10.5.1) parse_info"),
     Entry("previous_parse_offset", help_type="int", help="Set by (10.5.1) parse_info"),
+    # (11.1) sequence_header
+    Entry(
+        "picture_coding_mode",
+        help_type=":py:class:`~vc2_data_tables.PictureCodingModes`",
+        help="Set by (11.1) sequence_header",
+    ),
     # (11.2.1) parse_parameters
     Entry("major_version", help_type="int", help="Set by (11.2.1) parse_parameters"),
     Entry("minor_version", help_type="int", help="Set by (11.2.1) parse_parameters"),
@@ -226,11 +232,6 @@ State = fixeddict(
             called. This callback (if defined) will be passed the picture,
             video parameters and picture coding mode.
         """,
-    ),
-    Entry(
-        "_picture_coding_mode",
-        help_type=":py:class:`~vc2_data_tables.PictureCodingModes`",
-        help="Set by (11.1) sequence_header",
     ),
     # (10.4.3) and (12.2)
     Entry(

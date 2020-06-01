@@ -369,12 +369,10 @@ def transform_and_slice_picture(codec_features, picture):
         dwt_depth_ho=codec_features["dwt_depth_ho"],
         slices_x=codec_features["slices_x"],
         slices_y=codec_features["slices_y"],
+        picture_coding_mode=codec_features["picture_coding_mode"],
     )
-    set_coding_parameters(
-        state,
-        codec_features["video_parameters"],
-        codec_features["picture_coding_mode"],
-    )
+    set_coding_parameters(state, codec_features["video_parameters"])
+
     # NB: picture_encode corrupts the supplied picture arrays so a copy is
     # provided here
     picture_encode(state, deepcopy(picture))

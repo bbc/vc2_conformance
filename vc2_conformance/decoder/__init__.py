@@ -19,7 +19,7 @@ VC-2 bitstream might be decoded and verified using this module::
 
     >>> # Create a callback to be called with picture data whenever a picture
     >>> # is decoded from the bitstream.
-    >>> def output_picture_callback(picture, video_parameters):
+    >>> def output_picture_callback(picture, video_parameters, picture_coding_mode):
     >>>     print("A picture was decoded...")
 
     >>> # Create an initial state object ready to read the bitstream

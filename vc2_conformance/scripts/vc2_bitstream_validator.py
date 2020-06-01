@@ -192,12 +192,12 @@ class BitstreamValidator(object):
             )
             return 3
 
-    def _output_picture(self, picture, video_parameters):
+    def _output_picture(self, picture, video_parameters, picture_coding_mode):
         filename = self._output_filename % (self._next_picture_index,)
         self._next_picture_index += 1
 
         write(
-            picture, video_parameters, self._state["_picture_coding_mode"], filename,
+            picture, video_parameters, picture_coding_mode, filename,
         )
 
         if self._show_status:

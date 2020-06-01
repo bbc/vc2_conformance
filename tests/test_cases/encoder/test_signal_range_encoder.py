@@ -109,11 +109,10 @@ class TestSignalRange(object):
                     wavelet_index_ho=codec_features["wavelet_index_ho"],
                     dwt_depth=codec_features["dwt_depth"],
                     dwt_depth_ho=codec_features["dwt_depth_ho"],
+                    picture_coding_mode=codec_features["picture_coding_mode"],
                 )
                 set_coding_parameters(
-                    state,
-                    codec_features["video_parameters"],
-                    codec_features["picture_coding_mode"],
+                    state, codec_features["video_parameters"],
                 )
                 picture_encode(state, deepcopy(picture))
                 encoded = state["{}_transform".format(component.lower())]

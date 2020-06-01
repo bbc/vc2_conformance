@@ -120,13 +120,21 @@ def parse_sequence(state):
 
             picture_parse(state)
             picture_decode(state)
-            output_picture(state, state["current_picture"], state["video_parameters"])
+            output_picture(
+                state,  ## Not in spec
+                state["current_picture"],
+                state["video_parameters"],
+                state["picture_coding_mode"],
+            )
         elif is_fragment(state):
             fragment_parse(state)
             if state["fragmented_picture_done"]:
                 picture_decode(state)
                 output_picture(
-                    state, state["current_picture"], state["video_parameters"]
+                    state,  ## Not in spec
+                    state["current_picture"],
+                    state["video_parameters"],
+                    state["picture_coding_mode"],
                 )
         elif is_auxiliary_data(state):
             auxiliary_data(state)
@@ -161,23 +169,28 @@ def parse_sequence(state):
     # (10.4.3) When pictures are fields, a sequence should contain a whole
     # number of frames
     ## Begin not in spec
-    if state["_picture_coding_mode"] == PictureCodingModes.pictures_are_fields:
+    if state["picture_coding_mode"] == PictureCodingModes.pictures_are_fields:
         if state["_num_pictures_in_sequence"] % 2 != 0:
             raise OddNumberOfFieldsInSequence(state["_num_pictures_in_sequence"])
     ## End not in spec
 
 
-def output_picture(state, picture, video_parameters):
+def output_picture(
+    state, picture, video_parameters, picture_coding_mode,  ## Not in spec
+):
     """
     (10.4.999) Output a completely decoded picture.
 
-    This function's existance is defined by the specification but its behaviour
+    This function's existence is defined by the specification but its behaviour
     is left undefined. In this implementation,
     ``state["_output_picture_callback"]`` is called with the picture and video
-    parameters as arguments.
+    parameters as arguments. As a result we take the 'state' object as an
+    argument, which the spec does not specify.
     """
     if "_output_picture_callback" in state:
-        state["_output_picture_callback"](picture, video_parameters)
+        state["_output_picture_callback"](
+            picture, video_parameters, picture_coding_mode,
+        )
 
 
 @ref_pseudocode

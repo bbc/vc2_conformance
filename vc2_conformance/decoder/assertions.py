@@ -176,7 +176,7 @@ def assert_picture_number_incremented_as_expected(state, picture_number_offset):
 
     # (12.2), (14.4) When coded as fields, the first field in the sequence must
     # have an even picture number.
-    if state["_picture_coding_mode"] == PictureCodingModes.pictures_are_fields:
+    if state["picture_coding_mode"] == PictureCodingModes.pictures_are_fields:
         early_field = state["_num_pictures_in_sequence"] % 2 == 0
         even_number = state["picture_number"] % 2 == 0
         if early_field and not even_number:

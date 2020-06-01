@@ -138,7 +138,7 @@ def test_level_constraints():
 class TestPictureNumberIncrementedAsExpected(object):
     def test_picture_numbers_must_be_consecutive(self):
         state = {
-            "_picture_coding_mode": PictureCodingModes.pictures_are_frames,
+            "picture_coding_mode": PictureCodingModes.pictures_are_frames,
             "_num_pictures_in_sequence": 0,
         }
 
@@ -159,7 +159,7 @@ class TestPictureNumberIncrementedAsExpected(object):
 
     def test_picture_numbers_wrap_around_correctly(self):
         state = {
-            "_picture_coding_mode": PictureCodingModes.pictures_are_frames,
+            "picture_coding_mode": PictureCodingModes.pictures_are_frames,
             "_num_pictures_in_sequence": 0,
         }
 
@@ -171,7 +171,7 @@ class TestPictureNumberIncrementedAsExpected(object):
 
     def test_picture_numbers_dont_wrap_around_correctly(self):
         state = {
-            "_picture_coding_mode": PictureCodingModes.pictures_are_frames,
+            "picture_coding_mode": PictureCodingModes.pictures_are_frames,
             "_num_pictures_in_sequence": 0,
         }
 
@@ -205,7 +205,7 @@ class TestPictureNumberIncrementedAsExpected(object):
         self, picture_coding_mode, picture_number, exp_fail
     ):
         state = {
-            "_picture_coding_mode": picture_coding_mode,
+            "picture_coding_mode": picture_coding_mode,
             "_num_pictures_in_sequence": 100,
             "picture_number": picture_number,
         }

@@ -538,11 +538,10 @@ def codec_features_to_trivial_level_constraints(codec_features):
         dwt_depth_ho=codec_features["dwt_depth_ho"],
         slices_x=codec_features["slices_x"],
         slices_y=codec_features["slices_y"],
+        picture_coding_mode=codec_features["picture_coding_mode"],
     )
     picture_dimensions(
-        state,
-        codec_features["video_parameters"],
-        codec_features["picture_coding_mode"],
+        state, codec_features["video_parameters"],
     )
     constrained_values["slices_have_same_dimensions"] = slices_have_same_dimensions(
         state

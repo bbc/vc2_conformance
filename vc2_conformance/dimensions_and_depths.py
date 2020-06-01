@@ -60,8 +60,8 @@ def compute_dimensions_and_depths(video_parameters, picture_coding_mode):
     """
     # NB: We use the pseudocode to actually compute the dimensions and signal
     # range to avoid mistakes
-    state = State()
-    set_coding_parameters(state, video_parameters, picture_coding_mode)
+    state = State(picture_coding_mode=picture_coding_mode)
+    set_coding_parameters(state, video_parameters)
 
     out = OrderedDict()
 

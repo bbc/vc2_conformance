@@ -509,6 +509,8 @@ class TestParseStreamAndParseSequence(object):
             assert args[1]["luma_excursion"] == 255
             assert args[1]["color_diff_offset"] == 128
             assert args[1]["color_diff_excursion"] == 255
+            # And the picture coding mode too...
+            assert args[2] == tables.PictureCodingModes.pictures_are_frames
 
 
 class TestParseInfo(object):

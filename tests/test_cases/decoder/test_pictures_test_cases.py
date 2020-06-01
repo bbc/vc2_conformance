@@ -1172,7 +1172,9 @@ class TestDanglingBoundedBlockData(object):
         autofill_and_serialise_stream(f, stream)
 
         pictures = []
-        state = State(_output_picture_callback=lambda pic, vp: pictures.append(pic))
+        state = State(
+            _output_picture_callback=lambda pic, vp, pcm: pictures.append(pic)
+        )
         f.seek(0)
         decoder.init_io(state, f)
         decoder.parse_stream(state)
