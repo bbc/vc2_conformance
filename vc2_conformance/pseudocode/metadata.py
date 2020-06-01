@@ -1,7 +1,8 @@
 """
 The :py:mod:`vc2_conformance.pseudocode.metadata` module is used to record the
-relationship between the code in the :py:mod:`vc2_conformance` software and the
-VC-2 specification documents. This metadata has two important uses:
+relationship between the functions in the :py:mod:`vc2_conformance` software
+and the pseudocode functions in the VC-2 specification documents. This
+information has two main uses:
 
 1. To produce more helpful error messages which include cross-references to
    published specifications.
@@ -9,11 +10,11 @@ VC-2 specification documents. This metadata has two important uses:
    matches the published specifications (see :py:mod:`verification`).
 
 
-Referencing the spec
---------------------
+Implementing pseudocode functions
+---------------------------------
 
 Functions in the codebase which implement a pseudocode function in the
-specification may be labelled as such using a :py:func:`ref_pseudocode`
+specification must be labelled as such using the :py:func:`ref_pseudocode`
 decorator::
 
     >>> from vc2_conformance.pseudocode.metadata import ref_pseudocode
@@ -27,92 +28,62 @@ decorator::
     ...     state["next_parse_offset"] = read_uint_lit(state, 4)
     ...     state["previous_parse_offset"] = read_uint_lit(state, 4)
 
-By default, the reference to the specification is extracted from the function's
-docstring. The function is also assumed *not* to deviate from the pseudocode --
-an assumption which is automatically verified by the test suite (see
-:py:mod:`verification`). For functions which deviate from the specification in
-some way, the ``deviation`` argument should be passed to the decorator (see
-:py:class:`ReferencedValue`).
+The :py:func:`ref_pseudocode` decorator will log the existence of the decorated
+function, along with the reference to the spec at the start of its docstring.
 
-Constants in this codebase may be cross-referenced against the spec using
-:py:func:`ref_value`. This takes the value being referenced along with the
-specification reference as minimal arguments. For example::
+By default, it is implied that a decorated function does *not* deviate from the
+pseudocode -- a fact which is verified by the :py:mod:`verification` module in
+the test suite. When a function does deviate (for example for use in
+serialisation/deserialisation) or is not defined in the spec, the ``deviation``
+argument should be provided. This is used by the :py:mod:`verification` logic
+to determine how the function will be verified. See
+:ref:`verification-deviation-types` for the allowed values. For example::
 
-    >>> from vc2_conformance.pseudocode.metadata import ref_value
+    >>> @ref_pseudocode(deviation="serdes")
+    ... def parse_parameters(serdes, state):
+    ...     '''(11.2.1)'''
+    ...     state["major_version"] = serdes.uint("major_version")
+    ...     state["minor_version"] = serdes.uint("minor_version")
+    ...     state["profile"] = serdes.uint("profile")
+    ...     state["level"] = serdes.uint("level")
 
-    >>> PARSE_INFO_PREFIX = ref_value(0x42424344, "10.5.1")
-
-:py:func:`ref_value` returns the argument passed to it unchanged but
-automatically logs the name it was assigned to and the file and line number it
-was assigned on.
-
-As a convenience, :py:class:`enum.Enum` instances can also be annotated by the
-:py:func:`ref_enum` decorator::
-
-    >>> from enum import Enum
-    >>> from vc2_conformance.pseudocode.metadata import ref_enum
-
-    >>> @ref_enum
-    ... class PictureCodingModes(IntEnum):
-    ...     '''(11.5) Indices defined in the text. Names are not normative.'''
-    ...     pictures_are_frames = 0
-    ...     pictures_are_fields = 1
+.. autofunction:: ref_pseudocode
 
 
 Accessing the metadata
 ----------------------
 
 After all submodules of :py:mod:`vc2_conformance` have been loaded, the
-:py:data:`referenced_values` list will be populated with
-:py:class:`ReferencedValue` instances for everything annotated in the source.
+:py:data:`pseudocode_derived_functions` list will be populated with
+:py:class:`PseudocodeDerivedFunction` instances for every pseudocode derived
+function annotated with :py:func:`ref_pseudocode`.
 
-Human-readable citations for :py:class:`ReferencedValue` instances can be
-obtained from :py:func:`format_citation`.
+.. autoclass:: PseudocodeDerivedFunction
+    :members:
 
-The :py:func:`lookup_by_value` and :py:func:`lookup_by_name` convenience
-functions may be used to search this list.
+.. autodata:: pseudocode_derived_functions
+    :annotation: = [PseudocodeDerivedFunction, ...]
 
-API
----
 
-.. autoclass:: ReferencedValue
+Pseudocode tracebacks
+---------------------
 
-.. autodata:: referenced_values
-    :annotation: = [...]
+The :py:func:`make_pseudocode_traceback` function may be used to convert a
+Python traceback into a pseudocode function traceback.
 
-.. autodata:: DEFAULT_SPECIFICATION
+.. autofunction:: make_pseudocode_traceback
 
-.. autofunction:: ref_value
-
-.. autofunction:: ref_pseudocode
-
-.. autofunction:: ref_enum
-
-.. autofunction:: lookup_by_value
-
-.. autofunction:: lookup_by_name
-
-.. autofunction:: format_citation
 """
 
 import re
-import sys
 import inspect
-
-from vc2_conformance.py2x_compat import unwrap
-
-from collections import namedtuple
 
 __all__ = [
     "DEFAULT_SPECIFICATION",
-    "ReferencedValue",
-    "referenced_values",
-    "ref_value",
+    "PseudocodeDerivedFunction",
+    "pseudocode_derived_functions",
     "ref_pseudocode",
-    "ref_enum",
-    "lookup_by_value",
-    "lookup_by_name",
-    "format_citation",
+    "make_pseudocode_traceback",
 ]
 
 
@@ -122,200 +93,110 @@ If not otherwise specified, the specification section numbers refer to.
 """
 
 
-ReferencedValue = namedtuple(
-    "ReferencedValue", "value,section,document,deviation,name,filename,lineno",
-)
-"""
-A value in this codebase, referenced back to a specification document.
-
-Parameters
-==========
-value : any
-    The Python value to be referenced.
-section : str
-    A document reference (e.g. "1.34.2" or "Table 1.3").
-document : str
-    The name of the document being referenced. Defaults to the main VC-2
-    specification.
-deviation : str or None
-    Does the definition of this value deviate from the specification.
-
-    If None, this value shoul match the contents of the specification exactly.
-    If a string, it should indicate how it differs. Allowed values are:
-
-    * ``"inferred_implementation"``: An implementation inferred from the
-      specification where no explicit implementation is provided.
-    * ``"alternative_implementation"``: An alternative implementation, e.g. for
-      performance or correctness reasons.
-    * ``"serdes"``: This implementation has been modified to perform
-      seriallisation and deseriallisation using the
-      :py:mod:`vc2.bitstream.serdes` library.
-
-    Functions whose reported deviation is ``None`` or ``"serdes`` will be
-    automatically checked against the specification by the testsuite (see
-    :py:mod:`verification`).
-name : str or None
-    A meaningful identifier for this value.
-filename : str, None or "auto"
-    The filename of the Python source file within this codebase for the
-    location where the value being referenced is defined.
-
-    If "auto", the location will be determined automatically if possible,
-    falling back on the location where 'ref_value' was called.
-
-    If None, no value will be recorded.
-lineno : int, None or "auto"
-    The line number at which the definition of this value appears.
-
-    If "auto", the location will be determined automatically if possible,
-    falling back on the line where 'ref_value' was called.
-
-    If None, no value will be recorded.
-"""
-
-
-referenced_values = []
-r"""
-The complete set of :py:class:`ReferencedValue`\ s in this code base, in no
-particular order.
-"""
-
-# The filename of this module (not its .pyc file)
-_metadata_module_filename = inspect.getsourcefile(sys.modules[__name__])
-
-
-def ref_value(
-    value,
-    section=None,
-    document=None,
-    deviation=None,
-    name="auto",
-    filename="auto",
-    lineno="auto",
-):
+class PseudocodeDerivedFunction(object):
     """
-    Record the fact that the provided Python value should be referenced back to
-    the specified specification.
-
-    Appends a :py:class:`ReferencedValue` to :py:data:`referenced_values`,
-    automatically filling in the document, filename and line number if
-    required.
+    A record of a pseudocode-derived function within this codebase.
 
     Parameters
     ==========
-    value : any
-    section : str or None
-        If None, the value being recorded must have a ``__doc__`` string which
-        starts with the section number in perentheses, e.g. ``(1.34.2)``. If
-        this number is of the form ``(SMPTE ST 2042-1:2017: 1.34.2)``, the
-        first part (before the final colon) will be treated as the document
-        name.
-    document : str
-        Defaults to the main VC-2 specification if None and not specified in
-        the value's ``__doc__`` string.
+    function : function
+        The Python function which was derived from a pseudocode function.
     deviation : str or None
-    name : str, None or "auto"
-        If "auto", uses the ``__name__`` attribute of the value. If no
-        ``__name__`` attribute is present, falls back on whatever appears
-        before the "=" on the line of code where ``ref_value`` was called.
-    filename : str, None or "auto"
-        If "auto", the location will be determined automatically if possible,
-        falling back on the location where 'ref_value' was called.
+        If this function deviates from the pseudocode in any way, indicates the
+        nature of this deviation. None indicates that this function exactly
+        matches the pseudocode.
 
-        If None, no value will be recorded.
-    lineno : int, None or "auto"
-        If "auto", the location will be determined automatically if possible,
-        falling back on the line where 'ref_value' was called.
+        Automatic checks for pseudocode equivalence in the test suite (see
+        :py:mod:`verification`) will use this value to determine how exactly
+        this function must match the pseudocode for tests to pass. See
+        :ref:`verification-deviation-types` for details of values this field
+        may hold.
+    document, section : str or None
+        The name of the document and section defining this function. If None,
+        will be extracted from the function docstring. Defaults to the main
+        VC-2 specification. If not provided, and not found in the docstring, a
+        :py:exc:`TypeError` will be thrown.
 
-        If None, no value will be recorded.
+        When extracted from a docstring, a reference of one of the following
+        forms must be used at the start of the docstring:
 
-    Returns
-    =======
-    Returns the 'value' argument (untouched).
+        * ``(1.2.3)``: Reference a section in the main VC-2 spec
+        * ``(SMPTE ST 20402-2:2017: 1.2.3)``: Reference a section in another
+          spec
+    name : str or None
+        The name of the pseudocode function this function implements. If None,
+        the provided function's name will be used.
     """
-    default_document = DEFAULT_SPECIFICATION
 
-    if section is None:
-        docstring = getattr(value, "__doc__", "")
-        match = re.match(r"\s*\(([^\)]+)\)", docstring)
-        if match:
-            section = match.group(1)
+    def __init__(
+        self, function, deviation=None, document=None, section=None, name=None,
+    ):
+        # Auto-extract section/document
+        if section is None or document is None:
+            autodetected_document = None
+            autodetected_section = None
+            docstring = getattr(function, "__doc__", "")
+            match = re.match(r"\s*\(([^\)]+)\)", docstring)
+            if match:
+                autodetected_document = DEFAULT_SPECIFICATION
+                autodetected_section = match.group(1)
 
-            # Also extract the document name, if present
-            submatch = re.match(r"(.*)\s*:\s*([^:]+)$", section)
-            if submatch:
-                default_document = submatch.group(1)
-                section = submatch.group(2)
-        else:
-            raise TypeError("'section' argument omitted and not found in docstring.")
+                # Also extract the document name, if present
+                submatch = re.match(r"(.*)\s*:\s*([^:]+)$", autodetected_section)
+                if submatch:
+                    autodetected_document = submatch.group(1)
+                    autodetected_section = submatch.group(2)
 
-    if document is None:
-        document = default_document
+            if section is None:
+                section = autodetected_section
 
-    if name == "auto":
-        # First try the __name__ attribute
-        name = getattr(value, "__name__", None)
+            if document is None:
+                document = autodetected_document
 
+        if section is None or document is None:
+            raise TypeError("No document or section reference could be found.")
+
+        # Auto-extract function name
         if name is None:
-            # Fall back on the name assigned in response to the call to
-            # 'ref_value' (crudely extracted)
-            for frame_summary in inspect.stack():
-                code = "\n".join(frame_summary[4])
-                if frame_summary[1] != _metadata_module_filename:
-                    match = re.match(
-                        r"\s*([^\s]+)\s*=\s*((vc2_conformance\.)?metadata\.)?ref_value",
-                        code,
-                    )
-                    if match:
-                        name = match.group(1)
-                    break
+            name = getattr(function, "__name__", None)
 
-    if filename == "auto" or lineno == "auto":
-        try:
-            # First, try using introspection to determine the value's origin
-            auto_filename = inspect.getsourcefile(unwrap(value))
-            auto_lineno = inspect.getsourcelines(unwrap(value))[1]
-        except (TypeError, IOError):
-            auto_filename = None
-            auto_lineno = None
+        self.function = function
+        self.deviation = deviation
+        self.document = document
+        self.section = section
+        self.name = name
 
-        if auto_filename is None or auto_lineno is None:
-            # Introspection hasn't worked, search up the stack to find the
-            # callsite of 'ref_value'.
-            auto_filename = None
-            auto_lineno = None
-            for frame_summary in reversed(list(inspect.stack())):
-                if frame_summary[1] != _metadata_module_filename:
-                    auto_filename = frame_summary[1]
-                    auto_lineno = frame_summary[2]
-
-    if filename == "auto":
-        filename = auto_filename
-
-    if lineno == "auto":
-        lineno = auto_lineno
-
-    referenced_values.append(
-        ReferencedValue(
-            value=value,
-            section=section,
-            document=document,
-            deviation=deviation,
-            name=name,
-            filename=filename,
-            lineno=lineno,
+    @property
+    def citation(self):
+        """
+        A human-readable citation string for this pseudocode function.
+        """
+        return "{} ({}{})".format(
+            self.name,
+            (
+                "{}: ".format(self.document)
+                if self.document != DEFAULT_SPECIFICATION
+                else ""
+            ),
+            self.section,
         )
-    )
 
-    return value
+
+pseudocode_derived_functions = []
+r"""
+The complete set of :py:class:`PseudocodeDerivedFunction`\ s in this code base,
+in no particular order.
+
+.. warning::
+
+    This array is only completely populated once every module of
+    :py:mod:`vc2_conformance` has been loaded.
+"""
 
 
 def ref_pseudocode(*args, **kwargs):
     """
-    Decorator for marking instances where VC-2 pseudocode has been transformed
-    into Python code.
-
-    Takes the same parameters as :py:func:`ref_value`.
+    Decorator for marking functions which are derived from the VC-2 pseudocode.
 
     Example usage::
 
@@ -328,73 +209,76 @@ def ref_pseudocode(*args, **kwargs):
         def parse_info(state):
             '''Some alternative implementation of parse info.'''
 
+    Parameters
+    ==========
+    deviation : str or None
+        If this function deviates from the pseudocode in any way, indicates the
+        nature of this deviation. None indicates that this function exactly
+        matches the pseudocode.
 
-    .. note::
+        Automatic checks for pseudocode equivalence in the test suite (see
+        :py:mod:`verification`) will use this value to determine how exactly
+        this function must match the pseudocode for tests to pass. See
+        :ref:`verification-deviation-types` for details of values this field
+        may hold.
+    document, section : str or None
+        The name of the document and section defining this function. If None,
+        will be extracted from the function docstring. Defaults to the main
+        VC-2 specification. If not provided, and not found in the docstring, a
+        :py:exc:`TypeError` will be thrown.
 
-        This decorator is syntactic sugar for passing such functions manually
-        to :py:func:`ref_value`. It returns the original function, not a
-        wrapper, and so incurrs no runtime penalty.
+        When extracted from a docstring, a reference of one of the following
+        forms must be used at the start of the docstring:
+
+        * ``(1.2.3)``: Reference a section in the main VC-2 spec
+        * ``(SMPTE ST 20402-2:2017: 1.2.3)``: Reference a section in another
+          spec
+    name : str or None
+        The name of the pseudocode function this function implements. If None,
+        the provided function's name will be used.
     """
     if len(args) >= 1 and callable(args[0]):
-        ref_value(*args, **kwargs)
+        pseudocode_derived_functions.append(PseudocodeDerivedFunction(*args, **kwargs))
         return args[0]
     else:
 
         def decorator(f):
-            ref_value(f, *args, **kwargs)
+            pseudocode_derived_functions.append(
+                PseudocodeDerivedFunction(f, *args, **kwargs)
+            )
             return f
 
         return decorator
 
 
-def ref_enum(*args, **kwargs):
+def make_pseudocode_traceback(tb):
     """
-    Decorator for marking instances of VC-2 value enumerations.
+    Given a :py:func:`traceback.extract_tb` generated traceback description,
+    return a list of :py:class:`PseudocodeDerivedFunction` objects for the
+    stack trace, most recently called last. Entries in the traceback which
+    don't have a corresponding pseudocode-derived function are omitted.
     """
-    return ref_pseudocode(*args, **kwargs)
+    calls = []
 
+    for frame_summary in tb:
+        filename = frame_summary[0]
+        name = frame_summary[2]
 
-def lookup_by_value(value):
-    """
-    Search :py:data:`referenced_values` for entries whose values match that
-    value given. If no or multiple matching entries exist, a
-    :py:exc:`ValueError` is thrown.
-    """
-    results = list(filter(lambda e: e.value == value, referenced_values))
-    if len(results) != 1:
-        raise ValueError(value)
-    else:
-        return results[0]
+        try:
+            pseudocode_derived_function = next(
+                iter(
+                    filter(
+                        lambda e: (
+                            e.function.__name__ == name
+                            and inspect.getsourcefile(e.function) == filename
+                        ),
+                        pseudocode_derived_functions,
+                    )
+                )
+            )
+            calls.append(pseudocode_derived_function)
+        except StopIteration:
+            # Not a pseudocode function, omit this from the traceback
+            pass
 
-
-def lookup_by_name(name, filename=None):
-    """
-    Search :py:data:`referenced_values` for entries whose names (and optionally
-    filename) match the provided value.
-    """
-    results = list(
-        filter(
-            lambda e: e.name == name and (filename is None or e.filename == filename),
-            referenced_values,
-        )
-    )
-    if len(results) != 1:
-        raise ValueError(name)
-    else:
-        return results[0]
-
-
-def format_citation(referenced_value):
-    """
-    Produce a human-readable citation string for the specified
-    :py:class:`ReferencedValue`.
-    """
-    return "{} ({}{})".format(
-        (referenced_value.name if referenced_value.name is not None else ""),
-        (
-            "{}: ".format(referenced_value.document)
-            if referenced_value.document != DEFAULT_SPECIFICATION
-            else ""
-        ),
-        referenced_value.section,
-    ).strip()
+    return calls

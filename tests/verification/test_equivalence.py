@@ -10,7 +10,6 @@ import inspect
 # complete introduction.
 
 import os
-from types import FunctionType
 
 
 from verification.comparators import Identical, SerdesChangesOnly
@@ -19,8 +18,7 @@ from verification.compare import compare_functions
 from verification import reference_pseudocode
 
 
-# Force loading of all submodules (and thus registration of metadata)
-from vc2_conformance.pseudocode.metadata import referenced_values
+from vc2_conformance.pseudocode.metadata import pseudocode_derived_functions
 
 # The directory the test scripts reside in
 test_dir = os.path.normcase(
@@ -30,54 +28,35 @@ test_dir = os.path.normcase(
 )
 
 
-def is_function_with_deviation(referenced_value, deviation):
-    """
-    Test if a :py:class:`vc2_conformance.pseudocode.metadata.ReferencedValue` refers to a
-    function with the specified deviation (and isn't part of the test suite).
-    """
-    if not isinstance(referenced_value.value, FunctionType):
-        return False
-
-    if referenced_value.deviation != deviation:
-        return False
-
-    # Also filter out any functions defined within this test suite.
-    ref_filename = os.path.normcase(referenced_value.filename)
-    if ref_filename.startswith(test_dir):
-        return False
-
-    return True
-
-
 @pytest.mark.parametrize(
     # Name included to make pytest print it visible in the list of tests
-    "name,referenced_value",
-    [(rv.name, rv) for rv in referenced_values if is_function_with_deviation(rv, None)],
+    "name,pseudocode_derived_function",
+    [(pdf.name, pdf) for pdf in pseudocode_derived_functions if pdf.deviation is None],
 )
-def test_equivalence_of_vc2_pseudocode(name, referenced_value):
+def test_equivalence_of_vc2_pseudocode(name, pseudocode_derived_function):
     ref_func = getattr(reference_pseudocode, name)
-    imp_func = referenced_value.value
+    imp_func = pseudocode_derived_function.function
     # Same function
     assert compare_functions(ref_func, imp_func, Identical()) is True
 
     # Same reference to the spec
-    assert ref_func.__doc__ == "({})".format(referenced_value.section)
+    assert ref_func.__doc__ == "({})".format(pseudocode_derived_function.section)
 
 
 @pytest.mark.parametrize(
     # Name included to make pytest print it visible in the list of tests
-    "name,referenced_value",
+    "name,pseudocode_derived_function",
     [
-        (rv.name, rv)
-        for rv in referenced_values
-        if is_function_with_deviation(rv, "serdes")
+        (pdf.name, pdf)
+        for pdf in pseudocode_derived_functions
+        if pdf.deviation == "serdes"
     ],
 )
-def test_equivalence_of_vc2_bitstream_pseudocode(name, referenced_value):
+def test_equivalence_of_vc2_bitstream_pseudocode(name, pseudocode_derived_function):
     ref_func = getattr(reference_pseudocode, name)
-    imp_func = referenced_value.value
+    imp_func = pseudocode_derived_function.function
     # Same function
     assert compare_functions(ref_func, imp_func, SerdesChangesOnly()) is True
 
     # Same reference to the spec
-    assert ref_func.__doc__ == "({})".format(referenced_value.section)
+    assert ref_func.__doc__ == "({})".format(pseudocode_derived_function.section)

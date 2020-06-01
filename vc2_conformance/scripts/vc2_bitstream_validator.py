@@ -85,7 +85,7 @@ from argparse import ArgumentParser
 
 from textwrap import dedent
 
-from vc2_conformance.pseudocode import metadata
+from vc2_conformance.pseudocode.metadata import make_pseudocode_traceback
 
 from vc2_conformance import __version__
 
@@ -115,19 +115,10 @@ def format_pseudocode_traceback(tb):
     return a string describing the current stack of VC-2 pseudocode functions
     being called.
     """
-    calls = []
-
-    for frame_summary in tb:
-        filename = frame_summary[0]
-        function_name = frame_summary[2]
-        try:
-            refval = metadata.lookup_by_name(function_name, filename)
-            calls.append(metadata.format_citation(refval))
-        except ValueError:
-            pass
+    ptb = make_pseudocode_traceback(tb)
 
     return "\n".join(
-        "{}* {}".format("  " * num, call) for num, call in enumerate(calls)
+        "{}* {}".format("  " * num, pdf.citation) for num, pdf in enumerate(ptb)
     )
 
 

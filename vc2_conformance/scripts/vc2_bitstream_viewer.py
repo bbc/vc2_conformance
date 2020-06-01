@@ -139,7 +139,7 @@ from textwrap import wrap
 
 from vc2_conformance import __version__
 
-from vc2_conformance.pseudocode import metadata
+from vc2_conformance.pseudocode.metadata import make_pseudocode_traceback
 
 from vc2_conformance import bitstream
 
@@ -232,17 +232,11 @@ def most_recent_pseudocode_function(tb):
     Given a Python traceback, return the function name/citation of the
     inner-most VC-2 pseudocode function to be executed.
     """
-    stack_summary = traceback.extract_tb(tb)
-    for frame_summary in reversed(list(stack_summary)):
-        filename = frame_summary[0]
-        function_name = frame_summary[2]
-        try:
-            refval = metadata.lookup_by_name(function_name, filename)
-            return metadata.format_citation(refval)
-        except ValueError:
-            pass
-
-    return "<unknown>"
+    ptb = make_pseudocode_traceback(traceback.extract_tb(tb))
+    if ptb:
+        return ptb[-1].citation
+    else:
+        return "<unknown>"
 
 
 def format_path_summary(path):
