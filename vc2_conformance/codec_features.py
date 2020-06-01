@@ -19,6 +19,7 @@ Finally, the following function may be used when determining level-related
 restrictions which apply to a set of :py:class:`CodecFeatures`.
 
 .. autofunction:: codec_features_to_trivial_level_constraints
+
 """
 
 import csv
@@ -133,7 +134,7 @@ lossless : bool
 picture_bytes : int or None
     When ``lossless`` is False, this gives the number of bytes per picture to
     use. Slices will be assigned (as close to) the same number of bytes each as
-    possible. If ``lossless` is True, this value should be None.
+    possible. If ``lossless`` is True, this value should be None.
 quantization_matrix : None or {level: {orient: value, ...}, ...}
     None or a hierarchy of dictionaries as constructed by the ``quant_matrix``
     pseudocode function (12.4.5.3). If None, the default quantization matrix
