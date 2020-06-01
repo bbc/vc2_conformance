@@ -1,6 +1,5 @@
 """
-:py:mod:`vc2_conformance.pseudocode.offsetting`: (15) Picture component offsetting routines
-===========================================================================================
+Picture component offsetting routines (15)
 
 This module collects picture component value offsetting functions from (15) and
 augments these with complementary de-offsetting functions (inferred from, but

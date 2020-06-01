@@ -1,9 +1,6 @@
 """
-:py:mod:`vc2_conformance.pseudocode.picture_decoding`: (15) Picture Decoding
-============================================================================
-
 This module contains the wavelet synthesis filters and associated functions
-defined in the pseudocode of the VC-2 standard.
+defined in the pseudocode of the VC-2 standard (15).
 
 See also :py:mod:`vc2_conformance.pseudocode.picture_encoding`.
 """

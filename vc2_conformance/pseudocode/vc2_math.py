@@ -1,9 +1,5 @@
 """
-:py:mod:`vc2_conformance.pseudocode.vc2_math`: Mathematical functions/operators
-===============================================================================
-
-Defined by VC-2 in (5.5.3).
-
+Mathematical functions and operators defined in the spec (5.5.3)
 """
 
 import math

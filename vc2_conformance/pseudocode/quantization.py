@@ -1,5 +1,5 @@
 """
-Quantization-related VC-2 pseudocode routines.
+Quantization-related VC-2 pseudocode routines (13.3).
 """
 
 from vc2_conformance.pseudocode.metadata import ref_pseudocode

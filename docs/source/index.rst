@@ -61,6 +61,6 @@ turn.
    maintainer/constraint_table.rst
    maintainer/level_constraints.rst
    maintainer/picture_generators.rst
-   maintainer/metadata.rst
    maintainer/color_conversion.rst
+   maintainer/pseudocode.rst
 

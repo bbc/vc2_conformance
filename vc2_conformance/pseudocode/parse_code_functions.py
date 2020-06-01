@@ -1,8 +1,5 @@
 """
-:py:mod:`vc2_conformance.pseudocode.parse_code_functions`: Parse code classification functions
-==============================================================================================
-
-Defined by VC-2 in (Table 10.2).
+Parse code classification functions (Table 10.2)
 
 These functions all take a 'state' dictionary containing at least
 ``parse_code`` which should be an int or :py:class:`ParseCodes` enum value.

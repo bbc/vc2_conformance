@@ -1,9 +1,7 @@
 """
-:py:mod:`vc2_conformance.pseudocode.picture_encoding`: Picture Encoding
-=======================================================================
-
-This module is the inverse of the :py:mod:`vc2_conformance.pseudocode.picture_decoding`
-module and contains functions for performing wavelet analysis filtering.
+This module is the inverse of the
+:py:mod:`vc2_conformance.pseudocode.picture_decoding` module and contains
+functions for performing wavelet analysis filtering.
 
 This functionality is not specified by the standard but is used to generate
 simple bitstreams (and test cases) in this software (and its test suite).

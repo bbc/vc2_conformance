@@ -1,12 +1,9 @@
 """
-:py:mod:`vc2_conformance.pseudocode.video_parameters`: Video parameter computation functions
-============================================================================================
-
-Defined by VC-2 in (11).
+Video parameter computation functions (11)
 
 The functions in this module make up the purely functional (i.e. non
-bitstream-reading) logic for computing video parameters. This predomenantly
-consists of preset-loading and component dimesion calculation routines.
+bitstream-reading) logic for computing video parameters. This predominantly
+consists of preset-loading and component dimension calculation routines.
 
 For functions below which take a 'state' argument, this should be a
 dictionary-like object with the following entries:
@@ -60,45 +57,78 @@ __all__ = [
 VideoParameters = fixeddict(
     "VideoParameters",
     # (11.4.3) frame_size
-    Entry("frame_width"),
-    Entry("frame_height"),
+    Entry("frame_width", help_type="int", help="Set by (11.4.3) frame_size"),
+    Entry("frame_height", help_type="int", help="Set by (11.4.3) frame_size"),
     # (11.4.4) color_diff_sampling_format
-    Entry("color_diff_format_index", enum=ColorDifferenceSamplingFormats),
+    Entry(
+        "color_diff_format_index",
+        enum=ColorDifferenceSamplingFormats,
+        help_type=":py:class:`~vc2_data_tables.ColorDifferenceSamplingFormats`",
+        help="Set by (11.4.4) color_diff_sampling_format",
+    ),
     # (11.4.5) scan_format
-    Entry("source_sampling", enum=SourceSamplingModes),
+    Entry(
+        "source_sampling",
+        enum=SourceSamplingModes,
+        help_type=":py:class:`~vc2_data_tables.SourceSamplingModes`",
+        help="Set by (11.4.5) scan_format",
+    ),
     # (11.4.5)
-    Entry("top_field_first"),
+    Entry(
+        "top_field_first", help_type="bool", help="Set by (11.4.5) set_source_defaults",
+    ),
     # (11.4.6) frame_rate
-    Entry("frame_rate_numer"),
-    Entry("frame_rate_denom"),
+    Entry("frame_rate_numer", help_type="int", help="Set by (11.4.6) frame_rate"),
+    Entry("frame_rate_denom", help_type="int", help="Set by (11.4.6) frame_rate"),
     # (11.4.7) aspect_ratio
-    Entry("pixel_aspect_ratio_numer"),
-    Entry("pixel_aspect_ratio_denom"),
+    Entry(
+        "pixel_aspect_ratio_numer", help_type="int", help="Set by (11.4.7) aspect_ratio"
+    ),
+    Entry(
+        "pixel_aspect_ratio_denom", help_type="int", help="Set by (11.4.7) aspect_ratio"
+    ),
     # (11.4.8) clean_area
-    Entry("clean_width"),
-    Entry("clean_height"),
-    Entry("left_offset"),
-    Entry("top_offset"),
+    Entry("clean_width", help_type="int", help="Set by (11.4.8) clean_area"),
+    Entry("clean_height", help_type="int", help="Set by (11.4.8) clean_area"),
+    Entry("left_offset", help_type="int", help="Set by (11.4.8) clean_area"),
+    Entry("top_offset", help_type="int", help="Set by (11.4.8) clean_area"),
     # (11.4.9) signal_range
-    Entry("luma_offset"),
-    Entry("luma_excursion"),
-    Entry("color_diff_offset"),
-    Entry("color_diff_excursion"),
+    Entry("luma_offset", help_type="int", help="Set by (11.4.9) signal_range"),
+    Entry("luma_excursion", help_type="int", help="Set by (11.4.9) signal_range"),
+    Entry("color_diff_offset", help_type="int", help="Set by (11.4.9) signal_range"),
+    Entry("color_diff_excursion", help_type="int", help="Set by (11.4.9) signal_range"),
     # (11.4.10.2) color_primaries
-    Entry("color_primaries_index", enum=PresetColorPrimaries),
+    Entry(
+        "color_primaries_index",
+        enum=PresetColorPrimaries,
+        help_type=":py:class:`~vc2_data_tables.PresetColorPrimaries`",
+        help="Set by (11.4.10.2) color_primaries",
+    ),
     # (11.4.10.3) color_matrix
-    Entry("color_matrix_index", enum=PresetColorMatrices),
+    Entry(
+        "color_matrix_index",
+        enum=PresetColorMatrices,
+        help_type=":py:class:`~vc2_data_tables.PresetColorMatrices`",
+        help="Set by (11.4.10.3) color_matrix",
+    ),
     # (11.4.10.4) transfer_function
-    Entry("transfer_function_index", enum=PresetTransferFunctions),
+    Entry(
+        "transfer_function_index",
+        enum=PresetTransferFunctions,
+        help_type=":py:class:`~vc2_data_tables.PresetTransferFunctions`",
+        help="Set by (11.4.10.4) transfer_function",
+    ),
+    help="""
+        (11.4) Video parameters struct.
+    """,
 )
-"""(11.4) Video parameters struct."""
 
 
 @ref_pseudocode(deviation="inferred_implementation")
 def set_source_defaults(base_video_format):
     """
-    (11.4.2) Create a VideoParameters object with the parameters specified in a
-    base video format.
+    (11.4.2) Create a :py:class:`VideoParameters` object with the parameters
+    specified in a base video format.
     """
     base = BASE_VIDEO_FORMAT_PARAMETERS[base_video_format]
     preset_frame_rates = PRESET_FRAME_RATES[base.frame_rate_index]

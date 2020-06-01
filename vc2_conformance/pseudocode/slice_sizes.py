@@ -1,8 +1,5 @@
 """
-:py:mod:`vc2_conformance.pseudocode.slice_sizes`: Slice size computation functions
-==================================================================================
-
-Defined by VC-2 in (13).
+Slice size computation functions (13)
 
 All of the functions below take a 'state' argument which should be a dictionary-like
 object containing the following entries:
