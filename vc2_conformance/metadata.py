@@ -1,10 +1,7 @@
 """
-:py:mod:`vc2_conformance.metadata` Implementation metadata
-==========================================================
-
-This module is used to record the relationship between the code in the
-:py:mod:`vc2_conformance` software and the VC-2 specification documents. This
-metadata has two important uses:
+The :py:mod:`vc2_conformance.metadata` module is used to record the
+relationship between the code in the :py:mod:`vc2_conformance` software and the
+VC-2 specification documents. This metadata has two important uses:
 
 1. To produce more helpful error messages which include cross-references to
    published specifications.
@@ -35,7 +32,7 @@ docstring. The function is also assumed *not* to deviate from the pseudocode --
 an assumption which is automatically verified by the test suite (see
 :py:mod:`verification`). For functions which deviate from the specification in
 some way, the ``deviation`` argument should be passed to the decorator (see
-:py:class:`ReferencedValue`.
+:py:class:`ReferencedValue`).
 
 Constants in this codebase may be cross-referenced against the spec using
 :py:func:`ref_value`. This takes the value being referenced along with the
