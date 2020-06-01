@@ -37,7 +37,7 @@ software.
     2.x, an alias for ``pipes.quote``.
 
 
-.. py:function:: string_types
+.. py:data:: string_types
 
     A tuple enumerating the native string-like types.  In Python 3.x, ``(str,
     )``, in Python 2.x, ``(str, unicode)``.
