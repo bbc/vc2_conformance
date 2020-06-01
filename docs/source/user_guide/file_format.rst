@@ -2,21 +2,21 @@
 
 .. _guide-file-format:
 
-Raw video file format
-=====================
+Video file format
+=================
 
-The VC-2 conformance software uses a simple raw video format to represent
-uncompressed pictures. This format is described below and it is left to the
-codec implementer to perform any translation necessary between this format and
-the format expected by the codec under test.
+The VC-2 conformance software uses a simple video and metadata format to
+represent uncompressed pictures consisting of a raw video file and associated
+JSON metadata file. This format is described below and it is left to the codec
+implementer to perform any translation necessary between this format and the
+format expected by the codec under test.
 
-Below we'll describe the raw file format before introducing the
-``vc2-raw-explain`` utility which can aid in understanding and displaying
-videos in this format.
+Below we'll describe the file format before introducing the ``vc2-raw-explain``
+utility which can aid in understanding and displaying videos in this format.
 
 
-Raw format description
-----------------------
+Format description
+------------------
 
 Each picture in a sequence is stored as a pair of files: a file containing only
 raw sample values (``.raw``) and a metadata file containing a JSON description
