@@ -62,4 +62,5 @@ turn.
    maintainer/level_constraints.rst
    maintainer/picture_generators.rst
    maintainer/metadata.rst
+   maintainer/color_conversion.rst
 

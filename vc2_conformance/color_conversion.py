@@ -1,14 +1,18 @@
 """
-Color conversion routines
-=========================
+The :py:mod:`vc2_conformance.color_conversion` module implements color system
+related functions relating to the color formats supported by VC-2.
+
+The primary use for this module is to provide routines for converting between
+colors specified by VC-2's various supported color systems (see Annex (E.1) of
+the VC-2 specification). This functionality is used during the generation of
+certain encoder and decoder test cases (:py:mod:`vc2_conformance.test_cases`).
+
+High-level API
+--------------
 
 This module implements simple color format conversion routines for converting
-between arbitrary VC-2 color formats via floating point CIE XYZ colour. These
-routines are intended for producing plausible pictures in all VC-2 color
-formats for test purposes. They may not implement the most faithful possible
-conersions due to simplistic numerical implementation choices.
-
-The process is automated by the following functions:
+between arbitrary VC-2 color formats via floating point CIE XYZ colour. The
+process is implemented by the following high-level functions:
 
 .. autofunction:: to_xyz
 
@@ -16,47 +20,40 @@ The process is automated by the following functions:
 
 .. warning::
 
-    Support for converting *into* CIE XYZ format is limited to only formats
-    using the :py:data:`~vc2_data_tables.PresetTransferFunctions.tv_gamma`
-    transfer function. All formats are supported when converting *from* XYZ
-    color.
+    Color format conversion is an extremely complex problem. The approach used
+    by this module is simplistic in both its approach and implementation. While
+    it will always produce plausible colours, it may not produce the best
+    possible result. To give a few examples of limitations of this module:
 
-Process internals
------------------
+    * Potential numerical stability issues are ignored (e.g. YCgCo conversions
+      may be lossy)
+    * No white point correction is applied
+    * Out-of-gamut colors are crudely clipped
+    * Poor quality antialiasing filters for chroma subsampling/interpolation
 
-The conversion processes used by :py:func:`to_xyz` and :py:func:`from_xyz` are
-illustrated as follows::
+    Finally, this module should be considered a 'best effort' at a correct
+    implementation and the resulting colour conversion should largely be
+    treated as informative.
 
-      (Original Format)                                           (New Format)
-       Integer Y C1 C2                                           Integer Y C1 C2
-              |                                                         ^
-              | int_to_float                       float_to_int_clipped |
-              V                                                         |
-    Floating Point Y C1 C2                                 Chroma Subsampled Y C1 C2
-              |                                                         ^
-              | to_444                                         from_444 |
-              V                                                         |
-     Interpolated Y C1 C2                                    Floating Point Y C1 C2
-              |                                                         ^
-              | INVERSE_COLOR_MATRICES                   COLOR_MATRICES |
-              V                                                         |
-      Non-linear ErEgEb                                         Non-linear ErEgEb
-              |                                                         ^
-              | INVERSE_TRANSFER_FUNCTIONS           TRANSFER_FUNCTIONS |
-              V                                                         |
-         Linear RGB                                                 Linear RGB
-              |                                                         ^
-              | LINEAR_RGB_TO_XYZ                     XYZ_TO_LINEAR_RGB |
-              |                                                         |
-              `----------------------->  CIE XYZ -----------------------'
+.. warning::
+
+    Support :py:func:`to_xyz` is limited to only formats using the
+    :py:data:`~vc2_data_tables.PresetTransferFunctions.tv_gamma` transfer
+    function. All formats are supported, however, by :py:func:`from_xyz`.
+
+
+Low-level API
+-------------
+
+The conversion processes used by :py:func:`to_xyz` and :py:func:`from_xyz` is
+built on a series of lower-level transformations as described by the figure
+below. These lower-level primitives may be used directly to perform more
+specialised conversions.
+
+      .. image:: /_static/color_conversion_process.svg
 
 These steps build on the following conversion functions and matrices. These are
 implemented based on the specifications cited by the VC-2 specification.
-
-.. note::
-
-    Whilst every effort has been made to ensure that these implementations are
-    correct, these should be considered informative, not normative.
 
 .. autofunction:: float_to_int_clipped
 
@@ -69,16 +66,22 @@ implemented based on the specifications cited by the VC-2 specification.
 .. autofunction:: to_444
 
 .. autodata:: COLOR_MATRICES
+    :annotation: = {<color matrix index>: <3x3 matrix>, ...}
 
 .. autodata:: INVERSE_COLOR_MATRICES
+    :annotation: = {<color matrix index>: <3x3 matrix>, ...}
 
 .. autodata:: TRANSFER_FUNCTIONS
+    :annotation: = {<transfer function index>: <function>, ...}
 
 .. autodata:: INVERSE_TRANSFER_FUNCTIONS
+    :annotation: = {<transfer function index>: <function>, ...}
 
 .. autodata:: XYZ_TO_LINEAR_RGB
+    :annotation: = {<color primaries index>: <3x3 matrix>, ...}
 
 .. autodata:: LINEAR_RGB_TO_XYZ
+    :annotation: = {<color primaries index>: <3x3 matrix>, ...}
 
 
 Additional utility functions
@@ -90,6 +93,19 @@ evaluation of certain transform steps.
 .. autofunction:: matmul_colors
 
 .. autofunction:: swap_primaries
+
+
+Color parameter sanity checking
+-------------------------------
+
+The :py:func:`sanity_check_video_parameters` function is provided which can
+check a given VC-2 video format is 'sane' -- that is it might plausibly be able
+to represent some colors.
+
+.. autofunction:: sanity_check_video_parameters
+
+.. autoclass:: ColorParametersSanity
+    :members:
 
 """
 
@@ -125,6 +141,8 @@ __all__ = [
     "LINEAR_RGB_TO_XYZ",
     "matmul_colors",
     "swap_primaries",
+    "ColorParametersSanity",
+    "sanity_check_video_parameters",
 ]
 
 
@@ -312,7 +330,7 @@ which converts from linear RGB into CIE XYZ.
 """
 
 XYZ_TO_LINEAR_RGB = {key: np.linalg.inv(m) for key, m in LINEAR_RGB_TO_XYZ.items()}
-"""
+r"""
 For each set of colour primaries in
 :py:class:`~vc2_data_tables.PresetColorPrimaries`, a :math:`3 \times 3` matrix
 which converts from CIE XYZ into linear RGB.
@@ -460,7 +478,8 @@ TRANSFER_FUNCTIONS = {
 """
 For each set of VC-2's, supported transfer functions, a Numpy implementation of
 that function. These functions implement the transform from linear to
-non-linear RGB, :math:`E_R E_G E_B`.
+non-linear RGB, :math:`E_R E_G E_B`. These functions expect and returns a
+single value or Numpy array of values.
 """
 
 
@@ -471,13 +490,14 @@ INVERSE_TRANSFER_FUNCTIONS = {
 """
 For (a subset of) VC-2's, supported transfer functions, a Numpy implementation
 of the inverse function. These functions implement the transform from
-non-linear to linear RGB.
+non-linear to linear RGB. These functions expect and returns a single value or
+Numpy array of values.
 
 .. warning::
 
     An inverse transfer function is currently only provided for
     :py:data:`~vc2_data_tables.PresetTransferFunctions.tv_gamma` because this
-    is all that is needed for the intended application of this module.
+    is all that was required at the time of development.
 """
 
 
@@ -534,7 +554,7 @@ def kr_kb_to_color_matrix(kr, kb):
     #        = ((1 - Kb) B' - Kr R' - Kg G') / 2(1 - Kb)
     #        = (- (Kr / 2(1-Kb)) R' - (Kg / 2(1-Kb)) G' + 0.5 B')
     #
-    # And simillarly:
+    # And similarly:
     #
     #     Cr = (R' - Y') / 2(1 - Kr)
     #        = (0.5 R' - (Kg / 2(1-Kr)) G' - (Kb / 2(1-Kr)) B')
@@ -571,7 +591,7 @@ transforms from non-linear RGB (:math:`E_R E_G E_B`) to Y C1 C2.
 
 
 INVERSE_COLOR_MATRICES = {key: np.linalg.inv(m) for key, m in COLOR_MATRICES.items()}
-"""
+r"""
 For each colour matrix supported by VC-2, a :math:`3 \times 3` matrix which
 transforms from Y C1 C2 to non-linear RGB (:math:`E_R E_G E_B`).
 """
@@ -1019,8 +1039,8 @@ class ColorParametersSanity(object):
 
     def explain(self):
         """
-        Return a human-readable explanation of why a video format insane video
-        format (or simply say that it is sane, if it is).
+        Return a human-readable explanation of why a video format is not sane
+        (or simply state that it is sane, if it is).
         """
         out = ""
 
@@ -1105,8 +1125,8 @@ def sanity_check_video_parameters(video_parameters):
     * Are the luma and color difference signals at least 8 bits?
     * Can white, black and saturated primary red, green and blue be encoded?
     * When the RGB color matrix is used:
-      * Is the color difference sampling mode 4:4:4?
-      * Are the luma and chroma components the same depth?
+        * Is the color difference sampling mode 4:4:4?
+        * Are the luma and chroma components the same depth?
 
     Returns a :py:class:`ColorParametersSanity` as a result.
     """
