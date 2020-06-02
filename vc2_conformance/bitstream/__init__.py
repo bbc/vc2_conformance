@@ -3,11 +3,10 @@ The :py:mod:`vc2_conformance.bitstream` module implements facilities for
 deserialising, displaying, manipulating and serialising VC-2 bitstreams,
 including non-conformant streams, at a low-level.
 
-This documentation is split into two parts. The first part (this one) gives a
-brief overview of how bitstreams can be serialised, deserialised and
-represented as Python data structures using this module. The second part
-(:ref:`maintainer-bitstream-internals`) gives an in-depth description of how
-the serialiser and deserialisers work.
+This documentation begins with an overview of how bitstreams can be serialised,
+deserialised and represented as Python data structures using this module. This
+is followed by an in-depth description of how the serialiser and deserialisers
+work internally.
 
 Where the serialiser/deserialiser module is used
 ------------------------------------------------
@@ -333,6 +332,36 @@ and deserialise VC-2 bitstreams (or individual parts thereof).
 .. autobitstreamfixeddictstable::
 
 .. autobitstreamfixeddicts::
+
+The :py:mod:`~vc2_conformance.bitstream.serdes` serialiser/deserialiser framework
+---------------------------------------------------------------------------------
+
+.. automodule:: vc2_conformance.bitstream.serdes
+
+
+Low-level bitstream IO
+----------------------
+
+.. automodule:: vc2_conformance.bitstream.io
+
+Fixeddicts and pseudocode
+-------------------------
+
+.. automodule:: vc2_conformance.bitstream.vc2_fixeddicts
+
+.. automodule:: vc2_conformance.bitstream.vc2
+
+
+Autofill
+--------
+
+.. automodule:: vc2_conformance.bitstream.vc2_autofill
+
+
+Metadata
+--------
+
+.. automodule:: vc2_conformance.bitstream.metadata
 
 """
 

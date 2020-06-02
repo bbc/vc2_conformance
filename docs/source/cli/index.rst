@@ -1,6 +1,8 @@
-Command Line Tools
-==================
+Software tools reference
+------------------------
 
+The following reference documentation describes the various command line tools
+provided by the VC-2 conformance software.
 
 .. toctree::
    :maxdepth: 2
@@ -11,3 +13,4 @@ Command Line Tools
    vc2_bitstream_viewer.rst
    vc2_bitstream_validator.rst
    vc2_test_case_generator.rst
+

@@ -1,7 +1,7 @@
 .. _user-guide:
 
-VC-2 Conformance Testing Software User Guide
-============================================
+User's guide (for codec developers)
+-----------------------------------
 
 The following guide describes how the ``vc2_conformance`` software may be used
 to check the conformance of a VC-2 encoder or decoder implementation to the
