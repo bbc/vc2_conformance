@@ -73,4 +73,5 @@ html_static_path = ["_static"]
 
 latex_elements = {
     "papersize": "a4paper",
+    "maxlistdepth": "10",
 }
