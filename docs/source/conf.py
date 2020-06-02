@@ -18,8 +18,8 @@ sys.path.insert(0, os.path.abspath("_ext/"))
 
 # -- Project information -----------------------------------------------------
 
-project = "SMPTE VC-2 Conformance"
-copyright = "2019, SMPTE"
+project = "SMPTE VC-2 Conformance Software"
+copyright = "2020, SMPTE"
 author = "SMPTE"
 
 from vc2_conformance import __version__ as version
@@ -71,7 +71,30 @@ html_static_path = ["_static"]
 
 # -- Options for PDF output --------------------------------------------------
 
+# Show page numbers in references
+latex_show_pagerefs = True
+
+# Show hyperlink URLs in footnotes
+latex_show_urls = "footnote"
+
+# Divide the document into parts, then chapters, then sections
+latex_toplevel_sectioning = "part"
+
+# Don't include a module index (the main index should be sufficient)
+latex_domain_indices = False
+
 latex_elements = {
     "papersize": "a4paper",
+    # Allow deeply nested bullets etc.
     "maxlistdepth": "10",
+    # Add a 'Preface' header to the content which appears before all of the
+    # chapters.
+    "tableofcontents": r"""
+        \sphinxtableofcontents
+        \chapter{Introduction}
+    """,
+    # Make index entries smaller since some are quite long
+    "printindex": r"\footnotesize\raggedright\printindex",
+    # Override ToC depth to include sections
+    "preamble": r"\setcounter{tocdepth}{1}",
 }
