@@ -192,33 +192,23 @@ class AutoBitstreamFixeddictsTable(SphinxDirective):
 
     def run(self):
         flat_tree = fixeddict_nesting_to_flat_tree(vc2_fixeddict_nesting)
-        depth = max(depth for depth, node in flat_tree) + 1
 
-        # To include nesting within the generated table, the 'type' column is
-        # actually made up of `depth` columns with merged cells (of the
-        # appropriate width) being used to contain the value.
         headings = [
-            (make_text("Type"), depth),
+            make_text("Type"),
             make_text("Pseudocode function"),
         ]
 
-        # Weight the type and pseudocode function columns equally
-        colwidths = [1 for _ in range(depth)] + [(depth)]
-
         # Generate rows
         values = [
-            # Add padding columns to indicate nesting level
-            ([(make_text(""), fixeddict_depth)] if fixeddict_depth else [])
-            + [
-                # Type column value
-                (
-                    make_from_rst(
-                        self.state,
-                        ":py:class:`~vc2_conformance.bitstream.{}`".format(
-                            fixeddict_type.__name__
-                        ),
+            [
+                # Type column
+                make_from_rst(
+                    self.state,
+                    "{}:py:class:`~vc2_conformance.bitstream.{}`".format(
+                        # Indent with non-breaking spaces
+                        b"\xA0\x00".decode("utf16") * fixeddict_depth * 4,
+                        fixeddict_type.__name__,
                     ),
-                    depth - fixeddict_depth,
                 ),
                 # Pseudocode column
                 (
@@ -230,7 +220,7 @@ class AutoBitstreamFixeddictsTable(SphinxDirective):
             for fixeddict_depth, fixeddict_type in flat_tree
         ]
 
-        table = make_table(headings, values, colwidths)
+        table = make_table(headings, values)
 
         return [table]
 
