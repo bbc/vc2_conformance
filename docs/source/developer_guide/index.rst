@@ -1,21 +1,22 @@
 Conformance software development guide
 --------------------------------------
 
-This section of the documentation provides a guide to the VC-2 conformance
+This part of the documentation provides a guide to the VC-2 conformance
 software internals. This documentation is aimed at maintainers of the VC-2
 conformance software. Users of the VC-2 conformance software need not read
-this.
+this, or later sections.
 
-Broadly the maintainer documentation is split into three parts:
+The maintainer's manual aims to provide a 'big picture' view of the software
+architecture along with more detailed introductions to each of the main
+concepts and components within. It does not, however, provide an exhaustive
+reference including every minor component in the codebase -- refer to the
+comments and docstrings within the code in these instances.
 
-The first part of the maintainer guide gives an overview of the general design,
-structure and operation of the conformance software.
+This introductory chapter provides instructions on setting up a suitable
+installation of this software for development purposes along with an overview
+of the structure of the codebase. Subsequent chapters will provide in-depth
+reference documentation for each of the main parts of this software.
 
-The second part provides advice on adopting changes from future VC-2 revisions
-into the conformance software.
-
-The final part consists of a detailed reference on each part of the software in
-turn.
 
 .. toctree::
    :maxdepth: 2

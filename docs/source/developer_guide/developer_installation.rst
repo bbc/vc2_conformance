@@ -123,3 +123,8 @@ built as follows::
 
 HTML documentation will be written to the ``docs/build/html/`` directory (open
 the ``index.html`` file in a web browser to read it).
+
+Alternatively, PDF documentation can be built by replacing ``html`` with
+``latexpdf`` in the above commands. This will require a working installation of
+`LaTeX <https://www.latex-project.org/>`_ and `Inkscape
+<https://inkscape.org/>`_ to build.

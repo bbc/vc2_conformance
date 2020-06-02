@@ -26,12 +26,11 @@ its various components.
 
 .. _user-documentation:
 
-User's documentation
---------------------
+User's manual
+-------------
 
 .. toctree::
    :maxdepth: 2
-   :numbered:
    
    user_guide/index.rst
    cli/index.rst
@@ -39,20 +38,19 @@ User's documentation
 
 .. _maintainer-documentation:
 
-Maintainer's documentation
---------------------------
+Maintainer's maual
+------------------
 
 .. toctree::
    :maxdepth: 2
-   :numbered:
    
    developer_guide/index.rst
    test_case_generation/index.rst
    decoder.rst
    encoder.rst
    bitstream.rst
+   picture_generation/index.rst
+   level_constraints/index.rst
    pseudocode.rst
    verification.rst
-   level_constraints/index.rst
-   picture_generation/index.rst
    utility_modules/index.rst

@@ -1,5 +1,5 @@
-Test case generation reference
-------------------------------
+Test case generation
+--------------------
 
 .. toctree::
    :maxdepth: 2

@@ -3,9 +3,14 @@
 User's guide (for codec developers)
 -----------------------------------
 
-The following guide describes how the ``vc2_conformance`` software may be used
-to check the conformance of a VC-2 encoder or decoder implementation to the
-VC-2 standards.
+In the following sections we'll walk through the process of installing,
+configuring and using the VC-2 conformance testing software.
+
+.. warning::
+
+    This guide is purely informative. Refer to SMPTE RP 2042-3 (VC-2
+    Conformance Specification) for the normative procedures.
+
 
 .. toctree::
    :maxdepth: 2

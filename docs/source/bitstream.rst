@@ -1,6 +1,6 @@
 .. _maintainer-bitstream:
 
-Bitstream manipulation module
-=============================
+:py:mod:`vc2_conformance.bitstream`: Bitstream manipulation module
+==================================================================
 
 .. automodule:: vc2_conformance.bitstream

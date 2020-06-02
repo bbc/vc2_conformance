@@ -8,8 +8,8 @@ deserialised and represented as Python data structures using this module. This
 is followed by an in-depth description of how the serialiser and deserialisers
 work internally.
 
-Where the serialiser/deserialiser module is used
-------------------------------------------------
+How the serialiser/deserialiser module is used
+----------------------------------------------
 
 This module is used by various parts of the VC-2 conformance software, for
 example:
@@ -333,8 +333,8 @@ and deserialise VC-2 bitstreams (or individual parts thereof).
 
 .. autobitstreamfixeddicts::
 
-The :py:mod:`~vc2_conformance.bitstream.serdes` serialiser/deserialiser framework
----------------------------------------------------------------------------------
+:py:mod:`~vc2_conformance.bitstream.serdes`: A serialiser/deserialiser framework
+--------------------------------------------------------------------------------
 
 .. automodule:: vc2_conformance.bitstream.serdes
 

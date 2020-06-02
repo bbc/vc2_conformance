@@ -87,8 +87,8 @@ latex_elements = {
     "papersize": "a4paper",
     # Allow deeply nested bullets etc.
     "maxlistdepth": "10",
-    # Add a 'Preface' header to the content which appears before all of the
-    # chapters.
+    # Add an 'Introduction' chapter to the content which appears before all of
+    # the main chapters.
     "tableofcontents": r"""
         \sphinxtableofcontents
         \chapter{Introduction}
