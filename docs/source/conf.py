@@ -67,6 +67,7 @@ intersphinx_mapping = {
 intertex_mapping = {
     "vc2_data_tables": "{vc2_data_tables}/../docs/build/latex/*.aux",
     "vc2_bit_widths": "{vc2_bit_widths}/../docs/build/latex/*.aux",
+    "vc2_conformance_data": "{vc2_conformance_data}/../docs/build/latex/*.aux",
 }
 
 # While the other modules' documentation is not published publicly online,

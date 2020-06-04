@@ -119,6 +119,7 @@ built as follows::
 
     $ make -C path/to/vc2_data_tables/docs html
     $ make -C path/to/vc2_bit_widths/docs html
+    $ make -C path/to/vc2_conformance_data/docs html
     $ make -C path/to/vc2_conformance/docs html
 
 HTML documentation will be written to the ``docs/build/html/`` directory (open
