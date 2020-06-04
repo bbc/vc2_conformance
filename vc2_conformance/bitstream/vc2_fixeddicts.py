@@ -137,7 +137,12 @@ ParseInfo = fixeddict(
         formatter=Hex(8),
         help_type="int",
     ),
-    Entry("parse_code", enum=ParseCodes, formatter=Hex(2), help_type="int"),
+    Entry(
+        "parse_code",
+        enum=ParseCodes,
+        formatter=Hex(2),
+        help_type=":py:class:`~vc2_data_tables.ParseCodes`",
+    ),
     Entry("next_parse_offset", help_type="int"),
     Entry("previous_parse_offset", help_type="int"),
     Entry(
