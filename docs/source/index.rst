@@ -23,6 +23,11 @@ disregard this part. This section includes a general overview of the
 conformance software internals followed by detailed reference documentation on
 its various components.
 
+.. toctree::
+   :hidden:
+
+   bibliography.rst
+
 
 .. _user-documentation:
 
@@ -54,3 +59,6 @@ Maintainer's maual
    pseudocode.rst
    verification.rst
    utility_modules/index.rst
+
+
+

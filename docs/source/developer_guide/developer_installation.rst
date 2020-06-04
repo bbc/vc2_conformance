@@ -127,4 +127,7 @@ the ``index.html`` file in a web browser to read it).
 Alternatively, PDF documentation can be built by replacing ``html`` with
 ``latexpdf`` in the above commands. This will require a working installation of
 `LaTeX <https://www.latex-project.org/>`_ and `Inkscape
-<https://inkscape.org/>`_ to build.
+<https://inkscape.org/>`_ to build. In addition, for cross-references between
+PDFs to be created correctly, the documentation must be built within the Python
+virtual environment where the various ``vc2_*`` Python packages are installed
+in development/editable mode.

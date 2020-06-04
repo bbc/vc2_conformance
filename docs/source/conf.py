@@ -37,6 +37,7 @@ extensions = [
     "numpydoc",
     "sphinxcontrib.inkscapeconverter",
     "sphinxcontrib.programoutput",
+    "sphinxcontrib.intertex",
     # Local extensions (in _ext/ directory)
     "test_case_documentation",
     "enum_table",
@@ -58,8 +59,19 @@ add_module_names = False
 intersphinx_mapping = {
     "python": ("http://docs.python.org/3", None),
     "ast": ("https://greentreesnakes.readthedocs.io/en/latest/", None),
-    "sympy": ("https://docs.sympy.org/latest/", None),
 }
+
+
+# -- Options for intertex ----------------------------------------------------
+
+intertex_mapping = {
+    "vc2_data_tables": "{vc2_data_tables}/../docs/build/latex/*.aux",
+    "vc2_bit_widths": "{vc2_bit_widths}/../docs/build/latex/*.aux",
+}
+
+# While the other modules' documentation is not published publicly online,
+# we'll use Intersphinx in the HTML too.
+intertex_formats = ["html", "latex"]
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -87,8 +99,8 @@ latex_elements = {
     "papersize": "a4paper",
     # Allow deeply nested bullets etc.
     "maxlistdepth": "10",
-    # Add an 'Introduction' chapter to the content which appears before all of
-    # the main chapters.
+    # Add an 'Introduction' chapter heading to the content which appears before
+    # all of the main chapters.
     "tableofcontents": r"""
         \sphinxtableofcontents
         \chapter{Introduction}
