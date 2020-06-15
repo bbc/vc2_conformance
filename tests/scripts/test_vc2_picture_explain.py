@@ -27,7 +27,7 @@ from vc2_conformance.file_format import write
 
 from vc2_conformance.picture_generators import linear_ramps, moving_sprite
 
-from vc2_conformance.scripts.vc2_raw_explain import (
+from vc2_conformance.scripts.vc2_picture_explain import (
     is_rgb_color,
     PICTURE_COMPONENT_NAMES,
     COLOR_DIFF_FORMAT_NAMES,

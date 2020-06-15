@@ -11,8 +11,9 @@ JSON metadata file. This format is described below and it is left to the codec
 implementer to perform any translation necessary between this format and the
 format expected by the codec under test.
 
-Below we'll describe the file format before introducing the ``vc2-raw-explain``
-utility which can aid in understanding and displaying videos in this format.
+Below we'll describe the file format before introducing the
+``vc2-picture-explain`` utility which can aid in understanding and displaying
+videos in this format.
 
 
 Format description
@@ -169,17 +170,17 @@ function given in section (11.6.3) of the VC-2 standard::
         state[color_diff_depth] = intlog2(video_parameters[color_diff_excursion]+1)
 
 
-``vc2-raw-explain`` utility
----------------------------
+``vc2-picture-explain`` utility
+-------------------------------
 
-The VC-2 conformance software provides the :ref:`vc2-raw-explain` command line
-utility which produces informative explanations of the raw format used by a
-particular video, along with commands to display the video directly, if
+The VC-2 conformance software provides the :ref:`vc2-picture-explain` command
+line utility which produces informative explanations of the raw format used by
+a particular video, along with commands to display the video directly, if
 possible.
 
 For example, given a typical raw 1080i60, 10-bit 4:2:2 video file as input::
 
-    $ vc2-raw-explain picture_0.raw
+    $ vc2-picture-explain picture_0.raw
     Normative description
     =====================
     

@@ -17,7 +17,7 @@ from vc2_conformance.file_format import read, write
 
 from vc2_conformance.pseudocode.video_parameters import VideoParameters
 
-from vc2_conformance.scripts.vc2_raw_compare import (
+from vc2_conformance.scripts.vc2_picture_compare import (
     read_pictures_with_only_one_metadata_file_required,
     video_parameter_diff,
     picture_coding_mode_diff,

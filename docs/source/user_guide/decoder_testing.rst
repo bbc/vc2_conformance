@@ -30,20 +30,20 @@ Each bitstream has an associated reference decoding in the ``<codec feature set
 name>/decoder/<test-case-name>_expected/`` directory. The output of the decoder
 under test must be identical to the reference decoding.
 
-The :ref:`vc2-raw-compare` tool is provided for comparing decoder outputs with
-the reference decodings. It takes as argument the name of two raw picture files
-and reports on differences between them.
+The :ref:`vc2-picture-compare` tool is provided for comparing decoder outputs
+with the reference decodings. It takes as argument the name of two raw picture
+files and reports on differences between them.
 
 For example::
 
-    $ vc2-raw-compare \
+    $ vc2-picture-compare \
         test_cases/decoder/real_pictures_expected/picture_0.raw \
         decoder_output/real_pictures/picture_0.raw
     Pictures are identical
 
 For a test case to pass:
 
-* The :ref:`vc2-raw-compare` tool must report ``Pictures are identical``, with
+* The :ref:`vc2-picture-compare` tool must report ``Pictures are identical``, with
   no warnings, for every picture in the reference decoding.
 * No additional pictures must have been decoded by the decoder under test.
 * The decoder under test must not have crashed or indicated an error condition

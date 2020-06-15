@@ -1,8 +1,8 @@
 r"""
-.. _vc2-raw-compare:
+.. _vc2-picture-compare:
 
-``vc2-raw-compare``
-===================
+``vc2-picture-compare``
+=======================
 
 A command-line utility which compares pairs of raw pictures (see
 :ref:`file-format`).
@@ -13,7 +13,7 @@ Usage
 Given a pair of images in raw format (see :ref:`file-format`), these images can
 be compared as follows::
 
-    $ vc2-raw-compare image_a.raw image_b.raw
+    $ vc2-picture-compare image_a.raw image_b.raw
     Pictures are different:
       Y: Different: PSNR = 55.6 dB, 1426363 pixels (68.8%) differ
       C1: Different: PSNR = 57.7 dB, 662607 pixels (63.9%) differ
@@ -30,7 +30,7 @@ The number of pixels which are not bit-for-bit identical is also reported.
 The tool also compares the metadata of the raw images and will flag up
 differences here too, for example::
 
-    $ vc2-raw-compare picture_hd.raw picture_cif.raw
+    $ vc2-picture-compare picture_hd.raw picture_cif.raw
     Picture numbers are different:
     Video parameters are different:
       - frame_width: 1920
@@ -77,7 +77,7 @@ pictures incomparable.
 Generating difference masks
 ---------------------------
 
-The ``vc2-raw-compare`` tool can optionally output a simple difference mask
+The ``vc2-picture-compare`` tool can optionally output a simple difference mask
 image using ``--difference-mask``/``-D``. The generated image contains white
 pixels wherever the inputs differed and black pixels wherever they were
 identical. The generated difference mask is output as a raw file of the same
@@ -85,7 +85,7 @@ format as the two input files.
 
 For example::
 
-    $ vc2-raw-compare \
+    $ vc2-picture-compare \
           image_a.raw \
           image_b.raw \
           --difference-mask difference_mask.raw
@@ -100,7 +100,7 @@ Arguments
 
 The complete set of arguments can be listed using ``--help``
 
-.. program-output:: vc2-raw-compare --help
+.. program-output:: vc2-picture-compare --help
 
 """
 

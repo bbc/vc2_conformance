@@ -47,12 +47,12 @@ Otherwise, if a conformance error is found, processing will stop and a detailed
 error message will be produced explaining the problem.
 
 Once a bitstream has been validated and decoded using
-:ref:`vc2-bitstream-validator`, the :ref:`vc2-raw-compare` may be used to
+:ref:`vc2-bitstream-validator`, the :ref:`vc2-picture-compare` may be used to
 compare the output against the original pictures.  The script must be provided
 with two raw picture filenames: an original image, and its encoded and decoded
 counterpart. The similarity of the two images will be reported. For example::
 
-    $ vc2-raw-compare \
+    $ vc2-picture-compare \
         test_cases/encoder/real_pictures/picture_0.raw \
         real_picutres_decoded/picture_0.raw
     Pictures are different:
@@ -64,9 +64,9 @@ For a test case to pass:
 
 * The encoder must not raise an error condition during encoding.
 * The :ref:`vc2-bitstream-validator` must not find any errors in the bit stream.
-* For lossless encoders, :ref:`vc2-raw-compare` tool must report ``Pictures are
+* For lossless encoders, :ref:`vc2-picture-compare` tool must report ``Pictures are
   identical``, with no warnings, for every picture in the reference decoding.
-* For lossy encoders, :ref:`vc2-raw-compare` tool must report a PSNR level of
+* For lossy encoders, :ref:`vc2-picture-compare` tool must report a PSNR level of
   TODO.
 * Input and output pictures should be visually compared and must be
   visually indistinguishable.

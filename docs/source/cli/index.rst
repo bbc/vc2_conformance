@@ -13,10 +13,10 @@ summary, these are:
     Validates the conformance of a VC-2 bitstream and produces a reference
     decoding.
 
-:ref:`vc2-raw-compare`
+:ref:`vc2-picture-compare`
     Compares pairs of pictures.
 
-:ref:`vc2-raw-explain`
+:ref:`vc2-picture-explain`
     Produces informative explanations of the video formats written and accepted
     by the VC-2 conformance software. (See :ref:`file-format`).
 
@@ -29,7 +29,7 @@ summary, these are:
    
    vc2_test_case_generator.rst
    vc2_bitstream_validator.rst
-   vc2_raw_compare.rst
-   vc2_raw_explain.rst
+   vc2_picture_compare.rst
+   vc2_picture_explain.rst
    vc2_bitstream_viewer.rst
 

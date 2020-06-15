@@ -17,7 +17,7 @@ The conformance testing processes for decoders and encoders is outlined below.
 Decoders are tested using a series of test bitstreams (generated using
 :ref:`vc2-test-case-generator`). The pictures produced by the decoder are then
 compared against reference decodings. If the decoded pictures are bit-for-bit
-identical (as checked by :ref:`vc2-raw-compare`), and the decoder did not
+identical (as checked by :ref:`vc2-picture-compare`), and the decoder did not
 crash, the decoder passes the test.
 
 
@@ -29,7 +29,7 @@ bitstream validator (:ref:`vc2-bitstream-validator`) which simultaneously
 validates the bitstream against the specification and decodes the encoded
 pictures. If the bitstream is free from technical errors, the decoded pictures
 are then compared with the input pictures (both visually and using
-:ref:`vc2-raw-compare`). If the decoded pictures are sufficiently similar to
+:ref:`vc2-picture-compare`). If the decoded pictures are sufficiently similar to
 the inputs, the encoder passes the test.
 
 

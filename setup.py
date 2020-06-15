@@ -52,8 +52,8 @@ setup(
             "vc2-bitstream-validator=vc2_conformance.scripts.vc2_bitstream_validator:main",
             "vc2-test-case-generator=vc2_conformance.scripts.vc2_test_case_generator:main",
             "vc2-test-case-generator-worker=vc2_conformance.scripts.vc2_test_case_generator.worker:main",
-            "vc2-raw-explain=vc2_conformance.scripts.vc2_raw_explain:main",
-            "vc2-raw-compare=vc2_conformance.scripts.vc2_raw_compare:main",
+            "vc2-picture-explain=vc2_conformance.scripts.vc2_picture_explain:main",
+            "vc2-picture-compare=vc2_conformance.scripts.vc2_picture_compare:main",
         ],
     },
 )

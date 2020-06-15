@@ -1,8 +1,8 @@
 r"""
-.. _vc2-raw-explain:
+.. _vc2-picture-explain:
 
-``vc2-raw-explain``
-===================
+``vc2-picture-explain``
+=======================
 
 A command-line utility which provides informative descriptions the raw video
 format (see :ref:`file-format`) used by the VC-2 conformance software. As well
@@ -15,7 +15,7 @@ Example usage
 
 An example invocation is shown below::
 
-    $ vc2-raw-explain path/to/raw/picture_0.raw
+    $ vc2-picture-explain path/to/raw/picture_0.raw
     Normative description
     =====================
 
@@ -136,7 +136,7 @@ Arguments
 
 The complete set of arguments can be listed using ``--help``
 
-.. program-output:: vc2-raw-explain --help
+.. program-output:: vc2-picture-explain --help
 
 """
 
