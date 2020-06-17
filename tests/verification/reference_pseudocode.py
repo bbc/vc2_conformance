@@ -543,9 +543,7 @@ def dc_prediction(band):
         for x in range(0, width(band)):
             # Errata: 'If' not 'if' in spec
             if x > 0 and y > 0:
-                # Errata: Takes multiple arguments in spec but mean is defined
-                # as taking an array as argument
-                prediction = mean([band[y][x - 1], band[y - 1][x - 1], band[y - 1][x]])
+                prediction = mean(band[y][x - 1], band[y - 1][x - 1], band[y - 1][x])
             elif x > 0 and y == 0:
                 prediction = band[0][x - 1]
             elif x == 0 and y > 0:

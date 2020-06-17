@@ -68,6 +68,6 @@ def test_clip(value, expectation):
     ],
 )
 def test_mean(values, expectation):
-    out = vc2_math.mean(values)
+    out = vc2_math.mean(*values)
     assert isinstance(out, int)
     assert out == expectation

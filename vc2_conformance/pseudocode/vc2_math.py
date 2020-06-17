@@ -54,7 +54,7 @@ def clip(a, b, t):
 
 
 @ref_pseudocode(deviation="inferred_implementation")
-def mean(S):
+def mean(*S):
     """(5.5.3)"""
     n = len(S)
     return (sum(S) + (n // 2)) // n

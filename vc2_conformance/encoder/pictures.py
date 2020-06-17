@@ -202,7 +202,7 @@ def apply_dc_prediction(band):
     for y in reversed(range(0, height(band))):
         for x in reversed(range(0, width(band))):
             if x > 0 and y > 0:
-                prediction = mean([band[y][x - 1], band[y - 1][x - 1], band[y - 1][x]])
+                prediction = mean(band[y][x - 1], band[y - 1][x - 1], band[y - 1][x])
             elif x > 0 and y == 0:
                 prediction = band[0][x - 1]
             elif x == 0 and y > 0:
