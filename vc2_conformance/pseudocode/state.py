@@ -174,8 +174,6 @@ State = fixeddict(
     Entry(
         "fragmented_picture_done", help_type="int", help="Set by (14.4) fragment_data"
     ),
-    Entry("slice_x", help_type="int", help="Set by (14.4) fragment_data"),
-    Entry("slice_y", help_type="int", help="Set by (14.4) fragment_data"),
     # (15.2) picture_decode
     Entry(
         "current_picture",

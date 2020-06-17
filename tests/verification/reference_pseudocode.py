@@ -817,17 +817,19 @@ def fragment_data(state):
     # Errata: In the spec this loop goes from 0 to fragment_slice_count
     # inclusive but should be fragment_slice_count *exclusive* (as below)
     for s in range(0, state["fragment_slice_count"]):
-        state["slice_x"] = (
+        # Errata: slice_x and slice_y are defined as members of the state map
+        # in the spec but should really just be local variables
+        slice_x = (
             state["fragment_y_offset"] * state["slices_x"]
             + state["fragment_x_offset"]
             + s
         ) % state["slices_x"]
-        state["slice_y"] = (
+        slice_y = (
             state["fragment_y_offset"] * state["slices_x"]
             + state["fragment_x_offset"]
             + s
         ) // state["slices_x"]
-        slice(state, state["slice_x"], state["slice_y"])
+        slice(state, slice_x, slice_y)
         state["fragment_slices_received"] += 1
         if state["fragment_slices_received"] == state["slices_x"] * state["slices_y"]:
             state["fragmented_picture_done"] = True

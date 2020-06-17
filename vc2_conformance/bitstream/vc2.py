@@ -957,17 +957,17 @@ def fragment_data(serdes, state):
     ## End not in spec
 
     for s in range(0, state["fragment_slice_count"]):
-        state["slice_x"] = (
+        slice_x = (
             (state["fragment_y_offset"] * state["slices_x"])
             + state["fragment_x_offset"]
             + s
         ) % state["slices_x"]
-        state["slice_y"] = (
+        slice_y = (
             (state["fragment_y_offset"] * state["slices_x"])
             + state["fragment_x_offset"]
             + s
         ) // state["slices_x"]
-        slice(serdes, state, state["slice_x"], state["slice_y"])
+        slice(serdes, state, slice_x, slice_y)
 
         # Not required for bitstream unpacking
         ### state["fragment_slices_received"] += 1

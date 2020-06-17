@@ -159,17 +159,17 @@ def initialize_fragment_state(state):
 def fragment_data(state):
     """(14.4)"""
     for s in range(0, state["fragment_slice_count"]):
-        state["slice_x"] = (
+        slice_x = (
             state["fragment_y_offset"] * state["slices_x"]
             + state["fragment_x_offset"]
             + s
         ) % state["slices_x"]
-        state["slice_y"] = (
+        slice_y = (
             state["fragment_y_offset"] * state["slices_x"]
             + state["fragment_x_offset"]
             + s
         ) // state["slices_x"]
-        slice(state, state["slice_x"], state["slice_y"])
+        slice(state, slice_x, slice_y)
         state["fragment_slices_received"] += 1
         state["_fragment_slices_remaining"] -= 1  ## Not in spec
         if state["fragment_slices_received"] == state["slices_x"] * state["slices_y"]:
