@@ -246,7 +246,6 @@ def test_sequence_header(w, sh_before, string):
     sh = deserialise(w, vc2.sequence_header)
     assert str(sh) == (
         "SequenceHeader:\n"
-        "  padding: 0b\n"
         "  parse_parameters: ParseParameters:\n"
         "    major_version: 3\n"
         "    minor_version: 0\n"

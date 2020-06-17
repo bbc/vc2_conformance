@@ -24,7 +24,9 @@ class TestSequenceHeader(object):
         state = bytes_to_state(sh1 + sh1 + sh2)
 
         decoder.sequence_header(state)
+        decoder.byte_align(state)
         decoder.sequence_header(state)
+        decoder.byte_align(state)
         with pytest.raises(decoder.SequenceHeaderChangedMidSequence) as exc_info:
             decoder.sequence_header(state)
 

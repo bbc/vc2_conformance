@@ -70,7 +70,6 @@ from vc2_conformance.decoder.io import (
     record_bitstream_start,
     record_bitstream_finish,
     tell,
-    byte_align,
     read_bool,
     read_uint,
 )
@@ -97,8 +96,6 @@ __all__ = [
 @ref_pseudocode
 def sequence_header(state):
     """(11.1)"""
-    byte_align(state)
-
     # Record this sequence_header as it appears in the bitstream
     ## Begin not in spec
     this_sequence_header_offset = tell(state)[0]

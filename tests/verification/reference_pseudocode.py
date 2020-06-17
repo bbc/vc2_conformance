@@ -193,7 +193,7 @@ def decode_sequence():
 
 def sequence_header(state):
     """(11.1)"""
-    byte_align(state)
+    # Errata: byte_align() call removed
     parse_parameters(state)
     base_video_format = read_uint(state)
     video_parameters = source_parameters(state, base_video_format)

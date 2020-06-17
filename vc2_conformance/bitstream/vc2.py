@@ -284,8 +284,6 @@ def padding(serdes, state):
 @ref_pseudocode(deviation="serdes")
 def sequence_header(serdes, state):
     """(11.1) Parse a sequence header returning a VideoParameters object."""
-    serdes.byte_align("padding")
-
     with serdes.subcontext("parse_parameters"):
         parse_parameters(serdes, state)
 

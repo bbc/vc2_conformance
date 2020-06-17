@@ -437,12 +437,6 @@ vc2_fixeddict_nesting[SourceParameters] = [
 
 SequenceHeader = fixeddict(
     "SequenceHeader",
-    Entry(
-        "padding",
-        formatter=Bits(),
-        help_type=":py:class:`~bitarray.bitarray`",
-        help="Byte alignment padding bits.",
-    ),
     Entry("parse_parameters", help_type=":py:class:`ParseParameters`"),
     Entry(
         "base_video_format",
@@ -461,7 +455,6 @@ SequenceHeader = fixeddict(
 )
 
 vc2_default_values[SequenceHeader] = SequenceHeader(
-    padding=bitarray(),
     base_video_format=BaseVideoFormats.custom_format,
     picture_coding_mode=PictureCodingModes.pictures_are_frames,
 )
