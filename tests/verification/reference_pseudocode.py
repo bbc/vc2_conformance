@@ -593,7 +593,8 @@ def ld_slice(state, sx, sy):
     qindex = read_nbits(state, 7)
     slice_bits_left -= 7
     slice_quantizers(state, qindex)
-    length_bits = intlog2(8 * slice_bytes(state, sx, sy) - 7)
+    # Errata: Make grouping of operations explicit below
+    length_bits = intlog2((8 * slice_bytes(state, sx, sy)) - 7)
     slice_y_length = read_nbits(state, length_bits)
     slice_bits_left -= length_bits
     state["bits_left"] = slice_y_length
