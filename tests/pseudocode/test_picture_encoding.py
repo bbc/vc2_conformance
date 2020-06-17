@@ -55,9 +55,8 @@ def test_picture_encode_and_picture_decode_are_inverses():
     assert "c2_transform" in state
 
     # Should decode back out again
-    decoded_picture = picture_decode(state)
-    assert state["current_picture"] is decoded_picture
-    assert decoded_picture == original_picture
+    picture_decode(state)
+    assert state["current_picture"] == original_picture
 
 
 ################################################################################

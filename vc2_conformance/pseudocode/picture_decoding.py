@@ -22,7 +22,6 @@ from vc2_conformance.pseudocode.arrays import (
 )
 
 __all__ = [
-    "picture_decode",
     "inverse_wavelet_transform",
     "idwt",
     "h_synthesis",
@@ -50,7 +49,24 @@ def picture_decode(state):
     inverse_wavelet_transform(state)
     clip_picture(state, state["current_picture"])
     offset_picture(state, state["current_picture"])
-    return state["current_picture"]
+
+    # In this concrete implementation, the 'output_picture' function is
+    # provided via the _output_picture_callback comes via State.
+
+    ### output_picture(
+    ###     state["current_picture"],
+    ###     state["video_parameters"],
+    ###     state["picture_coding_mode"],
+    ### )
+
+    ## Begin not in spec
+    if "_output_picture_callback" in state:
+        state["_output_picture_callback"](
+            state["current_picture"],
+            state["video_parameters"],
+            state["picture_coding_mode"],
+        )
+    ## End not in spec
 
 
 @ref_pseudocode

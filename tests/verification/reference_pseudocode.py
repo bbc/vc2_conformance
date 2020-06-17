@@ -66,22 +66,12 @@ def parse_sequence(state):
             picture_parse(state)
             # Errata: picture decoding/output not shown in spec
             picture_decode(state)
-            output_picture(
-                state["current_picture"],
-                state["video_parameters"],
-                state["picture_coding_mode"],
-            )
         elif is_fragment(state):
             # Errata: is 'fragment' in the spec
             fragment_parse(state)
             # Errata: picture decoding/output not shown in spec
             if state["fragmented_picture_done"]:
                 picture_decode(state)
-                output_picture(
-                    state["current_picture"],
-                    state["video_parameters"],
-                    state["picture_coding_mode"],
-                )
         elif is_auxiliary_data(state):
             auxiliary_data(state)
         elif is_padding_data(state):  # Errata: is 'is_padding' in the spec
@@ -855,7 +845,12 @@ def picture_decode(state):
     inverse_wavelet_transform(state)
     clip_picture(state, state["current_picture"])
     offset_picture(state, state["current_picture"])
-    return state["current_picture"]
+    # Errata: Explicitly output the decoded picture and picture data
+    output_picture(
+        state["current_picture"],
+        state["video_parameters"],
+        state["picture_coding_mode"],
+    )
 
 
 def inverse_wavelet_transform(state):
