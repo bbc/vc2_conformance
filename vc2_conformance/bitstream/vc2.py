@@ -849,6 +849,9 @@ def slice_band(serdes, state, transform, level, orient, sx, sy):
     elif transform == "c2_transform":
         comp = "C2"
 
+    # Not required for bitstream unpacking
+    ### qi = state["quantizer"][level][orient]
+
     # These values evaulated in the loop definition in the spec, moving them
     # here saves a lot of computation
     ## Begin not in spec
@@ -865,7 +868,6 @@ def slice_band(serdes, state, transform, level, orient, sx, sy):
             val = serdes.sint(transform)  # noqa: F841
 
             # Not required for bitstream unpacking
-            ### qi = state["quantizer"][level][orient]
             ### state[transform][level][orient][y][x] = inverse_quant(val, qi)
 
     # Following line included to ensure the trailing comment above is
@@ -876,6 +878,9 @@ def slice_band(serdes, state, transform, level, orient, sx, sy):
 @ref_pseudocode(deviation="serdes")
 def color_diff_slice_band(serdes, state, level, orient, sx, sy):
     """(13.5.6.4) Read and dequantize interleaved color difference subbands in a slice."""
+    # Not required for bitstream unpacking
+    ### qi = state["quantizer"][level][orient]
+
     # These values evaulated in the loop definition in the spec, moving them
     # here saves a lot of computation
     ## Begin not in spec
@@ -889,9 +894,6 @@ def color_diff_slice_band(serdes, state, level, orient, sx, sy):
     ###     for x in range(slice_left(state,sx,"C1",level), slice_right(state,sx,"C1",level)):
     for y in range(y1, y2):  ## Not in spec
         for x in range(x1, x2):  ## Not in spec
-            # Not required for bitstream unpacking
-            ### qi = state["quantizer"][level][orient]
-
             val = serdes.sint("c_transform")  # noqa: F841
             ### state["c1_transform"][level][orient][y][x] = inverse_quant(val, qi)
 

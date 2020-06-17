@@ -288,6 +288,8 @@ def slice_band(state, transform, level, orient, sx, sy):
     elif transform == "c2_transform":
         comp = "C2"
 
+    qi = state["quantizer"][level][orient]
+
     # These values evaulated in the loop definition in the spec, moving them
     # here saves a lot of computation
     ## Begin not in spec
@@ -302,13 +304,14 @@ def slice_band(state, transform, level, orient, sx, sy):
     for y in range(y1, y2):  ## Not in spec
         for x in range(x1, x2):  ## Not in spec
             val = read_sintb(state)
-            qi = state["quantizer"][level][orient]
             state[transform][level][orient][y][x] = inverse_quant(val, qi)
 
 
 @ref_pseudocode
 def color_diff_slice_band(state, level, orient, sx, sy):
     """(13.5.6.4)"""
+    qi = state["quantizer"][level][orient]
+
     # These values evaulated in the loop definition in the spec, moving them
     # here saves a lot of computation
     ## Begin not in spec
@@ -322,7 +325,6 @@ def color_diff_slice_band(state, level, orient, sx, sy):
     ###     for x in range(slice_left(state,sx,"C1",level), slice_right(state,sx,"C1",level)):
     for y in range(y1, y2):  ## Not in spec
         for x in range(x1, x2):  ## Not in spec
-            qi = state["quantizer"][level][orient]
             val = read_sintb(state)
             state["c1_transform"][level][orient][y][x] = inverse_quant(val, qi)
             val = read_sintb(state)

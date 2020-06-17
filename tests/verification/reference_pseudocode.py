@@ -740,6 +740,8 @@ def slice_band(state, transform, level, orient, sx, sy):
     elif transform == "c2_transform":
         comp = "C2"
 
+    qi = state["quantizer"][level][orient]
+
     for y in range(
         slice_top(state, sy, comp, level), slice_bottom(state, sy, comp, level)
     ):
@@ -747,14 +749,14 @@ def slice_band(state, transform, level, orient, sx, sy):
             slice_left(state, sx, comp, level), slice_right(state, sx, comp, level)
         ):
             val = read_sintb(state)
-            qi = state["quantizer"][level][orient]
+            # Errata: qi needlessly set here every loop iteration
+            # qi = state["quantizer"][level][orient]
             state[transform][level][orient][y][x] = inverse_quant(val, qi)
 
 
 def color_diff_slice_band(state, level, orient, sx, sy):
     """(13.5.6.4)"""
-    # Errata: the following line is not necessary
-    # qi = state["quantizer"][level][orient]
+    qi = state["quantizer"][level][orient]
 
     for y in range(
         slice_top(state, sy, "C1", level), slice_bottom(state, sy, "C1", level)
@@ -762,7 +764,10 @@ def color_diff_slice_band(state, level, orient, sx, sy):
         for x in range(
             slice_left(state, sx, "C1", level), slice_right(state, sx, "C1", level)
         ):
-            qi = state["quantizer"][level][orient]
+            # Errata; qi was needlessly set again here (in addition to the
+            # assignment above).
+            #
+            # qi = state["quantizer"][level][orient]
             val = read_sintb(state)
             state["c1_transform"][level][orient][y][x] = inverse_quant(val, qi)
             val = read_sintb(state)
