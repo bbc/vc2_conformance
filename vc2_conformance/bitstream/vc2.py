@@ -842,7 +842,12 @@ def hq_slice(serdes, state, sx, sy):
 @ref_pseudocode(deviation="serdes")
 def slice_band(serdes, state, transform, level, orient, sx, sy):
     """(13.5.6.3) Read and dequantize a subband in a slice."""
-    comp = "Y" if transform.startswith("y") else "C1"
+    if transform == "y_transform":
+        comp = "Y"
+    elif transform == "c1_transform":
+        comp = "C1"
+    elif transform == "c2_transform":
+        comp = "C2"
 
     # These values evaulated in the loop definition in the spec, moving them
     # here saves a lot of computation

@@ -281,7 +281,12 @@ def slice_quantizers(state, qindex):
 @ref_pseudocode
 def slice_band(state, transform, level, orient, sx, sy):
     """(13.5.6.3)"""
-    comp = "Y" if transform.startswith("y") else "C1"
+    if transform == "y_transform":
+        comp = "Y"
+    elif transform == "c1_transform":
+        comp = "C1"
+    elif transform == "c2_transform":
+        comp = "C2"
 
     # These values evaulated in the loop definition in the spec, moving them
     # here saves a lot of computation

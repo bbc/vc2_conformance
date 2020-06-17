@@ -733,7 +733,12 @@ def slice_band(state, transform, level, orient, sx, sy):
     """(13.5.6.3)"""
     # Errata: 'Y' is always used in the spec but should respect whatever
     # transform is specified.
-    comp = "Y" if transform.startswith("y") else "C1"
+    if transform == "y_transform":
+        comp = "Y"
+    elif transform == "c1_transform":
+        comp = "C1"
+    elif transform == "c2_transform":
+        comp = "C2"
 
     for y in range(
         slice_top(state, sy, comp, level), slice_bottom(state, sy, comp, level)
