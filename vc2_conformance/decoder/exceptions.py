@@ -264,7 +264,7 @@ class InconsistentNextParseOffset(ConformanceError):
             Does the next_parse_offset include the {} bytes of the parse info
             header?
 
-            Is next_parse_offset given in bytes, not bits?
+            Is next_parse_offset given in bits, not bytes?
         """.format(
             self.next_parse_offset,
             self.true_parse_offset,
@@ -412,7 +412,7 @@ class InconsistentPreviousParseOffset(ConformanceError):
             Does the previous_parse_offset include the {} bytes of the parse info
             header?
 
-            Is previous_parse_offset given in bytes, not bits?
+            Is previous_parse_offset given in bits, not bytes?
 
             Was the previous_parse_offset incorrectly omitted after a data unit
             whose size was not initially known?
