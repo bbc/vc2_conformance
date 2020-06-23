@@ -831,6 +831,7 @@ def fragment_data(state):
         ) // state["slices_x"]
         slice(state, slice_x, slice_y)
         state["fragment_slices_received"] += 1
+        # Errata: Was slice_x and slice_y
         if state["fragment_slices_received"] == state["slices_x"] * state["slices_y"]:
             state["fragmented_picture_done"] = True
             if using_dc_prediction(state):
