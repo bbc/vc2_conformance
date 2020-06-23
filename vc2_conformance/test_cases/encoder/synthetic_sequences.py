@@ -79,6 +79,23 @@ def synthetic_linear_ramps(codec_features):
 
 
 @encoder_test_case_generator
+def synthetic_grey(codec_features):
+    """
+    **Tests that the encoder can encode a maximally compressible sequence.**
+
+    This sequence contains an image in which every transform coefficient is
+    zero. For most color specifications (11.4.10), this decodes to a mid-grey
+    frame.
+
+    This special case image is maximally compressible since no transform
+    coefficients need to be explicitly coded in the bitstream. For lossless
+    coding modes, this should also produce produce the smallest possible
+    bitstream.
+    """
+    return picture_generator_to_test_case(picture_generators.mid_gray, codec_features,)
+
+
+@encoder_test_case_generator
 def synthetic_noise(codec_features):
     """
     **Tests that an encoder correctly encodes a noise plate.**
