@@ -230,7 +230,7 @@ def read_bool(state):
 def read_nbits(state, n):
     """(A.3.3)"""
     val = 0
-    for i in range(0, n):
+    for i in range(n):
         val <<= 1
         val += read_bit(state)
     return val

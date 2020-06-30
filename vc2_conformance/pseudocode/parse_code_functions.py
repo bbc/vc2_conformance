@@ -12,6 +12,8 @@ __all__ = [
     "is_end_of_sequence",
     "is_auxiliary_data",
     "is_padding_data",
+    "is_ld",
+    "is_hq",
     "is_picture",
     "is_ld_picture",
     "is_hq_picture",
@@ -44,6 +46,16 @@ def is_auxiliary_data(state):
 def is_padding_data(state):
     """(Table 10.2)"""
     return state["parse_code"] == 0x30
+
+
+def is_ld(state):
+    """(Table 10.2)"""
+    return (state["parse_code"] & 0xF8) == 0xC8
+
+
+def is_hq(state):
+    """(Table 10.2)"""
+    return (state["parse_code"] & 0xF8) == 0xE8
 
 
 @ref_pseudocode

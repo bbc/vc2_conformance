@@ -9,12 +9,7 @@ from vc2_conformance.constraint_table import allowed_values_for
 
 from vc2_conformance.pseudocode.slice_sizes import slices_have_same_dimensions
 
-from vc2_conformance.pseudocode.parse_code_functions import (
-    is_ld_picture,
-    is_ld_fragment,
-    is_hq_picture,
-    is_hq_fragment,
-)
+from vc2_conformance.pseudocode.parse_code_functions import is_ld, is_hq
 
 from vc2_conformance.decoder.io import (
     tell,
@@ -187,7 +182,7 @@ def slice_parameters(state):
     )
     ## End not in spec
 
-    if is_ld_picture(state) or is_ld_fragment(state):
+    if is_ld(state):
         state["slice_bytes_numerator"] = read_uint(state)
         # (C.3) Check level allows the specified numerator
         ## Begin not in spec
@@ -226,7 +221,7 @@ def slice_parameters(state):
             )
         ## End not in spec
 
-    if is_hq_picture(state) or is_hq_fragment(state):
+    if is_hq(state):
         state["slice_prefix_bytes"] = read_uint(state)
         # (C.3) Check level allows the specified prefix byte count
         ## Begin not in spec

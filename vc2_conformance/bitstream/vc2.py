@@ -55,6 +55,8 @@ from vc2_conformance.pseudocode.parse_code_functions import (
     is_auxiliary_data,
     is_padding_data,
     is_picture,
+    is_ld,
+    is_hq,
     is_ld_picture,
     is_hq_picture,
     is_ld_fragment,
@@ -256,7 +258,7 @@ def parse_info(serdes, state):
 def auxiliary_data(serdes, state):
     """(10.4.4) Read an auxiliary data block."""
     serdes.byte_align("padding")
-    ### for i in range(state["next_parse_offset"]-13):
+    ### for i in range(1, state["next_parse_offset"]-12):
     ###     read_uint_lit(state, 1)
     ## Begin not in spec
     serdes.bytes("bytes", state["next_parse_offset"] - PARSE_INFO_HEADER_BYTES)
@@ -268,7 +270,7 @@ def auxiliary_data(serdes, state):
 def padding(serdes, state):
     """(10.4.5) Read a padding data block."""
     serdes.byte_align("padding")
-    ### for i in range(state["next_parse_offset"]-13):
+    ### for i in range(1, state["next_parse_offset"]-12):
     ###     read_uint_lit(state, 1)
     ## Begin not in spec
     serdes.bytes("bytes", state["next_parse_offset"] - PARSE_INFO_HEADER_BYTES)
@@ -631,10 +633,10 @@ def slice_parameters(serdes, state):
     state["slices_x"] = serdes.uint("slices_x")
     state["slices_y"] = serdes.uint("slices_y")
 
-    if is_ld_picture(state) or is_ld_fragment(state):
+    if is_ld(state):
         state["slice_bytes_numerator"] = serdes.uint("slice_bytes_numerator")
         state["slice_bytes_denominator"] = serdes.uint("slice_bytes_denominator")
-    if is_hq_picture(state) or is_hq_fragment(state):
+    if is_hq(state):
         state["slice_prefix_bytes"] = serdes.uint("slice_prefix_bytes")
         state["slice_size_scaler"] = serdes.uint("slice_size_scaler")
 
@@ -717,10 +719,10 @@ def transform_data(serdes, state):
 @ref_pseudocode(deviation="serdes")
 def slice(serdes, state, sx, sy):
     """(13.5.2)"""
-    if is_ld_picture(state) or is_ld_fragment(state):
+    if is_ld(state):
         with serdes.subcontext("ld_slices"):
             ld_slice(serdes, state, sx, sy)
-    elif is_hq_picture(state) or is_hq_fragment(state):
+    elif is_hq(state):
         with serdes.subcontext("hq_slices"):
             hq_slice(serdes, state, sx, sy)
 
@@ -956,7 +958,7 @@ def fragment_data(serdes, state):
         serdes.declare_list("hq_slices")
     ## End not in spec
 
-    for s in range(0, state["fragment_slice_count"]):
+    for s in range(state["fragment_slice_count"]):
         slice_x = (
             (state["fragment_y_offset"] * state["slices_x"])
             + state["fragment_x_offset"]

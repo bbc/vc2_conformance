@@ -136,20 +136,20 @@ def h_synthesis(state, L_data, H_data):
     synth = new_array(2 * width(L_data), height(L_data))
 
     # Interleave transform data (as expected by synthesis routine)
-    for y in range(0, (height(synth))):
-        for x in range(0, (width(synth) // 2)):
+    for y in range(height(synth)):
+        for x in range(width(synth) // 2):
             synth[y][2 * x] = L_data[y][x]
             synth[y][(2 * x) + 1] = H_data[y][x]
 
     # Synthesis
-    for y in range(0, height(synth)):
+    for y in range(height(synth)):
         oned_synthesis(row(synth, y), state["wavelet_index_ho"])
 
     # Bit shift, if required
     shift = filter_bit_shift(state)
     if shift > 0:
-        for y in range(0, height(synth)):
-            for x in range(0, width(synth)):
+        for y in range(height(synth)):
+            for x in range(width(synth)):
                 synth[y][x] = (synth[y][x] + (1 << (shift - 1))) >> shift
 
     return synth
@@ -161,24 +161,24 @@ def vh_synthesis(state, LL_data, HL_data, LH_data, HH_data):
     synth = new_array(2 * width(LL_data), 2 * height(LL_data))
 
     # Interleave transform data (as expected by synthesis routine)
-    for y in range(0, (height(synth) // 2)):
-        for x in range(0, (width(synth) // 2)):
+    for y in range(height(synth) // 2):
+        for x in range(width(synth) // 2):
             synth[2 * y][2 * x] = LL_data[y][x]
             synth[2 * y][2 * x + 1] = HL_data[y][x]
             synth[2 * y + 1][2 * x] = LH_data[y][x]
             synth[2 * y + 1][2 * x + 1] = HH_data[y][x]
 
     # Synthesis
-    for x in range(0, width(synth)):
+    for x in range(width(synth)):
         oned_synthesis(column(synth, x), state["wavelet_index"])
-    for y in range(0, height(synth)):
+    for y in range(height(synth)):
         oned_synthesis(row(synth, y), state["wavelet_index_ho"])
 
     # Bit shift, if required
     shift = filter_bit_shift(state)
     if shift > 0:
-        for y in range(0, height(synth)):
-            for x in range(0, width(synth)):
+        for y in range(height(synth)):
+            for x in range(width(synth)):
                 synth[y][x] = (synth[y][x] + (1 << (shift - 1))) >> shift
 
     return synth
@@ -204,7 +204,7 @@ def filter_bit_shift(state):
 @ref_pseudocode
 def lift1(A, L, D, taps, S):
     """(15.4.4.1) Update even, add odd."""
-    for n in range(0, (len(A) // 2)):
+    for n in range(len(A) // 2):
         sum = 0
         for i in range(D, L + D):
             pos = 2 * (n + i) - 1
@@ -219,7 +219,7 @@ def lift1(A, L, D, taps, S):
 @ref_pseudocode
 def lift2(A, L, D, taps, S):
     """(15.4.4.1) Update even, subtract odd."""
-    for n in range(0, (len(A) // 2)):
+    for n in range(len(A) // 2):
         sum = 0
         for i in range(D, L + D):
             pos = 2 * (n + i) - 1
@@ -234,7 +234,7 @@ def lift2(A, L, D, taps, S):
 @ref_pseudocode
 def lift3(A, L, D, taps, S):
     """(15.4.4.1) Update odd, add even."""
-    for n in range(0, (len(A) // 2)):
+    for n in range(len(A) // 2):
         sum = 0
         for i in range(D, L + D):
             pos = 2 * (n + i)
@@ -249,7 +249,7 @@ def lift3(A, L, D, taps, S):
 @ref_pseudocode
 def lift4(A, L, D, taps, S):
     """(15.4.4.1) Update odd, subtract even."""
-    for n in range(0, (len(A) // 2)):
+    for n in range(len(A) // 2):
         sum = 0
         for i in range(D, L + D):
             pos = 2 * (n + i)
@@ -315,8 +315,8 @@ def offset_picture(state, current_picture):
 @ref_pseudocode
 def offset_component(state, comp_data, c):
     """(15.5) Remove picture value offsets from a single component."""
-    for y in range(0, height(comp_data)):
-        for x in range(0, width(comp_data)):
+    for y in range(height(comp_data)):
+        for x in range(width(comp_data)):
             if c == "Y":
                 comp_data[y][x] += 2 ** (state["luma_depth"] - 1)
             else:
@@ -333,8 +333,8 @@ def clip_picture(state, current_picture):
 @ref_pseudocode
 def clip_component(state, comp_data, c):
     """(15.5)"""
-    for y in range(0, height(comp_data)):
-        for x in range(0, width(comp_data)):
+    for y in range(height(comp_data)):
+        for x in range(width(comp_data)):
             if c == "Y":
                 comp_data[y][x] = clip(
                     comp_data[y][x],

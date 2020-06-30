@@ -27,10 +27,8 @@ from vc2_conformance.pseudocode.slice_sizes import (
 )
 
 from vc2_conformance.pseudocode.parse_code_functions import (
-    is_ld_picture,
-    is_hq_picture,
-    is_ld_fragment,
-    is_hq_fragment,
+    is_ld,
+    is_hq,
     using_dc_prediction,
 )
 
@@ -64,8 +62,8 @@ __all__ = [
 @ref_pseudocode
 def dc_prediction(band):
     """(13.4)"""
-    for y in range(0, height(band)):
-        for x in range(0, width(band)):
+    for y in range(height(band)):
+        for x in range(width(band)):
             if x > 0 and y > 0:
                 prediction = mean(band[y][x - 1], band[y - 1][x - 1], band[y - 1][x])
             elif x > 0 and y == 0:
@@ -137,9 +135,9 @@ def transform_data(state):
 @ref_pseudocode
 def slice(state, sx, sy):
     """(13.5.2)"""
-    if is_ld_picture(state) or is_ld_fragment(state):
+    if is_ld(state):
         ld_slice(state, sx, sy)
-    elif is_hq_picture(state) or is_hq_fragment(state):
+    elif is_hq(state):
         hq_slice(state, sx, sy)
 
 

@@ -166,7 +166,7 @@ def parse_sequence(state):
 def auxiliary_data(state):
     """(10.4.4)"""
     byte_align(state)
-    for i in range(state["next_parse_offset"] - 13):
+    for i in range(1, state["next_parse_offset"] - 12):
         read_uint_lit(state, 1)
 
 
@@ -174,7 +174,7 @@ def auxiliary_data(state):
 def padding(state):
     """(10.4.5)"""
     byte_align(state)
-    for i in range(state["next_parse_offset"] - 13):
+    for i in range(1, state["next_parse_offset"] - 12):
         read_uint_lit(state, 1)
 
 

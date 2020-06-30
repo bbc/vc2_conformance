@@ -158,7 +158,7 @@ def initialize_fragment_state(state):
 @ref_pseudocode
 def fragment_data(state):
     """(14.4)"""
-    for s in range(0, state["fragment_slice_count"]):
+    for s in range(state["fragment_slice_count"]):
         slice_x = (
             state["fragment_y_offset"] * state["slices_x"]
             + state["fragment_x_offset"]

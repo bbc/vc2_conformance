@@ -83,7 +83,7 @@ def parse_sequence(state):
 def auxiliary_data(state):
     """(10.4.4)"""
     byte_align(state)
-    for i in range(state["next_parse_offset"] - 13):
+    for i in range(1, state["next_parse_offset"] - 12):
         # Errata: is 'read_byte' in the spec
         read_uint_lit(state, 1)
 
@@ -91,7 +91,7 @@ def auxiliary_data(state):
 def padding(state):
     """(10.4.5)"""
     byte_align(state)
-    for i in range(state["next_parse_offset"] - 13):
+    for i in range(1, state["next_parse_offset"] - 12):
         # Errata: is 'read_byte' in the spec
         read_uint_lit(state, 1)
 
@@ -123,6 +123,18 @@ def is_auxiliary_data(state):
 def is_padding_data(state):
     """(Table 10.2)"""
     return state["parse_code"] == 0x30
+
+
+# Errata: Not in original spec
+def is_ld(state):
+    """(Table 10.2)"""
+    return (state["parse_code"] & 0xF8) == 0xC8
+
+
+# Errata: Not in original spec
+def is_hq(state):
+    """(Table 10.2)"""
+    return (state["parse_code"] & 0xF8) == 0xE8
 
 
 # Errata: is_picture also returns True for fragments in the spec.
@@ -423,10 +435,10 @@ def slice_parameters(state):
     state["slices_y"] = read_uint(state)
     # Errata: just uses 'is_ld_picture' and 'is_hq_picture' in spec but should
     # check fragment types too
-    if is_ld_picture(state) or is_ld_fragment(state):
+    if is_ld(state):
         state["slice_bytes_numerator"] = read_uint(state)
         state["slice_bytes_denominator"] = read_uint(state)
-    if is_hq_picture(state) or is_hq_fragment(state):
+    if is_hq(state):
         state["slice_prefix_bytes"] = read_uint(state)
         state["slice_size_scaler"] = read_uint(state)
 
@@ -491,12 +503,12 @@ def subband_height(state, level, comp):
     else:
         h = state["color_diff_height"]
 
-    scale_h = 2 ** (state["dwt_depth"])
+    scale_h = 2 ** state["dwt_depth"]
 
     ph = scale_h * ((h + scale_h - 1) // scale_h)
 
     if level <= state["dwt_depth_ho"]:
-        return ph // 2 ** (state["dwt_depth"])
+        return ph // 2 ** state["dwt_depth"]
     else:  # Errata: two equivalent else-if branches in spec
         return ph // 2 ** (state["dwt_depth_ho"] + state["dwt_depth"] - level + 1)
 
@@ -539,8 +551,8 @@ def quant_offset(index):
 
 def dc_prediction(band):
     """(13.4)"""
-    for y in range(0, height(band)):
-        for x in range(0, width(band)):
+    for y in range(height(band)):
+        for x in range(width(band)):
             # Errata: 'If' not 'if' in spec
             if x > 0 and y > 0:
                 prediction = mean(band[y][x - 1], band[y - 1][x - 1], band[y - 1][x])
@@ -581,9 +593,9 @@ def slice(state, sx, sy):
     #
     # Errata: In the spec the if/elif condition function names were missing a
     # leading 'is_'.
-    if is_ld_picture(state) or is_ld_fragment(state):
+    if is_ld(state):
         ld_slice(state, sx, sy)
-    elif is_hq_picture(state) or is_hq_fragment(state):
+    elif is_hq(state):
         hq_slice(state, sx, sy)
 
 
@@ -816,7 +828,7 @@ def fragment_data(state):
     """(14.4)"""
     # Errata: In the spec this loop goes from 0 to fragment_slice_count
     # inclusive but should be fragment_slice_count *exclusive* (as below)
-    for s in range(0, state["fragment_slice_count"]):
+    for s in range(state["fragment_slice_count"]):
         # Errata: slice_x and slice_y are defined as members of the state map
         # in the spec but should really just be local variables
         slice_x = (
@@ -910,21 +922,21 @@ def h_synthesis(state, L_data, H_data):
     synth = new_array(2 * width(L_data), height(L_data))
 
     # Step 2.
-    for y in range(0, (height(synth))):
-        for x in range(0, (width(synth) // 2)):
+    for y in range(height(synth)):
+        for x in range(width(synth) // 2):
             # Errata: 2*x is '2x' in spec
             synth[y][2 * x] = L_data[y][x]
             synth[y][(2 * x) + 1] = H_data[y][x]
 
     # Step 3.
-    for y in range(0, height(synth)):
+    for y in range(height(synth)):
         oned_synthesis(row(synth, y), state["wavelet_index_ho"])
 
     # Step 4.
     shift = filter_bit_shift(state)
     if shift > 0:  # Errata: 'If' in spec should be 'if'
-        for y in range(0, height(synth)):
-            for x in range(0, width(synth)):
+        for y in range(height(synth)):
+            for x in range(width(synth)):
                 synth[y][x] = (synth[y][x] + (1 << (shift - 1))) >> shift
 
     return synth
@@ -940,8 +952,8 @@ def vh_synthesis(state, LL_data, HL_data, LH_data, HH_data):
     synth = new_array(2 * width(LL_data), 2 * height(LL_data))
 
     # Step 2.
-    for y in range(0, (height(synth) // 2)):
-        for x in range(0, (width(synth) // 2)):
+    for y in range(height(synth) // 2):
+        for x in range(width(synth) // 2):
             # Errata: 2*x is '2x' in spec (etc.)
             synth[2 * y][2 * x] = LL_data[y][x]
             synth[2 * y][2 * x + 1] = HL_data[y][x]
@@ -949,16 +961,16 @@ def vh_synthesis(state, LL_data, HL_data, LH_data, HH_data):
             synth[2 * y + 1][2 * x + 1] = HH_data[y][x]
 
     # Step 3.
-    for x in range(0, width(synth)):
+    for x in range(width(synth)):
         oned_synthesis(column(synth, x), state["wavelet_index"])
-    for y in range(0, height(synth)):
+    for y in range(height(synth)):
         oned_synthesis(row(synth, y), state["wavelet_index_ho"])
 
     # Step 4.
     shift = filter_bit_shift(state)
     if shift > 0:  # Errata: 'If' in spec should be 'if'
-        for y in range(0, height(synth)):
-            for x in range(0, width(synth)):
+        for y in range(height(synth)):
+            for x in range(width(synth)):
                 synth[y][x] = (synth[y][x] + (1 << (shift - 1))) >> shift
 
     return synth
@@ -966,7 +978,7 @@ def vh_synthesis(state, LL_data, HL_data, LH_data, HH_data):
 
 def lift1(A, L, D, taps, S):
     """(15.4.4.1)"""
-    for n in range(0, (len(A) // 2)):
+    for n in range(len(A) // 2):
         sum = 0
         for i in range(D, L + D):
             pos = 2 * (n + i) - 1
@@ -980,7 +992,7 @@ def lift1(A, L, D, taps, S):
 
 def lift2(A, L, D, taps, S):
     """(15.4.4.1)"""
-    for n in range(0, (len(A) // 2)):
+    for n in range(len(A) // 2):
         sum = 0
         for i in range(D, L + D):
             pos = 2 * (n + i) - 1
@@ -994,7 +1006,7 @@ def lift2(A, L, D, taps, S):
 
 def lift3(A, L, D, taps, S):
     """(15.4.4.1)"""
-    for n in range(0, (len(A) // 2)):
+    for n in range(len(A) // 2):
         sum = 0
         for i in range(D, L + D):
             pos = 2 * (n + i)
@@ -1008,7 +1020,7 @@ def lift3(A, L, D, taps, S):
 
 def lift4(A, L, D, taps, S):
     """(15.4.4.1)"""
-    for n in range(0, (len(A) // 2)):
+    for n in range(len(A) // 2):
         sum = 0
         for i in range(D, L + D):
             pos = 2 * (n + i)
@@ -1044,8 +1056,8 @@ def clip_picture(state, current_picture):
 
 def clip_component(state, comp_data, c):
     """(15.5)"""
-    for y in range(0, height(comp_data)):
-        for x in range(0, width(comp_data)):
+    for y in range(height(comp_data)):
+        for x in range(width(comp_data)):
             if c == "Y":
                 # Errata: not assigned in spec (clip assumed to be mutating)
                 comp_data[y][x] = clip(
@@ -1070,8 +1082,8 @@ def offset_picture(state, current_picture):
 
 def offset_component(state, comp_data, c):
     """(15.5)"""
-    for y in range(0, height(comp_data)):
-        for x in range(0, width(comp_data)):
+    for y in range(height(comp_data)):
+        for x in range(width(comp_data)):
             if c == "Y":
                 comp_data[y][x] += 2 ** (state["luma_depth"] - 1)
             else:
@@ -1110,7 +1122,7 @@ def read_bool(state):
 def read_nbits(state, n):
     """(A.3.3)"""
     val = 0
-    for i in range(0, n):
+    for i in range(n):
         val <<= 1
         val += read_bit(state)
     return val

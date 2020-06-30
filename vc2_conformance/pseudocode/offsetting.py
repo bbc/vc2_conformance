@@ -40,8 +40,8 @@ def offset_picture(state, current_picture):
 @ref_pseudocode
 def offset_component(state, comp_data, c):
     """(15.5) Remove picture value offsets from a single component."""
-    for y in range(0, height(comp_data)):
-        for x in range(0, width(comp_data)):
+    for y in range(height(comp_data)):
+        for x in range(width(comp_data)):
             if c == "Y":
                 comp_data[y][x] += 2 ** (state["luma_depth"] - 1)
             else:
@@ -65,8 +65,8 @@ def remove_offset_component(state, comp_data, c):
     current_picture : {comp: [[pixel_value, ...], ...], ...}
         Will be mutated in-place.
     """
-    for y in range(0, height(comp_data)):
-        for x in range(0, width(comp_data)):
+    for y in range(height(comp_data)):
+        for x in range(width(comp_data)):
             if c == "Y":
                 comp_data[y][x] -= 2 ** (state["luma_depth"] - 1)
             else:
