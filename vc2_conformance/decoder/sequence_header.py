@@ -590,7 +590,7 @@ def signal_range(state, video_parameters):
 def color_spec(state, video_parameters):
     """(11.4.10.1)"""
     custom_color_spec_flag = read_bool(state)
-    # (C.3) Check level allows custom colour specs
+    # (C.3) Check level allows custom color specs
     ## Begin not in spec
     assert_level_constraint(state, "custom_color_spec_flag", custom_color_spec_flag)
     ## End not in spec
@@ -616,7 +616,7 @@ def color_spec(state, video_parameters):
 def color_primaries(state, video_parameters):
     """(11.4.10.2)"""
     custom_color_primaries_flag = read_bool(state)
-    # (C.3) Check level allows custom colour primaries
+    # (C.3) Check level allows custom color primaries
     ## Begin not in spec
     assert_level_constraint(
         state, "custom_color_primaries_flag", custom_color_primaries_flag
@@ -643,7 +643,7 @@ def color_primaries(state, video_parameters):
 def color_matrix(state, video_parameters):
     """(11.4.10.3)"""
     custom_color_matrix_flag = read_bool(state)
-    # (C.3) Check level allows custom colour matrices
+    # (C.3) Check level allows custom color matrices
     ## Begin not in spec
     assert_level_constraint(state, "custom_color_matrix_flag", custom_color_matrix_flag)
     ## End not in spec

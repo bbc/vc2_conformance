@@ -2,7 +2,7 @@
 :py:mod:`vc2_conformance.bitstream.exceptions`
 ==============================================
 
-Custom exception types related to bitstream parsing/seriallisation.
+Custom exception types related to bitstream parsing/serialisation.
 """
 
 

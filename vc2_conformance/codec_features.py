@@ -511,7 +511,7 @@ def codec_features_to_trivial_level_constraints(codec_features):
 
         .. note::
 
-            In principle, more keys could be determined however a line in the
+            In principle, more keys could be determined, however a line in the
             sand is required for what is considered 'simple' to determine and
             what requires re-implementing much of the codec. We draw the line
             at these values since all of them are straight-forward to work out.

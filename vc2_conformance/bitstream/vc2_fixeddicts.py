@@ -339,7 +339,7 @@ ColorPrimaries = fixeddict(
         help_type=":py:class:`~vc2_data_tables.PresetColorPrimaries`",
     ),
     help="""
-        (11.4.10.2) Colour primaries override defined by ``color_primaries()``.
+        (11.4.10.2) Color primaries override defined by ``color_primaries()``.
     """,
 )
 
@@ -357,7 +357,7 @@ ColorMatrix = fixeddict(
         help_type=":py:class:`~vc2_data_tables.PresetColorMatrices`",
     ),
     help="""
-        (11.4.10.3) Colour matrix override defined by ``color_matrix()``.
+        (11.4.10.3) Color matrix override defined by ``color_matrix()``.
     """,
 )
 
@@ -395,7 +395,7 @@ ColorSpec = fixeddict(
     Entry("color_matrix", help_type=":py:class:`ColorMatrix`"),
     Entry("transfer_function", help_type=":py:class:`TransferFunction`"),
     help="""
-        (11.4.10.1) Colour specification override defined by ``color_spec()``.
+        (11.4.10.1) Color specification override defined by ``color_spec()``.
     """,
 )
 
@@ -755,7 +755,7 @@ TransformData = fixeddict(
             Computed value. A copy of the
             :py:class:`~vc2_conformance.pseudocode.state.State` dictionary held
             when processing this transform data. May be used to work out how
-            the deseriallised values correspond to transform components within
+            the deserialised values correspond to transform components within
             the slices above.
         """,
     ),
@@ -860,7 +860,7 @@ FragmentData = fixeddict(
             Computed value. A copy of the
             :py:class:`~vc2_conformance.pseudocode.state.State` dictionary held
             when processing this fragment data. May be used to work out how the
-            deseriallised values correspond to transform components within the
+            deserialised values correspond to transform components within the
             slices above.
         """,
     ),

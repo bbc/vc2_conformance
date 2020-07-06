@@ -121,7 +121,7 @@ def split_into_line_wrap_blocks(text, wrap_indented_blocks=False):
               individual unit (with the wrapping indented
               as shown here).
             * Notice that bullets don't have a newline
-              between them like paragraphs to.
+              between them like paragraphs do.
 
             1. Numbered lists are also supported.
             2. Here long lines will be line wrapped in much

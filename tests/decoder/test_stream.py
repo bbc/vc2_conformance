@@ -494,7 +494,7 @@ class TestParseStreamAndParseSequence(object):
             state["_output_picture_callback"].call_args_list
         ):
             assert kwargs == {}
-            # Should get a 4x2 mid-grey frame with 4:2:2 colour difference sampling
+            # Should get a 4x2 mid-gray frame with 4:2:2 color difference sampling
             assert args[0] == {
                 "pic_num": 10 + i,
                 "Y": [[128, 128, 128, 128], [128, 128, 128, 128]],

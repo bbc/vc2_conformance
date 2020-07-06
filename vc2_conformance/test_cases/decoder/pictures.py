@@ -827,7 +827,7 @@ def interlace_mode_and_pixel_aspect_ratio(codec_features):
 
     ``interlace_mode_and_pixel_aspect_ratio[moving_sequence]``
         A sequence of 10 frames containing a graphic moving from left to right
-        along the top of the frame. In successive each frame, the graphic moves
+        along the top of the frame. In each successive frame, the graphic moves
         16 luma samples to the right (i.e. 8 samples every field, for
         interlaced formats).
 
@@ -872,12 +872,12 @@ def interlace_mode_and_pixel_aspect_ratio(codec_features):
 
 
 @decoder_test_case_generator
-def static_grey(codec_features):
+def static_gray(codec_features):
     """
     **Tests that the decoder can decode a maximally compressible sequence.**
 
     This sequence contains an image in which every transform coefficient is
-    zero. For most color specifications (11.4.10), this decodes to a mid-grey
+    zero. For most color specifications (11.4.10), this decodes to a mid-gray
     frame.
 
     This special case image is maximally compressible since no transform
@@ -924,10 +924,10 @@ def static_ramps(codec_features):
 
         When D-Cinema primaries are specified (preset color primaries index 3),
         red, green and blue are replaced with CIE X, Y and Z respectively. Note
-        that these may not represent physically realisable colours.
+        that these may not represent physically realisable colors.
 
     The left-most pixels in each band are notionally video black and the
-    right-most pixels video white, reg, green and blue (respectively). That is,
+    right-most pixels video white, red, green and blue (respectively). That is,
     oversaturated signals (e.g. 'super-blacks' and 'super-white') are not
     included.
 
@@ -936,7 +936,7 @@ def static_ramps(codec_features):
         For lossy codecs, the decoded signal values may vary due to coding
         artefacts.
 
-    The value ramps in the test picture are linear meaning that the (linear)
+    The value ramps in the test picture are linear, meaning that the (linear)
     pixel values increase at a constant rate from left (black) to right
     (saturated white/red/green/blue). Due to the non-linear response of human
     vision, this will produce a non-linear brightness ramp which appears to

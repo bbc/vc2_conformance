@@ -21,12 +21,12 @@ limited extent by the generated test cases. Some of these are listed below.
 **Mixing fragmented and non-fragmented picture data units**
     The VC-2 standard does not prohibit the use of fragmented and
     non-fragmented pictures within the same sequence. No test cases are
-    generated to test this esoteric case, however, since this it is unlikely to
-    be used in practice.
+    generated to test this esoteric case, however, since this is unlikely to be
+    used in practice.
 
 **Quantisation in lossless formats**
     Lossless formats may use quantization where transform coefficients happen
-    to be multiples the quantisation factor. Because quantisation can, in the
+    to be multiples of the quantisation factor. Because quantisation can, in the
     general case, result in larger intermediate signals within a decoder, it is
     not appropriate to use lossily encoded test signals to test a lossless
     decoder's support for quantisation. As a result, a special test case is

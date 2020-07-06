@@ -84,7 +84,7 @@ An example invocation is shown below::
     * `-video_size 352x144` = Picture size (not frame size).
     * `-framerate 25` = Picture rate (not frame rate)
     * `-pixel_format` = Specifies raw picture encoding.
-    * `yuv` = Y C1 C2 colour.
+    * `yuv` = Y C1 C2 color.
     * `420` = 4:2:0 color difference subsampling.
     * `p` = Planar format.
     * `-i path/to/raw/picture_%d.raw` = Input raw picture filename pattern
@@ -174,7 +174,7 @@ from vc2_conformance.string_utils import indent, wrap_paragraphs
 
 def is_rgb_color(video_parameters):
     """
-    Return True if the specified video parameters use RGB colour. Returns False
+    Return True if the specified video parameters use RGB color. Returns False
     if a Luma+Chroma representation is used instead.
     """
     return video_parameters["color_matrix_index"] == PresetColorMatrices.rgb
@@ -467,7 +467,7 @@ def example_ffmpeg_command(picture_filename, video_parameters, picture_coding_mo
     * Resolution
     * Bit depth
     * Pixel aspect ratio
-    * Colour subsampling mode
+    * Color subsampling mode
     * Frame rate
     * Interlacing (fields are always converted into frames and, if the
       underlying picture is interlaced, deinterlacing is applied)
@@ -475,7 +475,7 @@ def example_ffmpeg_command(picture_filename, video_parameters, picture_coding_mo
 
     In some cases, :py:exc:`UnsupportedPictureFormat` will be raised where the
     format is sufficiently unusual as to be completely unsupported by FFMPEG
-    (e.g.  extremely high bit depths or colour subsampling under RGB mode).
+    (e.g.  extremely high bit depths or color subsampling under RGB mode).
 
     Color model parameters are essentially ignored.
 
@@ -534,21 +534,21 @@ def example_ffmpeg_command(picture_filename, video_parameters, picture_coding_mo
     command.append("-pixel_format ", "Specifies raw picture encoding.")
 
     if is_rgb_color(video_parameters):
-        command.append("gbr", "RGB colour.")
+        command.append("gbr", "RGB color.")
 
         if (
             video_parameters["color_diff_format_index"]
             != ColorDifferenceSamplingFormats.color_4_4_4
         ):
             raise UnsupportedPictureFormat(
-                "Only 4:4:4 colour difference sampling is supported for RGB video."
+                "Only 4:4:4 color difference sampling is supported for RGB video."
             )
     elif video_parameters["color_matrix_index"] == PresetColorMatrices.reversible:
         raise UnsupportedPictureFormat(
             "Y Cg Co color ('reversible' color matrix) unsupported."
         )
     else:
-        command.append("yuv", "Y C1 C2 colour.")
+        command.append("yuv", "Y C1 C2 color.")
 
         color_difference_sampling_format = COLOR_DIFF_FORMAT_NAMES[
             video_parameters["color_diff_format_index"]
@@ -688,7 +688,7 @@ def example_imagemagick_command(
     The resulting commands attempt to achieve the correct:
 
     * Resolution
-    * Colour subsampling mode
+    * Color subsampling mode
     * RGB vs Luma + Color Difference representation
 
     Unfortunately, bit depths greater than 8 bits are unsupported due to
@@ -696,7 +696,7 @@ def example_imagemagick_command(
 
     In some cases, :py:exc:`UnsupportedPictureFormat` will be raised where the
     format is sufficiently unusual as to be completely unsupported by
-    ImageMagick (e.g.  extremely high bit depths or colour subsampling under
+    ImageMagick (e.g.  extremely high bit depths or color subsampling under
     RGB mode).
 
     Color model parameters are essentially ignored.
@@ -761,7 +761,7 @@ def example_imagemagick_command(
             != ColorDifferenceSamplingFormats.color_4_4_4
         ):
             raise UnsupportedPictureFormat(
-                "Only 4:4:4 colour difference sampling is supported for RGB video."
+                "Only 4:4:4 color difference sampling is supported for RGB video."
             )
     elif video_parameters["color_matrix_index"] == PresetColorMatrices.reversible:
         raise UnsupportedPictureFormat(

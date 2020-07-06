@@ -461,7 +461,7 @@ def test_bad_color_difference_sampling_format():
 
     assert wrap_paragraphs(e.explain()) == wrap_paragraphs(
         """
-        An invalid colour difference sampling format, 999, was provided
+        An invalid color difference sampling format, 999, was provided
         (11.4.4).
 
         See (Table 11.2) for an enumeration of allowed values.
@@ -715,7 +715,7 @@ class TestPictureDimensionsNotMultipleOfFrameDimensions(object):
 
         assert wrap_paragraphs(e.explain()) == wrap_paragraphs(
             """
-            The frame dimensions cannot be evenly divided by the current colour
+            The frame dimensions cannot be evenly divided by the current color
             difference sampling format and picture coding mode (11.6.2)
 
             Frame dimensions:
@@ -731,7 +731,7 @@ class TestPictureDimensionsNotMultipleOfFrameDimensions(object):
             * color_diff_height: 499 (not a factor of 1000)
 
             Was a frame size with an odd width or height used along with a
-            non-4:4:4 colour difference sampling mode or when pictures are
+            non-4:4:4 color difference sampling mode or when pictures are
             fields?
 
             Was the source sampling mode (11.4.5) used instead of the picture
@@ -751,7 +751,7 @@ class TestPictureDimensionsNotMultipleOfFrameDimensions(object):
 
         assert wrap_paragraphs(e.explain()) == wrap_paragraphs(
             """
-            The frame dimensions cannot be evenly divided by the current colour
+            The frame dimensions cannot be evenly divided by the current color
             difference sampling format and picture coding mode (11.6.2)
 
             Frame dimensions:
@@ -767,7 +767,7 @@ class TestPictureDimensionsNotMultipleOfFrameDimensions(object):
             * color_diff_height: 0 (not a factor of 1000)
 
             Was a frame size with an odd width or height used along with a
-            non-4:4:4 colour difference sampling mode or when pictures are
+            non-4:4:4 color difference sampling mode or when pictures are
             fields?
 
             Was the source sampling mode (11.4.5) used instead of the picture
@@ -789,7 +789,7 @@ class TestPictureDimensionsNotMultipleOfFrameDimensions(object):
 
         assert wrap_paragraphs(e.explain()) == wrap_paragraphs(
             """
-            The frame dimensions cannot be evenly divided by the current colour
+            The frame dimensions cannot be evenly divided by the current color
             difference sampling format and picture coding mode (11.6.2)
 
             Frame dimensions:
@@ -805,7 +805,7 @@ class TestPictureDimensionsNotMultipleOfFrameDimensions(object):
             * color_diff_height: 500
 
             Was a frame size with an odd width or height used along with a
-            non-4:4:4 colour difference sampling mode or when pictures are
+            non-4:4:4 color difference sampling mode or when pictures are
             fields?
 
             Was the source sampling mode (11.4.5) used instead of the picture

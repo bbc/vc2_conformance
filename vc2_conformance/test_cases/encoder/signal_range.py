@@ -78,7 +78,7 @@ def signal_range(codec_features):
         ("C1", analysis_color_diff_pictures),
         ("C2", analysis_color_diff_pictures),
     ]:
-        # Generate an initially empty set of mid-grey pictures
+        # Generate an initially empty set of mid-gray pictures
         one_gray_frame = list(
             mid_gray(
                 codec_features["video_parameters"],

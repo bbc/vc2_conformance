@@ -43,8 +43,8 @@ User's manual
 
 .. _maintainer-documentation:
 
-Maintainer's maual
-------------------
+Maintainer's manual
+-------------------
 
 .. toctree::
    :maxdepth: 2

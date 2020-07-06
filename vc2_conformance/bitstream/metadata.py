@@ -34,7 +34,7 @@ __all__ = [
 pseudocode_function_to_fixeddicts = {}
 """
 For the subset of pseudocode functions in the VC-2 spec dedicated to
-serialisation/deseriallisation, gives the corresponding fixeddict type in
+serialisation/deserialisation, gives the corresponding fixeddict type in
 :py:mod:`vc2_conformance.bitstream.vc2_fixeddicts`.
 
 A dictionary of the shape ``{function_name: [type, ...], ...}``.
@@ -70,7 +70,7 @@ fixeddict_to_pseudocode_function = {
 }
 """
 Provides a mapping from :py:mod:`vc2_conformance.bitstream.vc2_fixeddicts` types to the name of the
-corresponding pseudocode function which may be used to seriallise/deseriallise
+corresponding pseudocode function which may be used to serialise/deserialise
 from/to it.
 """
 

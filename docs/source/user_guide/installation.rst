@@ -65,14 +65,18 @@ All other dependencies will be downloaded automatically during installation.
 
 The packages must then be installed as follows, in the order shown::
 
-    $ python -m pip install vc2_data_tables-X.Y.Z.tar.gz
-    $ python -m pip install vc2_bit_widths-X.Y.Z.tar.gz
-    $ python -m pip install vc2_conformance_data-X.Y.Z.tar.gz
-    $ python -m pip install vc2_conformance-X.Y.Z.tar.gz
+    $ python -m pip install --user vc2_data_tables-X.Y.Z.tar.gz
+    $ python -m pip install --user vc2_bit_widths-X.Y.Z.tar.gz
+    $ python -m pip install --user vc2_conformance_data-X.Y.Z.tar.gz
+    $ python -m pip install --user vc2_conformance-X.Y.Z.tar.gz
 
 The ``--user`` argument may be omitted for a system-wide installation (not
 recommended).
 
+If installation fails (requiring online download) on Debian and Ubuntu systems,
+you may need to execute the following line prior to the above::
+
+    $ export PIP_IGNORE_INSTALLED=0
 
 From source
 ```````````

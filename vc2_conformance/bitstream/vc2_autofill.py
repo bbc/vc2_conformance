@@ -154,7 +154,7 @@ def autofill_parse_offsets(stream):
     which are absent or contain the :py:data:`AUTO` sentinel.
 
     In many (but not all) cases computing these field values is most
-    straight-forwardly done post seriallisation. In these cases, fields in the
+    straight-forwardly done post serialisation. In these cases, fields in the
     stream will be autofilled with '0'. These fields should then subsequently
     be ammended by :py:func:`autofill_parse_offsets_finalize`.
     """
@@ -205,7 +205,7 @@ def autofill_parse_offsets_finalize(
 ):
     """
     Finalize the autofillling of next and previous parse offsets by directly
-    modifying the seriallised bitstream.
+    modifying the serialised bitstream.
 
     Parameters
     ==========
@@ -263,13 +263,13 @@ def autofill_parse_offsets_finalize(
 def autofill_and_serialise_stream(file, stream):
     """
     Given a :py:class:`~vc2_conformance.bitstream.vc2_fixeddicts.Stream`
-    dictionary describing a VC-2 stream, seriallise that into the supplied
+    dictionary describing a VC-2 stream, serialise that into the supplied
     file.
 
     Parameters
     ==========
     file : file-like object
-        A file open for binary writing. The seriallised bitstream will be
+        A file open for binary writing. The serialised bitstream will be
         written to this file.
     stream : :py:class:`~vc2_conformance.Stream`
         The stream to be serialised. Unspecified values will be auto-filled if

@@ -27,7 +27,8 @@ from vc2_conformance.encoder import (
 
 def replace_sequence_headers(sequence, sequence_header):
     r"""
-    Replace the :py:class:`~vc2_conformance.bitstream.SequenceHeader`\ s in a
+    Replace the :py:class:`SequenceHeaders
+    <vc2_conformance.bitstream.SequenceHeader>` in a
     :py:class:`~vc2_conformance.bitstream.Sequence` with the provided
     alternative.
 
@@ -61,7 +62,7 @@ def source_parameters_encodings(codec_features):
         These test cases, check that other base video formats may be used (and
         overridden) to specify the desired video format. Each of these test
         cases will explicitly specify as few video parameters as possible (e.g.
-        leaving as many ``custom_*_flag`` fields as 0 as possible).
+        setting as many ``custom_*_flag`` fields to 0 as possible).
 
     .. tip::
 

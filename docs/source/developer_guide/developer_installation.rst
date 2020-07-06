@@ -62,7 +62,7 @@ using::
 
 .. note::
 
-    Python virtual environment provide an isolated environment in which
+    Python virtual environment provides an isolated environment in which
     packages may be installed without impacting on the rest of the system.
     Once activated, the ``python`` and ``pip`` commands will use the python
     version and packages setup within the virtual environment.
@@ -114,8 +114,8 @@ Test routines relating to the code in each repository can be found in the
 Building documentation
 ----------------------
 
-HTML documentation (including the documentation you're reading now) is built
-built as follows::
+HTML documentation (including the documentation you're reading now) is built as
+follows::
 
     $ make -C path/to/vc2_data_tables/docs html
     $ make -C path/to/vc2_bit_widths/docs html

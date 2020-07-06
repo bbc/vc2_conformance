@@ -290,9 +290,9 @@ def test_to_xyz():
     #
     # This has the following features:
     #
-    # * Row 0: Fully saturated colours in pairs of pixels
-    # * Row 1: Colours paired with black (which after 4:2:2 subsampling will
-    #   result in darker colours (at least with the low-pass filter used here)
+    # * Row 0: Fully saturated colors in pairs of pixels
+    # * Row 1: Colors paired with black (which after 4:2:2 subsampling will
+    #   result in darker colors (at least with the low-pass filter used here)
     # * Row 2: All white
     # * Row 3: All black
 
@@ -315,10 +315,10 @@ def test_to_xyz():
 
     test_picture_xyz = np.stack([row_0, row_1, row_2, row_3], axis=0)
 
-    # Colours should come out as expected RGB values in GBR order
+    # Colors should come out as expected RGB values in GBR order
     g, b, r = from_xyz(test_picture_xyz, video_parameters,)
 
-    # First row: solid colours
+    # First row: solid colors
     #                            Wht      Blk    Red     Grn       Blu
     assert np.allclose(r[0], [255, 0, 255, 0, 0], atol=1)
     assert np.allclose(g[0], [255, 255, 0, 0, 0, 0, 255, 255, 0, 0], atol=1)
@@ -480,7 +480,7 @@ class TestColorParametersSanity(object):
     def test_explain_color_insane(self):
         cps = ColorParametersSanity(white_sane=False, red_sane=False, green_sane=False)
         assert cps.explain() == (
-            "Some colours (e.g. white, red, green) cannot be represented "
+            "Some colors (e.g. white, red, green) cannot be represented "
             "in the video format specified. Hint: Check luma_offset is a "
             "near zero value, for Y C1 C2 formats check color_diff_offset "
             "is near the center of the signal range and for RGB formats it "

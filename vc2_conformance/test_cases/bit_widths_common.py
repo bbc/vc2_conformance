@@ -75,7 +75,7 @@ def get_test_pictures(codec_features, bundle_filename=get_bundle_filename()):
     synthesis_luma_pictures : [:py:class:`SynthesisPicture`, ...]
     analysis_color_diff_pictures : [:py:class:`AnalysisPicture`, ...]
     synthesis_color_diff_pictures : [:py:class:`SynthesisPicture`, ...]
-        Test pictures for luma and colour difference components respectively.
+        Test pictures for luma and color difference components respectively.
         (See :py:func:`vc2_bit_widths.helpers.generate_test_pictures`.)
     """
     if codec_features["quantization_matrix"] is not None:

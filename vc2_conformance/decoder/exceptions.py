@@ -1,6 +1,6 @@
 """
 The :py:mod:`vc2_conformance.decoder.exceptions` module defines a number of
-exceptions derrived from :py:exc:`ConformanceError` representing different
+exceptions derived from :py:exc:`ConformanceError` representing different
 conformance errors a bitstream may contain. These exceptions provide additional
 methods which return detailed human-readable information about the conformance
 error.
@@ -862,7 +862,7 @@ class BadColorDifferenceSamplingFormat(ConformanceError):
 
     def explain(self):
         return """
-            An invalid colour difference sampling format, {:d}, was provided
+            An invalid color difference sampling format, {:d}, was provided
             (11.4.4).
 
             See (Table 11.2) for an enumeration of allowed values.
@@ -1233,7 +1233,7 @@ class PictureDimensionsNotMultipleOfFrameDimensions(ConformanceError):
         )
 
         return """
-            The frame dimensions cannot be evenly divided by the current colour
+            The frame dimensions cannot be evenly divided by the current color
             difference sampling format and picture coding mode (11.6.2)
 
             Frame dimensions:
@@ -1249,7 +1249,7 @@ class PictureDimensionsNotMultipleOfFrameDimensions(ConformanceError):
             * color_diff_height: {}{}
 
             Was a frame size with an odd width or height used along with a
-            non-4:4:4 colour difference sampling mode or when pictures are
+            non-4:4:4 color difference sampling mode or when pictures are
             fields?
 
             Was the source sampling mode (11.4.5) used instead of the picture

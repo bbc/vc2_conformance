@@ -72,9 +72,9 @@ __all__ = [
 @ref_pseudocode(deviation="inferred_implementation")
 def init_io(state, f):
     """
-    (A.2.1) Initialise the io-related variables in state.
+    (A.2.1) Initialise the I/O-related variables in state.
 
-    This function should be called exactly once to initialise the IO-related
+    This function should be called exactly once to initialise the I/O-related
     parts of the state dictionary to their initial state as specified by
     (A.2.1):
 

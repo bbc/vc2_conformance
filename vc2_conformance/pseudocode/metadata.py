@@ -184,8 +184,8 @@ class PseudocodeDerivedFunction(object):
 
 pseudocode_derived_functions = []
 r"""
-The complete set of :py:class:`PseudocodeDerivedFunction`\ s in this code base,
-in no particular order.
+The complete set of :py:class:`PseudocodeDerivedFunctions
+<PseudocodeDerivedFunction>` in this code base, in no particular order.
 
 .. warning::
 

@@ -31,7 +31,7 @@ A test case can be one of:
 
 Test case generators may prefer to output :py:class:`TestCase` objects when
 multiple test cases are produced so that each testcase can be given its own
-'subcase' name. In addition, test cases may be accompanied by an freeform JSON
+'subcase' name. In addition, test cases may be accompanied by a freeform JSON
 serialisable metadata object when :py:class:`TestCase` objects are produced.
 
 .. autoclass:: TestCase

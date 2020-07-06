@@ -412,7 +412,7 @@ class TestReadAndAdaptPointerSprite(object):
         # Top left is native white
         assert np.all(np.isclose(rgb[0, 0, :], [1.0, 1.0, 1.0], rtol=0.001))
 
-        # Hole centre is native black
+        # Hole center is native black
         assert np.all(np.isclose(rgb[32, 32, :], [0.0, 0.0, 0.0], rtol=0.001))
 
         # 'V' is native red
@@ -565,7 +565,7 @@ def test_mid_gray(primaries, transfer_function):
         color_matrix_index=PresetColorMatrices.hdtv,
         transfer_function_index=transfer_function,
         # Set two wonky off-center ranges; the offsets should be ignored with the
-        # 'mid grey' being the middle of the code range
+        # 'mid gray' being the middle of the code range
         luma_offset=20,
         luma_excursion=150,
         color_diff_offset=100,
@@ -712,7 +712,7 @@ def test_linear_ramps(primaries, transfer_function):
         for c2 in range(3):
             assert np.all(np.isclose(rgb[0, :, c1], rgb[0, :, c2], atol=0.05))
 
-    # Colours should be pure primaries
+    # Colors should be pure primaries
     assert np.all(rgb[4:8, :, [1, 2]] == 0)
     assert np.all(rgb[8:12, :, [0, 2]] == 0)
     assert np.all(rgb[12:16, :, [0, 1]] == 0)

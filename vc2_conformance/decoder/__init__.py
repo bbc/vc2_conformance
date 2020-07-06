@@ -68,7 +68,7 @@ an input file handle) and for validation purposes (e.g. recorded offsets of
 previous data units). See :py:class:`vc2_conformance.pseudocode.state.State`
 for a complete enumeration of these.
 
-Underlying IO operations are not specified by the VC-2 specification. This
+Underlying I/O operations are not specified by the VC-2 specification. This
 decoder reads streams from file-like objects. See
 the :py:mod:`vc2_conformance.decoder.io` module for details. As illustrated in
 the example above, the :py:func:`~vc2_conformance.decoder.io.init_io` function
@@ -102,8 +102,8 @@ All other pseudocode routines are used 'verbatim' and can be found in
 :py:mod:`vc2_conformance.pseudocode`.
 
 
-Stream IO
----------
+Stream I/O
+----------
 
 .. automodule:: vc2_conformance.decoder.io
 

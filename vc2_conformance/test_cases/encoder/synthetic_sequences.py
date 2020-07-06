@@ -52,10 +52,10 @@ def synthetic_linear_ramps(codec_features):
 
         When D-Cinema primaries are specified (preset color primaries index 3),
         red, green and blue are replaced with CIE X, Y and Z respectively. Note
-        that these may not represent physically realisable colours.
+        that these may not represent physically realisable colors.
 
     The left-most pixels in each band are video black and the right-most pixels
-    video white, reg, green and blue (respectively). That is, oversaturated
+    video white, red, green and blue (respectively). That is, oversaturated
     signals (e.g. 'super-blacks' and 'super-white') are not included.
 
     The value ramps in the test picture are linear meaning that the (linear)
@@ -79,12 +79,12 @@ def synthetic_linear_ramps(codec_features):
 
 
 @encoder_test_case_generator
-def synthetic_grey(codec_features):
+def synthetic_gray(codec_features):
     """
     **Tests that the encoder can encode a maximally compressible sequence.**
 
     This sequence contains an image in which every transform coefficient is
-    zero. For most color specifications (11.4.10), this decodes to a mid-grey
+    zero. For most color specifications (11.4.10), this decodes to a mid-gray
     frame.
 
     This special case image is maximally compressible since no transform

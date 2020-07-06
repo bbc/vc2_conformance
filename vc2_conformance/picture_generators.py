@@ -462,7 +462,7 @@ def moving_sprite(video_parameters, picture_coding_mode, num_frames=10):
     The text in the sprite is provided to check that the correct picture
     orientation has been used.
 
-    The colors of the characters 'V', 'C' and '2' are coloured saturated
+    The colors of the characters 'V', 'C' and '2' are colored saturated
     primary red, green, and blue for the color primaries used (11.4.10.2). This
     provides a basic verification that the color components have been provided
     to the display system and decoded correctly.
@@ -530,7 +530,7 @@ def static_sprite(video_parameters, picture_coding_mode):
     The text in the sprite is provided to check that the correct picture
     orientation has been used.
 
-    The colors of the characters 'V', 'C' and '2' are coloured saturated
+    The colors of the characters 'V', 'C' and '2' are colored saturated
     primary red, green, and blue for the color primaries used (11.4.10.2). This
     provides a basic verification that the color components have been provided
     to the display system and decoded correctly.

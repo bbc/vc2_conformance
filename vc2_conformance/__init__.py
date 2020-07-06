@@ -123,7 +123,7 @@ test cases generally amount to fewer than ten frames.
 Test case generation
 --------------------
 
-Since VC-2 supports a great variety of configurations, a parametrised test case
+Since VC-2 supports a great variety of configurations, parametrised test case
 generators (:py:mod:`vc2_conformance.test_cases`) are used rather than a
 'universal' collection of bitstreams. While this means that users of the
 conformance software are required to configure and run the test case generator

@@ -51,7 +51,7 @@ Given an incomplete set of values, we can use :py:func:`allowed_values_for` to
 discover what values are permissible for values we've not yet assigned. For
 example:
 
-    >>> # If we have an apple, what colours can it be?
+    >>> # If we have an apple, what colors can it be?
     >>> allowed_values_for(real_foods, "color", {"type": "apple"})
     ValueSet('red', 'green')
 
@@ -65,8 +65,8 @@ discover combinations of bitstream features which satisfy particular level
 requirements.
 
 
-:py:class:`ValueSet`\ s
------------------------
+:py:class:`ValueSet`
+--------------------
 
 .. autoclass:: ValueSet
     :members:
@@ -519,7 +519,7 @@ def read_constraints_from_csv(csv_filename):
       single :py:class:`ValueSet`. (Cells containing comma-separated values
       will need to be enclosed in double quotes (``"``) in the CSV).
     * The value 'any' will be substituted for :py:class:`AnyValue`.
-    * Empty cells will be converted into empty :py:class:`ValueSet`\ s.
+    * Empty cells will be converted into empty :py:class:`ValueSets <ValueSet>`.
     * Cells which contain only a pair of quotes (e.g. ``"``, i.e. ditto) will
       be assigned the same value as the column to their left. (This is encoded
       using four double quotes (``""""``) in CSV format).

@@ -363,9 +363,9 @@ def assert_plausibly_linear_ramps_image(frame, transfer_function_index):
     #   what the "wrong" gamma curve looks like and will immediately
     #   understand what has happened.
     # * If the color matrix comes in an order not expected by ffmpeg, or
-    #   fundamentally of the wrong type (e.g. RGB vs Y C1 C2) the colours will
+    #   fundamentally of the wrong type (e.g. RGB vs Y C1 C2) the colors will
     #   be wildly wrong. Otherwise, the effect of using the wrong matrix
-    #   just adds to the slightly wrong primary colours.
+    #   just adds to the slightly wrong primary colors.
     #
     # On the basis of the super-slack requirements for plausibility we
     # allow the expected values to be quite far off (particularly for very
@@ -514,7 +514,7 @@ class TestExampleFFMPEGCommand(object):
                 :,
             ]
 
-            # Colour should match sample points (an odd and even line should be
+            # Color should match sample points (an odd and even line should be
             # tested to produce more helpful errors (otherwise the 'all sample
             # points should be identical vertically' test below will find mistakes
             # due to missing deinterlacing)
@@ -524,7 +524,7 @@ class TestExampleFFMPEGCommand(object):
             # Sample points should be identical vertically
             assert np.all((sample_points[1:, :, :] == sample_points[:-1, :, :]))
 
-            # Colour should be either white or black so all channels should be identical
+            # Color should be either white or black so all channels should be identical
             assert np.all((sample_points[:, :, 1:] == sample_points[:, :, :-1]))
 
     @pytest.mark.parametrize("source_sampling_mode", SourceSamplingModes)
@@ -708,7 +708,7 @@ class TestExampleFFMPEGCommand(object):
         color_diff_format,
         tmpdir,
     ):
-        # Make tall enough and wide enough that colour subsampling doesn't
+        # Make tall enough and wide enough that color subsampling doesn't
         # completely destroy the image
         video_parameters["frame_width"] = 16
         video_parameters["frame_height"] = 16
@@ -737,7 +737,7 @@ class TestExampleFFMPEGCommand(object):
     def test_bit_depth(
         self, video_parameters, excursion, matrix, tmpdir,
     ):
-        # Make tall enough and wide enough that colour subsampling doesn't
+        # Make tall enough and wide enough that color subsampling doesn't
         # completely destroy the image
         video_parameters["frame_width"] = 16
         video_parameters["frame_height"] = 16
@@ -895,7 +895,7 @@ class TestExampleImageMagickCommand(object):
         color_diff_format,
         tmpdir,
     ):
-        # Make tall enough and wide enough that colour subsampling doesn't
+        # Make tall enough and wide enough that color subsampling doesn't
         # completely destroy the image
         video_parameters["frame_width"] = 32
         video_parameters["frame_height"] = 16
@@ -924,7 +924,7 @@ class TestExampleImageMagickCommand(object):
     def test_bit_depth(
         self, video_parameters, excursion, matrix, tmpdir,
     ):
-        # Make tall enough and wide enough that colour subsampling doesn't
+        # Make tall enough and wide enough that color subsampling doesn't
         # completely destroy the image
         video_parameters["frame_width"] = 16
         video_parameters["frame_height"] = 16

@@ -28,7 +28,7 @@ from vc2_conformance.encoder import make_sequence
 def update_extended_transform_parameters(sequence, *args, **kwargs):
     r"""
     Apply a :py:meth:`dict.update` to all
-    :py:class:`~vc2_conformance.bitstream.ExtendedTransformParameters`\ s in a
+    :py:class:`~vc2_conformance.bitstream.ExtendedTransformParameters` in a
     :py:class:`~vc2_conformance.bitstream.Sequence`.
 
     Returns two values:

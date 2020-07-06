@@ -547,7 +547,7 @@ class BitstreamViewer(object):
         target : str
             The target name of this value.
         value : any
-            The deseriallised value.
+            The deserialised value.
         """
         # Print new/changed path prefixes
         last_path = self._last_path
@@ -689,7 +689,7 @@ class BitstreamViewer(object):
         if self._to_offset != 0 and this_offset >= self._to_offset:
             raise BitstreamViewer._TerminateSuccess()
 
-        # Save memory by discarding previously deseriallised data units
+        # Save memory by discarding previously deserialised data units
         current_data_unit = True
         for sequence in reversed(self._serdes.context["sequences"]):
             for i in reversed(range(len(sequence["data_units"]))):

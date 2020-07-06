@@ -28,8 +28,8 @@ parameter_2 value    value    ...
 ...         ...      ...      ...
 =========== ======== ======== ===
 
-The first row of the should provide a unique name for each codec configuration
-for which test cases are to be generated with the left-most cell containing the
+The first row should provide a unique name for each codec configuration for
+which test cases are to be generated with the left-most cell containing the
 text ``name``. The remaining rows specify the parameters which define the codec
 configurations. Rows whose first column starts with a ``#`` are ignored (i.e.
 treated as comments).
@@ -96,12 +96,12 @@ The following parameters must be given for each codec configuration.
         with several different encodings when possible.
 
 ``frame_width`` and ``frame_height``
-    Integer or ``default``. The dimensions of a frames (not pictures) of video
+    Integer or ``default``. The dimensions of frames (not pictures) of video
     (see section (11.4.3)). If ``default``, uses the dimensions specified by
     the ``base_video_format``.
 
 ``color_diff_format_index``
-    Integer, alias or ``default``. The colour difference subsampling mode to
+    Integer, alias or ``default``. The color difference subsampling mode to
     use (see section (11.4.4)). If ``default``, uses the mode specified by the
     ``base_video_format``.
     
@@ -149,12 +149,12 @@ The following parameters must be given for each codec configuration.
     ``default``, uses the mode specified by the ``base_video_format``.
 
 ``luma_offset``, ``luma_excursion``, ``color_diff_offset`` and ``color_diff_excursion``
-    Integers or ``default``. The luma and colour difference picture component
+    Integers or ``default``. The luma and color difference picture component
     signal ranges (see section (11.4.9)). If ``default``, uses the mode
     specified by the ``base_video_format``.
 
 ``color_primaries_index``, ``color_matrix_index`` and ``transfer_function_index``
-    Integers, aliases or ``default``. Colour specification options (see section
+    Integers, aliases or ``default``. color specification options (see section
     (11.4.10)). If ``default``, uses the mode specified by the
     ``base_video_format``.
     

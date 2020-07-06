@@ -380,7 +380,7 @@ def generate_difference_mask_picture(deltas, video_parameters, picture_number=0)
         component will result in 2 or 4 pixels in the mask being illuminated.
 
         The 'white' and 'black' reported in the mask are video white and video
-        black, not super white or super black (for colour formats which support
+        black, not super white or super black (for color formats which support
         this).
     """
     masks = {c: deltas[c] != 0 for c, d in deltas.items()}
@@ -404,7 +404,7 @@ def generate_difference_mask_picture(deltas, video_parameters, picture_number=0)
     # Convert to RGB color image with signals in the range 0.0 - 1.0
     rgb = np.repeat(mask, 3).reshape(mask.shape + (3,)).astype(float)
 
-    # Convert to native colour encoding
+    # Convert to native color encoding
     xyz = matmul_colors(
         LINEAR_RGB_TO_XYZ[video_parameters["color_primaries_index"]], rgb
     )

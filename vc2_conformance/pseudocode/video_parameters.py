@@ -244,7 +244,7 @@ def preset_transfer_function(video_parameters, index):
 
 @ref_pseudocode(deviation="inferred_implementation")
 def preset_color_spec(video_parameters, index):
-    """(11.4.10.1) Load a preset colour specification."""
+    """(11.4.10.1) Load a preset color specification."""
     preset = PRESET_COLOR_SPECS[index]
     preset_color_primaries(video_parameters, preset.color_primaries_index)
     preset_color_matrix(video_parameters, preset.color_matrix_index)

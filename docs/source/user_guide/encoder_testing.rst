@@ -39,7 +39,9 @@ the decoded pictures, as illustrated below::
         real_pictures.vc2 \
         --output real_pictures_decoded/picture_%d.raw
 
-If the bitstream is valid, the following message will be produced::
+If the bitstream is valid, the following message will be produced:
+
+.. code-block:: text
 
     No errors found in bitstream. Verify decoded pictures to confirm conformance.
 
@@ -66,8 +68,9 @@ For a test case to pass:
 * The :ref:`vc2-bitstream-validator` must not find any errors in the bit stream.
 * For lossless encoders, :ref:`vc2-picture-compare` tool must report ``Pictures are
   identical``, with no warnings, for every picture in the reference decoding.
-* For lossy encoders, :ref:`vc2-picture-compare` tool must report a PSNR level of
-  TODO.
+* For lossy encoders, :ref:`vc2-picture-compare` tool may report a difference
+  and the quoted PSNR figure should be checked to ensure it is appropriate for
+  the intended application of the codec.
 * Input and output pictures should be visually compared and must be
   visually indistinguishable.
 * No additional pictures must have been decoded.

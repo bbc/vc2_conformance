@@ -162,7 +162,7 @@ Representing hierarchy
 ``````````````````````
 
 The VC-2 bitstream does not represent a flat collection of values but rather a
-hierarchy. The :py:class:`SerDes` interface provides a additional facilities to
+hierarchy. The :py:class:`SerDes` interface provides additional facilities to
 allow this structure to be recreated in the deserialised representation, making
 it easier to inspect and describes bitstreams in their deserialised form.
 
@@ -307,13 +307,13 @@ always ignored.
     prefixed or suffixed with an underscore.
 
 
-Default values during seriallisation
-````````````````````````````````````
+Default values during serialisation
+```````````````````````````````````
 
 As discussed above, the default behaviour of the :py:class:`Serialiser` is to
 require that every value in the bitstream is provided in the context dictionary
-to make it explicit what is being seriallised. In certain cases, however, it
-may be desireable for certain values to be filled in automatically. For
+to make it explicit what is being serialised. In certain cases, however, it
+may be desirable for certain values to be filled in automatically. For
 example:
 
 * For pre-filling constants like the parse_info prefix.
@@ -350,7 +350,7 @@ For arrays/lists of values, the default value provided will be usd to populate
 array elements and not to provide a default for the list as a whole.
 
 Where a default value is not found in the lookup, a :py;exc:`KeyError` will be
-thrown as usual. This behaiviour allows a partial set of default values to be
+thrown as usual. This behaviour allows a partial set of default values to be
 provided (e.g. providing defaults only for padding values) while still
 validating that the provided input is correct.
 
@@ -545,13 +545,13 @@ class SerDes(object):
 
     def nbits(self, target, num_bits):
         """
-        Reads or writes an fixed-length unsigned integer in a bitstream (as
+        Reads or writes a fixed-length unsigned integer in a bitstream (as
         per (A.3.3) read_nbits()).
 
         Parameters
         ==========
         target : str
-            The target for the value (as a :py:class:`int`).
+            The target for the value (as an :py:class:`int`).
         num_bits : int
             The number of bits in the value.
 
@@ -563,13 +563,13 @@ class SerDes(object):
 
     def uint_lit(self, target, num_bytes):
         """
-        Reads or writes an fixed-length unsigned integer in a bitstream (as
+        Reads or writes a fixed-length unsigned integer in a bitstream (as
         per (A.3.4) read_uint_lit()). Not to be confused with :py:meth:`uint`.
 
         Parameters
         ==========
         target : str
-            The target for the value (as a :py:class:`int`).
+            The target for the value (as an :py:class:`int`).
         num_bytes : int
             The number of bytes in the value.
 
@@ -581,7 +581,7 @@ class SerDes(object):
 
     def bitarray(self, target, num_bits):
         """
-        Reads or writes an fixed-length string of bits from the bitstream as a
+        Reads or writes a fixed-length string of bits from the bitstream as a
         :py:class:`bitarray.bitarray`. This may be a more sensible type for
         holding unpredictably sized non-integer binary values such as padding
         bits.
@@ -601,7 +601,7 @@ class SerDes(object):
 
     def bytes(self, target, num_bytes):
         """
-        Reads or writes an fixed-length :py:class:`bytes` string from the
+        Reads or writes a fixed-length :py:class:`bytes` string from the
         bitstream. This is a more convenient alternative to :py:meth:`nbits` or
         :py:meth:`bitarray` when large blocks of data are to be read but not
         treated as integers.
@@ -627,7 +627,7 @@ class SerDes(object):
         Parameters
         ==========
         target : str
-            The target for the value (as a :py:class:`int`).
+            The target for the value (as an :py:class:`int`).
 
         Returns
         =======
@@ -643,7 +643,7 @@ class SerDes(object):
         Parameters
         ==========
         target : str
-            The target for the value (as a :py:class:`int`).
+            The target for the value (as an :py:class:`int`).
 
         Returns
         =======
@@ -754,7 +754,7 @@ class SerDes(object):
 
     def set_context_type(self, context_type):
         """
-        Set (or change) the type of the type of the current context dictionary.
+        Set (or change) the type of the current context dictionary.
 
         This method has no impact on the bitstream.
 

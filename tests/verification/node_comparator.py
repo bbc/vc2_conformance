@@ -185,9 +185,9 @@ class NodeComparator(object):
 
             Entries in this dictionary may be either:
 
-            * Functions which are passed the list contained by the field and
-              should return a new list which should be compared (not modifying
-              the one provided).
+            * Functions which take the list of values and should return a
+              new list of values to use in the comparison.  This function must
+              not mutate the list passed to it.
             * A pair of functions like the one above but the first will be used
               for filtering n1's field and the second for n2's field. Either
               may be None if no filtering is to take place for one of the

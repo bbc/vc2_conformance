@@ -6,7 +6,7 @@ possible. All pseudocode functions are re-exported by the
 :py:mod:`vc2_conformance.bitstream` module.
 
 See the table in :ref:`bitstream-fixeddicts` which relates these functions to
-their matching :py:mod:`~vc2_conformance.fixeddict`\ s.
+their matching :py:mod:`fixeddicts <vc2_conformance.fixeddict>`.
 
 In this module, all functions are derived from the pseudocode by:
 

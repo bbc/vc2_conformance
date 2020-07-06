@@ -50,7 +50,7 @@ def slice_prefix_bytes(codec_features):
     """
     **Tests the decoder can handle a non-zero number of slice prefix bytes.**
 
-    Produces a test cases with a non-zero number of slice prefix bytes
+    Produces test cases with a non-zero number of slice prefix bytes
     containing the following values:
 
     ``slice_prefix_bytes[zeros]``

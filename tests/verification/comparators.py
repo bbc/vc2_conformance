@@ -129,12 +129,12 @@ class SerdesChangesOnly(NodeComparator):
     7. The substitution of an assignment to ``state.bits_left`` with a call to
        :py:meth:`vc2_conformance.bitstream.serdes.SerDes.bounded_block_begin`
        in the second function, taking the assigned value as argument.
-       (Justification: this has the equivalent effect in the bitstream IO
+       (Justification: this has the equivalent effect in the bitstream I/O
        system).
-    8. The following IO function substitutions in the second function are
+    8. The following I/O function substitutions in the second function are
        allowed with an additional first argument (for the target name).
        (Justification: these functions have the equivalent effect in the
-       bitstream IO system).
+       bitstream I/O system).
 
         * ``read_bool`` -> ``serdes.bool``
         * ``read_nbits`` -> ``serdes.nbits``

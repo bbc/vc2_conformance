@@ -35,7 +35,7 @@ be used:
 * ``--encoder-only``: Only generate test cases for encoders
 * ``--decoder-only``: Only generate test cases for decoders
 * ``--codec <regexp>``: Only generate test cases for codec feature sets whose
-  name match a supplied pattern.
+  names match a supplied pattern.
 
 
 Parallel execution
@@ -121,7 +121,7 @@ from vc2_conformance import file_format
 
 from vc2_conformance.color_conversion import sanity_check_video_parameters
 
-from vc2_conformance.test_cases.decoder import static_grey
+from vc2_conformance.test_cases.decoder import static_gray
 
 from vc2_conformance.bitstream import autofill_and_serialise_stream
 
@@ -323,7 +323,7 @@ def check_codec_features_valid(codec_feature_sets):
     """
     Verify that the codec features requested don't themselves violate the spec
     (e.g. violate a level constraint). This is done by generating then
-    validating a bitstream containing a single mid-grey frame.
+    validating a bitstream containing a single mid-gray frame.
 
     Prints an error to stderr and calls :py:func:`sys.exit` if a problem is
     encountered.
@@ -345,7 +345,7 @@ def check_codec_features_valid(codec_feature_sets):
 
         # Generate a minimal bitstream
         try:
-            autofill_and_serialise_stream(f, static_grey(codec_features))
+            autofill_and_serialise_stream(f, static_gray(codec_features))
         except UnsatisfiableCodecFeaturesError as e:
             sys.stderr.write(
                 "Error: Codec configuration {!r} is invalid:\n".format(name)

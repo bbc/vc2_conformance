@@ -3,7 +3,7 @@ The :py:mod:`vc2_conformance.encoder.encoder.sequence_header` module contains
 routines for encoding a set of video format and codec parameters into sequence
 headers.
 
-The :py:func:`make_sequence_header_data_unit` function is used generate
+The :py:func:`make_sequence_header_data_unit` function is used to generate
 sequence headers by the encoder:
 
 .. autofunction:: make_sequence_header_data_unit
@@ -398,7 +398,7 @@ def iter_color_spec_options(
     video_parameters : :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`
         The :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`
         representing the desired video parameters to be represented. Only the
-        colour mode related entries mentioned in will be checked.
+        color mode related entries mentioned in will be checked.
     level_constraints_dict : {str: :py:class:`~vc2_conformance.constraint_table.ValueSet`, ...}
         A single dictionary of level constraints (i.e. a single column from
         :py:class:`vc2_conformance.level_constraints.LEVEL_CONSTRAINTS`).
@@ -459,7 +459,7 @@ def iter_color_spec_options(
                 custom_base_vp, video_parameters, level_constraints_dict,
             ),
         ):
-            # Give up if we're unable to produce a needed custom colour option
+            # Give up if we're unable to produce a needed custom color option
             if (
                 color_primaries is None
                 or color_matrix is None

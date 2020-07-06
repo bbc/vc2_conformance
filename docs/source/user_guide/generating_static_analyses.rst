@@ -6,7 +6,7 @@
 Generating static wavelet filter analyses
 =========================================
 
-The generation of certain test cases requires a mathematical anlaysis of the
+The generation of certain test cases requires a mathematical analysis of the
 wavelet filter used by the codec under test. The VC-2 conformance software is
 supplied with analyses for all wavelet filter configurations for which a
 default quantisation matrix is available. To enable testing of other codec
@@ -28,7 +28,7 @@ Static analyses must be created for every wavelet transform used by your codec
 
 The ``vc2-static-filter-analysis`` command (provided by the
 :py:mod:`vc2_bit_widths` package) may be used to generate a mathematical
-anlaysis of arbitrary VC-2 filter configurations.
+analysis of arbitrary VC-2 filter configurations.
 
 For example, to analyse a filter which:
 
@@ -60,7 +60,7 @@ Step 2: Bundling static analyses
 --------------------------------
 
 Once static analyses have been produced for all required wavelets, these must
-be combined into analysis bundle file as follows::
+be combined into an analysis bundle file as follows::
 
     $ vc2-bundle create bundle.zip \
           --static-filter-analysis path/to/analyses/*.json

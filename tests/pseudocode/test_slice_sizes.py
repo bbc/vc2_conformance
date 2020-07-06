@@ -12,7 +12,7 @@ from vc2_conformance.pseudocode.slice_sizes import slices_have_same_dimensions
         (192, 108, {}, True),
         # Up to limit
         (960, 540, {}, True),
-        # Too small for colour diff
+        # Too small for color diff
         (1920, 1, {}, False),
         (1, 1080, {}, False),
         # Not a multiple of either

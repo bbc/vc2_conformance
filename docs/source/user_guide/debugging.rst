@@ -68,10 +68,10 @@ designed to result in large, near worst case, numerical values within a codec's
 wavelet transform. These tests are intended to determine if a codec has used
 integers of sufficient size for their wavelet transform implementation.
 
-If these test cases do not pass, it is likely that codec being tested has used
-integers too small for the wavelet transform and picture bit depths in use. Try
-increasing the size of the integers used to hold intermediate wavelet transform
-values.
+If these test cases do not pass, it is likely that the codec being tested has
+used integers too small for the wavelet transform and picture bit depths in
+use. Try increasing the size of the integers used to hold intermediate wavelet
+transform values.
 
 Typical symptoms of codecs with insufficiently large integers are the
 infrequent production of easily visible artefacts such as illustrated below:

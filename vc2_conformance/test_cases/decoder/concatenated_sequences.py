@@ -20,8 +20,8 @@ def concatenated_sequences(codec_features):
     **Tests that streams containing multiple concatenated sequences can be
     decoded.**
 
-    A stream consisting of the concatenation two sequences (10.3) with one
-    frame each, the first picture of which is given picture number zero in both
+    A stream consisting of the concatenation of two sequences (10.3) with one
+    frame each, the first picture is given picture number zero in both
     sequences.
     """
     sequence = make_sequence(

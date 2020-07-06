@@ -5,7 +5,7 @@ for compressing pictures in a VC-2 bitstream.
 The picture encoding behaviour used by the encoder is encapsulated by the
 :py:func:`make_picture_data_units` function which turns a series of pictures
 (given as raw pixel values) into a series of
-:py:class:`~vc2_conformance.bitstream.DataUnit`\ s:
+:py:class:`DataUnits <vc2_conformance.bitstream.DataUnit>`:
 
 .. autofunction:: make_picture_data_units
 
@@ -17,7 +17,7 @@ Lossless mode
 `````````````
 
 In lossless mode, every slice's ``qindex`` will be set to 0 (no quantization)
-and all transform coefficients will be coded verbaitm (though trailing zeros
+and all transform coefficients will be coded verbatim (though trailing zeros
 will be coded implicitly).
 
 Slices will be sized as large as necessary, though as small as possible.
@@ -68,7 +68,7 @@ every picture.
     This codec may not always produce highest quality pictures possible in
     lossy modes. For example, sometimes chosing higher quantisation indices can
     produce fewer coding artefacts, particularly in concatenated coding
-    applications. Simillarly, higher picture quality may sometimes be obtained
+    applications. Similarly, higher picture quality may sometimes be obtained
     by setting later transform coefficients to zero enabling a lower
     quantization index to be used. Other more sophisticated schemes may also
     directly tweak transform coefficients.
@@ -77,7 +77,7 @@ every picture.
 Use of pseudocode
 -----------------
 
-This module uses the pseudocode-derrived
+This module uses the pseudocode-derived
 :py:mod:`vc2_conformance.pseudocode.picture_encoding` module for its
 forward-DWT and :py:mod:`vc2_conformance.pseudocode.quantization` for
 quantization. Other pseudocode routines are also used where possible, for
@@ -1029,8 +1029,9 @@ def make_fragment_parse_data_units(
     codec_features, picture, minimum_qindex=0, minimum_slice_size_scaler=1
 ):
     r"""
-    Create a seires of :py:class:`~vc2_conformance.bitstream.DataUnit`\ s
-    encoding a (possibly lossily compressed) picture.
+    Create a series of :py:class:`DataUnits
+    <vc2_conformance.bitstream.DataUnit>` encoding a (possibly lossily
+    compressed) picture.
 
     Parameters
     ==========
@@ -1138,8 +1139,9 @@ def make_picture_data_units(
     codec_features, picture, minimum_qindex=0, minimum_slice_size_scaler=1,
 ):
     r"""
-    Create a seires of one or more :py:class:`~vc2_conformance.bitstream.DataUnit`\ s
-    containing a compressed version of the supplied picture.
+    Create a seires of one or more :py:class:`DataUnits
+    <vc2_conformance.bitstream.DataUnit>` containing a compressed version of
+    the supplied picture.
 
     When ``codec_features["fragment_slice_count"]`` is 0, a single picture
     parse data unit will be produced. otherwise a series of two or more

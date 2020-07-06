@@ -131,7 +131,7 @@ def lossless_quantization(codec_features):
     quant_matrix = get_quantization_marix(codec_features)
     qindex = compute_qindex_with_distinct_quant_factors(quant_matrix)
 
-    # Start with a mid-grey frame (coeffs set to 0). We'll hand-modify this to
+    # Start with a mid-gray frame (coeffs set to 0). We'll hand-modify this to
     # contain all 1s because a picture which does this may be slightly larger
     # than the unclipped picture size and therefore we can't rely on the
     # encoder to produce such a signal.

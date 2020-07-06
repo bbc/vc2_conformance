@@ -33,7 +33,7 @@ This module consists of two main parts: the
 :py:mod:`~vc2_conformance.bitstream.serdes` framework for building serialisers
 and deserialisers and a serialiser/deserialiser for VC-2.
 
-The :py:mod:`~vc2_conformance.bitstream.serdes` framework is allows serialisers
+The :py:mod:`~vc2_conformance.bitstream.serdes` framework allows serialisers
 and deserialisers to be constructed *directly* from the VC-2 pseudocode,
 ensuring a high chance of correctness.
 
@@ -83,16 +83,15 @@ bitstream containing just a single end-of-sequence data unit::
     ...     ],
     ... }
 
-To make this somewhat clearer and more robust, a set of
-:py:mod:`~vc2_conformance.fixeddict`\ s are provided which may be used instead
-of bare Python dictionaries. The :py:mod:`vc2_data_tables` package also
-includes many helpful constant definitions.  Together, these make it easier to
-see what's going on while also eliminating simple mistakes like misspelling a
-field name.
+To make this somewhat clearer and more robust, a set of :py:mod:`fixeddicts
+<vc2_conformance.fixeddict>` are provided which may be used instead of bare
+Python dictionaries. The :py:mod:`vc2_data_tables` package also includes many
+helpful constant definitions.  Together, these make it easier to see what's
+going on while also eliminating simple mistakes like misspelling a field name.
 
 .. note::
 
-    :py:mod:`~vc2_conformance.fixeddict`\ s are subclasses of Python's
+    :py:mod:`fixeddicts <vc2_conformance.fixeddict>` are subclasses of Python's
     native :py:class:`dict` type with the following extra features:
 
     * They allow only a permitted set of key names to be used.
@@ -160,7 +159,7 @@ serialisation.
 
 The second argument to :py:class:`~vc2_conformance.bitstream.serdes.Serialiser`
 is the deserialised data structure to be serialised. This may be an ordinary
-Python :py:class:`dict`\ s or a :py:mod:`~vc2_conformance.fixeddict`.
+Python :py:class:`dicts <dict>` or a :py:mod:`~vc2_conformance.fixeddict`.
 
 .. note::
 
@@ -262,9 +261,9 @@ Notice that this time we could omit all but the ``parse_code`` field.
 .. note::
 
     The :py:func:`~vc2_conformance.bitstream.autofill_and_serialise_stream`
-    function only supports serialisation of entire
-    :py:class:`~vc2_conformance.bitstream.Stream`\ s and cannot be used to
-    serialise smaller pieces of a bitstream in isolation.
+    function only supports serialisation of entire :py:class:`Streams
+    <vc2_conformance.bitstream.Stream>` and cannot be used to serialise smaller
+    pieces of a bitstream in isolation.
 
 
 Deserialising bitstreams
@@ -311,7 +310,7 @@ Deserialised VC-2 bitstream data types
 --------------------------------------
 
 Deserialised VC-2 bitstreams are described by a hierarchy of
-:py:class:`~vc2_conformance.fixeddict`\ s, exported in
+:py:class:`fixeddicts <vc2_conformance.fixeddict>`, exported in
 :py:mod:`vc2_conformance.bitstream`.  Each
 :py:class:`~vc2_conformance.fixeddict` represents the data read by a particular
 VC-2 pseudocode function. Special implementations of these functions are

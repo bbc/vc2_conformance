@@ -6,8 +6,8 @@ ordinary Python dictionaries but add three main features:
 
 * Explicitness -- The VC-2 pseudocode creates and uses many dictionaries
   (called 'maps' in the specification) in place of struct-like objects.
-  :py:mod:`~vc2_conformance.fixeddict`\ s provide a way to give these clear
-  names.
+  :py:mod:`fixeddicts <vc2_conformance.fixeddict>` provide a way to give these
+  clear names.
 * Avoidance of typos -- Misspelt key names will result in a
   :py:exc:`FixedDictKeyError`.
 * Better pretty printing -- See more below...

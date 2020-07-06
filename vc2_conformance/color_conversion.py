@@ -11,7 +11,7 @@ High-level API
 --------------
 
 This module implements simple color format conversion routines for converting
-between arbitrary VC-2 color formats via floating point CIE XYZ colour. The
+between arbitrary VC-2 color formats via floating point CIE XYZ color. The
 process is implemented by the following high-level functions:
 
 .. autofunction:: to_xyz
@@ -22,7 +22,7 @@ process is implemented by the following high-level functions:
 
     Color format conversion is an extremely complex problem. The approach used
     by this module is simplistic in both its approach and implementation. While
-    it will always produce plausible colours, it may not produce the best
+    it will always produce plausible colors, it may not produce the best
     possible result. To give a few examples of limitations of this module:
 
     * Potential numerical stability issues are ignored (e.g. YCgCo conversions
@@ -32,7 +32,7 @@ process is implemented by the following high-level functions:
     * Poor quality antialiasing filters for chroma subsampling/interpolation
 
     Finally, this module should be considered a 'best effort' at a correct
-    implementation and the resulting colour conversion should largely be
+    implementation and the resulting color conversion should largely be
     treated as informative.
 
 .. warning::
@@ -160,9 +160,9 @@ __all__ = [
 
 PrimaryChromacities = namedtuple("PrimaryChromacities", "xw,yw,xr,yr,xg,yg,xb,yb",)
 """
-A specification of a set of colour primaries in terms of whitepoint (xw, yx)
-and red (xr, yr), green (xg, yg) and blue (xb, yb) chromacities. Colours are
-specified as :math:`x` and :math:`y` coordinates in the xyY colour system.
+A specification of a set of color primaries in terms of whitepoint (xw, yx)
+and red (xr, yr), green (xg, yg) and blue (xb, yb) chromacities. colors are
+specified as :math:`x` and :math:`y` coordinates in the xyY color system.
 """
 
 
@@ -227,7 +227,7 @@ def primary_chromacities_to_matrix(pc):
     ).T
 
     # Also by definition, the white point with chromacity xw, yw, and XYZ Xw,
-    # Yw, Zw is the colour produced by RGB [1, 1, 1]:
+    # Yw, Zw is the color produced by RGB [1, 1, 1]:
     #
     #    [ Xw ]     [            ] [ Yr  0  0 ] [ 1 ]
     #    [ Yw ]  =  [ relative_m ] [  0 Yg  0 ] [ 1 ]
@@ -324,14 +324,14 @@ LINEAR_RGB_TO_XYZ = {
     ),
 }
 r"""
-For each set of colour primaries in
+For each set of color primaries in
 :py:class:`~vc2_data_tables.PresetColorPrimaries`, a :math:`3 \times 3` matrix
 which converts from linear RGB into CIE XYZ.
 """
 
 XYZ_TO_LINEAR_RGB = {key: np.linalg.inv(m) for key, m in LINEAR_RGB_TO_XYZ.items()}
 r"""
-For each set of colour primaries in
+For each set of color primaries in
 :py:class:`~vc2_data_tables.PresetColorPrimaries`, a :math:`3 \times 3` matrix
 which converts from CIE XYZ into linear RGB.
 """
@@ -528,7 +528,7 @@ def kr_kb_to_color_matrix(kr, kb):
 
     kg = 1 - kr - kb
 
-    # Conceptually raw colour difference signals are then given as:
+    # Conceptually raw color difference signals are then given as:
     #
     #     Cb_conceptual = B' - Y'
     #     Cr_conceptual = R' - Y'
@@ -585,14 +585,14 @@ COLOR_MATRICES = {
     PresetColorMatrices.uhdtv: kr_kb_to_color_matrix(kr=0.2627, kb=0.0593),
 }
 r"""
-For each colour matrix supported by VC-2, a :math:`3 \times 3` matrix which
+For each color matrix supported by VC-2, a :math:`3 \times 3` matrix which
 transforms from non-linear RGB (:math:`E_R E_G E_B`) to Y C1 C2.
 """
 
 
 INVERSE_COLOR_MATRICES = {key: np.linalg.inv(m) for key, m in COLOR_MATRICES.items()}
 r"""
-For each colour matrix supported by VC-2, a :math:`3 \times 3` matrix which
+For each color matrix supported by VC-2, a :math:`3 \times 3` matrix which
 transforms from Y C1 C2 to non-linear RGB (:math:`E_R E_G E_B`).
 """
 
@@ -603,7 +603,7 @@ transforms from Y C1 C2 to non-linear RGB (:math:`E_R E_G E_B`).
 # VC-2, like many video systems, deal entirely in positive integer values which
 # nominally represent values in the range 0 to +1 or -0.5 to +0.5. These
 # functions perform the conversion between these two representations, the
-# latter of which is necessary for the colour conversion routines and matrices
+# latter of which is necessary for the color conversion routines and matrices
 # above.
 ################################################################################
 
@@ -729,8 +729,8 @@ def to_xyz(y, c1, c2, video_parameters):
     Parameters
     ==========
     y, c1, c2 : :py:class:`numpy.array`
-        Three 2D :py:class:`numpy.array`\ s containing integer Y C1 C2 values
-        for a picture.
+        Three 2D :py:class:`numpy.arrays <numpy.array>` containing integer Y C1
+        C2 values for a picture.
     video_parameters : :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`
         The VC-2 parameters describing the video format in use. The following
         fields are required:
@@ -887,7 +887,7 @@ def swap_primaries(xyz, video_parameters_before, video_parameters_after):
     numerical R, G and B values under the new set of primaries.
 
     This transformation is useful when an image is defined not by absolute
-    colours but rather colors relative to whatever primaries are in use. For
+    colors but rather colors relative to whatever primaries are in use. For
     example, a test pattern designed to show swatches of pure color primaries
     may be given relative to a particular set of primaries but needs to be
     adapted for use with another set of primaries.
@@ -1072,7 +1072,7 @@ class ColorParametersSanity(object):
 
         if insane_colors:
             out += (
-                "Some colours (e.g. {}) cannot be represented "
+                "Some colors (e.g. {}) cannot be represented "
                 "in the video format specified. "
                 "Hint: Check luma_offset is a near zero value, "
                 "for Y C1 C2 formats check color_diff_offset is near the "

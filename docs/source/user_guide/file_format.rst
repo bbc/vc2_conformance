@@ -145,7 +145,7 @@ Computing picture component dimensions and depths
 
 The dimensions of the Y, C1 and C2 components of each picture in the raw file
 may be computed from the metadata as specified in the ``picture_dimensions``
-pseudocode pseudocode function from section (11.6.2) of the VC-2 standard::
+pseudocode function from section (11.6.2) of the VC-2 standard::
 
     picture_dimensions(video_parameters, picture_coding_mode):
         state[luma_width] = video_parameters[frame_width]
@@ -249,7 +249,7 @@ For example, given a typical raw 1080i60, 10-bit 4:2:2 video file as input::
     * `-video_size 1920x540` = Picture size (not frame size).
     * `-framerate 60000/1001` = Picture rate (not frame rate)
     * `-pixel_format` = Specifies raw picture encoding.
-    * `yuv` = Y C1 C2 colour.
+    * `yuv` = Y C1 C2 color.
     * `422` = 4:2:2 color difference subsampling.
     * `p` = Planar format.
     * `10le` = 10 bit little-endian values, LSB-aligned within 16 bit words.
@@ -276,5 +276,5 @@ Example invocations of `FFmpeg's <https://ffmpeg.org/>`_ ``ffplay`` command and
 `ImageMagick's <https://imagemagick.org/>`_ ``convert`` command are provided,
 when possible, for displaying the raw picture data directly.
 
-Next, lets walk through the process of generating test cases in
+Next, let's walk through the process of generating test cases in
 :ref:`guide-generating-test-cases`.

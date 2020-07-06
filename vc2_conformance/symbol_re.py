@@ -24,7 +24,7 @@ Regular expressions of symbols
 Unlike string-matching regular expression libraries (e.g. :py:mod:`re`) which
 match sequences of characters, this module is designed to match sequences of
 'symbols' where each symbol is just a string like ``"sequence_header"`` or
-``high_quality_picture``.
+``"high_quality_picture"``.
 
 As an example, we might write the following regular expression to describe the
 rule 'all sequences must start with a sequence header and end with an
@@ -76,8 +76,8 @@ units::
 
     >>> m = Matcher("(sequence_header high_quality_picture)* end_of_sequence")
 
-This :py:class:`Matcher` instances is then be used to check if a sequence
-matches the required pattern by feeding it symbols one at a time via the
+This :py:class:`Matcher` instance is then used to check if a sequence matches
+the required pattern by feeding it symbols one at a time via the
 :py:meth:`~Matcher.match_symbol` method. This returns True so long as the
 sequence matches to expression::
 
@@ -174,7 +174,8 @@ built on top of two main parts:
 * A parser which parses the regular expression syntax accepted by
   :py:class:`Matcher` into an Abstract Syntax Tree (AST)
 * A Non-deterministic Finite-state Automaton (NFA) representation which is
-  constructed from the AST using Thompson's constructions.
+  constructed from the AST using `Thompson's constructions
+  <https://en.wikipedia.org/wiki/Thompson%27s_construction>`_.
 
 The parser is broken into two stages: a simple tokenizer/lexer
 (:py:func:`tokenize_regex`) and a recursive descent parser
@@ -428,7 +429,7 @@ class NFANode(object):
         """
         Add a transition rule from this node to the specified destination.
 
-        If no symbols is specified, a (bidirectional) empty transition between
+        If no symbols are specified, a (bidirectional) empty transition between
         the two nodes will be added.
         """
         if symbol is None:
@@ -456,8 +457,8 @@ class NFANode(object):
 
     def follow(self, symbol):
         r"""
-        Iterate over the :py:class:`NFANode`\ s reachable from this node
-        following the given symbol.
+        Iterate over the :py:class:`NFANodes <NFANode>` reachable from this
+        node following the given symbol.
         """
         visited = set()
         for node in self.equivalent_nodes():
@@ -486,7 +487,8 @@ class NFA(object):
     def from_ast(cls, ast):
         """
         Convert a regular expression AST node into a new :py:class:`NFA` object
-        using Thompson's constructions.
+        using `Thompson's constructions
+        <https://en.wikipedia.org/wiki/Thompson%27s_construction>`_.
         """
         if ast is None:
             node = NFANode()
@@ -660,7 +662,7 @@ class Matcher(object):
 
 class ImpossibleSequenceError(Exception):
     """
-    Thrown whne :py:func:`make_matching_sequence` is unable to find a suitable
+    Thrown when :py:func:`make_matching_sequence` is unable to find a suitable
     sequence of symbols.
     """
 

@@ -35,6 +35,10 @@ conformance checking routines and forward wavelet transform routines.
 
 .. automodule:: vc2_conformance.pseudocode.picture_decoding
     :members:
+    :exclude-members: SYNTHESIS_LIFTING_FUNCTION_TYPES
+
+.. autodata:: vc2_conformance.pseudocode.picture_decoding.SYNTHESIS_LIFTING_FUNCTION_TYPES
+    :annotation: = {...}
 
 
 :py:mod:`vc2_conformance.pseudocode.picture_encoding`
@@ -42,6 +46,10 @@ conformance checking routines and forward wavelet transform routines.
 
 .. automodule:: vc2_conformance.pseudocode.picture_encoding
     :members:
+    :exclude-members: ANALYSIS_LIFTING_FUNCTION_TYPES
+
+.. autodata:: vc2_conformance.pseudocode.picture_encoding.ANALYSIS_LIFTING_FUNCTION_TYPES
+    :annotation: = {...}
 
 
 :py:mod:`vc2_conformance.pseudocode.quantization`
