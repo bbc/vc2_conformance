@@ -9,7 +9,6 @@ from vc2_conformance.pseudocode.parse_code_functions import using_dc_prediction
 
 from vc2_conformance.decoder.io import (
     tell,
-    byte_align,
     read_uint_lit,
 )
 
@@ -44,14 +43,11 @@ __all__ = [
 @ref_pseudocode
 def fragment_parse(state):
     """(14.1)"""
-    byte_align(state)
     fragment_header(state)
     if state["fragment_slice_count"] == 0:
-        byte_align(state)
         transform_parameters(state)
         initialize_fragment_state(state)
     else:
-        byte_align(state)
         fragment_data(state)
 
 

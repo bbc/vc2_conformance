@@ -79,7 +79,8 @@ def deserialise_and_measure_slice_data_unit_sizes(bitstream):
         # Dirty: Relies on implementation detail of vc2_fixeddicts...
         if des.path(target)[4:] in (
             ["picture_parse", "wavelet_transform", "padding"],
-            ["fragment_parse", "padding2"],
+            ["fragment_parse", "fragment_header", "fragment_slice_count"],
+            ["fragment_parse", "fragment_header", "fragment_y_offset"],
         ):
             slice_start_offset[0] = to_bit_offset(*des.io.tell())
         elif target == "qindex":

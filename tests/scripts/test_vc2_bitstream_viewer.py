@@ -621,7 +621,6 @@ class TestBitstreamViewer(object):
             "                                                  | | +- data_units:\n"
             "                                                  | | | +- 0:\n"
             "                                                  | | | | +- padding:\n"
-            "000000000104:                                     | | | | | +- padding: 0b\n"
             "000000000104: 1010101011111111                    | | | | | +- bytes: 0xAA_FF\n"
             "000000000120: <104 bits omitted>                  ...\n"
         )
@@ -639,7 +638,6 @@ class TestBitstreamViewer(object):
             "                                                  | | +- data_units:\n"
             "                                                  | | | +- 0:\n"
             "                                                  | | | | +- padding:\n"
-            "000000000104:                                     | | | | | +- padding: 0b\n"
             "000000000104: 1010101011111111                    | | | | | +- bytes: 0xAA_FF\n"
             "000000000120: <104 bits omitted>                  ...\n"
         )
@@ -660,7 +658,6 @@ class TestBitstreamViewer(object):
             "000000000040: 00000000000000000000000000001111    | | | | | +- next_parse_offset: 15\n"
             "000000000072: 00000000000000000000000000000000    | | | | | +- previous_parse_offset: 0\n"
             "                                                  | | | | +- padding:\n"
-            "000000000104:                                     | | | | | +- padding: 0b\n"
             "000000000104: 1010101011111111                    | | | | | +- bytes: 0xAA_FF\n"
             "----------------------------------------------\n"
             "State:\n"

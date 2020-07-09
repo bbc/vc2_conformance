@@ -41,7 +41,8 @@ def test_equivalence_of_vc2_pseudocode(name, pseudocode_derived_function):
     assert compare_functions(ref_func, imp_func, Identical()) is True
 
     # Same reference to the spec
-    assert ref_func.__doc__ == "({})".format(pseudocode_derived_function.section)
+    expected_ref = "({})".format(pseudocode_derived_function.section)
+    assert ref_func.__doc__.lstrip().startswith(expected_ref)
 
 
 @pytest.mark.parametrize(
@@ -60,4 +61,5 @@ def test_equivalence_of_vc2_bitstream_pseudocode(name, pseudocode_derived_functi
     assert compare_functions(ref_func, imp_func, SerdesChangesOnly()) is True
 
     # Same reference to the spec
-    assert ref_func.__doc__ == "({})".format(pseudocode_derived_function.section)
+    expected_ref = "({})".format(pseudocode_derived_function.section)
+    assert ref_func.__doc__.lstrip().startswith(expected_ref)

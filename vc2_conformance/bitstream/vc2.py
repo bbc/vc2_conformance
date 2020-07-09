@@ -257,7 +257,6 @@ def parse_info(serdes, state):
 @ref_pseudocode(deviation="serdes")
 def auxiliary_data(serdes, state):
     """(10.4.4) Read an auxiliary data block."""
-    serdes.byte_align("padding")
     ### for i in range(1, state["next_parse_offset"]-12):
     ###     read_uint_lit(state, 1)
     ## Begin not in spec
@@ -269,7 +268,6 @@ def auxiliary_data(serdes, state):
 @ref_pseudocode(deviation="serdes")
 def padding(serdes, state):
     """(10.4.5) Read a padding data block."""
-    serdes.byte_align("padding")
     ### for i in range(1, state["next_parse_offset"]-12):
     ###     read_uint_lit(state, 1)
     ## Begin not in spec
@@ -916,11 +914,9 @@ def color_diff_slice_band(serdes, state, level, orient, sx, sy):
 @ref_pseudocode(deviation="serdes")
 def fragment_parse(serdes, state):
     """(14.1)"""
-    serdes.byte_align("padding1")
     with serdes.subcontext("fragment_header"):
         fragment_header(serdes, state)
     if state["fragment_slice_count"] == 0:
-        serdes.byte_align("padding2")
         with serdes.subcontext("transform_parameters"):
             transform_parameters(serdes, state)
 
@@ -928,7 +924,6 @@ def fragment_parse(serdes, state):
         # detection)
         ### initialize_fragment_state(state)
     else:
-        serdes.byte_align("padding2")
         with serdes.subcontext("fragment_data"):
             fragment_data(serdes, state)
 

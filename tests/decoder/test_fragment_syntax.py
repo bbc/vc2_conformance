@@ -286,6 +286,7 @@ def test_whole_picture(parse_code, fragment_slice_counts):
     decoder.sequence_header(state)
 
     # Parse header fragment
+    decoder.byte_align(state)
     state["parse_code"] = parse_code
     decoder.fragment_parse(state)
 
@@ -294,6 +295,7 @@ def test_whole_picture(parse_code, fragment_slice_counts):
     for fragment_slice_count in fragment_slice_counts:
         assert state["fragmented_picture_done"] is False
 
+        decoder.byte_align(state)
         state["parse_code"] = parse_code
         decoder.fragment_parse(state)
 

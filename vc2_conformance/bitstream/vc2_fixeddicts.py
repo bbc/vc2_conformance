@@ -468,36 +468,24 @@ vc2_fixeddict_nesting[SequenceHeader] = [ParseParameters, SourceParameters]
 
 AuxiliaryData = fixeddict(
     "AuxiliaryData",
-    Entry(
-        "padding",
-        formatter=Bits(),
-        help_type=":py:class:`~bitarray.bitarray`",
-        help="Byte alignment padding bits.",
-    ),
     Entry("bytes", formatter=Bytes(), help_type="bytes"),
     help="""
         (10.4.4) Auxiliary data block (as per auxiliary_data()).
     """,
 )
 
-vc2_default_values[AuxiliaryData] = AuxiliaryData(padding=bitarray(), bytes=b"",)
+vc2_default_values[AuxiliaryData] = AuxiliaryData(bytes=b"",)
 
 
 Padding = fixeddict(
     "Padding",
-    Entry(
-        "padding",
-        formatter=Bits(),
-        help_type=":py:class:`~bitarray.bitarray`",
-        help="Byte alignment padding bits.",
-    ),
     Entry("bytes", formatter=Bytes(), help_type="bytes"),
     help="""
         (10.4.5) Padding data block (as per padding()).
     """,
 )
 
-vc2_default_values[Padding] = Padding(padding=bitarray(), bytes=b"",)
+vc2_default_values[Padding] = Padding(bytes=b"",)
 
 
 ################################################################################
@@ -875,19 +863,7 @@ vc2_fixeddict_nesting[FragmentData] = [LDSlice, HQSlice]
 
 FragmentParse = fixeddict(
     "FragmentParse",
-    Entry(
-        "padding1",
-        formatter=Bits(),
-        help_type=":py:class:`~bitarray.bitarray`",
-        help="Fragment header byte alignment padding bits.",
-    ),
     Entry("fragment_header", help_type=":py:class:`FragmentHeader`"),
-    Entry(
-        "padding2",
-        formatter=Bits(),
-        help_type=":py:class:`~bitarray.bitarray`",
-        help="Transform parameter or fragment data byte alignment padding bits.",
-    ),
     Entry("transform_parameters", help_type=":py:class:`TransformParameters`"),
     Entry("fragment_data", help_type=":py:class:`FragmentData`"),
     help="""
@@ -896,9 +872,7 @@ FragmentParse = fixeddict(
     """,
 )
 
-vc2_default_values[FragmentParse] = FragmentParse(
-    padding1=bitarray(), padding2=bitarray(),
-)
+vc2_default_values[FragmentParse] = FragmentParse()
 
 vc2_fixeddict_nesting[FragmentParse] = [
     FragmentHeader,

@@ -179,14 +179,19 @@ def picture_dimensions(state, video_parameters):
     state["color_diff_width"] = state["luma_width"]
     state["color_diff_height"] = state["luma_height"]
 
-    color_diff_format_index = video_parameters["color_diff_format_index"]
-    if color_diff_format_index == ColorDifferenceSamplingFormats.color_4_2_2.value:
+    if (
+        video_parameters["color_diff_format_index"]
+        == ColorDifferenceSamplingFormats.color_4_2_2
+    ):
         state["color_diff_width"] //= 2
-    if color_diff_format_index == ColorDifferenceSamplingFormats.color_4_2_0.value:
+    if (
+        video_parameters["color_diff_format_index"]
+        == ColorDifferenceSamplingFormats.color_4_2_0
+    ):
         state["color_diff_width"] //= 2
         state["color_diff_height"] //= 2
 
-    if state["picture_coding_mode"] == PictureCodingModes.pictures_are_fields.value:
+    if state["picture_coding_mode"] == PictureCodingModes.pictures_are_fields:
         state["luma_height"] //= 2
         state["color_diff_height"] //= 2
 

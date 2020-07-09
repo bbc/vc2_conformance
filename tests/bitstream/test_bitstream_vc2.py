@@ -124,7 +124,6 @@ def test_parse_stream(w):
         "            next_parse_offset: 13\n"
         "            previous_parse_offset: 0\n"
         "          padding: Padding:\n"
-        "            padding: 0b\n"
         "            bytes: 0x\n"
         "        1: DataUnit:\n"
         "          parse_info: ParseInfo:\n"
@@ -174,7 +173,6 @@ def test_parse_sequence(w):
         "        next_parse_offset: 13\n"
         "        previous_parse_offset: 0\n"
         "      padding: Padding:\n"
-        "        padding: 0b\n"
         "        bytes: 0x\n"
         "    1: DataUnit:\n"
         "      parse_info: ParseInfo:\n"
@@ -209,17 +207,15 @@ def test_auxiliary_data_and_padding(w, T, func):
     with Serialiser(w, ad_in, vc2_default_values) as serdes:
         func(serdes, State(next_parse_offset=13))
     ad = deserialise(w, func, State(next_parse_offset=13))
-    assert str(ad) == ("{}:\n" "  padding: 0b\n" "  bytes: 0x").format(T.__name__)
+    assert str(ad) == ("{}:\n" "  bytes: 0x").format(T.__name__)
 
     # With some data and padding
     w.seek(0, 3)
-    ad_in = T(padding=bitarray("1010"), bytes=b"\x11\x22\x33")
+    ad_in = T(bytes=b"\x11\x22\x33")
     with Serialiser(w, ad_in, vc2_default_values) as serdes:
         func(serdes, State(next_parse_offset=13 + 3))
     ad = serdes.context
-    assert str(ad) == ("{}:\n" "  padding: 0b1010\n" "  bytes: 0x11_22_33").format(
-        T.__name__
-    )
+    assert str(ad) == ("{}:\n" "  bytes: 0x11_22_33").format(T.__name__)
 
 
 @pytest.mark.parametrize(
@@ -999,12 +995,10 @@ class TestFragmentParse(object):
         fp = deserialise(w, vc2.fragment_parse, state)
         assert str(fp) == (
             "FragmentParse:\n"
-            "  padding1: 0b\n"
             "  fragment_header: FragmentHeader:\n"
             "    picture_number: 0\n"
             "    fragment_data_length: 0\n"
             "    fragment_slice_count: 0\n"
-            "  padding2: 0b\n"
             "  transform_parameters: TransformParameters:\n"
             "    wavelet_index: haar_with_shift (4)\n"
             "    dwt_depth: 0\n"
@@ -1048,14 +1042,12 @@ class TestFragmentParse(object):
         fp = deserialise(w, vc2.fragment_parse, state)
         assert str(fp) == (
             "FragmentParse:\n"
-            "  padding1: 0b\n"
             "  fragment_header: FragmentHeader:\n"
             "    picture_number: 0\n"
             "    fragment_data_length: 0\n"
             "    fragment_slice_count: 1\n"
             "    fragment_x_offset: 0\n"
             "    fragment_y_offset: 0\n"
-            "  padding2: 0b\n"
             "  fragment_data: FragmentData:\n"
             "    hq_slices: [<HQSlice>]"
         )
