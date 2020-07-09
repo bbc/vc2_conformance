@@ -17,12 +17,16 @@ __all__ = [
 
 
 @ref_pseudocode(deviation="inferred_implementation")
-def new_array(width, height, initial_value=None):
+def new_array(*dimensions):
     """
-    (5.4.2) Makes a 2D array out of nested lists which may be indexed as
-    arr[y][x].
+    (5.4.2) Makes an N-dimensional array out of nested lists. Dimensions are
+    given in the same order as they are indexed, e.g. ``new_array(height,
+    width)``, like ``array[y][x]``.
     """
-    return [[initial_value] * width for _ in range(height)]
+    if len(dimensions) == 0:
+        return None
+    else:
+        return [new_array(*dimensions[1:]) for _ in range(dimensions[0])]
 
 
 @ref_pseudocode(deviation="inferred_implementation")

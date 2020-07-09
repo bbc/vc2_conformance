@@ -133,7 +133,7 @@ def idwt(state, coeff_data):
 @ref_pseudocode
 def h_synthesis(state, L_data, H_data):
     """(15.4.2) Horizontal-only synthesis."""
-    synth = new_array(2 * width(L_data), height(L_data))
+    synth = new_array(height(L_data), 2 * width(L_data))
 
     # Interleave transform data (as expected by synthesis routine)
     for y in range(height(synth)):
@@ -158,7 +158,7 @@ def h_synthesis(state, L_data, H_data):
 @ref_pseudocode
 def vh_synthesis(state, LL_data, HL_data, LH_data, HH_data):
     """(15.4.3) Interleaved vertical and horizontal synthesis."""
-    synth = new_array(2 * width(LL_data), 2 * height(LL_data))
+    synth = new_array(2 * height(LL_data), 2 * width(LL_data))
 
     # Interleave transform data (as expected by synthesis routine)
     for y in range(height(synth) // 2):

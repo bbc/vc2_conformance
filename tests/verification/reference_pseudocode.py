@@ -539,7 +539,9 @@ def quant_matrix(state):  # Ref
     custom_quant_matrix = read_bool(state)
     if custom_quant_matrix:
         # Errata: not initialised in spec
-        state["quant_matrix"] = {}
+        state["quant_matrix"] = new_array(
+            state["dwt_depth_ho"] + state["dwt_depth"] + 1
+        )
         if state["dwt_depth_ho"] == 0:
             # Errata: not initialised in spec
             state["quant_matrix"][0] = {}
@@ -811,7 +813,7 @@ def slice_quantizers(state, qindex):
     """
 
     # Errata: not initialised in spec
-    state["quantizer"] = {}
+    state["quantizer"] = new_array(state["dwt_depth_ho"] + state["dwt_depth"] + 1)
     if state["dwt_depth_ho"] == 0:
         # Errata: not initialised in spec
         state["quantizer"][0] = {}
@@ -1069,7 +1071,7 @@ def h_synthesis(state, L_data, H_data):  # Ref
     Errata: the 'width(L_data)' etc. parts of the lines below refer to
     'LL_data' in the spec.
     """
-    synth = new_array(2 * width(L_data), height(L_data))
+    synth = new_array(height(L_data), 2 * width(L_data))
 
     # Step 2.
     for y in range((height(synth))):
@@ -1102,7 +1104,7 @@ def vh_synthesis(state, LL_data, HL_data, LH_data, HH_data):  # Ref
     Errata: 'new_array' not part of spec but the need for the function is
     described in prose.
     """
-    synth = new_array(2 * width(LL_data), 2 * height(LL_data))
+    synth = new_array(2 * height(LL_data), 2 * width(LL_data))
 
     # Step 2.
     for y in range((height(synth) // 2)):

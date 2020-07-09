@@ -79,7 +79,7 @@ def test_oned_analysis_and_oned_synthesis_are_inverses(filter_index):
 @pytest.fixture
 def two_d_array():
     """A 2D array of numbers for test purposes."""
-    a = new_array(32, 16)
+    a = new_array(16, 32)
     for y in range(height(a)):
         for x in range(width(a)):
             a[y][x] = (y * 100) + x
@@ -193,10 +193,23 @@ def test_dwt_pad_addition():
 
 def test_offset_invertability():
     picture = {
-        "Y": new_array(16, 8, 123),
-        "C1": new_array(8, 4, 456),
-        "C2": new_array(8, 4, 789),
+        "Y": new_array(8, 16, 123),
+        "C1": new_array(4, 8, 456),
+        "C2": new_array(4, 8, 789),
     }
+
+    for row in picture["Y"]:
+        for i in range(len(row)):
+            row[i] = 123
+
+    for row in picture["C1"]:
+        for i in range(len(row)):
+            row[i] = 456
+
+    for row in picture["C2"]:
+        for i in range(len(row)):
+            row[i] = 789
+
     state = {
         "luma_depth": 8,
         "color_diff_depth": 10,

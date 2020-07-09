@@ -83,20 +83,20 @@ def initialize_wavelet_data(state, comp):
     if state["dwt_depth_ho"] == 0:
         out[0] = {
             "LL": new_array(
-                subband_width(state, 0, comp), subband_height(state, 0, comp)
+                subband_height(state, 0, comp), subband_width(state, 0, comp)
             )
         }
     else:
         out[0] = {
             "L": new_array(
-                subband_width(state, 0, comp), subband_height(state, 0, comp)
+                subband_height(state, 0, comp), subband_width(state, 0, comp)
             )
         }
         for level in range(1, state["dwt_depth_ho"] + 1):
             out[level] = {
                 "H": new_array(
-                    subband_width(state, level, comp),
                     subband_height(state, level, comp),
+                    subband_width(state, level, comp),
                 )
             }
 
@@ -105,7 +105,7 @@ def initialize_wavelet_data(state, comp):
     ):
         out[level] = {
             orient: new_array(
-                subband_width(state, level, comp), subband_height(state, level, comp)
+                subband_height(state, level, comp), subband_width(state, level, comp)
             )
             for orient in ["HL", "LH", "HH"]
         }
@@ -251,7 +251,10 @@ def hq_slice(state, sx, sy):
 @ref_pseudocode
 def slice_quantizers(state, qindex):
     """(13.5.5)"""
-    state["quantizer"] = {}
+    # NB: For historical reasons, we use a dict not an array in this
+    # implementation.
+    ### state["quantizer"] = new_array(state["dwt_depth_ho"] + state["dwt_depth"] + 1)
+    state["quantizer"] = {}  ## Not in spec
     if state["dwt_depth_ho"] == 0:
         state["quantizer"][0] = {}
         state["quantizer"][0]["LL"] = max(qindex - state["quant_matrix"][0]["LL"], 0)

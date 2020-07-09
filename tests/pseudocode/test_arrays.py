@@ -12,40 +12,38 @@ from vc2_conformance.pseudocode.arrays import (
 
 
 class TestArray(object):
-    def test_empty(self):
+    def test_1d(self):
+        assert new_array(0) == []
+        assert new_array(3) == [None, None, None]
+
+    def test_2d_empty(self):
         assert new_array(0, 0) == []
 
-    def test_singleton(self):
+    def test_2d_singleton(self):
         assert new_array(1, 1) == [[None]]
 
     def test_2d(self):
-        assert new_array(3, 4) == [
+        assert new_array(4, 3) == [
             [None, None, None],
             [None, None, None],
             [None, None, None],
             [None, None, None],
-        ]
-
-    def test_initial_value(self):
-        assert new_array(2, 2, 123) == [
-            [123, 123],
-            [123, 123],
         ]
 
 
 def test_width():
     assert width(new_array(0, 0)) == 0
-    assert width(new_array(10, 20)) == 10
+    assert width(new_array(20, 10)) == 10
 
 
 def test_height():
     assert height(new_array(0, 0)) == 0
-    assert height(new_array(10, 20)) == 20
+    assert height(new_array(20, 10)) == 20
 
 
 @pytest.fixture
 def num_array():
-    a = new_array(5, 3)
+    a = new_array(3, 5)
     for x in range(width(a)):
         for y in range(height(a)):
             a[y][x] = x + (y * 10)

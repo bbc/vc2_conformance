@@ -647,7 +647,10 @@ def quant_matrix(serdes, state):
     if custom_quant_matrix:
         serdes.declare_list("quant_matrix")
 
-        state["quant_matrix"] = {}
+        # NB: For historical reasons, we use a dict not an array in this
+        # implementation.
+        ### state["quant_matrix"] = new_array(state["dwt_depth_ho"] + state["dwt_depth"] + 1)
+        state["quant_matrix"] = {}  ## Not in spec
         if state["dwt_depth_ho"] == 0:
             state["quant_matrix"][0] = {}
             state["quant_matrix"][0]["LL"] = serdes.uint("quant_matrix")

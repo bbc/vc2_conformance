@@ -156,8 +156,8 @@ def h_analysis(state, data):
         oned_analysis(row(data, y), state["wavelet_index_ho"])
 
     # De-interleave the transform data
-    L_data = new_array(width(data) // 2, height(data))
-    H_data = new_array(width(data) // 2, height(data))
+    L_data = new_array(height(data), width(data) // 2)
+    H_data = new_array(height(data), width(data) // 2)
     for y in range(0, (height(data))):
         for x in range(0, (width(data) // 2)):
             L_data[y][x] = data[y][2 * x]
@@ -186,10 +186,10 @@ def vh_analysis(state, data):
         oned_analysis(column(data, x), state["wavelet_index"])
 
     # De-interleave the transform data
-    LL_data = new_array(width(data) // 2, height(data) // 2)
-    HL_data = new_array(width(data) // 2, height(data) // 2)
-    LH_data = new_array(width(data) // 2, height(data) // 2)
-    HH_data = new_array(width(data) // 2, height(data) // 2)
+    LL_data = new_array(height(data) // 2, width(data) // 2)
+    HL_data = new_array(height(data) // 2, width(data) // 2)
+    LH_data = new_array(height(data) // 2, width(data) // 2)
+    HH_data = new_array(height(data) // 2, width(data) // 2)
     for y in range(0, (height(data) // 2)):
         for x in range(0, (width(data) // 2)):
             LL_data[y][x] = data[2 * y][2 * x]
