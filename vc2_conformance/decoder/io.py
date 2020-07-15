@@ -177,7 +177,7 @@ def read_byte(state):
 @ref_pseudocode(deviation="inferred_implementation")
 def is_end_of_stream(state):
     """
-    (A.0.0) Determine if we have reached the end of the stream (i.e. the end of
+    (A.2.5) Determine if we have reached the end of the stream (i.e. the end of
     the file).
     """
     return state["current_byte"] is None

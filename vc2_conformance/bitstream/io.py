@@ -108,7 +108,7 @@ class BitstreamReader(object):
             self._next_bit = 7
 
     def is_end_of_stream(self):
-        """Check if we've reached the EOF. (A.0.0)"""
+        """Check if we've reached the EOF. (A.2.5)"""
         return self._current_byte is None
 
     def tell(self):
@@ -341,7 +341,7 @@ class BitstreamWriter(object):
 
     def is_end_of_stream(self):
         """
-        Always True. (A.0.0)
+        Always True. (A.2.5)
 
         .. note::
 

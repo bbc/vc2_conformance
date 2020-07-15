@@ -36,7 +36,7 @@ def test_format_parse_code_traceback():
         tb = traceback.extract_tb(exc_tb)
 
     assert format_pseudocode_traceback(tb) == (
-        "* parse_stream (10.3)\n" "  * is_end_of_stream (A.0.0)"
+        "* parse_stream (10.3)\n" "  * is_end_of_stream (A.2.5)"
     )
 
 
