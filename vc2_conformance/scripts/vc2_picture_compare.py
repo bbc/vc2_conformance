@@ -157,13 +157,13 @@ def read_pictures_with_only_one_metadata_file_required(filename_a, filename_b):
     try:
         with open(meta_fn_a, "rb") as f:
             metadata_a = read_metadata(f)
-    except OSError:
+    except (OSError, IOError):
         metadata_a = None
 
     try:
         with open(meta_fn_b, "rb") as f:
             metadata_b = read_metadata(f)
-    except OSError:
+    except (OSError, IOError):
         metadata_b = None
 
     if metadata_a is None and metadata_b is None:
@@ -193,7 +193,7 @@ def read_pictures_with_only_one_metadata_file_required(filename_a, filename_b):
             )
             if len(f.read(1)) != 0:
                 raise ValueError()
-    except OSError:
+    except (OSError, IOError):
         sys.stderr.write("Error: Could not open first picture.\n")
         sys.exit(101)
     except ValueError:
@@ -207,7 +207,7 @@ def read_pictures_with_only_one_metadata_file_required(filename_a, filename_b):
             )
             if len(f.read(1)) != 0:
                 raise ValueError()
-    except OSError:
+    except (OSError, IOError):
         sys.stderr.write("Error: Could not open second picture.\n")
         sys.exit(101)
     except ValueError:
