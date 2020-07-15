@@ -83,12 +83,12 @@ def restore_metadata_afterwards():
     try:
         yield pseudocode_derived_functions
     finally:
-        pseudocode_derived_functions.clear()
+        del pseudocode_derived_functions[:]
         pseudocode_derived_functions.extend(old)
 
 
 def test_ref_pseudocode(restore_metadata_afterwards):
-    pseudocode_derived_functions.clear()
+    del pseudocode_derived_functions[:]
 
     # Decorator without brackets
     assert ref_pseudocode(example1) is example1

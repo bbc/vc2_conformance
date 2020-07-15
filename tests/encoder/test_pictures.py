@@ -1063,7 +1063,7 @@ class TestMakeDecideFlag(object):
         try:
             yield LEVEL_CONSTRAINTS
         finally:
-            LEVEL_CONSTRAINTS.clear()
+            del LEVEL_CONSTRAINTS[:]
             LEVEL_CONSTRAINTS.extend(original_constraints)
 
     @pytest.mark.parametrize("required,expected", [(True, True), (False, False)])
@@ -1108,7 +1108,7 @@ class TestMakeExtendedTransformParameters(object):
         try:
             yield LEVEL_CONSTRAINTS
         finally:
-            LEVEL_CONSTRAINTS.clear()
+            del LEVEL_CONSTRAINTS[:]
             LEVEL_CONSTRAINTS.extend(original_constraints)
 
     def test_symmetric(self):

@@ -117,7 +117,7 @@ def level_constraints():
     try:
         yield LEVEL_CONSTRAINTS
     finally:
-        LEVEL_CONSTRAINTS.clear()
+        del LEVEL_CONSTRAINTS[:]
         LEVEL_CONSTRAINTS.extend(old)
 
 
