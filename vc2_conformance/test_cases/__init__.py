@@ -211,6 +211,10 @@ class TestCase(object):
             and self.metadata == other.metadata
         )
 
+    def __ne__(self, other):
+        """Required under Python 2.x"""
+        return not self.__eq__(other)
+
 
 def normalise_test_case_generator(f, *args, **kwargs):
     """

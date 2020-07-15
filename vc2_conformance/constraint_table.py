@@ -311,6 +311,10 @@ class ValueSet(object):
             and self._ranges == other._ranges
         )
 
+    def __ne__(self, other):
+        """Required under Python 2.x"""
+        return not self.__eq__(other)
+
     def __add__(self, other):
         """
         Combine two :py:class:`ValueSet` objects into a single object
