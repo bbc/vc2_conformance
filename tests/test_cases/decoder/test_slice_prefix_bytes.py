@@ -209,9 +209,9 @@ class TestSlicePrefixBytes(object):
 
             for prefix_bytes in log:
                 if test_case.subcase_name == "zeros":
-                    assert all(b == 0 for b in prefix_bytes)
+                    assert all(b == 0 for b in bytearray(prefix_bytes))
                 elif test_case.subcase_name == "ones":
-                    assert all(b == 0xFF for b in prefix_bytes)
+                    assert all(b == 0xFF for b in bytearray(prefix_bytes))
                 elif test_case.subcase_name == "end_of_sequence":
                     assert b"BBCD" in prefix_bytes
                 else:
