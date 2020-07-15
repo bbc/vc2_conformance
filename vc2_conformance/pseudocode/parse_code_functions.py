@@ -15,11 +15,7 @@ __all__ = [
     "is_ld",
     "is_hq",
     "is_picture",
-    "is_ld_picture",
-    "is_hq_picture",
     "is_fragment",
-    "is_ld_fragment",
-    "is_hq_fragment",
     "using_dc_prediction",
 ]
 
@@ -65,33 +61,9 @@ def is_picture(state):
 
 
 @ref_pseudocode
-def is_ld_picture(state):
-    """(Table 10.2)"""
-    return (state["parse_code"] & 0xFC) == 0xC8
-
-
-@ref_pseudocode
-def is_hq_picture(state):
-    """(Table 10.2)"""
-    return (state["parse_code"] & 0xFC) == 0xE8
-
-
-@ref_pseudocode
 def is_fragment(state):
     """(Table 10.2)"""
     return (state["parse_code"] & 0x0C) == 0x0C
-
-
-@ref_pseudocode
-def is_ld_fragment(state):
-    """(Table 10.2)"""
-    return (state["parse_code"] & 0xFC) == 0xCC
-
-
-@ref_pseudocode
-def is_hq_fragment(state):
-    """(Table 10.2)"""
-    return (state["parse_code"] & 0xFC) == 0xEC
 
 
 @ref_pseudocode

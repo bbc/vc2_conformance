@@ -57,10 +57,6 @@ from vc2_conformance.pseudocode.parse_code_functions import (
     is_picture,
     is_ld,
     is_hq,
-    is_ld_picture,
-    is_hq_picture,
-    is_ld_fragment,
-    is_hq_fragment,
     is_fragment,
 )
 
@@ -691,9 +687,9 @@ def transform_data(serdes, state):
     # Initialise context dictionary
     ## Begin not in spec
     serdes.computed_value("_state", state.copy())
-    if is_ld_picture(state):
+    if is_ld(state):
         serdes.declare_list("ld_slices")
-    if is_hq_picture(state):
+    if is_hq(state):
         serdes.declare_list("hq_slices")
     ## End not in spec
 
@@ -950,9 +946,9 @@ def fragment_data(serdes, state):
     # Initialise context dictionary
     ## Begin not in spec
     serdes.computed_value("_state", state.copy())
-    if is_ld_fragment(state):
+    if is_ld(state):
         serdes.declare_list("ld_slices")
-    if is_hq_fragment(state):
+    if is_hq(state):
         serdes.declare_list("hq_slices")
     ## End not in spec
 

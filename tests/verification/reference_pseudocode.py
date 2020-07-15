@@ -176,39 +176,11 @@ def is_picture(state):
     return (state["parse_code"] & 0x8C) == 0x88
 
 
-def is_ld_picture(state):
-    """
-    (Table 10.2)
-    """
-    return (state["parse_code"] & 0xFC) == 0xC8
-
-
-def is_hq_picture(state):
-    """
-    (Table 10.2)
-    """
-    return (state["parse_code"] & 0xFC) == 0xE8
-
-
 def is_fragment(state):
     """
     (Table 10.2)
     """
     return (state["parse_code"] & 0x0C) == 0x0C
-
-
-def is_ld_fragment(state):
-    """
-    (Table 10.2)
-    """
-    return (state["parse_code"] & 0xFC) == 0xCC
-
-
-def is_hq_fragment(state):
-    """
-    (Table 10.2)
-    """
-    return (state["parse_code"] & 0xFC) == 0xEC
 
 
 def using_dc_prediction(state):
@@ -463,14 +435,14 @@ def video_depth(state, video_parameters):
 # ------------------
 
 
-def picture_parse(state):
+def picture_parse(state):  # Ref
     """
     (12.1)
     """
     byte_align(state)
-    picture_header(state)
+    picture_header(state)  # 12.2
     byte_align(state)
-    wavelet_transform(state)
+    wavelet_transform(state)  # 12.3
 
 
 def picture_header(state):
@@ -1082,7 +1054,7 @@ def h_synthesis(state, L_data, H_data):  # Ref
 
     # Step 3.
     for y in range(height(synth)):
-        oned_synthesis(row(synth, y), state["wavelet_index_ho"])  # 15.3.3
+        oned_synthesis(row(synth, y), state["wavelet_index_ho"])  # 15.4.4
 
     # Step 4.
     shift = filter_bit_shift(state)  # Table 15.1-7
@@ -1117,9 +1089,9 @@ def vh_synthesis(state, LL_data, HL_data, LH_data, HH_data):  # Ref
 
     # Step 3.
     for x in range(width(synth)):
-        oned_synthesis(column(synth, x), state["wavelet_index"])  # 15.3.3
+        oned_synthesis(column(synth, x), state["wavelet_index"])  # 15.4.4
     for y in range(height(synth)):
-        oned_synthesis(row(synth, y), state["wavelet_index_ho"])  # 15.3.3
+        oned_synthesis(row(synth, y), state["wavelet_index_ho"])  # 15.4.4
 
     # Step 4.
     shift = filter_bit_shift(state)  # Table 15.1-7
