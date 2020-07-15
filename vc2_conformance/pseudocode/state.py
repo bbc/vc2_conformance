@@ -211,7 +211,7 @@ State = fixeddict(
             patterns.
         """,
     ),
-    # (10.4.999) output_picture related state
+    # (15.2) output_picture related state
     Entry(
         "_output_picture_callback",
         help_type=(
@@ -226,7 +226,7 @@ State = fixeddict(
         ),
         help="""
             Not in spec, used by :py:mod:`vc2_conformance.decoder`.
-            A callback function to call when ``output_picture`` (10.4.999) is
+            A callback function to call when ``output_picture`` (15.2) is
             called. This callback (if defined) will be passed the picture,
             video parameters and picture coding mode.
         """,
