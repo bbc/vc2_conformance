@@ -1037,6 +1037,10 @@ class ColorParametersSanity(object):
             )
         )
 
+    def __nonzero__(self):
+        """Provided for Python 2.x backward compatibility."""
+        return self.__bool__()
+
     def explain(self):
         """
         Return a human-readable explanation of why a video format is not sane
