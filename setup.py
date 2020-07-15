@@ -12,9 +12,9 @@ install_requires = [
     "enum34",
     "bitarray",
     "sentinels",
-    "vc2_data_tables",
-    "vc2_bit_widths",
-    "vc2_conformance_data",
+    "vc2_data_tables>=0.1.1",
+    "vc2_bit_widths>=0.1.0",
+    "vc2_conformance_data>=0.1.0",
 ]
 
 # Use old versions of libraries which have deprecated Python 2.7 support
