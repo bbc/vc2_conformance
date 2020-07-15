@@ -296,11 +296,10 @@ def fixeddict(name, *entries, **kwargs):
     ``entry_objs`` which is a :py;class:`collections.OrderedDict` mapping from
     entry name to :py:class:`Entry` object in the dictionary.
 
-    The keyword-only argument, 'module' and 'qualname' may be provided which
-    override the ``__module__`` and ``__qualname__`` values of the returned
-    fixeddict type. (By default the module name is inferred using runtime stack
-    inspection, if possible). These must be set correctly for this type to be
-    picklable.
+    The keyword-only argument, 'module' may be provided which overrides the
+    ``__module__`` value of the returned fixeddict type. (By default the module
+    name is inferred using runtime stack inspection, if possible). This must be
+    set correctly for this type to be picklable.
 
     The keyword-only argument 'help' may be used to set the docstring of the
     returned class. This will automatically be appended with the list of
@@ -308,7 +307,6 @@ def fixeddict(name, *entries, **kwargs):
     """
     # Extract keyword-only arguments
     module = kwargs.pop("module", None)
-    qualname = kwargs.pop("qualname", None)
     help = kwargs.pop("help", None)
     assert not kwargs, "Got unexpected keyword arguments: {}".format(", ".join(kwargs))
 
@@ -439,8 +437,8 @@ def fixeddict(name, *entries, **kwargs):
 
     # Support pickling/unpickling (part 2)
     #
-    # Setting the __module__/__qualname__ class attributes tells pickle where
-    # to find this type when unpickling.
+    # Setting the __module__ class attributes tells pickle where to find this
+    # type when unpickling.
     if module is None:
         # Detect the module of the caller by inspecting the stack. This is a
         # bit gross, and won't work under all Python interpreters, but is what
@@ -452,7 +450,5 @@ def fixeddict(name, *entries, **kwargs):
             pass
     if module is not None:
         setattr(cls, "__module__", module)
-    if qualname is not None:
-        setattr(cls, "__qualname__", qualname)
 
     return cls

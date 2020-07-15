@@ -106,13 +106,6 @@ MyFixedDict = fixeddict(
 )
 
 
-class OuterClass(object):
-    # A fixeddict nested within another object (used to test pickleability)
-    MyNestedFixedDict = fixeddict(
-        "MyNestedFixedDict", Entry("foo"), qualname="OuterClass.MyNestedFixedDict",
-    )
-
-
 class TestFixedDict(object):
     def test_constructors(self):
         # Sanity check standard dictionary initialisation works
@@ -234,12 +227,6 @@ class TestFixedDict(object):
         unpickled_d1 = pickle.loads(pickle.dumps(d1))
         assert d1 == unpickled_d1
         assert type(d1) is type(unpickled_d1)
-
-        # Check qualname override works
-        d2 = OuterClass.MyNestedFixedDict(foo=123)
-        unpickled_d2 = pickle.loads(pickle.dumps(d2))
-        assert d2 == unpickled_d2
-        assert type(d2) is type(unpickled_d2)
 
     def test_docstring_no_help(self):
         Undocumented = fixeddict("Undocumented", Entry("foo"), Entry("bar"),)
