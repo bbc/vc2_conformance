@@ -12,6 +12,8 @@ import numpy as np
 
 from PIL import Image
 
+import distutils.spawn
+
 from vc2_data_tables import (
     PresetColorPrimaries,
     PresetColorMatrices,
@@ -43,6 +45,22 @@ from vc2_conformance.scripts.vc2_picture_explain import (
     explain_ffmpeg_command,
     explain_imagemagick_command,
     main,
+)
+
+
+# Decorators to skip tests if ffmpeg/ImageMagick are not available
+skip_if_no_ffmpeg = pytest.mark.skipif(
+    distutils.spawn.find_executable("ffmpeg") is None, reason="FFmpeg not installed",
+)
+skip_if_no_imagemagick = pytest.mark.skipif(
+    # NB: Because 'convert' is such a generic command name, we must be careful
+    # to check that other image magick tools are present to be sure that
+    # 'convert' is part of imagemagick
+    any(
+        distutils.spawn.find_executable(name) is None
+        for name in ["convert", "montage", "display", "mogrify"]
+    ),
+    reason="ImageMagick not installed",
 )
 
 
@@ -458,6 +476,7 @@ class TestExampleFFMPEGCommand(object):
             else:
                 return out
 
+    @skip_if_no_ffmpeg
     @pytest.mark.parametrize("picture_coding_mode", PictureCodingModes)
     @pytest.mark.parametrize("top_field_first", [True, False])
     def test_deinterlacing(
@@ -527,6 +546,7 @@ class TestExampleFFMPEGCommand(object):
             # Color should be either white or black so all channels should be identical
             assert np.all((sample_points[:, :, 1:] == sample_points[:, :, :-1]))
 
+    @skip_if_no_ffmpeg
     @pytest.mark.parametrize("source_sampling_mode", SourceSamplingModes)
     @pytest.mark.parametrize("picture_coding_mode", PictureCodingModes)
     @pytest.mark.parametrize("top_field_first", [True, False])
@@ -604,6 +624,7 @@ class TestExampleFFMPEGCommand(object):
 
         assert np.array_equal(frame, expected_frame)
 
+    @skip_if_no_ffmpeg
     @pytest.mark.parametrize("pixel_aspect_ratio", [Fraction(1, 1), Fraction(4, 3)])
     def test_pixel_aspect_ratio(
         self, video_parameters, pixel_aspect_ratio, tmpdir,
@@ -695,6 +716,7 @@ class TestExampleFFMPEGCommand(object):
             frame, video_parameters["transfer_function_index"],
         )
 
+    @skip_if_no_ffmpeg
     @pytest.mark.parametrize("primaries", PresetColorPrimaries)
     @pytest.mark.parametrize("matrix", PresetColorMatrices)
     @pytest.mark.parametrize("transfer_function", PresetTransferFunctions)
@@ -727,6 +749,7 @@ class TestExampleFFMPEGCommand(object):
             video_parameters, picture_coding_mode, str(tmpdir),
         )
 
+    @skip_if_no_ffmpeg
     @pytest.mark.parametrize(
         "excursion",
         [(1 << picture_bit_width) - 1 for picture_bit_width in range(1, 16)],
@@ -797,6 +820,7 @@ class TestExampleImageMagickCommand(object):
         im = Image.open(png_filename)
         return np.array(im)
 
+    @skip_if_no_imagemagick
     @pytest.mark.parametrize("pixel_aspect_ratio", [Fraction(1, 1), Fraction(4, 3)])
     def test_pixel_aspect_ratio(
         self, video_parameters, pixel_aspect_ratio, tmpdir,
@@ -882,6 +906,7 @@ class TestExampleImageMagickCommand(object):
             frame, video_parameters["transfer_function_index"],
         )
 
+    @skip_if_no_imagemagick
     @pytest.mark.parametrize("primaries", PresetColorPrimaries)
     @pytest.mark.parametrize("matrix", PresetColorMatrices)
     @pytest.mark.parametrize("transfer_function", PresetTransferFunctions)
@@ -914,6 +939,7 @@ class TestExampleImageMagickCommand(object):
             video_parameters, picture_coding_mode, str(tmpdir),
         )
 
+    @skip_if_no_imagemagick
     @pytest.mark.parametrize(
         "excursion",
         [(1 << picture_bit_width) - 1 for picture_bit_width in range(1, 16)],
