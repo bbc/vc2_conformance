@@ -1,0 +1,65 @@
+name: Test Suite
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: [2.7, 3.6]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Upgrade pip
+      run: |
+        python -m pip install --upgrade pip
+    - uses: actions/checkout@v2
+    - name: Fetch private vc2_data_tables repo
+      uses: actions/checkout@v2
+      with:
+        repository: bbc/vc2_data_tables
+        path: vc2_data_tables
+        token: ${{ secrets.PAT }}
+    - name: Fetch private vc2_conformance_data repo
+      uses: actions/checkout@v2
+      with:
+        repository: bbc/vc2_conformance_data
+        path: vc2_conformance_data
+        token: ${{ secrets.PAT }}
+    - name: Fetch private vc2_bit_widths repo
+      uses: actions/checkout@v2
+      with:
+        repository: bbc/vc2_bit_widths
+        path: vc2_bit_widths
+        token: ${{ secrets.PAT }}
+    - name: Install with test dependencies
+      shell: bash
+      run: |
+        (cd vc2_data_tables/ && python setup.py develop)
+        (cd vc2_bit_widths/ && python setup.py develop)
+        (cd vc2_conformance_data/ && python setup.py develop)
+        python setup.py develop
+        python -m pip install -r requirements-test.txt
+    - name: Install ffmpeg and imagemagick (extra test dependencies)
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ffmpeg imagemagick
+    - name: Run test suite
+      run: |
+        py.test tests/
+    - name: Check with flake8
+      run: |
+        python -m pip install flake8
+        python -m flake8 vc2_conformance_data tests
+    - name: Check black code style used
+      if: ${{ matrix.python-version != 2.7 }}
+      run: |
+        python -m pip install black
+        python -m black --check vc2_conformance_data tests
