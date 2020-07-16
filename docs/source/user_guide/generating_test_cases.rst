@@ -17,16 +17,16 @@ Defining codec features
 In order to generate an appropriate set of test cases for a VC-2 encoder or
 decoder we must first enumerate the capabilities of that codec in a codec
 features file. This file must contain a table, in Comma Separated Values (CSV)
-format enumerating codec configurations to be tested. This table is laid out as
-illustrated below:
+format enumerating codec configurations to be tested. An example table is given
+below:
 
-=========== ======== ======== ===
-name        config_1 config_2 ...
-=========== ======== ======== ===
-parameter_1 value    value    ...
-parameter_2 value    value    ...
-...         ...      ...      ...
-=========== ======== ======== ===
+.. csv-table:: 
+    :file: ../_static/user_guide/sample_codec_features.csv
+
+.. only:: html
+
+    `Download CSV <../_static/user_guide/sample_codec_features.csv>`_
+
 
 The first row should provide a unique name for each codec configuration for
 which test cases are to be generated with the left-most cell containing the
@@ -295,7 +295,7 @@ message is produced indicating the problem and test case generation is aborted.
 
 If you are using a wavelet transform combination or depth for which a default
 quantization matrices are not provided in the VC-2 specification (see annexe
-(D.2)), the test case generator will produce the following warning:
+(D.2)), the test case generator will produce the following warning::
 
     WARNING:root:No static analysis available for the wavelet used by codec '<name>'. Signal range test cases cannot be generated.
 
