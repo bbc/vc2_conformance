@@ -10,7 +10,9 @@ with open(version_file, "r") as f:
 
 install_requires = [
     "enum34",
-    "bitarray",
+    # NB: bitarray-hardbyte is used in place of official 'bitarray' package
+    # due to provision of a binary wheel.
+    "bitarray-hardbyte",
     "sentinels",
     "vc2_data_tables>=0.1.1",
     "vc2_bit_widths>=0.1.0",
