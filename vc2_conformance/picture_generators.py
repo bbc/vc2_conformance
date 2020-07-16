@@ -476,7 +476,7 @@ def moving_sprite(video_parameters, picture_coding_mode, num_frames=10):
     # Generate frames
     num_samples, relative_rate = frames_to_samples(video_parameters, num_frames)
     x_step_size = 16 // relative_rate
-    for px in np.arange(num_samples, dtype=int) * x_step_size:
+    for px in np.arange(num_samples, dtype=np.int64) * x_step_size:
         # For bizarre, tiny picture formats too small for the sprite, clip the
         # sprite to fit
         sw = min(frame_width, sprite_width)
@@ -622,6 +622,9 @@ def white_noise(video_parameters, picture_coding_mode, num_frames=1, seed=0):
                 0,
                 1 << dd[component].depth_bits,
                 (dd[component].height, dd[component].width),
+                # NB: int on Windows is only 32 bits, hence forced 64 bit width
+                # here
+                dtype=np.int64,
             ).tolist()
 
         yield picture

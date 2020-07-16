@@ -15,7 +15,7 @@ install_requires = [
     "bitarray-hardbyte",
     "sentinels",
     "vc2_data_tables>=0.1.1",
-    "vc2_bit_widths>=0.1.0",
+    "vc2_bit_widths>=0.1.1",
     "vc2_conformance_data>=0.1.0",
 ]
 

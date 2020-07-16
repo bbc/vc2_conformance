@@ -69,9 +69,9 @@ def generate_picture(
     """
     if isinstance(pixel_values, int):
         pixel_values = (
-            np.full((height, width), pixel_values, dtype=int),
-            np.full((height // 2, width // 2), pixel_values, dtype=int),
-            np.full((height // 2, width // 2), pixel_values, dtype=int),
+            np.full((height, width), pixel_values, dtype=np.int64),
+            np.full((height // 2, width // 2), pixel_values, dtype=np.int64),
+            np.full((height // 2, width // 2), pixel_values, dtype=np.int64),
         )
     else:
         pixel_values = (
