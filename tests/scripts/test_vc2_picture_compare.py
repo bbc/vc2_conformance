@@ -372,7 +372,7 @@ class TestGenerateDifferenceMaskPicture(object):
             transfer_function_index=PresetTransferFunctions.tv_gamma,
         )
 
-    def test_color_4_4_4(self, video_parameters):
+    def test_color_4_4_4(self, video_parameters, tmpdir):
         video_parameters[
             "color_diff_format_index"
         ] = ColorDifferenceSamplingFormats.color_4_4_4
@@ -389,7 +389,7 @@ class TestGenerateDifferenceMaskPicture(object):
             mask,
             video_parameters,
             PictureCodingModes.pictures_are_frames,
-            "/tmp/out.raw",
+            str(tmpdir.join("out.raw")),
         )
 
         assert mask["Y"].tolist() == [
@@ -413,7 +413,7 @@ class TestGenerateDifferenceMaskPicture(object):
 
         assert mask["pic_num"] == 100
 
-    def test_color_4_2_2(self, video_parameters):
+    def test_color_4_2_2(self, video_parameters, tmpdir):
         video_parameters[
             "color_diff_format_index"
         ] = ColorDifferenceSamplingFormats.color_4_2_2
@@ -430,7 +430,7 @@ class TestGenerateDifferenceMaskPicture(object):
             mask,
             video_parameters,
             PictureCodingModes.pictures_are_frames,
-            "/tmp/out.raw",
+            str(tmpdir.join("out.raw")),
         )
 
         assert mask["Y"].tolist() == [
@@ -454,7 +454,7 @@ class TestGenerateDifferenceMaskPicture(object):
 
         assert mask["pic_num"] == 100
 
-    def test_color_4_2_0(self, video_parameters):
+    def test_color_4_2_0(self, video_parameters, tmpdir):
         video_parameters[
             "color_diff_format_index"
         ] = ColorDifferenceSamplingFormats.color_4_2_0
@@ -471,7 +471,7 @@ class TestGenerateDifferenceMaskPicture(object):
             mask,
             video_parameters,
             PictureCodingModes.pictures_are_frames,
-            "/tmp/out.raw",
+            str(tmpdir.join("out.raw")),
         )
 
         assert mask["Y"].tolist() == [
@@ -491,7 +491,7 @@ class TestGenerateDifferenceMaskPicture(object):
 
         assert mask["pic_num"] == 100
 
-    def test_rgb(self, video_parameters):
+    def test_rgb(self, video_parameters, tmpdir):
         video_parameters[
             "color_diff_format_index"
         ] = ColorDifferenceSamplingFormats.color_4_4_4
@@ -511,7 +511,7 @@ class TestGenerateDifferenceMaskPicture(object):
             mask,
             video_parameters,
             PictureCodingModes.pictures_are_frames,
-            "/tmp/out.raw",
+            str(tmpdir.join("out.raw")),
         )
 
         assert mask["Y"].tolist() == [
@@ -535,7 +535,7 @@ class TestGenerateDifferenceMaskPicture(object):
 
         assert mask["pic_num"] == 100
 
-    def test_video_range(self, video_parameters):
+    def test_video_range(self, video_parameters, tmpdir):
         video_parameters[
             "color_diff_format_index"
         ] = ColorDifferenceSamplingFormats.color_4_4_4
@@ -556,7 +556,7 @@ class TestGenerateDifferenceMaskPicture(object):
             mask,
             video_parameters,
             PictureCodingModes.pictures_are_frames,
-            "/tmp/out.raw",
+            str(tmpdir.join("out.raw")),
         )
 
         assert mask["Y"].tolist() == [
