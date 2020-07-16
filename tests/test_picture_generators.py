@@ -1,5 +1,7 @@
 import pytest
 
+import sys
+
 import numpy as np
 
 from fractions import Fraction
@@ -779,18 +781,22 @@ class TestGenericPictureGeneratorBehaviour(object):
     def test_produces_correct_dict_type(self, picture_generator, vp, ssm, pcm):
         vp["source_sampling"] = ssm
 
+        int_types = (int,)
+        if sys.version_info < (3, 0, 0):
+            int_types += (long,)  # noqa: F821
+
         for picture in list(picture_generator(vp, pcm)):
             assert isinstance(picture["Y"], list)
             assert isinstance(picture["Y"][0], list)
-            assert type(picture["Y"][0][0]) is int
+            assert type(picture["Y"][0][0]) in int_types
 
             assert isinstance(picture["C1"], list)
             assert isinstance(picture["C1"][0], list)
-            assert type(picture["C1"][0][0]) is int
+            assert type(picture["C1"][0][0]) in int_types
 
             assert isinstance(picture["C2"], list)
             assert isinstance(picture["C2"][0], list)
-            assert type(picture["C2"][0][0]) is int
+            assert type(picture["C2"][0][0]) in int_types
 
             assert isinstance(picture["pic_num"], int)
 
