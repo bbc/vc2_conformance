@@ -42,7 +42,7 @@ with alternative_real_pictures():
             ),
             # Test with very high, asymmetric bit depths.
             #
-            # Here 'very high' means 32 bits and 48 bits (for luma and color
+            # Here 'high' means 16 bits and 14 bits (for luma and color
             # difference). In practice no real codec is likely to use more than
             # 16 bits since any video format requiring greater dynamic range is
             # likely to need to turn to floating point anyway.
@@ -51,9 +51,9 @@ with alternative_real_pictures():
                 video_parameters=VideoParameters(
                     MINIMAL_CODEC_FEATURES["video_parameters"],
                     luma_offset=0,
-                    luma_excursion=(1 << 32) - 1,
-                    color_diff_offset=(1 << 48) // 2,
-                    color_diff_excursion=(1 << 48) - 1,
+                    luma_excursion=(1 << 16) - 1,
+                    color_diff_offset=(1 << 14) // 2,
+                    color_diff_excursion=(1 << 14) - 1,
                 ),
             ),
         ]
