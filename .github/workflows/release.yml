@@ -1,0 +1,96 @@
+name: Generate release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.7
+    - name: Upgrade pip
+      run: |
+        python -m pip install --upgrade pip
+    - uses: actions/checkout@v2
+    - name: Build Python source package
+      id: build_source_package
+      run: |
+        python setup.py sdist
+        echo ::set-output name=package::$(echo dist/*.tar.gz)
+    - name: Fetch private vc2_data_tables repo
+      uses: actions/checkout@v2
+      with:
+        repository: bbc/vc2_data_tables
+        path: vc2_data_tables
+        token: ${{ secrets.PAT }}
+    - name: Fetch private vc2_conformance_data repo
+      uses: actions/checkout@v2
+      with:
+        repository: bbc/vc2_conformance_data
+        path: vc2_conformance_data
+        token: ${{ secrets.PAT }}
+    - name: Fetch private vc2_bit_widths repo
+      uses: actions/checkout@v2
+      with:
+        repository: bbc/vc2_bit_widths
+        path: vc2_bit_widths
+        token: ${{ secrets.PAT }}
+    - name: Install doc dependencies
+      run: |
+        (cd vc2_data_tables/ && python setup.py develop)
+        (cd vc2_bit_widths/ && python setup.py develop)
+        (cd vc2_conformance_data/ && python setup.py develop)
+        python setup.py develop
+        python -m pip install -r requirements-docs.txt
+        sudo apt-get update -y
+        sudo apt-get install -y \
+          inkscape \
+          latexmk \
+          texlive-latex-recommended \
+          texlive-latex-extra \
+          texlive-fonts-recommended
+    - name: Build PDF documentation
+      id: build_pdf_docs
+      run: |
+        # NB: Also build vc2_data_tables, vc2_bit_widths and
+        # vc2_conformance_data docs in order to obtain a toc file for
+        # cross-referencing via intertex
+        make -C vc2_data_tables/docs/ latexpdf
+        make -C vc2_bit_widths/docs/ latexpdf
+        make -C vc2_conformance_data/docs/ latexpdf
+        make -C docs/ latexpdf
+        echo ::set-output name=pdf::$(echo docs/build/latex/smpte*.pdf)
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: ${{ github.ref }}
+        draft: false
+        prerelease: true
+    - name: Upload source package
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ steps.build_source_package.outputs.package }}
+        asset_name: ${{ github.event.repository.name }}.tar.gz
+        asset_content_type: application/gzip
+    - name: Upload PDF docs
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ steps.build_pdf_docs.outputs.pdf }}
+        asset_name: manual.pdf
+        asset_content_type: application/pdf
