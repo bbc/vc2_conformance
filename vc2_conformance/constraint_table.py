@@ -140,7 +140,7 @@ A Constraint table can be read from CSV files using the following function:
 
 import csv
 
-from vc2_data_tables.csv_readers import is_ditto
+from vc2_data_tables.csv_readers import open_utf8, is_ditto
 
 
 __all__ = [
@@ -534,7 +534,7 @@ def read_constraints_from_csv(csv_filename):
     '''
     out = []
 
-    with open(csv_filename) as f:
+    with open_utf8(csv_filename) as f:
         for row in csv.reader(f):
             # Skip empty lines
             if all(not cell.strip() or cell.strip().startswith("#") for cell in row):
