@@ -317,7 +317,7 @@ def explain_component_sizes(video_parameters, picture_coding_mode):
             (
                 (
                     " stored as {} bit ({} byte) values "
-                    "(with the {} most significant bits set to 0)"
+                    "(with the {} most significant bit{} set to 0)"
                 ).format(
                     dd.bytes_per_sample * 8,
                     dd.bytes_per_sample,
@@ -802,11 +802,11 @@ def example_imagemagick_command(
     command.append_linebreak()
     if is_rgb_color(video_parameters):
         command.append(
-            "rgb:".format(picture_filename), "Input is RGB picture.",
+            "rgb:", "Input is RGB picture.",
         )
     else:
         command.append(
-            "yuv:".format(picture_filename), "Input is Y C1 C2 picture.",
+            "yuv:", "Input is Y C1 C2 picture.",
         )
 
     command.append(picture_filename, "Input filename.")
@@ -818,7 +818,7 @@ def example_imagemagick_command(
     if is_rgb_color(video_parameters):
         command.append_linebreak()
         command.append(
-            "-separate -swap 1,2 -swap 0,1 -combine".format(picture_filename),
+            "-separate -swap 1,2 -swap 0,1 -combine",
             "Change from GRB to RGB channel order (expected by ImageMagick).",
         )
 
