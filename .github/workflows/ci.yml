@@ -57,9 +57,9 @@ jobs:
     - name: Check with flake8
       run: |
         python -m pip install flake8
-        python -m flake8 vc2_conformance_data tests
+        python -m flake8 vc2_conformance tests
     - name: Check black code style used
       if: ${{ matrix.python-version != 2.7 }}
       run: |
         python -m pip install black
-        python -m black --check vc2_conformance_data tests
+        python -m black --check vc2_conformance tests
