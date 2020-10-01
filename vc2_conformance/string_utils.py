@@ -65,7 +65,8 @@ def ellipsise(text, context=4, min_length=8):
         last_char = char
 
     longest_run_end, longest_run_length = max(
-        enumerate(repeats), key=lambda pos_count: pos_count[1],
+        enumerate(repeats),
+        key=lambda pos_count: pos_count[1],
     )
 
     if longest_run_length < (2 * context) + min_length:
@@ -74,7 +75,8 @@ def ellipsise(text, context=4, min_length=8):
     else:
         longest_run_start = longest_run_end - longest_run_length + 1
         return "{}...{}".format(
-            text[: longest_run_start + context], text[longest_run_end - context + 1 :],
+            text[: longest_run_start + context],
+            text[longest_run_end - context + 1 :],
         )
 
 

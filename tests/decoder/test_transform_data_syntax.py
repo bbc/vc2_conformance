@@ -44,7 +44,10 @@ class TestLDSlice(object):
         state = single_sample_transform_base_state.copy()
         state.update({"slice_bytes_numerator": 10, "slice_bytes_denominator": 1})
         ld_slice_bytes = serialise_to_bytes(
-            bitstream.LDSlice(slice_y_length=slice_y_length), state, 0, 0,
+            bitstream.LDSlice(slice_y_length=slice_y_length),
+            state,
+            0,
+            0,
         )
         state.update(bytes_to_state(ld_slice_bytes))
 
@@ -63,7 +66,14 @@ class TestLDSlice(object):
         state.update({"slice_bytes_numerator": 1, "slice_bytes_denominator": 1})
         state.update(
             bytes_to_state(
-                serialise_to_bytes(bitstream.LDSlice(qindex=0,), state, 0, 0,)
+                serialise_to_bytes(
+                    bitstream.LDSlice(
+                        qindex=0,
+                    ),
+                    state,
+                    0,
+                    0,
+                )
             )
         )
 
@@ -79,7 +89,11 @@ class TestHQSlice(object):
         state = single_sample_transform_base_state.copy()
         state.update({"slice_prefix_bytes": 10, "slice_size_scaler": 20})
         hq_slice_bytes = serialise_to_bytes(
-            bitstream.HQSlice(slice_y_length=1, slice_c1_length=2, slice_c2_length=3,),
+            bitstream.HQSlice(
+                slice_y_length=1,
+                slice_c1_length=2,
+                slice_c2_length=3,
+            ),
             state,
             0,
             0,
@@ -95,7 +109,12 @@ class TestHQSlice(object):
     def test_qindex_constrained_by_level(self):
         state = single_sample_transform_base_state.copy()
         state.update({"slice_prefix_bytes": 0, "slice_size_scaler": 1})
-        hq_slice_bytes = serialise_to_bytes(bitstream.HQSlice(qindex=0), state, 0, 0,)
+        hq_slice_bytes = serialise_to_bytes(
+            bitstream.HQSlice(qindex=0),
+            state,
+            0,
+            0,
+        )
         state.update(bytes_to_state(hq_slice_bytes))
 
         decoder.hq_slice(state, 0, 0)
@@ -139,7 +158,12 @@ def test_initialize_wavelet_data(dwt_depth, dwt_depth_ho):
         ],
     }
     state.update(
-        bytes_to_state(serialise_to_bytes(bitstream.TransformData(), state.copy(),))
+        bytes_to_state(
+            serialise_to_bytes(
+                bitstream.TransformData(),
+                state.copy(),
+            )
+        )
     )
 
     decoder.transform_data(state)

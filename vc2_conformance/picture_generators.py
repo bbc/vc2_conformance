@@ -569,9 +569,18 @@ def mid_gray(video_parameters, picture_coding_mode):
 
     dd = compute_dimensions_and_depths(video_parameters, picture_coding_mode)
 
-    y = np.full((dd["Y"].height, dd["Y"].width), 1 << (dd["Y"].depth_bits - 1),)
-    c1 = np.full((dd["C1"].height, dd["C1"].width), 1 << (dd["C1"].depth_bits - 1),)
-    c2 = np.full((dd["C2"].height, dd["C2"].width), 1 << (dd["C2"].depth_bits - 1),)
+    y = np.full(
+        (dd["Y"].height, dd["Y"].width),
+        1 << (dd["Y"].depth_bits - 1),
+    )
+    c1 = np.full(
+        (dd["C1"].height, dd["C1"].width),
+        1 << (dd["C1"].depth_bits - 1),
+    )
+    c2 = np.full(
+        (dd["C2"].height, dd["C2"].width),
+        1 << (dd["C2"].depth_bits - 1),
+    )
 
     yield {
         "Y": y.tolist(),
@@ -666,7 +675,8 @@ def linear_ramps(video_parameters, picture_coding_mode):
     ramps_rgb[3, :, 2] = np.linspace(0.0, 1.0, width)
 
     ramps_xyz = matmul_colors(
-        LINEAR_RGB_TO_XYZ[video_parameters["color_primaries_index"]], ramps_rgb,
+        LINEAR_RGB_TO_XYZ[video_parameters["color_primaries_index"]],
+        ramps_rgb,
     )
 
     frame_xyz = np.repeat(ramps_xyz, (height + 3) // 4, axis=0)[:height, :, :]

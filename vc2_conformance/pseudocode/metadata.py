@@ -129,7 +129,12 @@ class PseudocodeDerivedFunction(object):
     """
 
     def __init__(
-        self, function, deviation=None, document=None, section=None, name=None,
+        self,
+        function,
+        deviation=None,
+        document=None,
+        section=None,
+        name=None,
     ):
         # Auto-extract section/document
         if section is None or document is None:

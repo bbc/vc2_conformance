@@ -218,7 +218,10 @@ def parse_int_enum(int_enum_type, value):
                 break
         else:
             raise ValueError(
-                "{} is not a valid {}".format(value, int_enum_type.__name__,)
+                "{} is not a valid {}".format(
+                    value,
+                    int_enum_type.__name__,
+                )
             )
 
     return int_enum_type(number)
@@ -357,12 +360,18 @@ def read_codec_features_csv(csvfile):
                     return parser(value)
             except KeyError:
                 raise InvalidCodecFeaturesError(
-                    "Missing entry for '{}' in '{}' column".format(field_name, name,)
+                    "Missing entry for '{}' in '{}' column".format(
+                        field_name,
+                        name,
+                    )
                 )
             except ValueError as e:
                 raise InvalidCodecFeaturesError(
                     "Invalid entry for '{}' in '{}' column: {} ({})".format(
-                        field_name, name, value, e,
+                        field_name,
+                        name,
+                        value,
+                        e,
                     )
                 )
 
@@ -404,7 +413,10 @@ def read_codec_features_csv(csvfile):
             features[field_name] = pop(field_name, field_type)
 
         features["video_parameters"] = set_source_defaults(
-            pop("base_video_format", partial(parse_int_enum, BaseVideoFormats),)
+            pop(
+                "base_video_format",
+                partial(parse_int_enum, BaseVideoFormats),
+            )
         )
 
         # Parse integer video_parameters fields
@@ -437,7 +449,9 @@ def read_codec_features_csv(csvfile):
             ),
         ]:
             features["video_parameters"][field_name] = pop(
-                field_name, field_type, features["video_parameters"][field_name],
+                field_name,
+                field_type,
+                features["video_parameters"][field_name],
             )
 
         # Parse picture_bytes option
@@ -445,12 +459,15 @@ def read_codec_features_csv(csvfile):
             if "picture_bytes" in column:
                 raise InvalidCodecFeaturesError(
                     "Entry provided for 'picture_bytes' when lossless mode "
-                    "specified for '{}' column".format(name,)
+                    "specified for '{}' column".format(
+                        name,
+                    )
                 )
             features["picture_bytes"] = None
         else:
             features["picture_bytes"] = pop(
-                "picture_bytes", partial(parse_int_at_least, 1),
+                "picture_bytes",
+                partial(parse_int_at_least, 1),
             )
 
         # Parse quantisation matrix
@@ -467,7 +484,9 @@ def read_codec_features_csv(csvfile):
         # Check for extraneous rows
         if column:
             raise InvalidCodecFeaturesError(
-                "Unrecognised row(s): {}".format(", ".join(set(column)),)
+                "Unrecognised row(s): {}".format(
+                    ", ".join(set(column)),
+                )
             )
 
     return out
@@ -541,7 +560,8 @@ def codec_features_to_trivial_level_constraints(codec_features):
         picture_coding_mode=codec_features["picture_coding_mode"],
     )
     picture_dimensions(
-        state, codec_features["video_parameters"],
+        state,
+        codec_features["video_parameters"],
     )
     constrained_values["slices_have_same_dimensions"] = slices_have_same_dimensions(
         state

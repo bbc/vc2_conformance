@@ -72,19 +72,36 @@ class TestParseRegex(object):
         assert parse_regex(" . ") == Symbol(".")
 
     def test_concatenation(self):
-        assert parse_regex(" foo bar ") == Concatenation(Symbol("foo"), Symbol("bar"),)
+        assert parse_regex(" foo bar ") == Concatenation(
+            Symbol("foo"),
+            Symbol("bar"),
+        )
 
         assert parse_regex(" foo bar baz ") == Concatenation(
-            Symbol("foo"), Concatenation(Symbol("bar"), Symbol("baz"),),
+            Symbol("foo"),
+            Concatenation(
+                Symbol("bar"),
+                Symbol("baz"),
+            ),
         )
 
     def test_union(self):
-        assert parse_regex(" foo | ") == Union(Symbol("foo"), None,)
+        assert parse_regex(" foo | ") == Union(
+            Symbol("foo"),
+            None,
+        )
 
-        assert parse_regex(" foo | bar ") == Union(Symbol("foo"), Symbol("bar"),)
+        assert parse_regex(" foo | bar ") == Union(
+            Symbol("foo"),
+            Symbol("bar"),
+        )
 
         assert parse_regex(" foo | bar | baz ") == Union(
-            Union(Symbol("foo"), Symbol("bar"),), Symbol("baz"),
+            Union(
+                Symbol("foo"),
+                Symbol("bar"),
+            ),
+            Symbol("baz"),
         )
 
     def test_star(self):
@@ -92,7 +109,8 @@ class TestParseRegex(object):
 
     def test_plus(self):
         assert parse_regex(" foo + ") == Concatenation(
-            Symbol("foo"), Star(Symbol("foo")),
+            Symbol("foo"),
+            Star(Symbol("foo")),
         )
 
     def test_query(self):
@@ -102,8 +120,16 @@ class TestParseRegex(object):
         assert parse_regex(" (foo) (bar baz) * (qux quo)") == Concatenation(
             Symbol("foo"),
             Concatenation(
-                Star(Concatenation(Symbol("bar"), Symbol("baz"),),),
-                Concatenation(Symbol("qux"), Symbol("quo"),),
+                Star(
+                    Concatenation(
+                        Symbol("bar"),
+                        Symbol("baz"),
+                    ),
+                ),
+                Concatenation(
+                    Symbol("qux"),
+                    Symbol("quo"),
+                ),
             ),
         )
 
@@ -375,27 +401,35 @@ class TestMakeMatchingSequence(object):
         assert make_matching_sequence([], "a . c", "a (.|b) c") == ["a", ".", "c"]
 
     def test_prefer_highest_symbol_priority_over_wildcard(self):
-        assert make_matching_sequence(
-            [], "a . c", symbol_priority=["X", "a", "c"],
-        ) == ["a", "X", "c"]
+        assert (
+            make_matching_sequence(
+                [],
+                "a . c",
+                symbol_priority=["X", "a", "c"],
+            )
+            == ["a", "X", "c"]
+        )
 
     def test_symbol_priority(self):
-        assert make_matching_sequence(
-            [],
-            "(a|b|c) . .",
-            ". (d|e|f) .",
-            ". . (g|h|i)",
-            symbol_priority=[
-                "b",
-                "a",
-                "c",
-                "e",
-                "d",
-                "f",
-                # NB: G, H and I not specified so should be alphabetically
-                # ordered
-            ],
-        ) == ["b", "e", "g"]
+        assert (
+            make_matching_sequence(
+                [],
+                "(a|b|c) . .",
+                ". (d|e|f) .",
+                ". . (g|h|i)",
+                symbol_priority=[
+                    "b",
+                    "a",
+                    "c",
+                    "e",
+                    "d",
+                    "f",
+                    # NB: G, H and I not specified so should be alphabetically
+                    # ordered
+                ],
+            )
+            == ["b", "e", "g"]
+        )
 
     def test_mixture_of_matched_and_fillled_in_values(self):
         assert make_matching_sequence(["b"], "a .* c") == ["a", "b", "c"]
@@ -408,11 +442,27 @@ class TestMakeMatchingSequence(object):
             ([], ["a b c"], True),
             ([], ["a b c d"], False),
             # Depth limit should reset when a symbol is matched
-            (["X"], ["a b c X d e f"], True,),
-            (["X"], ["a b c d X e f g"], False,),
+            (
+                ["X"],
+                ["a b c X d e f"],
+                True,
+            ),
+            (
+                ["X"],
+                ["a b c d X e f g"],
+                False,
+            ),
             # Depth limit should be reset even when wildcard matching is included
-            (["X"], ["a b c X d e f", ".*"], True,),
-            (["X"], ["a b c d X e f g", ".*"], False,),
+            (
+                ["X"],
+                ["a b c X d e f", ".*"],
+                True,
+            ),
+            (
+                ["X"],
+                ["a b c d X e f g", ".*"],
+                False,
+            ),
         ],
     )
     def test_search_depth_limit(self, symbols, patterns, works):

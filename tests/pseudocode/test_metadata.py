@@ -67,7 +67,10 @@ class TestPseudocodeDerivedFunction(object):
     )
     def test_format_citation(self, document, section, exp):
         pdf = PseudocodeDerivedFunction(
-            lambda: None, name="foo", document=document, section=section,
+            lambda: None,
+            name="foo",
+            document=document,
+            section=section,
         )
         assert pdf.citation == exp
 

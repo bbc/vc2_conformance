@@ -366,7 +366,10 @@ class ValueSet(object):
                 yield value
 
     def __repr__(self):
-        return "{}({})".format(type(self).__name__, ", ".join(map(repr, self)),)
+        return "{}({})".format(
+            type(self).__name__,
+            ", ".join(map(repr, self)),
+        )
 
     def __str__(self):
         """

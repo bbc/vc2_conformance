@@ -87,11 +87,24 @@ def padding_data(codec_features):
         return
 
     for description, data in [
-        ("empty", b"",),
-        ("zero", b"\x00" * 32,),
-        ("non_zero", b"Ignore this padding data please!",),
-        ("dummy_end_of_sequence", make_dummy_end_of_sequence().ljust(32, b"\x00"),),
+        (
+            "empty",
+            b"",
+        ),
+        (
+            "zero",
+            b"\x00" * 32,
+        ),
+        (
+            "non_zero",
+            b"Ignore this padding data please!",
+        ),
+        (
+            "dummy_end_of_sequence",
+            make_dummy_end_of_sequence().ljust(32, b"\x00"),
+        ),
     ]:
         yield TestCase(
-            Stream(sequences=[replace_padding_data(base_sequence, data)]), description,
+            Stream(sequences=[replace_padding_data(base_sequence, data)]),
+            description,
         )

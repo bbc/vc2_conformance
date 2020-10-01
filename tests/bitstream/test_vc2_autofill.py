@@ -97,7 +97,9 @@ class TestAutofillPictureNumber(object):
                         DataUnit(
                             parse_info=ParseInfo(parse_code=parse_code),
                             picture_parse=PictureParse(
-                                picture_header=PictureHeader(picture_number=1234,)
+                                picture_header=PictureHeader(
+                                    picture_number=1234,
+                                )
                             ),
                         )
                     ]
@@ -218,7 +220,8 @@ class TestAutofillPictureNumber(object):
                             parse_info=ParseInfo(parse_code=parse_code),
                             fragment_parse=FragmentParse(
                                 fragment_header=FragmentHeader(
-                                    picture_number=AUTO, fragment_slice_count=0,
+                                    picture_number=AUTO,
+                                    fragment_slice_count=0,
                                 )
                             ),
                         ),
@@ -228,7 +231,8 @@ class TestAutofillPictureNumber(object):
                             parse_info=ParseInfo(parse_code=parse_code),
                             fragment_parse=FragmentParse(
                                 fragment_header=FragmentHeader(
-                                    picture_number=AUTO, fragment_slice_count=1,
+                                    picture_number=AUTO,
+                                    fragment_slice_count=1,
                                 )
                             ),
                         ),
@@ -236,7 +240,9 @@ class TestAutofillPictureNumber(object):
                         DataUnit(
                             parse_info=ParseInfo(parse_code=parse_code),
                             fragment_parse=FragmentParse(
-                                fragment_header=FragmentHeader(fragment_slice_count=1,)
+                                fragment_header=FragmentHeader(
+                                    fragment_slice_count=1,
+                                )
                             ),
                         ),
                         # Should auto increment on new picture started
@@ -244,7 +250,8 @@ class TestAutofillPictureNumber(object):
                             parse_info=ParseInfo(parse_code=parse_code),
                             fragment_parse=FragmentParse(
                                 fragment_header=FragmentHeader(
-                                    picture_number=AUTO, fragment_slice_count=0,
+                                    picture_number=AUTO,
+                                    fragment_slice_count=0,
                                 )
                             ),
                         ),
@@ -253,7 +260,8 @@ class TestAutofillPictureNumber(object):
                             parse_info=ParseInfo(parse_code=parse_code),
                             fragment_parse=FragmentParse(
                                 fragment_header=FragmentHeader(
-                                    picture_number=4321, fragment_slice_count=0,
+                                    picture_number=4321,
+                                    fragment_slice_count=0,
                                 )
                             ),
                         ),
@@ -262,7 +270,8 @@ class TestAutofillPictureNumber(object):
                             parse_info=ParseInfo(parse_code=parse_code),
                             fragment_parse=FragmentParse(
                                 fragment_header=FragmentHeader(
-                                    picture_number=0xFFFFFFFE, fragment_slice_count=1,
+                                    picture_number=0xFFFFFFFE,
+                                    fragment_slice_count=1,
                                 )
                             ),
                         ),
@@ -271,7 +280,8 @@ class TestAutofillPictureNumber(object):
                             parse_info=ParseInfo(parse_code=parse_code),
                             fragment_parse=FragmentParse(
                                 fragment_header=FragmentHeader(
-                                    picture_number=AUTO, fragment_slice_count=0,
+                                    picture_number=AUTO,
+                                    fragment_slice_count=0,
                                 )
                             ),
                         ),
@@ -280,7 +290,8 @@ class TestAutofillPictureNumber(object):
                             parse_info=ParseInfo(parse_code=parse_code),
                             fragment_parse=FragmentParse(
                                 fragment_header=FragmentHeader(
-                                    picture_number=AUTO, fragment_slice_count=0,
+                                    picture_number=AUTO,
+                                    fragment_slice_count=0,
                                 )
                             ),
                         ),
@@ -372,13 +383,15 @@ class TestAutofillParseOffsets(object):
                         # Next parse offset is explicitly AUTO
                         DataUnit(
                             parse_info=ParseInfo(
-                                parse_code=parse_code, next_parse_offset=AUTO,
+                                parse_code=parse_code,
+                                next_parse_offset=AUTO,
                             ),
                         ),
                         # Next parse offset is given (should not be modified)
                         DataUnit(
                             parse_info=ParseInfo(
-                                parse_code=parse_code, next_parse_offset=100,
+                                parse_code=parse_code,
+                                next_parse_offset=100,
                             ),
                         ),
                     ]
@@ -435,7 +448,10 @@ class TestAutofillParseOffsets(object):
             parse_code
             for parse_code in tables.ParseCodes
             if parse_code
-            not in (tables.ParseCodes.padding_data, tables.ParseCodes.auxiliary_data,)
+            not in (
+                tables.ParseCodes.padding_data,
+                tables.ParseCodes.auxiliary_data,
+            )
         ],
     )
     def test_values_to_be_set_later_are_set_to_zero(self, parse_code, explicit_auto):
@@ -444,7 +460,11 @@ class TestAutofillParseOffsets(object):
                 Sequence(
                     data_units=[
                         # An automatically set data unit
-                        DataUnit(parse_info=ParseInfo(parse_code=parse_code,)),
+                        DataUnit(
+                            parse_info=ParseInfo(
+                                parse_code=parse_code,
+                            )
+                        ),
                         # One which is explicitly set (and should not be overridden)
                         DataUnit(
                             parse_info=ParseInfo(

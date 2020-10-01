@@ -27,7 +27,8 @@ from vc2_conformance.test_cases.bit_widths_common import (
 # 2-level 2D Haar-with-Shift transform for 10 bit pictures and default
 # quantization matrix.
 BUNDLE_WIDTH_OPTIMISED_PATTERNS = os.path.join(
-    os.path.dirname(__file__), "bundle_with_optimised_patterns.zip",
+    os.path.dirname(__file__),
+    "bundle_with_optimised_patterns.zip",
 )
 
 
@@ -100,7 +101,8 @@ class TestGetTestPictures(object):
         return codec_features
 
     def test_missing_static_analysis(
-        self, codec_features,
+        self,
+        codec_features,
     ):
         # Check that the built-in bundle is intact and also that we get some
         # pictures out of the correct types/sizes
@@ -120,7 +122,10 @@ class TestGetTestPictures(object):
         ],
     )
     def test_basic_test_pictures(
-        self, codec_features, quantisation_matrix, bundle_filename_arg,
+        self,
+        codec_features,
+        quantisation_matrix,
+        bundle_filename_arg,
     ):
         # Check that the built-in bundle is intact and also that we get some
         # pictures out of the correct types/sizes

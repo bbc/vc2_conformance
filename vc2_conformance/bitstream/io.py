@@ -488,7 +488,11 @@ class BitstreamWriter(object):
         """
         if value < 0 or value.bit_length() > bits:
             raise OutOfRangeError(
-                "0b{:b} is {} bits, not {}".format(value, value.bit_length(), bits,)
+                "0b{:b} is {} bits, not {}".format(
+                    value,
+                    value.bit_length(),
+                    bits,
+                )
             )
 
         for i in range(bits - 1, -1, -1):
@@ -512,7 +516,11 @@ class BitstreamWriter(object):
         """
         if len(value) > bits:
             raise OutOfRangeError(
-                "0b{} is {} bits, not {}".format(value.to01(), len(value), bits,)
+                "0b{} is {} bits, not {}".format(
+                    value.to01(),
+                    len(value),
+                    bits,
+                )
             )
 
         for bit in value:
@@ -532,7 +540,11 @@ class BitstreamWriter(object):
         """
         if len(value) > num_bytes:
             raise OutOfRangeError(
-                "{} is {} bytes, not {}".format(Bytes()(value), len(value), num_bytes,)
+                "{} is {} bytes, not {}".format(
+                    Bytes()(value),
+                    len(value),
+                    num_bytes,
+                )
             )
 
         for byte in bytearray(value):

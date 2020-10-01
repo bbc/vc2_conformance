@@ -28,7 +28,11 @@ from smaller_real_pictures import alternative_real_pictures
 
 
 LOVELL_IMAGE_PATH = os.path.join(
-    os.path.dirname(__file__), "..", "..", "test_images", "lovell.raw",
+    os.path.dirname(__file__),
+    "..",
+    "..",
+    "test_images",
+    "lovell.raw",
 )
 """
 A simple 64x64, 8 bit, 4:2:2 sampled test picture, cropped out of a real

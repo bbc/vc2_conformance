@@ -60,7 +60,8 @@ def slice_size_scaler(codec_features):
     sequence = make_sequence(
         codec_features,
         mid_gray(
-            codec_features["video_parameters"], codec_features["picture_coding_mode"],
+            codec_features["video_parameters"],
+            codec_features["picture_coding_mode"],
         ),
         minimum_slice_size_scaler=minimum_slice_size_scaler,
     )

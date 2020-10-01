@@ -242,7 +242,10 @@ def explain_component_order_and_sampling(video_parameters, picture_coding_mode):
         "Pictures contain three planar components: "
         "{}, {} and {}, in that order, which are {} subsampled."
     ).format(
-        y, c1, c2, COLOR_DIFF_FORMAT_NAMES[video_parameters["color_diff_format_index"]],
+        y,
+        c1,
+        c2,
+        COLOR_DIFF_FORMAT_NAMES[video_parameters["color_diff_format_index"]],
     )
 
 
@@ -254,7 +257,8 @@ def explain_component_sizes(video_parameters, picture_coding_mode):
     out = ""
 
     dimensions_and_depths = compute_dimensions_and_depths(
-        video_parameters, picture_coding_mode,
+        video_parameters,
+        picture_coding_mode,
     )
 
     y_dd = dimensions_and_depths["Y"]
@@ -431,7 +435,8 @@ class CommandExplainer(object):
         out = ""
 
         out += "    {}{}\n".format(
-            self.prefix, indent(self.command, "    " + " " * len(self.prefix)).lstrip(),
+            self.prefix,
+            indent(self.command, "    " + " " * len(self.prefix)).lstrip(),
         )
 
         # Add list of explanations
@@ -441,14 +446,20 @@ class CommandExplainer(object):
             out += "\n"
 
             for (fragment, note) in self.notes:
-                out += "* `{}` = {}\n".format(fragment, note,)
+                out += "* `{}` = {}\n".format(
+                    fragment,
+                    note,
+                )
 
         out = out.rstrip()
 
         return out
 
     def __repr__(self):
-        return "<{!r} {!r}>".format(type(self).__name__, self.command,)
+        return "<{!r} {!r}>".format(
+            type(self).__name__,
+            self.command,
+        )
 
 
 class UnsupportedPictureFormat(Exception):
@@ -497,13 +508,15 @@ def example_ffmpeg_command(picture_filename, video_parameters, picture_coding_mo
     # ------------------------------------------------------------------------
 
     dimensions_and_depths = compute_dimensions_and_depths(
-        video_parameters, picture_coding_mode,
+        video_parameters,
+        picture_coding_mode,
     )
 
     command.append_linebreak()
     command.append(
         "-video_size {}x{}".format(
-            dimensions_and_depths["Y"].width, dimensions_and_depths["Y"].height,
+            dimensions_and_depths["Y"].width,
+            dimensions_and_depths["Y"].height,
         ),
         "Picture size (not frame size).",
     )
@@ -613,7 +626,9 @@ def example_ffmpeg_command(picture_filename, video_parameters, picture_coding_mo
         # deinterlace filter can also be applied for clean display.
         vf_args.append(
             (
-                "weave={}".format("t" if video_parameters["top_field_first"] else "b",),
+                "weave={}".format(
+                    "t" if video_parameters["top_field_first"] else "b",
+                ),
                 "interleave pairs of pictures, {} field first".format(
                     "top" if video_parameters["top_field_first"] else "bottom",
                 ),
@@ -663,7 +678,8 @@ def example_ffmpeg_command(picture_filename, video_parameters, picture_coding_mo
         vf_args.append(
             (
                 "scale='trunc((iw*{})/{}):ih'".format(
-                    pixel_aspect_ratio.numerator, pixel_aspect_ratio.denominator,
+                    pixel_aspect_ratio.numerator,
+                    pixel_aspect_ratio.denominator,
                 ),
                 "rescale non-square pixels for display with square pixels",
             )
@@ -715,13 +731,15 @@ def example_imagemagick_command(
     # ------------------------------------------------------------------------
 
     dimensions_and_depths = compute_dimensions_and_depths(
-        video_parameters, picture_coding_mode,
+        video_parameters,
+        picture_coding_mode,
     )
 
     command.append_linebreak()
     command.append(
         "-size {}x{}".format(
-            dimensions_and_depths["Y"].width, dimensions_and_depths["Y"].height,
+            dimensions_and_depths["Y"].width,
+            dimensions_and_depths["Y"].height,
         ),
         "Picture size.",
     )
@@ -742,7 +760,8 @@ def example_imagemagick_command(
     if depth_bits == 8:
         command.append_linebreak()
         command.append(
-            "-depth {}".format(depth_bits), "{} bit values.".format(depth_bits),
+            "-depth {}".format(depth_bits),
+            "{} bit values.".format(depth_bits),
         )
     else:
         raise UnsupportedPictureFormat(
@@ -802,11 +821,13 @@ def example_imagemagick_command(
     command.append_linebreak()
     if is_rgb_color(video_parameters):
         command.append(
-            "rgb:", "Input is RGB picture.",
+            "rgb:",
+            "Input is RGB picture.",
         )
     else:
         command.append(
-            "yuv:", "Input is Y C1 C2 picture.",
+            "yuv:",
+            "Input is Y C1 C2 picture.",
         )
 
     command.append(picture_filename, "Input filename.")
@@ -931,7 +952,9 @@ def main(*args, **kwargs):
     )
 
     parser.add_argument(
-        "--version", action="version", version="%(prog)s {}".format(__version__),
+        "--version",
+        action="version",
+        version="%(prog)s {}".format(__version__),
     )
 
     parser.add_argument(
@@ -948,7 +971,11 @@ def main(*args, **kwargs):
     )
 
     with open(metadata_filename, "rb") as f:
-        (video_parameters, picture_coding_mode, picture_number,) = read_metadata(f)
+        (
+            video_parameters,
+            picture_coding_mode,
+            picture_number,
+        ) = read_metadata(f)
 
     out = ""
 
@@ -956,7 +983,8 @@ def main(*args, **kwargs):
     out += "=====================\n"
     out += "\n"
     out += "Picture coding mode: {} ({:d})\n".format(
-        picture_coding_mode.name, picture_coding_mode,
+        picture_coding_mode.name,
+        picture_coding_mode,
     )
     out += "\n"
     out += "Video parameters:\n"

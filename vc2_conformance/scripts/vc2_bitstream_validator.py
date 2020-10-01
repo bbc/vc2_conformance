@@ -188,7 +188,10 @@ class BitstreamValidator(object):
             self._hide_status_line()
             self._print_error(
                 "internal error in bitstream validator: {}: {} "
-                "(probably a bug in this program)".format(type(e).__name__, str(e),)
+                "(probably a bug in this program)".format(
+                    type(e).__name__,
+                    str(e),
+                )
             )
             return 3
 
@@ -197,7 +200,10 @@ class BitstreamValidator(object):
         self._next_picture_index += 1
 
         write(
-            picture, video_parameters, picture_coding_mode, filename,
+            picture,
+            video_parameters,
+            picture_coding_mode,
+            filename,
         )
 
         if self._show_status:
@@ -330,7 +336,9 @@ def parse_args(*args, **kwargs):
     )
 
     parser.add_argument(
-        "--version", action="version", version="%(prog)s {}".format(__version__),
+        "--version",
+        action="version",
+        version="%(prog)s {}".format(__version__),
     )
 
     parser.add_argument(

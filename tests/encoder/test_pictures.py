@@ -109,7 +109,12 @@ def lovell():
     returned by :py:func:`vc2_conformance.file_format.read`.
     """
     return file_format.read(
-        os.path.join(os.path.dirname(__file__), "..", "test_images", "lovell.raw",)
+        os.path.join(
+            os.path.dirname(__file__),
+            "..",
+            "test_images",
+            "lovell.raw",
+        )
     )
 
 
@@ -125,7 +130,12 @@ class TestGetQuantMatrix(object):
         assert (
             get_quantization_marix(codec_features)
             == QUANTISATION_MATRICES[
-                (WaveletFilters.haar_no_shift, WaveletFilters.le_gall_5_3, 2, 0,)
+                (
+                    WaveletFilters.haar_no_shift,
+                    WaveletFilters.le_gall_5_3,
+                    2,
+                    0,
+                )
             ]
         )
 
@@ -176,11 +186,16 @@ class TestGetQuantMatrix(object):
     ],
 )
 def test_serialize_quantization_matrix(
-    dwt_depth, dwt_depth_ho, quantization_matrix,
+    dwt_depth,
+    dwt_depth_ho,
+    quantization_matrix,
 ):
     # Check that the function serialises the quantization matrix values in the
     # same order the pseudocode (in this case as implemented in the Serialiser)
-    state = State(dwt_depth=dwt_depth, dwt_depth_ho=dwt_depth_ho,)
+    state = State(
+        dwt_depth=dwt_depth,
+        dwt_depth_ho=dwt_depth_ho,
+    )
     context = QuantMatrix(
         custom_quant_matrix=True,
         quant_matrix=serialize_quantization_matrix(quantization_matrix),
@@ -292,14 +307,18 @@ class TestQuantizeToFit(object):
         assert len(random_coeff_sets) == len(quantized_coeff_sets)
         for coeffs, quantized_coeffs in zip(random_coeff_sets, quantized_coeff_sets):
             assert quantized_coeffs == quantize_coeffs(
-                qindex, coeffs.coeff_values, coeffs.quant_matrix_values,
+                qindex,
+                coeffs.coeff_values,
+                coeffs.quant_matrix_values,
             )
 
     @pytest.mark.parametrize("align_bits", [1, 8, 16])
     def test_quantized_values_fit_target_size(self, random_coeff_sets, align_bits):
         target_bits = 1024
         qindex, quantized_coeff_sets = quantize_to_fit(
-            target_bits, random_coeff_sets, align_bits,
+            target_bits,
+            random_coeff_sets,
+            align_bits,
         )
 
         # Compute length, accounting for the fact that when align_bits is used,
@@ -320,18 +339,26 @@ class TestQuantizeToFit(object):
         # sequence, the quantizer would be required to fit within the limit.
         # However, because they're separate, the trailing zeros are coded for
         # free and so in this case no quantization is required.
-        assert quantize_to_fit(
-            8,
-            [
-                ComponentCoeffs([1] + [0] * 7, [0] * 8),
-                ComponentCoeffs([1] + [0] * 7, [0] * 8),
-            ],
-        ) == (0, [[1] + [0] * 7, [1] + [0] * 7])
+        assert (
+            quantize_to_fit(
+                8,
+                [
+                    ComponentCoeffs([1] + [0] * 7, [0] * 8),
+                    ComponentCoeffs([1] + [0] * 7, [0] * 8),
+                ],
+            )
+            == (0, [[1] + [0] * 7, [1] + [0] * 7])
+        )
 
     def test_minimum_qindex(self):
-        assert quantize_to_fit(
-            100, [ComponentCoeffs([8, 8, 8], [0, 0, 0])], minimum_qindex=4,
-        ) == (4, [[4, 4, 4]])
+        assert (
+            quantize_to_fit(
+                100,
+                [ComponentCoeffs([8, 8, 8], [0, 0, 0])],
+                minimum_qindex=4,
+            )
+            == (4, [[4, 4, 4]])
+        )
 
 
 class TestTransformAndSlicePicture(object):
@@ -687,7 +714,9 @@ class TestMakeHQSlice(object):
 
 def test_make_ld_slice():
     assert make_ld_slice(
-        [1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1], qindex=123,  # 2 bytes  # 4 bytes
+        [1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1],
+        qindex=123,  # 2 bytes  # 4 bytes
     ) == LDSlice(
         qindex=123,
         slice_y_length=16,
@@ -1041,8 +1070,12 @@ class TestMakeTransformDataLDLossy(object):
 class TestMakeQuantMatrix(object):
     def test_default(self):
         assert make_quant_matrix(
-            CodecFeatures(quantization_matrix=None,)
-        ) == QuantMatrix(custom_quant_matrix=False,)
+            CodecFeatures(
+                quantization_matrix=None,
+            )
+        ) == QuantMatrix(
+            custom_quant_matrix=False,
+        )
 
     def test_custom(self):
         assert make_quant_matrix(
@@ -1051,7 +1084,10 @@ class TestMakeQuantMatrix(object):
                 dwt_depth_ho=1,
                 quantization_matrix={0: {"L": 10}, 1: {"H": 20}},
             )
-        ) == QuantMatrix(custom_quant_matrix=True, quant_matrix=[10, 20],)
+        ) == QuantMatrix(
+            custom_quant_matrix=True,
+            quant_matrix=[10, 20],
+        )
 
 
 class TestMakeDecideFlag(object):
@@ -1069,7 +1105,11 @@ class TestMakeDecideFlag(object):
     @pytest.mark.parametrize("required,expected", [(True, True), (False, False)])
     def test_unconstrained(self, required, expected):
         assert (
-            decide_flag(MINIMAL_CODEC_FEATURES, "asym_transform_index_flag", required,)
+            decide_flag(
+                MINIMAL_CODEC_FEATURES,
+                "asym_transform_index_flag",
+                required,
+            )
             is expected
         )
 
@@ -1078,7 +1118,11 @@ class TestMakeDecideFlag(object):
         assert level_constraints[0]["level"] == ValueSet(0)
         level_constraints[0]["asym_transform_index_flag"] = ValueSet(True)
         assert (
-            decide_flag(MINIMAL_CODEC_FEATURES, "asym_transform_index_flag", required,)
+            decide_flag(
+                MINIMAL_CODEC_FEATURES,
+                "asym_transform_index_flag",
+                required,
+            )
             is True
         )
 
@@ -1086,7 +1130,11 @@ class TestMakeDecideFlag(object):
         assert level_constraints[0]["level"] == ValueSet(0)
         level_constraints[0]["asym_transform_index_flag"] = ValueSet(False)
         assert (
-            decide_flag(MINIMAL_CODEC_FEATURES, "asym_transform_index_flag", False,)
+            decide_flag(
+                MINIMAL_CODEC_FEATURES,
+                "asym_transform_index_flag",
+                False,
+            )
             is False
         )
 
@@ -1095,7 +1143,9 @@ class TestMakeDecideFlag(object):
         level_constraints[0]["asym_transform_index_flag"] = ValueSet(False)
         with pytest.raises(IncompatibleLevelAndExtendedTransformParametersError):
             decide_flag(
-                MINIMAL_CODEC_FEATURES, "asym_transform_index_flag", True,
+                MINIMAL_CODEC_FEATURES,
+                "asym_transform_index_flag",
+                True,
             )
 
 
@@ -1121,7 +1171,8 @@ class TestMakeExtendedTransformParameters(object):
                 dwt_depth_ho=0,
             )
         ) == ExtendedTransformParameters(
-            asym_transform_index_flag=False, asym_transform_flag=False,
+            asym_transform_index_flag=False,
+            asym_transform_flag=False,
         )
 
     def test_forced_flags(self, level_constraints):
@@ -1171,7 +1222,9 @@ class TestMakeExtendedTransformParameters(object):
                 dwt_depth_ho=1,
             )
         ) == ExtendedTransformParameters(
-            asym_transform_index_flag=False, asym_transform_flag=True, dwt_depth_ho=1,
+            asym_transform_index_flag=False,
+            asym_transform_flag=True,
+            dwt_depth_ho=1,
         )
 
 
@@ -1280,11 +1333,29 @@ class TestMakePictureParseDataUnit(object):
         "major_version,wavelet_index,wavelet_index_ho,dwt_depth,dwt_depth_ho",
         [
             # Version 2 (no extended_transform_parameters)
-            (2, WaveletFilters.le_gall_5_3, WaveletFilters.le_gall_5_3, 2, 0,),
+            (
+                2,
+                WaveletFilters.le_gall_5_3,
+                WaveletFilters.le_gall_5_3,
+                2,
+                0,
+            ),
             # Version 3 (has extended_transform_parameters)
-            (3, WaveletFilters.le_gall_5_3, WaveletFilters.le_gall_5_3, 2, 0,),
+            (
+                3,
+                WaveletFilters.le_gall_5_3,
+                WaveletFilters.le_gall_5_3,
+                2,
+                0,
+            ),
             # Version 3 + asymmetric transform
-            (3, WaveletFilters.haar_no_shift, WaveletFilters.le_gall_5_3, 2, 1,),
+            (
+                3,
+                WaveletFilters.haar_no_shift,
+                WaveletFilters.le_gall_5_3,
+                2,
+                1,
+            ),
         ],
     )
     def test_lossless(
@@ -1405,7 +1476,11 @@ class TestMakePictureParseDataUnit(object):
         [(WaveletFilters.haar_no_shift, 0), (WaveletFilters.le_gall_5_3, 1)],
     )
     def test_asymmetric_version_2(
-        self, codec_features, natural_picture, wavelet_index, dwt_depth_ho,
+        self,
+        codec_features,
+        natural_picture,
+        wavelet_index,
+        dwt_depth_ho,
     ):
         codec_features["major_version"] = 2
         codec_features["wavelet_index"] = wavelet_index
@@ -1437,7 +1512,9 @@ class TestMakePictureParseDataUnit(object):
 
         # Check all quantization indices are above the threshold
         picture_parse = make_picture_parse_data_unit(
-            codec_features, natural_picture, minimum_qindex,
+            codec_features,
+            natural_picture,
+            minimum_qindex,
         )["picture_parse"]
         transform_data = picture_parse["wavelet_transform"]["transform_data"]
 
@@ -1613,7 +1690,9 @@ class TestMakeFragmentParseDataUnits(object):
 
         # Generate a fragment based encoding
         fragment_data_units = make_fragment_parse_data_units(
-            codec_features, natural_picture, minimum_qindex,
+            codec_features,
+            natural_picture,
+            minimum_qindex,
         )
 
         # Check all quantization indices are above the threshold
@@ -1655,6 +1734,10 @@ def test_make_picture_data_units(fragment_slice_count, exp_data_units, lovell):
 
     minimum_qindex = 20
 
-    data_units = make_picture_data_units(codec_features, picture, minimum_qindex,)
+    data_units = make_picture_data_units(
+        codec_features,
+        picture,
+        minimum_qindex,
+    )
 
     assert len(data_units) == exp_data_units

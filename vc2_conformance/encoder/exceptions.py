@@ -78,7 +78,8 @@ class PictureBytesSpecifiedForLosslessModeError(UnsatisfiableCodecFeaturesError)
             The codec configuration {} specifies a lossless format but did not
             omit picture_bytes (it is set to {}).
         """.format(
-            codec_features["name"], codec_features["picture_bytes"],
+            codec_features["name"],
+            codec_features["picture_bytes"],
         )
 
 

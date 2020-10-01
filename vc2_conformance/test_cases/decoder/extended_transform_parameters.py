@@ -95,7 +95,8 @@ def extended_transform_parameters(codec_features):
     base_sequence = make_sequence(
         codec_features,
         static_sprite(
-            codec_features["video_parameters"], codec_features["picture_coding_mode"],
+            codec_features["video_parameters"],
+            codec_features["picture_coding_mode"],
         ),
     )
 

@@ -208,7 +208,10 @@ class Bits(object):
         string = ellipsise(ba.to01(), self.context, self.min_length)
         if self.show_length is not False:
             if self.show_length is True or len(ba) >= self.show_length:
-                string += " ({} bit{})".format(len(ba), "s" if len(ba) != 1 else "",)
+                string += " ({} bit{})".format(
+                    len(ba),
+                    "s" if len(ba) != 1 else "",
+                )
         return "{}{}".format(self.prefix, string)
 
 
@@ -268,7 +271,10 @@ class Bytes(object):
 
         if self.show_length is not False:
             if self.show_length is True or len(b) >= self.show_length:
-                string += " ({} byte{})".format(len(b), "s" if len(b) != 1 else "",)
+                string += " ({} byte{})".format(
+                    len(b),
+                    "s" if len(b) != 1 else "",
+                )
         return "{}{}".format(self.prefix, string)
 
 
@@ -282,7 +288,11 @@ class Object(object):
         self.suffix = suffix
 
     def __call__(self, o):
-        return "{}{}{}".format(self.prefix, type(o).__name__, self.suffix,)
+        return "{}{}{}".format(
+            self.prefix,
+            type(o).__name__,
+            self.suffix,
+        )
 
 
 class List(object):

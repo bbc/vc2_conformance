@@ -244,7 +244,10 @@ class Difference(object):
         self.imp_func = imp_func
 
     def __repr__(self):
-        return "<{} {}>".format(type(self).__name__, format_summary(self),)
+        return "<{} {}>".format(
+            type(self).__name__,
+            format_summary(self),
+        )
 
     def __str__(self):
         return format_detailed_summary(self)
@@ -296,11 +299,13 @@ def compare_sources(ref_source, imp_source, comparator):
         )
     except UnmatchedNotInSpecBlockError as e:
         raise ComparisonError(
-            "No matching '## Begin not in spec'", imp_row=e.row,
+            "No matching '## Begin not in spec'",
+            imp_row=e.row,
         )
     except UnclosedNotInSpecBlockError as e:
         raise ComparisonError(
-            "'## Begin not in spec' block not closed", imp_row=e.row,
+            "'## Begin not in spec' block not closed",
+            imp_row=e.row,
         )
 
     try:
@@ -328,7 +333,8 @@ def compare_sources(ref_source, imp_source, comparator):
     imp_col = None
     if isinstance(match, NodeTypesDiffer):
         message = "Mismatched {} vs. {}".format(
-            type(match.n1).__name__, type(match.n2).__name__,
+            type(match.n1).__name__,
+            type(match.n2).__name__,
         )
         ref_row, ref_col = match.n1_row_col
         imp_row, imp_col = match.n2_row_col
@@ -340,18 +346,25 @@ def compare_sources(ref_source, imp_source, comparator):
         if len(match.v1) > len(match.v2):
             num = len(match.v1) - len(match.v2)
             message = "{} extra value{} in reference's {}".format(
-                num, "s" if num != 1 else "", match.field,
+                num,
+                "s" if num != 1 else "",
+                match.field,
             )
         else:
             num = len(match.v2) - len(match.v1)
             message = "{} extra value{} in implementation's {}".format(
-                num, "s" if num != 1 else "", match.field,
+                num,
+                "s" if num != 1 else "",
+                match.field,
             )
         ref_row, ref_col = match.n1_row_col
         imp_row, imp_col = match.n2_row_col
     elif isinstance(match, NodeListFieldsDiffer):
         message = "Different {} at index {} ({!r} and {!r})".format(
-            match.field, match.index, match.v1[match.index], match.v2[match.index],
+            match.field,
+            match.index,
+            match.v1[match.index],
+            match.v2[match.index],
         )
         ref_row, ref_col = match.n1_row_col
         imp_row, imp_col = match.n2_row_col

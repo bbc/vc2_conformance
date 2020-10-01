@@ -90,7 +90,8 @@ def source_parameters_encodings(codec_features):
     base_sequence = make_sequence(
         codec_features,
         static_sprite(
-            codec_features["video_parameters"], codec_features["picture_coding_mode"],
+            codec_features["video_parameters"],
+            codec_features["picture_coding_mode"],
         ),
     )
 
@@ -123,7 +124,8 @@ def source_parameters_encodings(codec_features):
                     sequences=[replace_sequence_headers(base_sequence, sequence_header)]
                 ),
                 "custom_flags_combination_{}_base_video_format_{:d}".format(
-                    i + 1, base_video_format,
+                    i + 1,
+                    base_video_format,
                 ),
             )
         elif first_example_of_base_video_format:

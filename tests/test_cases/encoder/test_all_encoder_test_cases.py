@@ -76,7 +76,8 @@ def test_names_unique():
 )
 def test_all_encoder_test_cases(codec_features, test_case):
     component_dimensions_and_depths = compute_dimensions_and_depths(
-        test_case.value.video_parameters, test_case.value.picture_coding_mode,
+        test_case.value.video_parameters,
+        test_case.value.picture_coding_mode,
     )
 
     # Metadata should be serialisable (mustn't crash)

@@ -78,7 +78,9 @@ VideoParameters = fixeddict(
     ),
     # (11.4.5)
     Entry(
-        "top_field_first", help_type="bool", help="Set by (11.4.5) set_source_defaults",
+        "top_field_first",
+        help_type="bool",
+        help="Set by (11.4.5) set_source_defaults",
     ),
     # (11.4.6) frame_rate
     Entry("frame_rate_numer", help_type="int", help="Set by (11.4.6) frame_rate"),

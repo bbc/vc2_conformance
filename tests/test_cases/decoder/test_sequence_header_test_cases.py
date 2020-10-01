@@ -48,7 +48,8 @@ def test_replace_sequence_headers():
             DataUnit(
                 parse_info=ParseInfo(parse_code=ParseCodes.sequence_header),
                 sequence_header=SequenceHeader(
-                    base_video_format=0, video_parameters=SourceParameters(),
+                    base_video_format=0,
+                    video_parameters=SourceParameters(),
                 ),
             ),
             DataUnit(
@@ -58,7 +59,8 @@ def test_replace_sequence_headers():
             DataUnit(
                 parse_info=ParseInfo(parse_code=ParseCodes.sequence_header),
                 sequence_header=SequenceHeader(
-                    base_video_format=0, video_parameters=SourceParameters(),
+                    base_video_format=0,
+                    video_parameters=SourceParameters(),
                 ),
             ),
         ]
@@ -169,7 +171,8 @@ def level_sequence_restrictions():
 def test_repeated_sequence_headers(level_sequence_restrictions, restricted_sequence):
     if restricted_sequence:
         LEVEL_SEQUENCE_RESTRICTIONS[0] = LevelSequenceRestrictions(
-            "", ".  high_quality_picture+ .",
+            "",
+            ".  high_quality_picture+ .",
         )
 
     codec_features = MINIMAL_CODEC_FEATURES

@@ -362,7 +362,11 @@ class TestSerDes(object):
             serdes.subcontext_leave()
 
     def test_set_context_type(self):
-        FixedDict = fixeddict("FixedDict", Entry("a"), Entry("child"),)
+        FixedDict = fixeddict(
+            "FixedDict",
+            Entry("a"),
+            Entry("child"),
+        )
 
         serdes = SerDes(None)
 

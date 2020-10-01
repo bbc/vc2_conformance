@@ -41,11 +41,15 @@ def picture_numbers(codec_features):
     # Create a sequence with at least 8 pictures (and 4 frames)
     mid_gray_pictures = list(
         mid_gray(
-            codec_features["video_parameters"], codec_features["picture_coding_mode"],
+            codec_features["video_parameters"],
+            codec_features["picture_coding_mode"],
         )
     )
     mid_gray_pictures = list(
-        repeat_pictures(mid_gray_pictures, 8 // len(mid_gray_pictures),)
+        repeat_pictures(
+            mid_gray_pictures,
+            8 // len(mid_gray_pictures),
+        )
     )
 
     test_cases = [

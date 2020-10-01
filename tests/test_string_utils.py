@@ -83,9 +83,8 @@ class TestSplitIntoLineWrapBlocks(object):
         assert split_into_line_wrap_blocks("foo bar") == [("", "", "foo bar")]
 
     def test_removes_common_indentation_and_excess_newlines(self):
-        assert (
-            split_into_line_wrap_blocks(
-                """
+        assert split_into_line_wrap_blocks(
+            """
 
             Foo, bar.
 
@@ -95,15 +94,13 @@ class TestSplitIntoLineWrapBlocks(object):
             Qux!
 
         """
-            )
-            == [
-                ("", "", "Foo, bar."),
-                ("", "", ""),
-                ("", "", "Baz."),
-                ("", "", ""),
-                ("", "", "Qux!"),
-            ]
-        )
+        ) == [
+            ("", "", "Foo, bar."),
+            ("", "", ""),
+            ("", "", "Baz."),
+            ("", "", ""),
+            ("", "", "Qux!"),
+        ]
 
     def test_combines_hard_wrapped_lines(self):
         assert (
@@ -121,9 +118,8 @@ class TestSplitIntoLineWrapBlocks(object):
         )
 
     def test_markdown_style_titles(self):
-        assert (
-            split_into_line_wrap_blocks(
-                """
+        assert split_into_line_wrap_blocks(
+            """
             A heading
             =========
 
@@ -133,22 +129,19 @@ class TestSplitIntoLineWrapBlocks(object):
             ==== Not an underline!
             ---- Not an underline!
         """
-            )
-            == [
-                ("", "", "A heading"),
-                ("", "", "========="),
-                ("", "", ""),
-                ("", "", "A subheading"),
-                ("", "", "------------"),
-                ("", "", ""),
-                ("", "", "==== Not an underline! ---- Not an underline!"),
-            ]
-        )
+        ) == [
+            ("", "", "A heading"),
+            ("", "", "========="),
+            ("", "", ""),
+            ("", "", "A subheading"),
+            ("", "", "------------"),
+            ("", "", ""),
+            ("", "", "==== Not an underline! ---- Not an underline!"),
+        ]
 
     def test_bullets(self):
-        assert (
-            split_into_line_wrap_blocks(
-                """
+        assert split_into_line_wrap_blocks(
+            """
             Bullets:
 
             * Foo
@@ -158,22 +151,19 @@ class TestSplitIntoLineWrapBlocks(object):
 
             The end.
         """
-            )
-            == [
-                ("", "", "Bullets:"),
-                ("", "", ""),
-                ("* ", "  ", "Foo"),
-                ("* ", "  ", "Bar, baz."),
-                ("* ", "  ", "Qux."),
-                ("", "", ""),
-                ("", "", "The end."),
-            ]
-        )
+        ) == [
+            ("", "", "Bullets:"),
+            ("", "", ""),
+            ("* ", "  ", "Foo"),
+            ("* ", "  ", "Bar, baz."),
+            ("* ", "  ", "Qux."),
+            ("", "", ""),
+            ("", "", "The end."),
+        ]
 
     def test_bullets_at_start(self):
-        assert (
-            split_into_line_wrap_blocks(
-                """
+        assert split_into_line_wrap_blocks(
+            """
             * Foo
             * Bar,
               baz.
@@ -181,20 +171,17 @@ class TestSplitIntoLineWrapBlocks(object):
 
             The end.
         """
-            )
-            == [
-                ("* ", "  ", "Foo"),
-                ("* ", "  ", "Bar, baz."),
-                ("* ", "  ", "Qux."),
-                ("", "", ""),
-                ("", "", "The end."),
-            ]
-        )
+        ) == [
+            ("* ", "  ", "Foo"),
+            ("* ", "  ", "Bar, baz."),
+            ("* ", "  ", "Qux."),
+            ("", "", ""),
+            ("", "", "The end."),
+        ]
 
     def test_numbers(self):
-        assert (
-            split_into_line_wrap_blocks(
-                """
+        assert split_into_line_wrap_blocks(
+            """
             Numbered:
 
             1. Foo
@@ -204,22 +191,19 @@ class TestSplitIntoLineWrapBlocks(object):
 
             The end.
         """
-            )
-            == [
-                ("", "", "Numbered:"),
-                ("", "", ""),
-                ("1. ", "   ", "Foo"),
-                ("2. ", "   ", "Bar, baz."),
-                ("100. ", "     ", "Qux."),
-                ("", "", ""),
-                ("", "", "The end."),
-            ]
-        )
+        ) == [
+            ("", "", "Numbered:"),
+            ("", "", ""),
+            ("1. ", "   ", "Foo"),
+            ("2. ", "   ", "Bar, baz."),
+            ("100. ", "     ", "Qux."),
+            ("", "", ""),
+            ("", "", "The end."),
+        ]
 
     def test_numbers_at_start(self):
-        assert (
-            split_into_line_wrap_blocks(
-                """
+        assert split_into_line_wrap_blocks(
+            """
             1. Foo
             2. Bar,
                baz.
@@ -227,20 +211,17 @@ class TestSplitIntoLineWrapBlocks(object):
 
             The end.
         """
-            )
-            == [
-                ("1. ", "   ", "Foo"),
-                ("2. ", "   ", "Bar, baz."),
-                ("100. ", "     ", "Qux."),
-                ("", "", ""),
-                ("", "", "The end."),
-            ]
-        )
+        ) == [
+            ("1. ", "   ", "Foo"),
+            ("2. ", "   ", "Bar, baz."),
+            ("100. ", "     ", "Qux."),
+            ("", "", ""),
+            ("", "", "The end."),
+        ]
 
     def test_dont_confuse_asteriscs_and_number_dots_in_paragraphs(self):
-        assert (
-            split_into_line_wrap_blocks(
-                """
+        assert split_into_line_wrap_blocks(
+            """
             This is a paragraph
             which containing a
             9. It also contains
@@ -248,25 +229,22 @@ class TestSplitIntoLineWrapBlocks(object):
             in any other
             setting.
         """
-            )
-            == [
+        ) == [
+            (
+                "",
+                "",
                 (
-                    "",
-                    "",
-                    (
-                        "This is a paragraph which "
-                        "containing a 9. It also "
-                        "contains * -- a bullet "
-                        "point in any other setting."
-                    ),
+                    "This is a paragraph which "
+                    "containing a 9. It also "
+                    "contains * -- a bullet "
+                    "point in any other setting."
                 ),
-            ]
-        )
+            ),
+        ]
 
     def test_intented_block_wrap_indented_blocks(self):
-        assert (
-            split_into_line_wrap_blocks(
-                """
+        assert split_into_line_wrap_blocks(
+            """
             Indentation time:
 
                 Indented block.
@@ -276,23 +254,20 @@ class TestSplitIntoLineWrapBlocks(object):
 
             The end.
         """,
-                wrap_indented_blocks=True,
-            )
-            == [
-                ("", "", "Indentation time:"),
-                ("", "", ""),
-                ("    ", "    ", "Indented block."),
-                ("", "", ""),
-                ("    ", "    ", "A second one."),
-                ("", "", ""),
-                ("", "", "The end."),
-            ]
-        )
+            wrap_indented_blocks=True,
+        ) == [
+            ("", "", "Indentation time:"),
+            ("", "", ""),
+            ("    ", "    ", "Indented block."),
+            ("", "", ""),
+            ("    ", "    ", "A second one."),
+            ("", "", ""),
+            ("", "", "The end."),
+        ]
 
     def test_intented_block_no_wrap_indented_blocks(self):
-        assert (
-            split_into_line_wrap_blocks(
-                """
+        assert split_into_line_wrap_blocks(
+            """
             Indentation time:
 
                 Indented block.
@@ -302,19 +277,17 @@ class TestSplitIntoLineWrapBlocks(object):
 
             The end.
         """,
-                wrap_indented_blocks=False,
-            )
-            == [
-                ("", "", "Indentation time:"),
-                ("", "", ""),
-                ("    ", "    ", "Indented block."),
-                ("", "", ""),
-                ("    ", "    ", "A second"),
-                ("    ", "    ", "one."),
-                ("", "", ""),
-                ("", "", "The end."),
-            ]
-        )
+            wrap_indented_blocks=False,
+        ) == [
+            ("", "", "Indentation time:"),
+            ("", "", ""),
+            ("    ", "    ", "Indented block."),
+            ("", "", ""),
+            ("    ", "    ", "A second"),
+            ("    ", "    ", "one."),
+            ("", "", ""),
+            ("", "", "The end."),
+        ]
 
 
 class TestWrapBlocks(object):

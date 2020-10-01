@@ -48,7 +48,9 @@ from vc2_conformance.test_cases.decoder.common import (
 
 
 def generate_filled_padding(
-    padding_length_bits, filler=b"\x00", byte_align=0,
+    padding_length_bits,
+    filler=b"\x00",
+    byte_align=0,
 ):
     """
     Generate a :py:class:`~bitarray.bitarray` ``padding_length_bits`` long
@@ -85,7 +87,14 @@ def generate_filled_padding(
 
 
 def fill_hq_slice_padding(
-    state, sx, sy, hq_slice, component, filler, byte_align=False, min_length=0,
+    state,
+    sx,
+    sy,
+    hq_slice,
+    component,
+    filler,
+    byte_align=False,
+    min_length=0,
 ):
     """
     Given a :py:class:`~vc2_conformance.bitstream.HQSlice`, mutate it in-place
@@ -157,7 +166,13 @@ def fill_hq_slice_padding(
 
 
 def fill_ld_slice_padding(
-    state, sx, sy, ld_slice, component, filler, byte_align=False,
+    state,
+    sx,
+    sy,
+    ld_slice,
+    component,
+    filler,
+    byte_align=False,
 ):
     """
     Given a :py:class:`~vc2_conformance.bitstream.LDSlice`, mutate it in-place
@@ -213,7 +228,9 @@ def fill_ld_slice_padding(
 
     if padding_bits > 0:
         padding = generate_filled_padding(
-            padding_bits, filler, data_start_offset_bits if byte_align else 0,
+            padding_bits,
+            filler,
+            data_start_offset_bits if byte_align else 0,
         )
     else:
         padding = bitarray()
@@ -324,7 +341,10 @@ def generate_exp_golomb_with_length(num_values, required_length):
 
     raise UnsatisfiableBlockSizeError(
         "Cannot create a series of {} signed integers "
-        "exactly {} bits long.".format(num_values, required_length,)
+        "exactly {} bits long.".format(
+            num_values,
+            required_length,
+        )
     )
 
 
@@ -427,10 +447,18 @@ def generate_dangling_transform_values(block_bits, num_values, dangle_type, magn
     values_before = []
     # NB: Range below means we try at most num_values - 1 values, i.e. we
     # always leave one value to use as our dangling value
-    for num_values_before in reversed(range(min(block_bits - length + 1, num_values,))):
+    for num_values_before in reversed(
+        range(
+            min(
+                block_bits - length + 1,
+                num_values,
+            )
+        )
+    ):
         try:
             values_before = generate_exp_golomb_with_length(
-                num_values_before, block_bits - length,
+                num_values_before,
+                block_bits - length,
             )
             break
         except UnsatisfiableBlockSizeError:
@@ -445,7 +473,14 @@ def generate_dangling_transform_values(block_bits, num_values, dangle_type, magn
 
 
 def cut_off_value_at_end_of_hq_slice(
-    state, sx, sy, hq_slice, component, dangle_type, magnitude, min_length=0,
+    state,
+    sx,
+    sy,
+    hq_slice,
+    component,
+    dangle_type,
+    magnitude,
+    min_length=0,
 ):
     """
     Given a :py:class:`~vc2_conformance.bitstream.HQSlice`, mutate it in-place
@@ -520,13 +555,22 @@ def cut_off_value_at_end_of_hq_slice(
 
     # Fill requested component with dangling values
     values = generate_dangling_transform_values(
-        block_bits, num_values, dangle_type, magnitude,
+        block_bits,
+        num_values,
+        dangle_type,
+        magnitude,
     )
     hq_slice["{}_transform".format(component.lower())] = values
 
 
 def cut_off_value_at_end_of_ld_slice(
-    state, sx, sy, ld_slice, component, dangle_type, magnitude,
+    state,
+    sx,
+    sy,
+    ld_slice,
+    component,
+    dangle_type,
+    magnitude,
 ):
     """
     Given a :py:class:`~vc2_conformance.bitstream.LDSlice`, mutate it in-place
@@ -590,7 +634,10 @@ def cut_off_value_at_end_of_ld_slice(
 
     # Fill requested component with dangling values
     values = generate_dangling_transform_values(
-        block_bits, num_values, dangle_type, magnitude,
+        block_bits,
+        num_values,
+        dangle_type,
+        magnitude,
     )
     ld_slice["{}_transform".format(component.lower())] = values
 
@@ -650,7 +697,8 @@ def slice_padding_data(codec_features):
         # These pictures encode to all zeros which should give the highest
         # possible compression.
         mid_gray(
-            codec_features["video_parameters"], codec_features["picture_coding_mode"],
+            codec_features["video_parameters"],
+            codec_features["picture_coding_mode"],
         ),
     )
 
@@ -658,7 +706,8 @@ def slice_padding_data(codec_features):
         for component in picture_components:
             sequence = deepcopy(base_sequence)
             for (state, sx, sy, slice) in iter_slices_in_sequence(
-                codec_features, sequence,
+                codec_features,
+                sequence,
             ):
                 if codec_features["profile"] == Profiles.high_quality:
                     # For lossless coding, extend the slice size to ensure some
@@ -674,15 +723,32 @@ def slice_padding_data(codec_features):
                         min_length = 0
 
                     fill_hq_slice_padding(
-                        state, sx, sy, slice, component, filler, byte_align, min_length,
+                        state,
+                        sx,
+                        sy,
+                        slice,
+                        component,
+                        filler,
+                        byte_align,
+                        min_length,
                     )
                 elif codec_features["profile"] == Profiles.low_delay:
                     fill_ld_slice_padding(
-                        state, sx, sy, slice, component, filler, byte_align,
+                        state,
+                        sx,
+                        sy,
+                        slice,
+                        component,
+                        filler,
+                        byte_align,
                     )
 
             yield TestCase(
-                Stream(sequences=[sequence]), "{}_{}".format(component, explanation,)
+                Stream(sequences=[sequence]),
+                "{}_{}".format(
+                    component,
+                    explanation,
+                ),
             )
 
 
@@ -751,7 +817,8 @@ def dangling_bounded_block_data(codec_features):
     base_sequence = make_sequence(
         codec_features,
         mid_gray(
-            codec_features["video_parameters"], codec_features["picture_coding_mode"],
+            codec_features["video_parameters"],
+            codec_features["picture_coding_mode"],
         ),
     )
 
@@ -761,7 +828,8 @@ def dangling_bounded_block_data(codec_features):
             try:
                 sequence = deepcopy(base_sequence)
                 for (state, sx, sy, slice) in iter_slices_in_sequence(
-                    codec_features, sequence,
+                    codec_features,
+                    sequence,
                 ):
                     if codec_features["profile"] == Profiles.high_quality:
                         # For lossless coding, extend the slice size to ensure some
@@ -783,12 +851,21 @@ def dangling_bounded_block_data(codec_features):
                         )
                     elif codec_features["profile"] == Profiles.low_delay:
                         cut_off_value_at_end_of_ld_slice(
-                            state, sx, sy, slice, component, dangle_type, magnitude,
+                            state,
+                            sx,
+                            sy,
+                            slice,
+                            component,
+                            dangle_type,
+                            magnitude,
                         )
 
                 yield TestCase(
                     Stream(sequences=[sequence]),
-                    "{}_{}".format(dangle_type.name, component,),
+                    "{}_{}".format(
+                        dangle_type.name,
+                        component,
+                    ),
                 )
             except UnsatisfiableBlockSizeError:
                 logging.warning(

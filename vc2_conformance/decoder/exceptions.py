@@ -38,7 +38,8 @@ def known_parse_code_to_string(parse_code):
         "end of sequence (0x10)"
     """
     return "{} (0x{:02X})".format(
-        ParseCodes(parse_code).name.replace("_", " "), parse_code,
+        ParseCodes(parse_code).name.replace("_", " "),
+        parse_code,
     )
 
 
@@ -49,7 +50,10 @@ def known_profile_to_string(profile):
 
         "high quality (3)"
     """
-    return "{} ({:d})".format(Profiles(profile).name.replace("_", " "), profile,)
+    return "{} ({:d})".format(
+        Profiles(profile).name.replace("_", " "),
+        profile,
+    )
 
 
 def known_wavelet_to_string(wavelet_index):
@@ -60,12 +64,15 @@ def known_wavelet_to_string(wavelet_index):
         "Haar With Shift (4)"
     """
     return "{} ({:d})".format(
-        WaveletFilters(wavelet_index).name.replace("_", " ").title(), wavelet_index,
+        WaveletFilters(wavelet_index).name.replace("_", " ").title(),
+        wavelet_index,
     )
 
 
 def explain_parse_code_sequence_structure_restrictions(
-    actual_parse_code, expected_parse_codes, expected_end,
+    actual_parse_code,
+    expected_parse_codes,
+    expected_end,
 ):
     """
     Produce an sentence explaining how a particular sequence requirement has
@@ -85,7 +92,9 @@ def explain_parse_code_sequence_structure_restrictions(
     """
     return "{} was encountered but {} expected.".format(
         (
-            "The parse code {}".format(known_parse_code_to_string(actual_parse_code),)
+            "The parse code {}".format(
+                known_parse_code_to_string(actual_parse_code),
+            )
             if actual_parse_code is not None
             else "No further parse code"
         ),
@@ -225,7 +234,8 @@ class BadParseInfoPrefix(ConformanceError):
             length? For example, were any unused bits in a picture slice filled
             with the correct number of padding bits (A.4.2)?
         """.format(
-            self.parse_info_prefix, PARSE_INFO_PREFIX,
+            self.parse_info_prefix,
+            PARSE_INFO_PREFIX,
         )
 
 
@@ -646,7 +656,9 @@ class GenericInvalidSequence(ConformanceError):
             Did the sequence begin with a non-sequence header data unit?
         """.format(
             explain_parse_code_sequence_structure_restrictions(
-                self.parse_code, self.expected_parse_codes, self.expected_end,
+                self.parse_code,
+                self.expected_parse_codes,
+                self.expected_end,
             )
         )
 
@@ -696,7 +708,9 @@ class LevelInvalidSequence(ConformanceError):
             LEVELS[self.level].standard,
             LEVEL_SEQUENCE_RESTRICTIONS[self.level].sequence_restriction_explanation,
             explain_parse_code_sequence_structure_restrictions(
-                self.parse_code, self.expected_parse_codes, self.expected_end,
+                self.parse_code,
+                self.expected_parse_codes,
+                self.expected_end,
             ),
         )
 
@@ -998,7 +1012,8 @@ class PixelAspectRatioContainsZeros(ConformanceError):
 
             Pixel aspect ratios must be valid ratios (i.e. not contain zeros).
         """.format(
-            self.pixel_aspect_ratio_numer, self.pixel_aspect_ratio_denom,
+            self.pixel_aspect_ratio_numer,
+            self.pixel_aspect_ratio_denom,
         )
 
 
@@ -1068,7 +1083,9 @@ class BadCustomSignalExcursion(ConformanceError):
     """
 
     def __init__(
-        self, component_type_name, excursion,
+        self,
+        component_type_name,
+        excursion,
     ):
         self.component_type_name = component_type_name
         self.excursion = excursion
@@ -1079,7 +1096,8 @@ class BadCustomSignalExcursion(ConformanceError):
             Custom signal range {}_excursion must be at least 1 but {} was
             provided (11.4.9).
         """.format(
-            self.component_type_name, self.excursion,
+            self.component_type_name,
+            self.excursion,
         )
 
 
@@ -1455,7 +1473,8 @@ class ZeroSlicesInCodedPicture(ConformanceError):
 
             There must be at least one slice in either dimension.
         """.format(
-            self.slices_x, self.slices_y,
+            self.slices_x,
+            self.slices_y,
         )
 
 
@@ -1501,7 +1520,8 @@ class SliceBytesIsLessThanOne(ConformanceError):
 
             Slices must be at least 1 byte.
         """.format(
-            self.slice_bytes_numerator, self.slice_bytes_denominator,
+            self.slice_bytes_numerator,
+            self.slice_bytes_denominator,
         )
 
 

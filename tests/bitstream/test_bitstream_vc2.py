@@ -149,7 +149,8 @@ def test_parse_sequence(w):
         data_units=[
             vc2.DataUnit(
                 parse_info=vc2.ParseInfo(
-                    parse_code=tables.ParseCodes.padding_data, next_parse_offset=13,
+                    parse_code=tables.ParseCodes.padding_data,
+                    next_parse_offset=13,
                 ),
                 padding=vc2.Padding(),
             ),
@@ -320,7 +321,9 @@ class TestFrameSize(object):
 
     def test_flag_set(self, w):
         fs_before = vc2.FrameSize(
-            custom_dimensions_flag=True, frame_width=100, frame_height=200,
+            custom_dimensions_flag=True,
+            frame_width=100,
+            frame_height=200,
         )
         with Serialiser(w, fs_before, vc2_default_values) as serdes:
             vc2.frame_size(serdes, State(), VideoParameters())
@@ -345,7 +348,8 @@ class TestColorDiffSamplingFormat(object):
 
     def test_flag_set(self, w):
         cd_before = vc2.ColorDiffSamplingFormat(
-            custom_color_diff_format_flag=True, color_diff_format_index=0,
+            custom_color_diff_format_flag=True,
+            color_diff_format_index=0,
         )
         with Serialiser(w, cd_before, vc2_default_values) as serdes:
             vc2.color_diff_sampling_format(serdes, State(), VideoParameters())
@@ -366,7 +370,10 @@ class TestScanFormat(object):
         assert str(cd) == ("ScanFormat:\n" "  custom_scan_format_flag: False")
 
     def test_flag_set(self, w):
-        cd_before = vc2.ScanFormat(custom_scan_format_flag=True, source_sampling=0,)
+        cd_before = vc2.ScanFormat(
+            custom_scan_format_flag=True,
+            source_sampling=0,
+        )
         with Serialiser(w, cd_before, vc2_default_values) as serdes:
             vc2.scan_format(serdes, State(), VideoParameters())
         cd = deserialise(w, vc2.scan_format, State(), VideoParameters())
@@ -386,7 +393,10 @@ class TestFrameRate(object):
         assert str(cd) == ("FrameRate:\n" "  custom_frame_rate_flag: False")
 
     def test_flag_set_with_preset(self, w):
-        cd_before = vc2.FrameRate(custom_frame_rate_flag=True, index=1,)
+        cd_before = vc2.FrameRate(
+            custom_frame_rate_flag=True,
+            index=1,
+        )
         with Serialiser(w, cd_before, vc2_default_values) as serdes:
             vc2.frame_rate(serdes, State(), VideoParameters())
         cd = deserialise(w, vc2.frame_rate, State(), VideoParameters())
@@ -397,7 +407,10 @@ class TestFrameRate(object):
         )
 
     def test_flag_set_with_invalid_preset(self, w):
-        cd_before = vc2.FrameRate(custom_frame_rate_flag=True, index=1234,)
+        cd_before = vc2.FrameRate(
+            custom_frame_rate_flag=True,
+            index=1234,
+        )
         with Serialiser(w, cd_before, vc2_default_values) as serdes:
             vc2.frame_rate(serdes, State(), VideoParameters())
         cd = deserialise(w, vc2.frame_rate, State(), VideoParameters())
@@ -435,7 +448,10 @@ class TestPixelAspectRatio(object):
         )
 
     def test_with_flag_set_and_preset(self, w):
-        cd_before = vc2.PixelAspectRatio(custom_pixel_aspect_ratio_flag=True, index=1,)
+        cd_before = vc2.PixelAspectRatio(
+            custom_pixel_aspect_ratio_flag=True,
+            index=1,
+        )
         with Serialiser(w, cd_before, vc2_default_values) as serdes:
             vc2.pixel_aspect_ratio(serdes, State(), VideoParameters())
         cd = deserialise(w, vc2.pixel_aspect_ratio, State(), VideoParameters())
@@ -447,7 +463,8 @@ class TestPixelAspectRatio(object):
 
     def test_with_flag_set_and_invalid_preset(self, w):
         cd_before = vc2.PixelAspectRatio(
-            custom_pixel_aspect_ratio_flag=True, index=1234,
+            custom_pixel_aspect_ratio_flag=True,
+            index=1234,
         )
         with Serialiser(w, cd_before, vc2_default_values) as serdes:
             vc2.pixel_aspect_ratio(serdes, State(), VideoParameters())
@@ -515,7 +532,10 @@ class TestSignalRange(object):
         assert str(cd) == ("SignalRange:\n" "  custom_signal_range_flag: False")
 
     def test_flag_set_with_preset(self, w):
-        cd_before = vc2.SignalRange(custom_signal_range_flag=True, index=1,)
+        cd_before = vc2.SignalRange(
+            custom_signal_range_flag=True,
+            index=1,
+        )
         with Serialiser(w, cd_before, vc2_default_values) as serdes:
             vc2.signal_range(serdes, State(), VideoParameters())
         cd = deserialise(w, vc2.signal_range, State(), VideoParameters())
@@ -526,7 +546,10 @@ class TestSignalRange(object):
         )
 
     def test_flag_set_with_invalid_preset(self, w):
-        cd_before = vc2.SignalRange(custom_signal_range_flag=True, index=1234,)
+        cd_before = vc2.SignalRange(
+            custom_signal_range_flag=True,
+            index=1234,
+        )
         with Serialiser(w, cd_before, vc2_default_values) as serdes:
             vc2.signal_range(serdes, State(), VideoParameters())
         cd = deserialise(w, vc2.signal_range, State(), VideoParameters())
@@ -566,7 +589,10 @@ class TestColorSpec(object):
         assert str(cs) == ("ColorSpec:\n" "  custom_color_spec_flag: False")
 
     def test_flag_set_with_preset(self, w):
-        cs_before = vc2.ColorSpec(custom_color_spec_flag=True, index=1,)
+        cs_before = vc2.ColorSpec(
+            custom_color_spec_flag=True,
+            index=1,
+        )
         with Serialiser(w, cs_before, vc2_default_values) as serdes:
             vc2.color_spec(serdes, State(), VideoParameters())
         cs = deserialise(w, vc2.color_spec, State(), VideoParameters())
@@ -575,7 +601,10 @@ class TestColorSpec(object):
         )
 
     def test_flag_set_with_invalid_preset(self, w):
-        cs_before = vc2.ColorSpec(custom_color_spec_flag=True, index=1234,)
+        cs_before = vc2.ColorSpec(
+            custom_color_spec_flag=True,
+            index=1234,
+        )
         with Serialiser(w, cs_before, vc2_default_values) as serdes:
             vc2.color_spec(serdes, State(), VideoParameters())
         cs = deserialise(w, vc2.color_spec, State(), VideoParameters())
@@ -616,7 +645,10 @@ class TestColorPrimaries(object):
         assert str(cp) == ("ColorPrimaries:\n" "  custom_color_primaries_flag: False")
 
     def test_flag_set_with_preset(self, w):
-        cp_before = vc2.ColorPrimaries(custom_color_primaries_flag=True, index=1,)
+        cp_before = vc2.ColorPrimaries(
+            custom_color_primaries_flag=True,
+            index=1,
+        )
         with Serialiser(w, cp_before, vc2_default_values) as serdes:
             vc2.color_primaries(serdes, State(), VideoParameters())
         cp = deserialise(w, vc2.color_primaries, State(), VideoParameters())
@@ -627,7 +659,10 @@ class TestColorPrimaries(object):
         )
 
     def test_flag_set_with_invalid_preset(self, w):
-        cp_before = vc2.ColorPrimaries(custom_color_primaries_flag=True, index=1234,)
+        cp_before = vc2.ColorPrimaries(
+            custom_color_primaries_flag=True,
+            index=1234,
+        )
         with Serialiser(w, cp_before, vc2_default_values) as serdes:
             vc2.color_primaries(serdes, State(), VideoParameters())
         cp = deserialise(w, vc2.color_primaries, State(), VideoParameters())
@@ -645,7 +680,10 @@ class TestColorMatrix(object):
         assert str(cp) == ("ColorMatrix:\n" "  custom_color_matrix_flag: False")
 
     def test_flag_set_with_preset(self, w):
-        cp_before = vc2.ColorMatrix(custom_color_matrix_flag=True, index=1,)
+        cp_before = vc2.ColorMatrix(
+            custom_color_matrix_flag=True,
+            index=1,
+        )
         with Serialiser(w, cp_before, vc2_default_values) as serdes:
             vc2.color_matrix(serdes, State(), VideoParameters())
         cp = deserialise(w, vc2.color_matrix, State(), VideoParameters())
@@ -654,7 +692,10 @@ class TestColorMatrix(object):
         )
 
     def test_flag_set_with_invalid_preset(self, w):
-        cp_before = vc2.ColorMatrix(custom_color_matrix_flag=True, index=1234,)
+        cp_before = vc2.ColorMatrix(
+            custom_color_matrix_flag=True,
+            index=1234,
+        )
         with Serialiser(w, cp_before, vc2_default_values) as serdes:
             vc2.color_matrix(serdes, State(), VideoParameters())
         cp = deserialise(w, vc2.color_matrix, State(), VideoParameters())
@@ -674,7 +715,10 @@ class TestTransferFunction(object):
         )
 
     def test_flag_set_with_preset(self, w):
-        cp_before = vc2.TransferFunction(custom_transfer_function_flag=True, index=1,)
+        cp_before = vc2.TransferFunction(
+            custom_transfer_function_flag=True,
+            index=1,
+        )
         with Serialiser(w, cp_before, vc2_default_values) as serdes:
             vc2.transfer_function(serdes, State(), VideoParameters())
         cp = deserialise(w, vc2.transfer_function, State(), VideoParameters())
@@ -686,7 +730,8 @@ class TestTransferFunction(object):
 
     def test_flag_set_with_invalid_preset(self, w):
         cp_before = vc2.TransferFunction(
-            custom_transfer_function_flag=True, index=1234,
+            custom_transfer_function_flag=True,
+            index=1234,
         )
         with Serialiser(w, cp_before, vc2_default_values) as serdes:
             vc2.transfer_function(serdes, State(), VideoParameters())
@@ -713,7 +758,10 @@ def test_picture_parse(w):
     pp_before = vc2.PictureParse(
         wavelet_transform=vc2.WaveletTransform(
             transform_parameters=vc2.TransformParameters(
-                slice_parameters=vc2.SliceParameters(slices_x=2, slices_y=2,)
+                slice_parameters=vc2.SliceParameters(
+                    slices_x=2,
+                    slices_y=2,
+                )
             ),
             transform_data=vc2.TransformData(
                 hq_slices=[vc2.HQSlice() for _ in range(2 * 2)],
@@ -826,7 +874,10 @@ class TestExtendedTransformParameters(object):
     @pytest.fixture
     def state(self):
         # A minimum state for a v3 bitstream
-        return State(major_version=3, minor_version=0,)
+        return State(
+            major_version=3,
+            minor_version=0,
+        )
 
     def test_neither_flag_set(self, w, state):
         ep_before = vc2.ExtendedTransformParameters()
@@ -884,7 +935,8 @@ class TestSliceParameters(object):
             parse_code=tables.ParseCodes.low_delay_picture,
         )
         sp_before = vc2.SliceParameters(
-            slice_bytes_numerator=0, slice_bytes_denominator=0,
+            slice_bytes_numerator=0,
+            slice_bytes_denominator=0,
         )
         with Serialiser(w, sp_before, vc2_default_values) as serdes:
             vc2.slice_parameters(serdes, state)
@@ -903,7 +955,10 @@ class TestSliceParameters(object):
             minor_version=0,
             parse_code=tables.ParseCodes.high_quality_picture,
         )
-        sp_before = vc2.SliceParameters(slice_prefix_bytes=0, slice_size_scaler=0,)
+        sp_before = vc2.SliceParameters(
+            slice_prefix_bytes=0,
+            slice_size_scaler=0,
+        )
         with Serialiser(w, sp_before, vc2_default_values) as serdes:
             vc2.slice_parameters(serdes, state)
         sp = deserialise(w, vc2.slice_parameters, state)
@@ -926,7 +981,10 @@ class TestQuantMatrix(object):
 
     def test_custom_quant_matrix_dc_only(self, w):
         state = State(dwt_depth=0, dwt_depth_ho=0)
-        qm_before = vc2.QuantMatrix(custom_quant_matrix=True, quant_matrix=[0],)
+        qm_before = vc2.QuantMatrix(
+            custom_quant_matrix=True,
+            quant_matrix=[0],
+        )
         with Serialiser(w, qm_before, vc2_default_values) as serdes:
             vc2.quant_matrix(serdes, state)
         qm = deserialise(w, vc2.quant_matrix, state)
@@ -937,7 +995,8 @@ class TestQuantMatrix(object):
     def test_custom_quant_matrix_ho_only(self, w):
         state = State(dwt_depth=0, dwt_depth_ho=2)
         qm_before = vc2.QuantMatrix(
-            custom_quant_matrix=True, quant_matrix=[0] * (1 + 2),
+            custom_quant_matrix=True,
+            quant_matrix=[0] * (1 + 2),
         )
         with Serialiser(w, qm_before, vc2_default_values) as serdes:
             vc2.quant_matrix(serdes, state)
@@ -949,7 +1008,8 @@ class TestQuantMatrix(object):
     def test_custom_quant_matrix_2d_only(self, w):
         state = State(dwt_depth=1, dwt_depth_ho=0)
         qm_before = vc2.QuantMatrix(
-            custom_quant_matrix=True, quant_matrix=[0] * (1 + 3),
+            custom_quant_matrix=True,
+            quant_matrix=[0] * (1 + 3),
         )
         with Serialiser(w, qm_before, vc2_default_values) as serdes:
             vc2.quant_matrix(serdes, state)
@@ -963,7 +1023,8 @@ class TestQuantMatrix(object):
     def test_custom_quant_matrix_2d_and_ho_only(self, w):
         state = State(dwt_depth=1, dwt_depth_ho=2)
         qm_before = vc2.QuantMatrix(
-            custom_quant_matrix=True, quant_matrix=[0] * (1 + 2 + 3),
+            custom_quant_matrix=True,
+            quant_matrix=[0] * (1 + 2 + 3),
         )
         with Serialiser(w, qm_before, vc2_default_values) as serdes:
             vc2.quant_matrix(serdes, state)
@@ -986,7 +1047,8 @@ class TestFragmentParse(object):
         fp_before = vc2.FragmentParse(
             transform_parameters=vc2.TransformParameters(
                 slice_parameters=vc2.SliceParameters(
-                    slice_prefix_bytes=0, slice_size_scaler=0,
+                    slice_prefix_bytes=0,
+                    slice_size_scaler=0,
                 )
             )
         )
@@ -1033,9 +1095,13 @@ class TestFragmentParse(object):
         )
         fp_before = vc2.FragmentParse(
             fragment_header=vc2.FragmentHeader(
-                fragment_slice_count=1, fragment_x_offset=0, fragment_y_offset=0,
+                fragment_slice_count=1,
+                fragment_x_offset=0,
+                fragment_y_offset=0,
             ),
-            fragment_data=vc2.FragmentData(hq_slices=[vc2.HQSlice()],),
+            fragment_data=vc2.FragmentData(
+                hq_slices=[vc2.HQSlice()],
+            ),
         )
         with Serialiser(w, fp_before, vc2_default_values) as serdes:
             vc2.fragment_parse(serdes, state)
@@ -1068,7 +1134,9 @@ class TestFragmentHeader(object):
 
     def test_count_is_non_zero(self, w):
         fh_before = vc2.FragmentHeader(
-            fragment_slice_count=2, fragment_x_offset=0, fragment_y_offset=0,
+            fragment_slice_count=2,
+            fragment_x_offset=0,
+            fragment_y_offset=0,
         )
         with Serialiser(w, fh_before, vc2_default_values) as serdes:
             vc2.fragment_header(serdes, State())
@@ -1210,7 +1278,10 @@ class TestLowDelay(object):
         A hand-made :py:class:`TransformData` contianing the same values
         encoded by the bitstream fixture.
         """
-        return vc2.TransformData(_state=state, ld_slices=ld_slices,)
+        return vc2.TransformData(
+            _state=state,
+            ld_slices=ld_slices,
+        )
 
     def test_transform_data_str(self, transform_data):
         assert str(transform_data) == (
@@ -1272,9 +1343,18 @@ class TestLowDelay(object):
             fragment_data.append(serdes.context)
 
         assert fragment_data == [
-            vc2.FragmentData(_state=states[0], ld_slices=[ld_slices[0]],),
-            vc2.FragmentData(_state=states[1], ld_slices=[ld_slices[1]],),
-            vc2.FragmentData(_state=states[2], ld_slices=ld_slices,),
+            vc2.FragmentData(
+                _state=states[0],
+                ld_slices=[ld_slices[0]],
+            ),
+            vc2.FragmentData(
+                _state=states[1],
+                ld_slices=[ld_slices[1]],
+            ),
+            vc2.FragmentData(
+                _state=states[2],
+                ld_slices=ld_slices,
+            ),
         ]
 
 
@@ -1424,7 +1504,10 @@ class TestHighQuality(object):
         A hand-made :py:class:`TransformData` contianing the same values
         encoded by the bitstream fixture.
         """
-        return vc2.TransformData(_state=state, hq_slices=hq_slices,)
+        return vc2.TransformData(
+            _state=state,
+            hq_slices=hq_slices,
+        )
 
     def test_transform_data_str(self, transform_data):
         assert str(transform_data) == (
@@ -1489,7 +1572,16 @@ class TestHighQuality(object):
             fragment_data.append(serdes.context)
 
         assert fragment_data == [
-            vc2.FragmentData(_state=states[0], hq_slices=[hq_slices[0]],),
-            vc2.FragmentData(_state=states[1], hq_slices=[hq_slices[1]],),
-            vc2.FragmentData(_state=states[2], hq_slices=hq_slices,),
+            vc2.FragmentData(
+                _state=states[0],
+                hq_slices=[hq_slices[0]],
+            ),
+            vc2.FragmentData(
+                _state=states[1],
+                hq_slices=[hq_slices[1]],
+            ),
+            vc2.FragmentData(
+                _state=states[2],
+                hq_slices=hq_slices,
+            ),
         ]

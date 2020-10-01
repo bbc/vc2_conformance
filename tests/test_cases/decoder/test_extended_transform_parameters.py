@@ -47,7 +47,8 @@ def find_extended_transform_parameters(stream):
     [(WaveletFilters.haar_no_shift, True), (WaveletFilters.haar_with_shift, False)],
 )
 @pytest.mark.parametrize(
-    "dwt_depth_ho,exp_asym_transform_flag_case", [(0, True), (1, False)],
+    "dwt_depth_ho,exp_asym_transform_flag_case",
+    [(0, True), (1, False)],
 )
 def test_forces_flags(
     profile,

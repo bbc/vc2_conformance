@@ -318,7 +318,10 @@ def missing_sequence_header_bitstream_fname(tmpdir):
         context = bitstream.PictureParse(
             wavelet_transform=bitstream.WaveletTransform(
                 transform_parameters=bitstream.TransformParameters(
-                    slice_parameters=bitstream.SliceParameters(slices_x=0, slices_y=0,),
+                    slice_parameters=bitstream.SliceParameters(
+                        slices_x=0,
+                        slices_y=0,
+                    ),
                 ),
             ),
         )
@@ -379,7 +382,9 @@ class TestBitstreamViewer(object):
     )
     def test_show_hide_sets(self, shown, hidden, exp_shown, exp_hidden):
         v = BitstreamViewer(
-            None, shown_pseudocode_names=shown, hidden_pseudocode_names=hidden,
+            None,
+            shown_pseudocode_names=shown,
+            hidden_pseudocode_names=hidden,
         )
 
         if exp_shown is None:
@@ -610,7 +615,8 @@ class TestBitstreamViewer(object):
 
     def test_filtered_display_show(self, capsys, padding_sequence_bitstream_fname):
         v = BitstreamViewer(
-            padding_sequence_bitstream_fname, shown_pseudocode_names=["padding"],
+            padding_sequence_bitstream_fname,
+            shown_pseudocode_names=["padding"],
         )
         assert v.run() == 0
 
@@ -627,7 +633,8 @@ class TestBitstreamViewer(object):
 
     def test_filtered_display_hide(self, capsys, padding_sequence_bitstream_fname):
         v = BitstreamViewer(
-            padding_sequence_bitstream_fname, hidden_pseudocode_names=["parse_info"],
+            padding_sequence_bitstream_fname,
+            hidden_pseudocode_names=["parse_info"],
         )
         assert v.run() == 0
 
@@ -682,7 +689,8 @@ class TestBitstreamViewer(object):
 
     def test_clear_previous_data_units(self, padding_sequence_bitstream_fname):
         v = BitstreamViewer(
-            padding_sequence_bitstream_fname, shown_pseudocode_names=["padding"],
+            padding_sequence_bitstream_fname,
+            shown_pseudocode_names=["padding"],
         )
         assert v.run() == 0
         assert len(v._serdes.context["sequences"][0]["data_units"]) == 2
@@ -757,7 +765,9 @@ class TestBitstreamViewer(object):
         )
 
     def test_report_parse_errors(self, capsys, missing_sequence_header_bitstream_fname):
-        v = BitstreamViewer(missing_sequence_header_bitstream_fname,)
+        v = BitstreamViewer(
+            missing_sequence_header_bitstream_fname,
+        )
         assert v.run() == 4
 
         out, err = capsys.readouterr()

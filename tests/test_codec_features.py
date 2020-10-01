@@ -142,7 +142,14 @@ class TestParseQuantisationMatrix(object):
         ],
     )
     def test_valid(self, string, dwt_depth, dwt_depth_ho, expected):
-        assert parse_quantization_matrix(dwt_depth, dwt_depth_ho, string,) == expected
+        assert (
+            parse_quantization_matrix(
+                dwt_depth,
+                dwt_depth_ho,
+                string,
+            )
+            == expected
+        )
 
     @pytest.mark.parametrize(
         "string,dwt_depth,dwt_depth_ho",
@@ -162,7 +169,9 @@ class TestParseQuantisationMatrix(object):
     def test_invalid(self, string, dwt_depth, dwt_depth_ho):
         with pytest.raises(ValueError):
             parse_quantization_matrix(
-                dwt_depth, dwt_depth_ho, string,
+                dwt_depth,
+                dwt_depth_ho,
+                string,
             )
 
 
@@ -488,7 +497,10 @@ class TestReadCodecFeaturesCSV(object):
     def test_integer_limits(self, field, bad_value, expected_minimum):
         with pytest.raises(
             InvalidCodecFeaturesError,
-            match=r".*{}.*< {}.*".format(field, expected_minimum,),
+            match=r".*{}.*< {}.*".format(
+                field,
+                expected_minimum,
+            ),
         ):
             read_codec_features_csv(
                 [
@@ -593,7 +605,12 @@ class TestCodecFeaturesToTrivialLevelConstraints(object):
         ],
     )
     def test_slices_have_same_dimensions(
-        self, codec_features, dwt_depth, slices_x, slices_y, exp_same_dimensions,
+        self,
+        codec_features,
+        dwt_depth,
+        slices_x,
+        slices_y,
+        exp_same_dimensions,
     ):
         codec_features["dwt_depth"] = dwt_depth
         codec_features["slices_x"] = slices_x
@@ -612,7 +629,10 @@ class TestCodecFeaturesToTrivialLevelConstraints(object):
         [(None, False), ({0: {"L": 0}, 1: {"H": 1}}, True)],
     )
     def test_custom_quant_matrix(
-        self, codec_features, quantization_matrix, exp_custom_quant_matrix,
+        self,
+        codec_features,
+        quantization_matrix,
+        exp_custom_quant_matrix,
     ):
         codec_features["dwt_depth"] = 0
         codec_features["dwt_depth_ho"] = 1
@@ -627,5 +647,6 @@ class TestCodecFeaturesToTrivialLevelConstraints(object):
         codec_features["picture_bytes"] = None
 
         assert isinstance(
-            codec_features_to_trivial_level_constraints(codec_features), dict,
+            codec_features_to_trivial_level_constraints(codec_features),
+            dict,
         )

@@ -77,7 +77,10 @@ with alternative_level_1():
                 # test with an alternative definition matching
                 # MINIMAL_CODEC_FEATURES, with some arbitrary encoding
                 # requirements)
-                CodecFeatures(MINIMAL_CODEC_FEATURES, level=Levels(1),),
+                CodecFeatures(
+                    MINIMAL_CODEC_FEATURES,
+                    level=Levels(1),
+                ),
                 # High and asymmetric bit depths.
                 #
                 # Here 'high' means 16 bits and 14 bits (for luma and color
@@ -134,7 +137,9 @@ def test_all_decoder_test_cases(codec_features, test_case):
         assert video_parameters == codec_features["video_parameters"]
         assert picture_coding_mode == codec_features["picture_coding_mode"]
 
-    state = State(_output_picture_callback=output_picture_callback,)
+    state = State(
+        _output_picture_callback=output_picture_callback,
+    )
 
     with alternative_level_1():
         init_io(state, f)

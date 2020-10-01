@@ -34,7 +34,8 @@ def ignore_docstrings(body):
     leading strings (i.e. all docstrings).
     """
     return dropwhile(
-        lambda e: isinstance(e, ast.Expr) and isinstance(e.value, ast.Str), body,
+        lambda e: isinstance(e, ast.Expr) and isinstance(e.value, ast.Str),
+        body,
     )
 
 

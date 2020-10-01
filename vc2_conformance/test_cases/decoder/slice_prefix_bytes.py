@@ -77,7 +77,8 @@ def slice_prefix_bytes(codec_features):
 
     mid_gray_pictures = list(
         mid_gray(
-            codec_features["video_parameters"], codec_features["picture_coding_mode"],
+            codec_features["video_parameters"],
+            codec_features["picture_coding_mode"],
         )
     )
 

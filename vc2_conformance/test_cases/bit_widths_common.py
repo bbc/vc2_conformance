@@ -91,7 +91,8 @@ def get_test_pictures(codec_features, bundle_filename=get_bundle_filename()):
         ]
 
     dimensions_and_depths = compute_dimensions_and_depths(
-        codec_features["video_parameters"], codec_features["picture_coding_mode"],
+        codec_features["video_parameters"],
+        codec_features["picture_coding_mode"],
     )
 
     # Load the test pattern specifications
@@ -144,7 +145,8 @@ def get_test_pictures(codec_features, bundle_filename=get_bundle_filename()):
             picture_bit_width,
         )
         max_quantisation_index = quantisation_index_bound(
-            concrete_analysis_bounds, quantisation_matrix,
+            concrete_analysis_bounds,
+            quantisation_matrix,
         )
 
         # Find the worst-case quantisation index for the synthesis test patterns

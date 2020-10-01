@@ -29,5 +29,6 @@ def real_pictures(codec_features):
         further reducing the picture quality.
     """
     return picture_generator_to_test_case(
-        picture_generators.real_pictures, codec_features,
+        picture_generators.real_pictures,
+        codec_features,
     )

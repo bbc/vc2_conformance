@@ -132,11 +132,17 @@ def test_read_as_xyz_to_fit(filename, width, height, pixel_aspect_ratio):
     sw = np.max(xs) - np.min(xs)
     sh = np.max(ys) - np.min(ys)
     shape_aspect_ratio = float(sw) / float(sh)
-    assert np.isclose(shape_aspect_ratio, 1.0 / pixel_aspect_ratio, atol=0.05,)
+    assert np.isclose(
+        shape_aspect_ratio,
+        1.0 / pixel_aspect_ratio,
+        atol=0.05,
+    )
 
 
 def test_frames_to_samples():
-    vp = VideoParameters(source_sampling=SourceSamplingModes.progressive,)
+    vp = VideoParameters(
+        source_sampling=SourceSamplingModes.progressive,
+    )
     assert frames_to_samples(vp, 1) == (1, 1)
     assert frames_to_samples(vp, 10) == (10, 1)
 
@@ -261,7 +267,8 @@ def test_progressive_to_pictures():
 
     # Progressive, pictures are frames
     vp = VideoParameters(
-        source_sampling=SourceSamplingModes.progressive, top_field_first=True,
+        source_sampling=SourceSamplingModes.progressive,
+        top_field_first=True,
     )
     pcm = PictureCodingModes.pictures_are_frames
     expected = pictures
@@ -272,7 +279,8 @@ def test_progressive_to_pictures():
 
     # Progressive, pictures are fields
     vp = VideoParameters(
-        source_sampling=SourceSamplingModes.progressive, top_field_first=True,
+        source_sampling=SourceSamplingModes.progressive,
+        top_field_first=True,
     )
     pcm = PictureCodingModes.pictures_are_fields
     expected = [
@@ -292,7 +300,8 @@ def test_progressive_to_pictures():
 
     # Interlaced, pictures are frames
     vp = VideoParameters(
-        source_sampling=SourceSamplingModes.interlaced, top_field_first=True,
+        source_sampling=SourceSamplingModes.interlaced,
+        top_field_first=True,
     )
     pcm = PictureCodingModes.pictures_are_frames
     expected = [
@@ -310,7 +319,8 @@ def test_progressive_to_pictures():
 
     # Interlaced, pictures are fields
     vp = VideoParameters(
-        source_sampling=SourceSamplingModes.interlaced, top_field_first=True,
+        source_sampling=SourceSamplingModes.interlaced,
+        top_field_first=True,
     )
     pcm = PictureCodingModes.pictures_are_fields
     expected = [
@@ -361,7 +371,8 @@ def test_xyz_to_native():
 
 def test_pipe():
     vp = VideoParameters(
-        source_sampling=SourceSamplingModes.interlaced, top_field_first=True,
+        source_sampling=SourceSamplingModes.interlaced,
+        top_field_first=True,
     )
     pcm = PictureCodingModes.pictures_are_frames
 
@@ -751,7 +762,9 @@ class TestGenericPictureGeneratorBehaviour(object):
         ]
     )
     def picture_generator(
-        self, request, replace_real_pictures_with_test_pictures,  # noqa: F811
+        self,
+        request,
+        replace_real_pictures_with_test_pictures,  # noqa: F811
     ):
         return request.param
 

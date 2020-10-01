@@ -79,22 +79,44 @@ class TestFormatSummary(object):
 
     def test_just_line_number(self, T):
         assert (
-            format_summary(T("foobar", ref_row=123,))
+            format_summary(
+                T(
+                    "foobar",
+                    ref_row=123,
+                )
+            )
             == "foobar (in reference code, line 123)"
         )
         assert (
-            format_summary(T("foobar", imp_row=123,))
+            format_summary(
+                T(
+                    "foobar",
+                    imp_row=123,
+                )
+            )
             == "foobar (in implementation code, line 123)"
         )
 
     def test_just_line_and_column_number(self, T):
         assert (
-            format_summary(T("foobar", ref_row=123, ref_col=10,))
+            format_summary(
+                T(
+                    "foobar",
+                    ref_row=123,
+                    ref_col=10,
+                )
+            )
             == "foobar (in reference code, line 123 col 10)"
         )
 
         assert (
-            format_summary(T("foobar", imp_row=123, imp_col=10,))
+            format_summary(
+                T(
+                    "foobar",
+                    imp_row=123,
+                    imp_col=10,
+                )
+            )
             == "foobar (in implementation code, line 123 col 10)"
         )
 
@@ -103,20 +125,38 @@ class TestFormatSummary(object):
             pass
 
         assert format_summary(
-            T("foobar", ref_row=1000, ref_col=10, ref_func=f,)
+            T(
+                "foobar",
+                ref_row=1000,
+                ref_col=10,
+                ref_func=f,
+            )
         ) == "foobar (in reference code, line {} col 10 of {})".format(
-            1000 + inspect.getsourcelines(f)[1], _test_script_filename,
+            1000 + inspect.getsourcelines(f)[1],
+            _test_script_filename,
         )
 
         assert format_summary(
-            T("foobar", imp_row=1000, imp_col=10, imp_func=f,)
+            T(
+                "foobar",
+                imp_row=1000,
+                imp_col=10,
+                imp_func=f,
+            )
         ) == "foobar (in implementation code, line {} col 10 of {})".format(
-            1000 + inspect.getsourcelines(f)[1], _test_script_filename,
+            1000 + inspect.getsourcelines(f)[1],
+            _test_script_filename,
         )
 
     def test_both_functions_at_once(self, T):
         assert (
-            format_summary(T("foobar", ref_row=123, imp_row=321,))
+            format_summary(
+                T(
+                    "foobar",
+                    ref_row=123,
+                    imp_row=321,
+                )
+            )
             == "foobar (in reference code, line 123 and implementation code, line 321)"
         )
 
@@ -137,61 +177,69 @@ class TestFormatDetailedSummary(object):
         )
 
     def test_source_no_col(self, T):
-        assert format_detailed_summary(
-            T("Different operators", ref_row=3, imp_row=5, ref_func=f1, imp_func=f3,)
-        ) == (
-            "Different operators\n"
-            "\n"
-            "Reference source:\n"
-            "    def f(a, b):\n"
-            '        """Example function"""\n'
-            "        return a + b\n"
-            "--------^\n"
-            "{file}:26\n"
-            "\n"
-            "Implementation source:\n"
-            "    def f(a, b):\n"
-            '        """\n'
-            "        Different from f above!\n"
-            '        """\n'
-            "        return a - b\n"
-            "--------^\n"
-            "{file}:45"
-        ).format(
-            file=_test_script_filename
+        assert (
+            format_detailed_summary(
+                T(
+                    "Different operators",
+                    ref_row=3,
+                    imp_row=5,
+                    ref_func=f1,
+                    imp_func=f3,
+                )
+            )
+            == (
+                "Different operators\n"
+                "\n"
+                "Reference source:\n"
+                "    def f(a, b):\n"
+                '        """Example function"""\n'
+                "        return a + b\n"
+                "--------^\n"
+                "{file}:26\n"
+                "\n"
+                "Implementation source:\n"
+                "    def f(a, b):\n"
+                '        """\n'
+                "        Different from f above!\n"
+                '        """\n'
+                "        return a - b\n"
+                "--------^\n"
+                "{file}:45"
+            ).format(file=_test_script_filename)
         )
 
     def test_source_with_col(self, T):
-        assert format_detailed_summary(
-            T(
-                "Different operators",
-                ref_row=3,
-                ref_col=11,
-                imp_row=5,
-                imp_col=11,
-                ref_func=f1,
-                imp_func=f3,
+        assert (
+            format_detailed_summary(
+                T(
+                    "Different operators",
+                    ref_row=3,
+                    ref_col=11,
+                    imp_row=5,
+                    imp_col=11,
+                    ref_func=f1,
+                    imp_func=f3,
+                )
             )
-        ) == (
-            "Different operators\n"
-            "\n"
-            "Reference source:\n"
-            "    def f(a, b):\n"
-            '        """Example function"""\n'
-            "        return a + b\n"
-            "---------------^\n"
-            "{file}:26 (col 11)\n"
-            "\n"
-            "Implementation source:\n"
-            "    def f(a, b):\n"
-            '        """\n'
-            "        Different from f above!\n"
-            '        """\n'
-            "        return a - b\n"
-            "---------------^\n"
-            "{file}:45 (col 11)"
-        ).format(
-            file=_test_script_filename
+            == (
+                "Different operators\n"
+                "\n"
+                "Reference source:\n"
+                "    def f(a, b):\n"
+                '        """Example function"""\n'
+                "        return a + b\n"
+                "---------------^\n"
+                "{file}:26 (col 11)\n"
+                "\n"
+                "Implementation source:\n"
+                "    def f(a, b):\n"
+                '        """\n'
+                "        Different from f above!\n"
+                '        """\n'
+                "        return a - b\n"
+                "---------------^\n"
+                "{file}:45 (col 11)"
+            ).format(file=_test_script_filename)
         )
 
 

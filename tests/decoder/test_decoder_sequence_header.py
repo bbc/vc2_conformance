@@ -205,7 +205,10 @@ class TestParseParameters(object):
         state = bytes_to_state(
             serialise_to_bytes(
                 bitstream.ParseParameters(
-                    level=0, profile=0, major_version=3, minor_version=0,
+                    level=0,
+                    profile=0,
+                    major_version=3,
+                    minor_version=0,
                 )
             )
         )
@@ -255,7 +258,8 @@ def test_color_diff_sampling_format_index_must_be_valid():
     state = bytes_to_state(
         serialise_to_bytes(
             bitstream.ColorDiffSamplingFormat(
-                custom_color_diff_format_flag=True, color_diff_format_index=9999,
+                custom_color_diff_format_flag=True,
+                color_diff_format_index=9999,
             ),
             {},
             {},
@@ -281,7 +285,10 @@ def test_scan_format_source_sampling_mode_must_be_valid():
 
     state = bytes_to_state(
         serialise_to_bytes(
-            bitstream.ScanFormat(custom_scan_format_flag=True, source_sampling=9999,),
+            bitstream.ScanFormat(
+                custom_scan_format_flag=True,
+                source_sampling=9999,
+            ),
             {},
             {},
         )
@@ -296,7 +303,8 @@ class TestFrameRate(object):
         state = bytes_to_state(
             serialise_to_bytes(
                 bitstream.FrameRate(
-                    custom_frame_rate_flag=True, index=tables.PresetFrameRates.fps_25,
+                    custom_frame_rate_flag=True,
+                    index=tables.PresetFrameRates.fps_25,
                 ),
                 {},
                 {},
@@ -306,7 +314,12 @@ class TestFrameRate(object):
 
         state = bytes_to_state(
             serialise_to_bytes(
-                bitstream.FrameRate(custom_frame_rate_flag=True, index=9999,), {}, {}
+                bitstream.FrameRate(
+                    custom_frame_rate_flag=True,
+                    index=9999,
+                ),
+                {},
+                {},
             )
         )
         with pytest.raises(decoder.BadPresetFrameRateIndex) as exc_info:
@@ -385,7 +398,8 @@ class TestPixelAspectRatio(object):
         state = bytes_to_state(
             serialise_to_bytes(
                 bitstream.PixelAspectRatio(
-                    custom_pixel_aspect_ratio_flag=True, index=9999,
+                    custom_pixel_aspect_ratio_flag=True,
+                    index=9999,
                 ),
                 {},
                 {},
@@ -476,7 +490,9 @@ def test_custom_clean_area(
         }
         state = bytes_to_state(
             serialise_to_bytes(
-                bitstream.CleanArea(custom_clean_area_flag=False,),
+                bitstream.CleanArea(
+                    custom_clean_area_flag=False,
+                ),
                 {},
                 video_parameters,
             )
@@ -510,7 +526,12 @@ def test_signal_range_index_must_be_valid():
 
     state = bytes_to_state(
         serialise_to_bytes(
-            bitstream.SignalRange(custom_signal_range_flag=True, index=9999,), {}, {},
+            bitstream.SignalRange(
+                custom_signal_range_flag=True,
+                index=9999,
+            ),
+            {},
+            {},
         )
     )
     with pytest.raises(decoder.BadPresetSignalRange) as exc_info:
@@ -553,7 +574,8 @@ def test_color_spec_index_must_be_valid():
     state = bytes_to_state(
         serialise_to_bytes(
             bitstream.ColorSpec(
-                custom_color_spec_flag=True, index=tables.PresetColorSpecs.uhdtv,
+                custom_color_spec_flag=True,
+                index=tables.PresetColorSpecs.uhdtv,
             ),
             {},
             {},
@@ -563,7 +585,12 @@ def test_color_spec_index_must_be_valid():
 
     state = bytes_to_state(
         serialise_to_bytes(
-            bitstream.ColorSpec(custom_color_spec_flag=True, index=9999,), {}, {},
+            bitstream.ColorSpec(
+                custom_color_spec_flag=True,
+                index=9999,
+            ),
+            {},
+            {},
         )
     )
     with pytest.raises(decoder.BadPresetColorSpec) as exc_info:
@@ -586,7 +613,10 @@ def test_color_primaries_index_must_be_valid():
 
     state = bytes_to_state(
         serialise_to_bytes(
-            bitstream.ColorPrimaries(custom_color_primaries_flag=True, index=9999,),
+            bitstream.ColorPrimaries(
+                custom_color_primaries_flag=True,
+                index=9999,
+            ),
             {},
             {},
         )
@@ -600,7 +630,8 @@ def test_color_matrix_index_must_be_valid():
     state = bytes_to_state(
         serialise_to_bytes(
             bitstream.ColorMatrix(
-                custom_color_matrix_flag=True, index=tables.PresetColorMatrices.hdtv,
+                custom_color_matrix_flag=True,
+                index=tables.PresetColorMatrices.hdtv,
             ),
             {},
             {},
@@ -610,7 +641,12 @@ def test_color_matrix_index_must_be_valid():
 
     state = bytes_to_state(
         serialise_to_bytes(
-            bitstream.ColorMatrix(custom_color_matrix_flag=True, index=9999,), {}, {},
+            bitstream.ColorMatrix(
+                custom_color_matrix_flag=True,
+                index=9999,
+            ),
+            {},
+            {},
         )
     )
     with pytest.raises(decoder.BadPresetColorMatrix) as exc_info:
@@ -633,7 +669,10 @@ def test_transfer_function_index_must_be_valid():
 
     state = bytes_to_state(
         serialise_to_bytes(
-            bitstream.TransferFunction(custom_transfer_function_flag=True, index=9999,),
+            bitstream.TransferFunction(
+                custom_transfer_function_flag=True,
+                index=9999,
+            ),
             {},
             {},
         )

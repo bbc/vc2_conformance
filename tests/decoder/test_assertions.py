@@ -56,7 +56,11 @@ def test_assert_in_enum():
     "regex,expected_parse_codes,expected_end",
     [
         # Only one possibility allowed
-        ("sequence_header", set([ParseCodes.sequence_header]), False,),
+        (
+            "sequence_header",
+            set([ParseCodes.sequence_header]),
+            False,
+        ),
         # Several possibilities allowed
         (
             "sequence_header | padding_data",
@@ -64,7 +68,11 @@ def test_assert_in_enum():
             False,
         ),
         # End-of-file allowed
-        ("$", set([]), True,),
+        (
+            "$",
+            set([]),
+            True,
+        ),
     ],
 )
 def test_parse_code_in_sequence(regex, expected_parse_codes, expected_end):
@@ -89,14 +97,20 @@ def test_parse_code_in_sequence(regex, expected_parse_codes, expected_end):
     "regex,expected_parse_codes",
     [
         # Only one possibility allowed
-        ("sequence_header", set([ParseCodes.sequence_header]),),
+        (
+            "sequence_header",
+            set([ParseCodes.sequence_header]),
+        ),
         # Several possibilities allowed
         (
             "sequence_header | padding_data",
             set([ParseCodes.sequence_header, ParseCodes.padding_data]),
         ),
         # All possibilities allowed
-        ("sequence_header | padding_data | .", None,),
+        (
+            "sequence_header | padding_data | .",
+            None,
+        ),
     ],
 )
 def test_parse_code_sequence_ended(regex, expected_parse_codes):

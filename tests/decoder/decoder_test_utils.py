@@ -54,7 +54,10 @@ def populate_parse_offsets(sequence, state=None):
             parse_info_offsets.append(next_byte - 4)
 
     with bitstream.MonitoredSerialiser(
-        capture_parse_info_offsets, w, sequence, bitstream.vc2_default_values,
+        capture_parse_info_offsets,
+        w,
+        sequence,
+        bitstream.vc2_default_values,
     ) as serdes:
         bitstream.parse_sequence(serdes, state)
 

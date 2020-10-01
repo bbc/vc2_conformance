@@ -97,7 +97,10 @@ def default_quantization_matrix(codec_features):
 
     # Override the quantization_matrix setting in the codec features to force
     # the default quantization matrix to be used
-    codec_features = CodecFeatures(codec_features, quantization_matrix=None,)
+    codec_features = CodecFeatures(
+        codec_features,
+        quantization_matrix=None,
+    )
 
     return generate_test_stream(codec_features)
 
@@ -200,7 +203,10 @@ def custom_quantization_matrix(codec_features):
     )
     if wavelet_specification in QUANTISATION_MATRICES:
         candidate_matrices.append(
-            ("default", QUANTISATION_MATRICES[wavelet_specification],)
+            (
+                "default",
+                QUANTISATION_MATRICES[wavelet_specification],
+            )
         )
 
     # Generate test cases for each custom quantisation matrix.
@@ -220,7 +226,10 @@ def custom_quantization_matrix(codec_features):
             continue
 
         stream = generate_test_stream(
-            CodecFeatures(codec_features, quantization_matrix=quantization_matrix,)
+            CodecFeatures(
+                codec_features,
+                quantization_matrix=quantization_matrix,
+            )
         )
         if stream is not None:
             yield TestCase(stream, description)

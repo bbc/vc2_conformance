@@ -274,7 +274,11 @@ def format_value_line(offset, raw_bits, label, label_filler="", truncated=False)
     out = []
     out.append(
         "{:0{}d}: {:<{}s}    {}".format(
-            offset, OFFSET_DIGITS, raw_bits_lines[0], RAW_BITS_PER_LINE, label,
+            offset,
+            OFFSET_DIGITS,
+            raw_bits_lines[0],
+            RAW_BITS_PER_LINE,
+            label,
         )
     )
 
@@ -293,7 +297,10 @@ def format_header_line(label):
     Format a line of output which displays only a header (indented to match the
     labels printed by :py:func:`format_value_line`.
     """
-    return "{}{}".format(" " * (OFFSET_DIGITS + 2 + RAW_BITS_PER_LINE + 4), label,)
+    return "{}{}".format(
+        " " * (OFFSET_DIGITS + 2 + RAW_BITS_PER_LINE + 4),
+        label,
+    )
 
 
 def format_omission_line(offset, num_bits):
@@ -302,7 +309,10 @@ def format_omission_line(offset, num_bits):
     from the bitstream.
     """
     return "{:0{}d}: {:<{}s}    ...".format(
-        offset, OFFSET_DIGITS, "<{} bits omitted>".format(num_bits), RAW_BITS_PER_LINE,
+        offset,
+        OFFSET_DIGITS,
+        "<{} bits omitted>".format(num_bits),
+        RAW_BITS_PER_LINE,
     )
 
 
@@ -461,11 +471,17 @@ class BitstreamViewer(object):
         prog = os.path.basename(sys.argv[0])
         if self._verbose >= 1:
             if self._reader is not None:
-                sys.stderr.write("{}: offset: {}\n".format(prog, offset,))
+                sys.stderr.write(
+                    "{}: offset: {}\n".format(
+                        prog,
+                        offset,
+                    )
+                )
             if self._serdes is not None:
                 sys.stderr.write(
                     "{}: target: {}\n".format(
-                        prog, format_path_summary(self._serdes.path()),
+                        prog,
+                        format_path_summary(self._serdes.path()),
                     )
                 )
 
@@ -730,7 +746,8 @@ class BitstreamViewer(object):
         # end parsing before the end of the file.
         try:
             self._serdes = bitstream.MonitoredDeserialiser(
-                io=self._reader, monitor=self,
+                io=self._reader,
+                monitor=self,
             )
             bitstream.parse_stream(self._serdes, self._state)
         except BitstreamViewer._TerminateSuccess:
@@ -759,7 +776,8 @@ class BitstreamViewer(object):
                 error_message = (
                     "internal error in bitstream viewer: {}: {} "
                     "(probably a bug in this program)".format(
-                        exc_type.__name__, str(exc_value),
+                        exc_type.__name__,
+                        str(exc_value),
                     )
                 )
             else:
@@ -768,11 +786,11 @@ class BitstreamViewer(object):
                 return_code = 4
                 error_message = (
                     "{} failed to parse bitstream ({}: {}) "
-                    "(missing sequence_header, fragment or earlier out of range value?)".format(
-                        most_recent_pseudocode_function(exc_tb),
-                        exc_type.__name__,
-                        str(exc_value),
-                    )
+                    "(missing sequence_header, fragment or earlier out of range value?)"
+                ).format(
+                    most_recent_pseudocode_function(exc_tb),
+                    exc_type.__name__,
+                    str(exc_value),
                 )
         finally:
             self._hide_status_line()
@@ -825,7 +843,9 @@ def parse_args(*args, **kwargs):
     )
 
     parser.add_argument(
-        "--version", action="version", version="%(prog)s {}".format(__version__),
+        "--version",
+        action="version",
+        version="%(prog)s {}".format(__version__),
     )
 
     parser.add_argument(

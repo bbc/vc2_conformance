@@ -30,11 +30,15 @@ from vc2_conformance.test_cases import (
 
 
 CODEC_FEATURES_CSV = os.path.join(
-    os.path.dirname(__file__), "..", "sample_codec_features.csv",
+    os.path.dirname(__file__),
+    "..",
+    "sample_codec_features.csv",
 )
 
 INVALID_CODEC_FEATURES_CSV = os.path.join(
-    os.path.dirname(__file__), "..", "sample_codec_features_invalid.csv",
+    os.path.dirname(__file__),
+    "..",
+    "sample_codec_features_invalid.csv",
 )
 
 
@@ -100,7 +104,8 @@ class TestLoadCodecFeatures(object):
     )
     def test_filtering(self, regex, exp_names):
         codec_feature_sets = load_codec_features(
-            open(CODEC_FEATURES_CSV), re.compile(regex),
+            open(CODEC_FEATURES_CSV),
+            re.compile(regex),
         )
 
         assert set(codec_feature_sets) == exp_names
@@ -134,7 +139,12 @@ class TestLoadCodecFeatures(object):
     ],
 )
 def test_check_output_directories_empty(
-    capsys, tmpdir, exp_fail, files, check_encoder, check_decoder,
+    capsys,
+    tmpdir,
+    exp_fail,
+    files,
+    check_encoder,
+    check_decoder,
 ):
     # Create the specified files in the target directory
     for filename in files:
@@ -162,7 +172,8 @@ def test_check_output_directories_empty(
 
 
 @pytest.mark.parametrize(
-    "name,exp_valid", [("minimal", True), ("minimal-invalid", False)],
+    "name,exp_valid",
+    [("minimal", True), ("minimal-invalid", False)],
 )
 def test_check_codec_features_valid(capsys, name, exp_valid):
     codec_feature_sets = read_codec_features_csv(open(CODEC_FEATURES_CSV))
@@ -208,12 +219,19 @@ def expected_files():
                 codec_features
             ):
                 encoder_test_files.add(
-                    os.path.join(name, "encoder", test_case.name, "picture_0.raw",)
+                    os.path.join(
+                        name,
+                        "encoder",
+                        test_case.name,
+                        "picture_0.raw",
+                    )
                 )
                 if test_case.metadata is not None:
                     encoder_test_files.add(
                         os.path.join(
-                            name, "encoder", "{}_metadata.json".format(test_case.name),
+                            name,
+                            "encoder",
+                            "{}_metadata.json".format(test_case.name),
                         )
                     )
 
@@ -221,7 +239,11 @@ def expected_files():
                 codec_features
             ):
                 decoder_test_files.add(
-                    os.path.join(name, "decoder", "{}.vc2".format(test_case.name),)
+                    os.path.join(
+                        name,
+                        "decoder",
+                        "{}.vc2".format(test_case.name),
+                    )
                 )
                 decoder_test_files.add(
                     os.path.join(
@@ -234,7 +256,9 @@ def expected_files():
                 if test_case.metadata is not None:
                     decoder_test_files.add(
                         os.path.join(
-                            name, "decoder", "{}_metadata.json".format(test_case.name),
+                            name,
+                            "decoder",
+                            "{}_metadata.json".format(test_case.name),
                         )
                     )
 
@@ -243,7 +267,9 @@ def expected_files():
 
 @pytest.mark.parametrize("extra_args,exp_fail", [([], True), (["--force"], False)])
 def test_force(
-    tmpdir, extra_args, exp_fail,
+    tmpdir,
+    extra_args,
+    exp_fail,
 ):
     with alternative_real_pictures():
         fn = partial(
@@ -272,7 +298,11 @@ def test_force(
     ],
 )
 def test_completeness(
-    tmpdir, extra_args, exp_encoder, exp_decoder, expected_files,
+    tmpdir,
+    extra_args,
+    exp_encoder,
+    exp_decoder,
+    expected_files,
 ):
     with alternative_real_pictures():
         assert (

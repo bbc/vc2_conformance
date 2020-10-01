@@ -267,7 +267,8 @@ def frame_size(state, video_parameters):
             or video_parameters["frame_height"] == 0
         ):
             raise ZeroPixelFrameSize(
-                video_parameters["frame_width"], video_parameters["frame_height"],
+                video_parameters["frame_width"],
+                video_parameters["frame_height"],
             )
         ## End not in spec
 
@@ -329,7 +330,9 @@ def scan_format(state, video_parameters):
         # (C.3) Check level allows this value
         ## Begin not in spec
         assert_level_constraint(
-            state, "source_sampling", video_parameters["source_sampling"],
+            state,
+            "source_sampling",
+            video_parameters["source_sampling"],
         )
         ## End not in spec
 
@@ -354,7 +357,9 @@ def frame_rate(state, video_parameters):
             # (C.3) Check level allows the specified numerator
             ## Begin not in spec
             assert_level_constraint(
-                state, "frame_rate_numer", video_parameters["frame_rate_numer"],
+                state,
+                "frame_rate_numer",
+                video_parameters["frame_rate_numer"],
             )
             ## End not in spec
 
@@ -362,7 +367,9 @@ def frame_rate(state, video_parameters):
             # (C.3) Check level allows the specified denominator
             ## Begin not in spec
             assert_level_constraint(
-                state, "frame_rate_denom", video_parameters["frame_rate_denom"],
+                state,
+                "frame_rate_denom",
+                video_parameters["frame_rate_denom"],
             )
             ## End not in spec
 

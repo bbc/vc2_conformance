@@ -22,14 +22,18 @@ def test_known_parse_code_to_string():
 
 def test_known_profile_to_string():
     assert (
-        exceptions.known_profile_to_string(tables.Profiles.high_quality,)
+        exceptions.known_profile_to_string(
+            tables.Profiles.high_quality,
+        )
         == "high quality (3)"
     )
 
 
 def test_known_wavelet_to_string():
     assert (
-        exceptions.known_wavelet_to_string(tables.WaveletFilters.haar_with_shift,)
+        exceptions.known_wavelet_to_string(
+            tables.WaveletFilters.haar_with_shift,
+        )
         == "Haar With Shift (4)"
     )
 
@@ -40,7 +44,9 @@ class TestExplainParseCodeSequenceStructureRestrictions(object):
     )
     def test_expected_end(self, expected_parse_codes):
         assert exceptions.explain_parse_code_sequence_structure_restrictions(
-            tables.ParseCodes.end_of_sequence, expected_parse_codes, True,
+            tables.ParseCodes.end_of_sequence,
+            expected_parse_codes,
+            True,
         ) == (
             "The parse code end of sequence (0x10) was encountered "
             "but no further parse code expected."
@@ -73,9 +79,14 @@ class TestExplainParseCodeSequenceStructureRestrictions(object):
         )
 
     def test_any_allowed_and_end_of_sequence(self):
-        assert exceptions.explain_parse_code_sequence_structure_restrictions(
-            None, None, False,
-        ) == ("No further parse code was encountered " "but any parse code expected.")
+        assert (
+            exceptions.explain_parse_code_sequence_structure_restrictions(
+                None,
+                None,
+                False,
+            )
+            == ("No further parse code was encountered " "but any parse code expected.")
+        )
 
 
 def test_conformance_error_str():
@@ -126,7 +137,11 @@ def test_bad_parse_info_prefix():
 
 
 def test_inconsistent_next_parse_offset():
-    e = exceptions.InconsistentNextParseOffset(100, 15, 20,)
+    e = exceptions.InconsistentNextParseOffset(
+        100,
+        15,
+        20,
+    )
 
     assert wrap_paragraphs(e.explain()) == wrap_paragraphs(
         """
@@ -206,7 +221,11 @@ def test_non_zero_next_parse_offset_at_end_of_sequence():
 
 
 def test_inconsistent_previous_parse_offset():
-    e = exceptions.InconsistentPreviousParseOffset(100, 15, 20,)
+    e = exceptions.InconsistentPreviousParseOffset(
+        100,
+        15,
+        20,
+    )
 
     assert wrap_paragraphs(e.explain()) == wrap_paragraphs(
         """
@@ -260,7 +279,12 @@ def test_non_zero_previous_parse_offfset_at_start_of_sequence():
 
 
 def test_sequence_header_changed_mid_sequence():
-    e = exceptions.SequenceHeaderChangedMidSequence(100, b"\x00\xFF", 200, b"\x00\xBF",)
+    e = exceptions.SequenceHeaderChangedMidSequence(
+        100,
+        b"\x00\xFF",
+        200,
+        b"\x00\xBF",
+    )
 
     assert wrap_paragraphs(e.explain()) == wrap_paragraphs(
         """
@@ -380,7 +404,8 @@ def test_level_invalid_sequence():
 
 def test_parse_code_not_allowed_in_profile():
     e = exceptions.ParseCodeNotAllowedInProfile(
-        tables.ParseCodes.high_quality_picture, tables.Profiles.low_delay,
+        tables.ParseCodes.high_quality_picture,
+        tables.Profiles.low_delay,
     )
 
     assert wrap_paragraphs(e.explain()) == wrap_paragraphs(
@@ -619,7 +644,8 @@ class TestCleanAreaOutOfRange(object):
 class TestBadCustomSignalExcursion(object):
     def test_luma(self):
         e = exceptions.BadCustomSignalExcursion(
-            component_type_name="luma", excursion=0,
+            component_type_name="luma",
+            excursion=0,
         )
 
         assert wrap_paragraphs(e.explain()) == wrap_paragraphs(
@@ -631,7 +657,8 @@ class TestBadCustomSignalExcursion(object):
 
     def test_color_diff(self):
         e = exceptions.BadCustomSignalExcursion(
-            component_type_name="color_diff", excursion=0,
+            component_type_name="color_diff",
+            excursion=0,
         )
 
         assert wrap_paragraphs(e.explain()) == wrap_paragraphs(
@@ -991,7 +1018,12 @@ def test_quantisation_matrix_value_not_allowed_in_level():
 
 
 def test_invalid_slice_y_length():
-    e = exceptions.InvalidSliceYLength(slice_y_length=100, slice_bytes=10, sx=1, sy=2,)
+    e = exceptions.InvalidSliceYLength(
+        slice_y_length=100,
+        slice_bytes=10,
+        sx=1,
+        sy=2,
+    )
 
     assert wrap_paragraphs(e.explain()) == wrap_paragraphs(
         """

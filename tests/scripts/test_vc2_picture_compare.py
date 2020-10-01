@@ -278,9 +278,13 @@ def test_video_parameter_diff():
 
 
 def test_picture_coding_mode_diff():
-    assert picture_coding_mode_diff(
-        PictureCodingModes.pictures_are_fields, PictureCodingModes.pictures_are_frames,
-    ) == ("- pictures_are_fields (1)\n" "+ pictures_are_frames (0)")
+    assert (
+        picture_coding_mode_diff(
+            PictureCodingModes.pictures_are_fields,
+            PictureCodingModes.pictures_are_frames,
+        )
+        == ("- pictures_are_fields (1)\n" "+ pictures_are_frames (0)")
+    )
 
 
 def test_picture_number_diff():

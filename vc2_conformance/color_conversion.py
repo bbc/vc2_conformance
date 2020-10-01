@@ -158,7 +158,10 @@ __all__ = [
 ################################################################################
 
 
-PrimaryChromacities = namedtuple("PrimaryChromacities", "xw,yw,xr,yr,xg,yg,xb,yb",)
+PrimaryChromacities = namedtuple(
+    "PrimaryChromacities",
+    "xw,yw,xr,yr,xg,yg,xb,yb",
+)
 """
 A specification of a set of color primaries in terms of whitepoint (xw, yx)
 and red (xr, yr), green (xg, yg) and blue (xb, yb) chromacities. colors are
@@ -253,11 +256,17 @@ def primary_chromacities_to_matrix(pc):
     # This equation now contains no unknowns other than Yr, Yg and Yb which we
     # can now solve for and together refer to as 'scale':
 
-    scale = np.matmul(np.linalg.inv(relative_m), xy_to_xyz(pc.xw, pc.yw),)
+    scale = np.matmul(
+        np.linalg.inv(relative_m),
+        xy_to_xyz(pc.xw, pc.yw),
+    )
 
     # We can now apply this to relative_m to get the matrix m:
 
-    m = np.matmul(relative_m, np.diag(scale),)
+    m = np.matmul(
+        relative_m,
+        np.diag(scale),
+    )
 
     return m
 
@@ -390,13 +399,21 @@ def extended_gamut_transfer_function(l):
         warnings.simplefilter("ignore")
         e = 1.099 * np.power(l, 0.45) - 0.099
 
-    e = np.where(l < 0.018, 4.5 * l, e,)
+    e = np.where(
+        l < 0.018,
+        4.5 * l,
+        e,
+    )
 
     # NB: In case of undershoot (-4 * l < 0), the effected value will not be
     # used
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        e = np.where(l < -0.0045, -(1.099 * np.power(-4 * l, 0.45) - 0.099) / 4, e,)
+        e = np.where(
+            l < -0.0045,
+            -(1.099 * np.power(-4 * l, 0.45) - 0.099) / 4,
+            e,
+        )
 
     return e
 
@@ -462,7 +479,11 @@ def hlg_transfer_function(l):
         e = a * np.log(12 * l - b) + c
 
     # Clamp 'l' at 0 as not defined in case of undershoots
-    e = np.where(l <= 1 / 12.0, np.sqrt(3 * np.maximum(l, 0)), e,)
+    e = np.where(
+        l <= 1 / 12.0,
+        np.sqrt(3 * np.maximum(l, 0)),
+        e,
+    )
 
     return e
 
@@ -752,7 +773,9 @@ def to_xyz(y, c1, c2, video_parameters):
     """
     # Convert each component into floating point, 0 - +1 or -0.5 - +0.5 form
     y_float = int_to_float(
-        y, video_parameters["luma_offset"], video_parameters["luma_excursion"],
+        y,
+        video_parameters["luma_offset"],
+        video_parameters["luma_excursion"],
     )
     c1_float = int_to_float(
         c1,
@@ -855,7 +878,9 @@ def from_xyz(xyz, video_parameters):
 
     # Convert to integer ranges
     y_int = float_to_int_clipped(
-        y, video_parameters["luma_offset"], video_parameters["luma_excursion"],
+        y,
+        video_parameters["luma_offset"],
+        video_parameters["luma_excursion"],
     )
     c1_int = float_to_int_clipped(
         c1_subsampled,
@@ -877,7 +902,10 @@ def matmul_colors(matrix, array):
     triple in the first array has been multiplied by the specified :math:`3
     \times 3` matrix.
     """
-    return np.matmul(matrix, array.reshape(-1, 3).T,).T.reshape(array.shape)
+    return np.matmul(
+        matrix,
+        array.reshape(-1, 3).T,
+    ).T.reshape(array.shape)
 
 
 def swap_primaries(xyz, video_parameters_before, video_parameters_after):

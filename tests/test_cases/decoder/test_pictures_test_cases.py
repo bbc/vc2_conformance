@@ -144,7 +144,11 @@ class TestFillHQSlicePadding(object):
     @pytest.mark.parametrize("component", ["Y", "C1", "C2"])
     @pytest.mark.parametrize("byte_align", [True, False])
     def test_zero_size_slice(
-        self, slice_size_scaler, transform_data, byte_align, component,
+        self,
+        slice_size_scaler,
+        transform_data,
+        byte_align,
+        component,
     ):
         hq_slice = HQSlice(
             qindex=0,
@@ -195,7 +199,12 @@ class TestFillHQSlicePadding(object):
             c2_transform=[0, 1, 2],
         )
         fill_hq_slice_padding(
-            State(slice_size_scaler=1), 0, 0, hq_slice, "Y", b"\x00",
+            State(slice_size_scaler=1),
+            0,
+            0,
+            hq_slice,
+            "Y",
+            b"\x00",
         )
 
         assert hq_slice["y_transform"] == [0, 0, 0, 0, 0, 0]
@@ -253,7 +262,12 @@ class TestFillHQSlicePadding(object):
             c2_transform=[0, 0, 0],
         )
         fill_hq_slice_padding(
-            State(slice_size_scaler=1), 0, 0, hq_slice, "Y", b"\x00\xFF\xAA",
+            State(slice_size_scaler=1),
+            0,
+            0,
+            hq_slice,
+            "Y",
+            b"\x00\xFF\xAA",
         )
 
         assert hq_slice["y_block_padding"] == bitarray(
@@ -282,7 +296,13 @@ class TestFillHQSlicePadding(object):
             c2_transform=[0, 0, 0],
         )
         fill_hq_slice_padding(
-            State(slice_size_scaler=1), 0, 0, hq_slice, "Y", b"\x00\xFF\xAA", True,
+            State(slice_size_scaler=1),
+            0,
+            0,
+            hq_slice,
+            "Y",
+            b"\x00\xFF\xAA",
+            True,
         )
 
         assert hq_slice["y_block_padding"] == bitarray(
@@ -313,7 +333,13 @@ class TestFillHQSlicePadding(object):
             c2_transform=[0, 0, 0, 0],
         )
         fill_hq_slice_padding(
-            State(slice_size_scaler=1), 0, 0, hq_slice, "Y", b"\x00\xFF\xAA", True,
+            State(slice_size_scaler=1),
+            0,
+            0,
+            hq_slice,
+            "Y",
+            b"\x00\xFF\xAA",
+            True,
         )
 
         assert hq_slice["y_block_padding"] == bitarray(
@@ -342,7 +368,13 @@ class TestFillHQSlicePadding(object):
             c2_transform=[0, 0, 0],
         )
         fill_hq_slice_padding(
-            State(slice_size_scaler=2), 0, 0, hq_slice, "Y", b"\x00\xFF\xAA", True,
+            State(slice_size_scaler=2),
+            0,
+            0,
+            hq_slice,
+            "Y",
+            b"\x00\xFF\xAA",
+            True,
         )
 
         assert hq_slice["y_block_padding"] == bitarray(
@@ -381,7 +413,14 @@ class TestFillHQSlicePadding(object):
             c2_transform=[0, 0, 0],
         )
         fill_hq_slice_padding(
-            State(slice_size_scaler=2), 0, 0, hq_slice, "Y", b"\x00\xFF\xAA", True, 7,
+            State(slice_size_scaler=2),
+            0,
+            0,
+            hq_slice,
+            "Y",
+            b"\x00\xFF\xAA",
+            True,
+            7,
         )
 
         assert hq_slice["slice_y_length"] == 7
@@ -420,7 +459,10 @@ class TestFillHQSlicePadding(object):
 class TestFillLDSlicePadding(object):
     def make_state(self):
         return State(
-            slice_bytes_numerator=6, slice_bytes_denominator=1, slices_x=1, slices_y=1,
+            slice_bytes_numerator=6,
+            slice_bytes_denominator=1,
+            slices_x=1,
+            slices_y=1,
         )
 
     @pytest.fixture
@@ -457,7 +499,12 @@ class TestFillLDSlicePadding(object):
             c_transform=[7, 8, 9, 10],
         )
         fill_ld_slice_padding(
-            state, 0, 0, ld_slice, "Y", b"\x00",
+            state,
+            0,
+            0,
+            ld_slice,
+            "Y",
+            b"\x00",
         )
 
         assert ld_slice["y_transform"] == [0, 0, 0, 0, 0, 0]
@@ -474,7 +521,12 @@ class TestFillLDSlicePadding(object):
             c_transform=[0, 0, 0, 0],
         )
         fill_ld_slice_padding(
-            state, 0, 0, ld_slice, component, b"\x00",
+            state,
+            0,
+            0,
+            ld_slice,
+            component,
+            b"\x00",
         )
 
         if component == "Y":
@@ -493,7 +545,12 @@ class TestFillLDSlicePadding(object):
             c_transform=[0, 0, 0, 0],
         )
         fill_ld_slice_padding(
-            state, 0, 0, ld_slice, component, b"\x00\xFF\xAA",
+            state,
+            0,
+            0,
+            ld_slice,
+            component,
+            b"\x00\xFF\xAA",
         )
 
         # 35 - 6 = 29 bits to fill
@@ -524,7 +581,13 @@ class TestFillLDSlicePadding(object):
             c_transform=[0, 0, 0, 0],
         )
         fill_ld_slice_padding(
-            state, 0, 0, ld_slice, component, b"\x00\xFF\xAA", True,
+            state,
+            0,
+            0,
+            ld_slice,
+            component,
+            b"\x00\xFF\xAA",
+            True,
         )
 
         # 7 + 6 = 13 bits of header so 3 bits required for byte alignment
@@ -553,7 +616,8 @@ class TestFillLDSlicePadding(object):
 @pytest.mark.parametrize("sign", [+1, -1])
 def test_generate_exp_golomb_numbers_with_ascending_lengths(sign):
     for length, number in islice(
-        generate_exp_golomb_with_ascending_lengths(sign), 128,
+        generate_exp_golomb_with_ascending_lengths(sign),
+        128,
     ):
         # Use a known-good implementation of a signed exp-golmb encoder and
         # check length is correct.
@@ -650,7 +714,10 @@ class TestGenerateDanglingTransformValues(object):
     def test_happy_cases(self, block_bits, num_values, magnitude):
         value_sets = {
             dangle_type: generate_dangling_transform_values(
-                block_bits, num_values, dangle_type, magnitude,
+                block_bits,
+                num_values,
+                dangle_type,
+                magnitude,
             )
             for dangle_type in DanglingTransformValueType
         }
@@ -771,7 +838,10 @@ class TestGenerateDanglingTransformValues(object):
         for dangle_type in DanglingTransformValueType:
             try:
                 out[dangle_type.name] = generate_dangling_transform_values(
-                    block_bits, num_values, dangle_type, magnitude,
+                    block_bits,
+                    num_values,
+                    dangle_type,
+                    magnitude,
                 )
             except UnsatisfiableBlockSizeError:
                 continue

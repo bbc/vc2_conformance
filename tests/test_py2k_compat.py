@@ -56,7 +56,13 @@ def test_unwrap():
 
     assert unwrap(f_wrapper_wrapper) is f
 
-    assert unwrap(f_wrapper_wrapper, stop=lambda f: f is f_wrapper,) is f_wrapper
+    assert (
+        unwrap(
+            f_wrapper_wrapper,
+            stop=lambda f: f is f_wrapper,
+        )
+        is f_wrapper
+    )
 
 
 def test_zip():

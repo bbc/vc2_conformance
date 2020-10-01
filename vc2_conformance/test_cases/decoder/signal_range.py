@@ -132,7 +132,9 @@ def signal_range(codec_features):
 
         # Encode
         sequence = make_sequence(
-            codec_features, pictures, minimum_qindex=minimum_qindices,
+            codec_features,
+            pictures,
+            minimum_qindex=minimum_qindices,
         )
 
         # Check the desired qindex could be used (should only ever fail for
@@ -155,5 +157,7 @@ def signal_range(codec_features):
             )
 
         yield TestCase(
-            Stream(sequences=[sequence]), component, metadata=metadata,
+            Stream(sequences=[sequence]),
+            component,
+            metadata=metadata,
         )

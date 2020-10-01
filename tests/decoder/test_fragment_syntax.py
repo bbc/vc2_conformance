@@ -21,11 +21,16 @@ class TestFragmentHeader(object):
         ],
     )
     def test_first_fragment_must_have_slice_count_zero(
-        self, fragment_slice_count, fragment_slices_remaining, exp_fail,
+        self,
+        fragment_slice_count,
+        fragment_slices_remaining,
+        exp_fail,
     ):
         state = bytes_to_state(
             serialise_to_bytes(
-                bitstream.FragmentHeader(fragment_slice_count=fragment_slice_count,)
+                bitstream.FragmentHeader(
+                    fragment_slice_count=fragment_slice_count,
+                )
             )
         )
         state["_picture_initial_fragment_offset"] = (-1, 7)
@@ -69,10 +74,16 @@ class TestFragmentHeader(object):
 
     def test_picture_not_allowed_to_change_between_fragments(self):
         fh1 = serialise_to_bytes(
-            bitstream.FragmentHeader(fragment_slice_count=1, picture_number=1000,)
+            bitstream.FragmentHeader(
+                fragment_slice_count=1,
+                picture_number=1000,
+            )
         )
         fh2 = serialise_to_bytes(
-            bitstream.FragmentHeader(fragment_slice_count=1, picture_number=1001,)
+            bitstream.FragmentHeader(
+                fragment_slice_count=1,
+                picture_number=1001,
+            )
         )
 
         state = bytes_to_state(fh1 + fh2)
@@ -114,12 +125,16 @@ class TestFragmentHeader(object):
         ],
     )
     def test_must_not_have_too_many_slices(
-        self, fragment_slice_count, fragment_slices_remaining, exp_fail,
+        self,
+        fragment_slice_count,
+        fragment_slices_remaining,
+        exp_fail,
     ):
         state = bytes_to_state(
             serialise_to_bytes(
                 bitstream.FragmentHeader(
-                    fragment_slice_count=fragment_slice_count, picture_number=0,
+                    fragment_slice_count=fragment_slice_count,
+                    picture_number=0,
                 )
             )
         )
@@ -241,7 +256,9 @@ def test_whole_picture(parse_code, fragment_slice_counts):
                 frame_height=8,
             ),
             clean_area=bitstream.CleanArea(
-                custom_clean_area_flag=True, clean_width=8, clean_height=8,
+                custom_clean_area_flag=True,
+                clean_width=8,
+                clean_height=8,
             ),
         ),
     )
@@ -253,9 +270,14 @@ def test_whole_picture(parse_code, fragment_slice_counts):
     # Add the first (header) fragment in the picture
     frag_bytes += serialise_to_bytes(
         bitstream.FragmentParse(
-            fragment_header=bitstream.FragmentHeader(fragment_slice_count=0,),
+            fragment_header=bitstream.FragmentHeader(
+                fragment_slice_count=0,
+            ),
             transform_parameters=bitstream.TransformParameters(
-                slice_parameters=bitstream.SliceParameters(slices_x=3, slices_y=2,)
+                slice_parameters=bitstream.SliceParameters(
+                    slices_x=3,
+                    slices_y=2,
+                )
             ),
         ),
         serialisation_state,

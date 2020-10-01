@@ -199,7 +199,9 @@ FrameSize = fixeddict(
 )
 
 vc2_default_values[FrameSize] = FrameSize(
-    custom_dimensions_flag=False, frame_width=1, frame_height=1,
+    custom_dimensions_flag=False,
+    frame_width=1,
+    frame_height=1,
 )
 
 ColorDiffSamplingFormat = fixeddict(
@@ -235,7 +237,8 @@ ScanFormat = fixeddict(
 )
 
 vc2_default_values[ScanFormat] = ScanFormat(
-    custom_scan_format_flag=False, source_sampling=SourceSamplingModes.progressive,
+    custom_scan_format_flag=False,
+    source_sampling=SourceSamplingModes.progressive,
 )
 
 FrameRate = fixeddict(
@@ -344,7 +347,8 @@ ColorPrimaries = fixeddict(
 )
 
 vc2_default_values[ColorPrimaries] = ColorPrimaries(
-    custom_color_primaries_flag=False, index=PresetColorPrimaries.hdtv,
+    custom_color_primaries_flag=False,
+    index=PresetColorPrimaries.hdtv,
 )
 
 
@@ -362,7 +366,8 @@ ColorMatrix = fixeddict(
 )
 
 vc2_default_values[ColorMatrix] = ColorMatrix(
-    custom_color_matrix_flag=False, index=PresetColorMatrices.hdtv,
+    custom_color_matrix_flag=False,
+    index=PresetColorMatrices.hdtv,
 )
 
 TransferFunction = fixeddict(
@@ -380,7 +385,8 @@ TransferFunction = fixeddict(
 )
 
 vc2_default_values[TransferFunction] = TransferFunction(
-    custom_transfer_function_flag=False, index=PresetTransferFunctions.tv_gamma,
+    custom_transfer_function_flag=False,
+    index=PresetTransferFunctions.tv_gamma,
 )
 
 ColorSpec = fixeddict(
@@ -400,7 +406,8 @@ ColorSpec = fixeddict(
 )
 
 vc2_default_values[ColorSpec] = ColorSpec(
-    custom_color_spec_flag=False, index=PresetColorSpecs.hdtv,
+    custom_color_spec_flag=False,
+    index=PresetColorSpecs.hdtv,
 )
 
 vc2_fixeddict_nesting[ColorSpec] = [ColorPrimaries, ColorMatrix, TransferFunction]
@@ -474,7 +481,9 @@ AuxiliaryData = fixeddict(
     """,
 )
 
-vc2_default_values[AuxiliaryData] = AuxiliaryData(bytes=b"",)
+vc2_default_values[AuxiliaryData] = AuxiliaryData(
+    bytes=b"",
+)
 
 
 Padding = fixeddict(
@@ -485,7 +494,9 @@ Padding = fixeddict(
     """,
 )
 
-vc2_default_values[Padding] = Padding(bytes=b"",)
+vc2_default_values[Padding] = Padding(
+    bytes=b"",
+)
 
 
 ################################################################################
@@ -553,7 +564,8 @@ QuantMatrix = fixeddict(
 )
 
 vc2_default_values[QuantMatrix] = QuantMatrix(
-    custom_quant_matrix=False, quant_matrix=0,
+    custom_quant_matrix=False,
+    quant_matrix=0,
 )
 
 TransformParameters = fixeddict(
@@ -577,7 +589,8 @@ TransformParameters = fixeddict(
 )
 
 vc2_default_values[TransformParameters] = TransformParameters(
-    wavelet_index=WaveletFilters.haar_with_shift, dwt_depth=0,
+    wavelet_index=WaveletFilters.haar_with_shift,
+    dwt_depth=0,
 )
 
 vc2_fixeddict_nesting[TransformParameters] = [
@@ -722,7 +735,9 @@ PictureHeader = fixeddict(
     """,
 )
 
-vc2_default_values[PictureHeader] = PictureHeader(picture_number=0,)
+vc2_default_values[PictureHeader] = PictureHeader(
+    picture_number=0,
+)
 
 TransformData = fixeddict(
     "TransformData",
@@ -773,7 +788,9 @@ WaveletTransform = fixeddict(
     """,
 )
 
-vc2_default_values[WaveletTransform] = WaveletTransform(padding=bitarray(),)
+vc2_default_values[WaveletTransform] = WaveletTransform(
+    padding=bitarray(),
+)
 
 vc2_fixeddict_nesting[WaveletTransform] = [TransformParameters, TransformData]
 
@@ -799,7 +816,8 @@ PictureParse = fixeddict(
 )
 
 vc2_default_values[PictureParse] = PictureParse(
-    padding1=bitarray(), padding2=bitarray(),
+    padding1=bitarray(),
+    padding2=bitarray(),
 )
 
 vc2_fixeddict_nesting[PictureParse] = [PictureHeader, WaveletTransform]

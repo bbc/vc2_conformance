@@ -25,7 +25,10 @@ def name_to_str(attr_or_name):
             ),
         )
     elif isinstance(attr_or_name, ast.Attribute):
-        return "{}.{}".format(name_to_str(attr_or_name.value), attr_or_name.attr,)
+        return "{}.{}".format(
+            name_to_str(attr_or_name.value),
+            attr_or_name.attr,
+        )
     elif isinstance(attr_or_name, ast.Name):
         return attr_or_name.id
     else:

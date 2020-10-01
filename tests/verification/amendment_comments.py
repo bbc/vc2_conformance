@@ -115,7 +115,9 @@ class UnmatchedNotInSpecBlockError(Exception):
     def __init__(self, row):
         self.row = row
 
-        super(UnmatchedNotInSpecBlockError, self).__init__("line {}".format(row),)
+        super(UnmatchedNotInSpecBlockError, self).__init__(
+            "line {}".format(row),
+        )
 
 
 class UnclosedNotInSpecBlockError(Exception):
@@ -131,7 +133,9 @@ class UnclosedNotInSpecBlockError(Exception):
     def __init__(self, row):
         self.row = row
 
-        super(UnclosedNotInSpecBlockError, self).__init__("line {}".format(row),)
+        super(UnclosedNotInSpecBlockError, self).__init__(
+            "line {}".format(row),
+        )
 
 
 _RE_DISABLED_COMMENT = re.compile(r"^###(| .*)$")

@@ -200,7 +200,10 @@ class TestCase(object):
         return self._metadata
 
     def __repr__(self):
-        return "<{} {}>".format(type(self).__name__, self.name,)
+        return "<{} {}>".format(
+            type(self).__name__,
+            self.name,
+        )
 
     def __eq__(self, other):
         return (

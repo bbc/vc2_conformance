@@ -182,14 +182,25 @@ def read_pictures_with_only_one_metadata_file_required(filename_a, filename_b):
             "Will assume it is the same as the first.\n"
         )
 
-    (video_parameters_a, picture_coding_mode_a, picture_number_a,) = metadata_a
+    (
+        video_parameters_a,
+        picture_coding_mode_a,
+        picture_number_a,
+    ) = metadata_a
 
-    (video_parameters_b, picture_coding_mode_b, picture_number_b,) = metadata_b
+    (
+        video_parameters_b,
+        picture_coding_mode_b,
+        picture_number_b,
+    ) = metadata_b
 
     try:
         with open(pic_fn_a, "rb") as f:
             picture_a = read_picture(
-                video_parameters_a, picture_coding_mode_a, picture_number_a, f,
+                video_parameters_a,
+                picture_coding_mode_a,
+                picture_number_a,
+                f,
             )
             if len(f.read(1)) != 0:
                 raise ValueError()
@@ -203,7 +214,10 @@ def read_pictures_with_only_one_metadata_file_required(filename_a, filename_b):
     try:
         with open(pic_fn_b, "rb") as f:
             picture_b = read_picture(
-                video_parameters_b, picture_coding_mode_b, picture_number_b, f,
+                video_parameters_b,
+                picture_coding_mode_b,
+                picture_number_b,
+                f,
             )
             if len(f.read(1)) != 0:
                 raise ValueError()
@@ -234,7 +248,9 @@ def parse_args(*args, **kwargs):
     )
 
     parser.add_argument(
-        "--version", action="version", version="%(prog)s {}".format(__version__),
+        "--version",
+        action="version",
+        version="%(prog)s {}".format(__version__),
     )
 
     parser.add_argument(
@@ -251,7 +267,9 @@ def parse_args(*args, **kwargs):
         """,
     )
 
-    output_group = parser.add_argument_group("difference image options",)
+    output_group = parser.add_argument_group(
+        "difference image options",
+    )
 
     output_group.add_argument(
         "--difference-mask",
@@ -329,7 +347,8 @@ def measure_differences(all_deltas, video_parameters, picture_coding_mode):
     returns a string summarising the differences.
     """
     dimensions_and_depths = compute_dimensions_and_depths(
-        video_parameters, picture_coding_mode,
+        video_parameters,
+        picture_coding_mode,
     )
 
     delta_counts = {c: np.count_nonzero(d) for c, d in all_deltas.items()}
@@ -426,7 +445,8 @@ def main(*args, **kwargs):
         (picture_b, video_parameters_b, picture_coding_mode_b),
         byte_for_byte_identical,
     ) = read_pictures_with_only_one_metadata_file_required(
-        args.filename_a, args.filename_b,
+        args.filename_a,
+        args.filename_b,
     )
 
     if video_parameters_a != video_parameters_b:
@@ -475,7 +495,9 @@ def main(*args, **kwargs):
     # Write difference mask, as required
     if args.difference_mask is not None:
         mask = generate_difference_mask_picture(
-            deltas, video_parameters_a, picture_number=picture_a["pic_num"],
+            deltas,
+            video_parameters_a,
+            picture_number=picture_a["pic_num"],
         )
         write(mask, video_parameters_a, picture_coding_mode_a, args.difference_mask)
 

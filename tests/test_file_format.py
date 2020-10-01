@@ -164,7 +164,10 @@ def test_read_picture_and_read_and_write_metadata(
 
     picture_file.seek(0)
     new_picture = read_picture(
-        new_video_parameters, new_picture_coding_mode, new_picture_number, picture_file,
+        new_video_parameters,
+        new_picture_coding_mode,
+        new_picture_number,
+        picture_file,
     )
 
     assert new_picture == noise_picture
@@ -217,4 +220,8 @@ def test_read_and_write_convenience_functions(
     assert set(os.listdir(str(tmp_path))) == set(["test_file.raw", "test_file.json"])
 
     # Round-trip works
-    assert read(filename) == (picture, video_parameters, picture_coding_mode,)
+    assert read(filename) == (
+        picture,
+        video_parameters,
+        picture_coding_mode,
+    )

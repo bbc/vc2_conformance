@@ -78,7 +78,8 @@ def test_picture_types(profile, fragment_slice_count):
 
     pictures = list(
         mid_gray(
-            codec_features["video_parameters"], codec_features["picture_coding_mode"],
+            codec_features["video_parameters"],
+            codec_features["picture_coding_mode"],
         )
     )
 
@@ -153,7 +154,8 @@ def test_level_sequence_restrictions_obeyed(
 
     pictures = list(
         mid_gray(
-            codec_features["video_parameters"], codec_features["picture_coding_mode"],
+            codec_features["video_parameters"],
+            codec_features["picture_coding_mode"],
         )
     )
     assert len(pictures) == 2
@@ -182,13 +184,18 @@ def test_custom_sequence_restrictions_obeyed():
 
     pictures = list(
         mid_gray(
-            codec_features["video_parameters"], codec_features["picture_coding_mode"],
+            codec_features["video_parameters"],
+            codec_features["picture_coding_mode"],
         )
     )
 
     # Should fail to create conflicting sequence
     with pytest.raises(IncompatibleLevelAndDataUnitError):
-        seq = make_sequence(codec_features, pictures, "end_of_sequence $",)
+        seq = make_sequence(
+            codec_features,
+            pictures,
+            "end_of_sequence $",
+        )
 
     seq = make_sequence(
         codec_features,

@@ -353,14 +353,18 @@ class TestIsAllowedCombination(object):
     def test_allow_subset(self):
         assert (
             is_allowed_combination(
-                [{"foo": ValueSet(123), "bar": ValueSet()}], {"foo": 123},
+                [{"foo": ValueSet(123), "bar": ValueSet()}],
+                {"foo": 123},
             )
             is True
         )
 
     def test_disallow_superset(self):
         assert (
-            is_allowed_combination([{"foo": ValueSet(123)}], {"foo": 123, "bar": 321},)
+            is_allowed_combination(
+                [{"foo": ValueSet(123)}],
+                {"foo": 123, "bar": 321},
+            )
             is False
         )
 
@@ -374,7 +378,13 @@ class TestIsAllowedCombination(object):
         )
 
     def test_disallow_mismatching(self):
-        assert is_allowed_combination([{"foo": ValueSet(321)}], {"foo": 123},) is False
+        assert (
+            is_allowed_combination(
+                [{"foo": ValueSet(321)}],
+                {"foo": 123},
+            )
+            is False
+        )
 
     def test_disallow_no_completely_matching_set(self):
         assert (
@@ -392,20 +402,27 @@ class TestAllowedValuesFor(object):
         assert allowed_values_for([], "foo", {"bar": 123}) == ValueSet()
 
     def test_unfiltered(self):
-        assert allowed_values_for(
-            [{"foo": ValueSet(1)}, {"foo": ValueSet(2)}, {"foo": ValueSet(3)}], "foo",
-        ) == ValueSet(1, 2, 3)
+        assert (
+            allowed_values_for(
+                [{"foo": ValueSet(1)}, {"foo": ValueSet(2)}, {"foo": ValueSet(3)}],
+                "foo",
+            )
+            == ValueSet(1, 2, 3)
+        )
 
     def test_filtered(self):
-        assert allowed_values_for(
-            [
-                {"foo": ValueSet(1), "bar": ValueSet(123)},
-                {"foo": ValueSet(2), "bar": ValueSet(321)},
-                {"foo": ValueSet(3), "bar": ValueSet(123)},
-            ],
-            "foo",
-            {"bar": 123},
-        ) == ValueSet(1, 3)
+        assert (
+            allowed_values_for(
+                [
+                    {"foo": ValueSet(1), "bar": ValueSet(123)},
+                    {"foo": ValueSet(2), "bar": ValueSet(321)},
+                    {"foo": ValueSet(3), "bar": ValueSet(123)},
+                ],
+                "foo",
+                {"bar": 123},
+            )
+            == ValueSet(1, 3)
+        )
 
     def test_any_value_substitution(self):
         allowed_values = [
@@ -418,9 +435,15 @@ class TestAllowedValuesFor(object):
         assert allowed_values_for(allowed_values, "foo", {"bar": 123}) == AnyValue()
 
         # With substitution
-        assert allowed_values_for(
-            allowed_values, "foo", {"bar": 123}, ValueSet(1, 2, 3, 4),
-        ) == ValueSet(1, 2, 3, 4)
+        assert (
+            allowed_values_for(
+                allowed_values,
+                "foo",
+                {"bar": 123},
+                ValueSet(1, 2, 3, 4),
+            )
+            == ValueSet(1, 2, 3, 4)
+        )
 
 
 def test_read_constraints_from_csv():

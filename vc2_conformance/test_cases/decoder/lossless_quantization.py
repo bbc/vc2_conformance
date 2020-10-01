@@ -138,7 +138,8 @@ def lossless_quantization(codec_features):
     sequence = make_sequence(
         codec_features,
         mid_gray(
-            codec_features["video_parameters"], codec_features["picture_coding_mode"],
+            codec_features["video_parameters"],
+            codec_features["picture_coding_mode"],
         ),
     )
 

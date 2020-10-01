@@ -44,7 +44,9 @@ __all__ = [
 
 
 def make_end_of_sequence_data_unit():
-    return DataUnit(parse_info=ParseInfo(parse_code=ParseCodes.end_of_sequence),)
+    return DataUnit(
+        parse_info=ParseInfo(parse_code=ParseCodes.end_of_sequence),
+    )
 
 
 def make_auxiliary_data_unit():
@@ -56,7 +58,8 @@ def make_auxiliary_data_unit():
 
 def make_padding_data_unit():
     return DataUnit(
-        parse_info=ParseInfo(parse_code=ParseCodes.padding_data), padding=Padding(),
+        parse_info=ParseInfo(parse_code=ParseCodes.padding_data),
+        padding=Padding(),
     )
 
 
@@ -142,7 +145,10 @@ def make_sequence(codec_features, pictures, *data_unit_patterns, **kwargs):
     for picture, minimum_qindex in zip(pictures, minimum_qindices):
         pictures_only_sequence["data_units"].extend(
             make_picture_data_units(
-                codec_features, picture, minimum_qindex, minimum_slice_size_scaler,
+                codec_features,
+                picture,
+                minimum_qindex,
+                minimum_slice_size_scaler,
             )
         )
 
@@ -181,7 +187,8 @@ def make_sequence(codec_features, pictures, *data_unit_patterns, **kwargs):
             "parse_code"
         ]
         data_unit_makers[picture_parse_code.name] = partial(
-            pictures_only_sequence["data_units"].pop, 0,
+            pictures_only_sequence["data_units"].pop,
+            0,
         )
 
     return Sequence(

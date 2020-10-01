@@ -160,7 +160,9 @@ def parse_args(*args, **kwargs):
     )
 
     parser.add_argument(
-        "--version", action="version", version="%(prog)s {}".format(__version__),
+        "--version",
+        action="version",
+        version="%(prog)s {}".format(__version__),
     )
 
     parser.add_argument(
@@ -288,7 +290,10 @@ def load_codec_features(csv, name_re):
 
 
 def check_output_directories_empty(
-    output_root_dir, codec_feature_sets, check_encoder_tests, check_decoder_tests,
+    output_root_dir,
+    codec_feature_sets,
+    check_encoder_tests,
+    check_decoder_tests,
 ):
     """
     Check all output directories are empty (or don't yet exist).  Prints an
@@ -296,7 +301,10 @@ def check_output_directories_empty(
     encountered.
     """
     for codec_features_name in codec_feature_sets:
-        base_path = os.path.join(output_root_dir, codec_features_name,)
+        base_path = os.path.join(
+            output_root_dir,
+            codec_features_name,
+        )
 
         paths = []
         if check_encoder_tests:
@@ -384,23 +392,35 @@ def output_encoder_test_case(output_dir, codec_features, test_case):
     """
     # Write raw pictures
     for i, picture in enumerate(test_case.value.pictures):
-        picture_directory = os.path.join(output_dir, test_case.name,)
+        picture_directory = os.path.join(
+            output_dir,
+            test_case.name,
+        )
         makedirs(picture_directory, exist_ok=True)
         file_format.write(
             picture,
             test_case.value.video_parameters,
             test_case.value.picture_coding_mode,
-            os.path.join(picture_directory, "picture_{}.raw".format(i),),
+            os.path.join(
+                picture_directory,
+                "picture_{}.raw".format(i),
+            ),
         )
     # Write metadata
     if test_case.metadata is not None:
         with open(
-            os.path.join(output_dir, "{}_metadata.json".format(test_case.name),), "w"
+            os.path.join(
+                output_dir,
+                "{}_metadata.json".format(test_case.name),
+            ),
+            "w",
         ) as f:
             json.dump(test_case.metadata, f)
 
     logging.info(
-        "Generated encoder test case %s for %s", test_case.name, codec_features["name"],
+        "Generated encoder test case %s for %s",
+        test_case.name,
+        codec_features["name"],
     )
 
 
@@ -421,13 +441,17 @@ def output_decoder_test_case(output_dir, codec_features, test_case):
     test_case : :py:class:`~vc2_conformance.test_cases.TestCase`
     """
     # Serialise bitstream
-    bitstream_filename = os.path.join(output_dir, "{}.vc2".format(test_case.name),)
+    bitstream_filename = os.path.join(
+        output_dir,
+        "{}.vc2".format(test_case.name),
+    )
     with open(bitstream_filename, "wb") as f:
         autofill_and_serialise_stream(f, test_case.value)
 
     # Decode model answer
     model_answer_directory = os.path.join(
-        output_dir, "{}_expected".format(test_case.name),
+        output_dir,
+        "{}_expected".format(test_case.name),
     )
     makedirs(model_answer_directory, exist_ok=True)
     with open(bitstream_filename, "rb") as f:
@@ -439,7 +463,8 @@ def output_decoder_test_case(output_dir, codec_features, test_case):
                 video_parameters,
                 picture_coding_mode,
                 os.path.join(
-                    model_answer_directory, "picture_{}.raw".format(index[0]),
+                    model_answer_directory,
+                    "picture_{}.raw".format(index[0]),
                 ),
             )
             index[0] += 1
@@ -451,12 +476,18 @@ def output_decoder_test_case(output_dir, codec_features, test_case):
     # Write metadata
     if test_case.metadata is not None:
         with open(
-            os.path.join(output_dir, "{}_metadata.json".format(test_case.name),), "w"
+            os.path.join(
+                output_dir,
+                "{}_metadata.json".format(test_case.name),
+            ),
+            "w",
         ) as f:
             json.dump(test_case.metadata, f)
 
     logging.info(
-        "Generated decoder test case %s for %s", test_case.name, codec_features["name"],
+        "Generated decoder test case %s for %s",
+        test_case.name,
+        codec_features["name"],
     )
 
 
@@ -481,7 +512,10 @@ def main(*args, **kwargs):
         log_level = logging.INFO
     logging.basicConfig(level=log_level)
 
-    codec_feature_sets = load_codec_features(args.codec_configurations, args.codecs,)
+    codec_feature_sets = load_codec_features(
+        args.codec_configurations,
+        args.codecs,
+    )
 
     if not args.force:
         check_output_directories_empty(
@@ -497,7 +531,11 @@ def main(*args, **kwargs):
 
     for name, codec_features in codec_feature_sets.items():
         if not args.decoder_only:
-            output_dir = os.path.join(args.output, name, "encoder",)
+            output_dir = os.path.join(
+                args.output,
+                name,
+                "encoder",
+            )
             for (
                 generator_function
             ) in ENCODER_TEST_CASE_GENERATOR_REGISTRY.iter_independent_generators(
@@ -515,7 +553,11 @@ def main(*args, **kwargs):
                 )
 
         if not args.encoder_only:
-            output_dir = os.path.join(args.output, name, "decoder",)
+            output_dir = os.path.join(
+                args.output,
+                name,
+                "decoder",
+            )
             for (
                 generator_function
             ) in DECODER_TEST_CASE_GENERATOR_REGISTRY.iter_independent_generators(

@@ -137,7 +137,10 @@ class NodeComparator(object):
 
             compare_n1_n2 = getattr(
                 self,
-                "compare_{}_{}".format(type(n1).__name__, type(n2).__name__,),
+                "compare_{}_{}".format(
+                    type(n1).__name__,
+                    type(n2).__name__,
+                ),
                 None,
             )
             if compare_n1_n2 is not None:
@@ -244,7 +247,13 @@ class NodeComparator(object):
                     ):
                         n2_row_col = (v2[-1].lineno, v2[-1].col_offset)
                     return NodeFieldLengthsDiffer(
-                        n1, n1_row_col, n2, n2_row_col, field, v1, v2,
+                        n1,
+                        n1_row_col,
+                        n2,
+                        n2_row_col,
+                        field,
+                        v1,
+                        v2,
                     )
                 else:
                     for i, (e1, e2) in enumerate(zip(v1, v2)):
@@ -256,7 +265,14 @@ class NodeComparator(object):
                             if e1 != e2:
                                 n1_row_col, n2_row_col = self.get_row_col()
                                 return NodeListFieldsDiffer(
-                                    n1, n1_row_col, n2, n2_row_col, field, i, v1, v2,
+                                    n1,
+                                    n1_row_col,
+                                    n2,
+                                    n2_row_col,
+                                    field,
+                                    i,
+                                    v1,
+                                    v2,
                                 )
             else:
                 if v1 != v2:
@@ -317,7 +333,8 @@ class NodeTypesDiffer(NodesDiffer):
             n2,
             n2_row_col,
             "Nodes have differing types ({} and {})".format(
-                type(n1).__name__, type(n2).__name__,
+                type(n1).__name__,
+                type(n2).__name__,
             ),
         )
 
@@ -341,7 +358,11 @@ class NodeFieldsDiffer(NodesDiffer):
             n2,
             n2_row_col,
             "Node {!r} fields differ: n1.{} == {!r} and n2.{} == {!r}".format(
-                field, field, getattr(n1, field), field, getattr(n2, field),
+                field,
+                field,
+                getattr(n1, field),
+                field,
+                getattr(n2, field),
             ),
         )
 
@@ -370,7 +391,9 @@ class NodeFieldLengthsDiffer(NodesDiffer):
             n2,
             n2_row_col,
             "Node {!r} fields have different lengths ({} and {})".format(
-                self.field, len(self.v1), len(self.v2),
+                self.field,
+                len(self.v1),
+                len(self.v2),
             ),
         )
 
@@ -401,6 +424,9 @@ class NodeListFieldsDiffer(NodesDiffer):
             n2,
             n2_row_col,
             "Node {!r} fields have a differing entry at index {} ({!r} and {!r})".format(  # noqa: E501
-                self.field, self.index, self.v1[self.index], self.v2[self.index],
+                self.field,
+                self.index,
+                self.v1[self.index],
+                self.v2[self.index],
             ),
         )

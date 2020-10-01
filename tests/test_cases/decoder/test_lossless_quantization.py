@@ -141,7 +141,8 @@ class TestLosslessQuantization(object):
 
             if override_qindex:
                 for _state, _sx, _sy, hq_slice in iter_slices_in_sequence(
-                    codec_features, stream["sequences"][0],
+                    codec_features,
+                    stream["sequences"][0],
                 ):
                     hq_slice["qindex"] = 0
 

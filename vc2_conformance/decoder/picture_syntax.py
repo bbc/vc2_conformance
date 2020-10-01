@@ -217,7 +217,8 @@ def slice_parameters(state):
         ## Begin not in spec
         if state["slice_bytes_numerator"] < state["slice_bytes_denominator"]:
             raise SliceBytesIsLessThanOne(
-                state["slice_bytes_numerator"], state["slice_bytes_denominator"],
+                state["slice_bytes_numerator"],
+                state["slice_bytes_denominator"],
             )
         ## End not in spec
 

@@ -32,7 +32,9 @@ def test_replace_padding_data():
                 parse_info=ParseInfo(parse_code=ParseCodes.padding_data),
                 padding=Padding(bytes=b"bar"),
             ),
-            DataUnit(parse_info=ParseInfo(parse_code=ParseCodes.end_of_sequence),),
+            DataUnit(
+                parse_info=ParseInfo(parse_code=ParseCodes.end_of_sequence),
+            ),
         ]
     )
 

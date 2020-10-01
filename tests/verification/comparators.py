@@ -326,7 +326,10 @@ class SerdesChangesOnly(NodeComparator):
             getattr(n2, "starargs", None) is None
             and getattr(n2, "kwargs", None) is None
         )
-        is_allowed_fixeddict = name_to_str(n2.func) in ("State", "VideoParameters",)
+        is_allowed_fixeddict = name_to_str(n2.func) in (
+            "State",
+            "VideoParameters",
+        )
 
         if is_empty_dict and is_empty_constructor and is_allowed_fixeddict:
             return True

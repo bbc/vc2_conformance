@@ -136,7 +136,9 @@ def parse_sequence(state):
     )
     if "_level_sequence_matcher" in state:
         assert_parse_code_sequence_ended(
-            state["_level_sequence_matcher"], LevelInvalidSequence, state["level"],
+            state["_level_sequence_matcher"],
+            LevelInvalidSequence,
+            state["level"],
         )
     ## End not in spec
 
@@ -192,7 +194,9 @@ def parse_info(state):
         last_next_parse_offset = state["next_parse_offset"]
         if last_next_parse_offset != 0 and last_next_parse_offset != true_parse_offset:
             raise InconsistentNextParseOffset(
-                last_parse_info_offset, last_next_parse_offset, true_parse_offset,
+                last_parse_info_offset,
+                last_next_parse_offset,
+                true_parse_offset,
             )
     ## End not in spec
 
@@ -212,7 +216,9 @@ def parse_info(state):
     # with and end_of_sequence.
     ## Begin not in spec
     assert_parse_code_in_sequence(
-        state["parse_code"], state["_generic_sequence_matcher"], GenericInvalidSequence,
+        state["parse_code"],
+        state["_generic_sequence_matcher"],
+        GenericInvalidSequence,
     )
     ## End not in spec
 

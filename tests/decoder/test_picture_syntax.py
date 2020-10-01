@@ -61,7 +61,10 @@ def test_transform_parameters_wavelet_index_must_be_valid():
     state.update(
         bytes_to_state(
             serialise_to_bytes(
-                bitstream.TransformParameters(wavelet_index=9999,), state,
+                bitstream.TransformParameters(
+                    wavelet_index=9999,
+                ),
+                state,
             )
         )
     )
@@ -84,7 +87,8 @@ def test_extended_transform_parameters_wavelet_index_ho_must_be_valid():
     state = bytes_to_state(
         serialise_to_bytes(
             bitstream.ExtendedTransformParameters(
-                asym_transform_index_flag=True, wavelet_index_ho=9999,
+                asym_transform_index_flag=True,
+                wavelet_index_ho=9999,
             ),
         )
     )
@@ -115,7 +119,10 @@ class TestSliceParameters(object):
         state.update(
             bytes_to_state(
                 serialise_to_bytes(
-                    bitstream.SliceParameters(slices_x=slices_x, slices_y=slices_y,),
+                    bitstream.SliceParameters(
+                        slices_x=slices_x,
+                        slices_y=slices_y,
+                    ),
                     state,
                 )
             )
@@ -135,7 +142,8 @@ class TestSliceParameters(object):
             bytes_to_state(
                 serialise_to_bytes(
                     bitstream.SliceParameters(
-                        slice_bytes_numerator=1, slice_bytes_denominator=0,
+                        slice_bytes_numerator=1,
+                        slice_bytes_denominator=0,
                     ),
                     state,
                 )
@@ -163,7 +171,8 @@ class TestSliceParameters(object):
             bytes_to_state(
                 serialise_to_bytes(
                     bitstream.SliceParameters(
-                        slice_bytes_numerator=numer, slice_bytes_denominator=denom,
+                        slice_bytes_numerator=numer,
+                        slice_bytes_denominator=denom,
                     ),
                     state,
                 )
@@ -183,7 +192,8 @@ class TestSliceParameters(object):
             bytes_to_state(
                 serialise_to_bytes(
                     bitstream.SliceParameters(
-                        slice_prefix_bytes=0, slice_size_scaler=0,
+                        slice_prefix_bytes=0,
+                        slice_size_scaler=0,
                     ),
                     state,
                 )
@@ -212,7 +222,10 @@ class TestSliceParameters(object):
         state.update(
             bytes_to_state(
                 serialise_to_bytes(
-                    bitstream.SliceParameters(slices_x=slices_x, slices_y=slices_y,),
+                    bitstream.SliceParameters(
+                        slices_x=slices_x,
+                        slices_y=slices_y,
+                    ),
                     state,
                 )
             )
@@ -235,7 +248,10 @@ class TestQuantisationMatrix(object):
         state.update(
             bytes_to_state(
                 serialise_to_bytes(
-                    bitstream.QuantMatrix(custom_quant_matrix=False,), state.copy(),
+                    bitstream.QuantMatrix(
+                        custom_quant_matrix=False,
+                    ),
+                    state.copy(),
                 )
             )
         )
@@ -250,7 +266,10 @@ class TestQuantisationMatrix(object):
         state.update(
             bytes_to_state(
                 serialise_to_bytes(
-                    bitstream.QuantMatrix(custom_quant_matrix=False,), state.copy(),
+                    bitstream.QuantMatrix(
+                        custom_quant_matrix=False,
+                    ),
+                    state.copy(),
                 )
             )
         )
@@ -296,7 +315,8 @@ class TestQuantisationMatrix(object):
             bytes_to_state(
                 serialise_to_bytes(
                     bitstream.QuantMatrix(
-                        custom_quant_matrix=True, quant_matrix=matrix,
+                        custom_quant_matrix=True,
+                        quant_matrix=matrix,
                     ),
                     state.copy(),
                 )
@@ -362,7 +382,9 @@ def test_transform_parameters_et_al_level_constraints(
                     slice_parameters=bitstream.SliceParameters(
                         slices_x=1, slices_y=2, **extra_slice_parameters
                     ),
-                    quant_matrix=bitstream.QuantMatrix(custom_quant_matrix=False,),
+                    quant_matrix=bitstream.QuantMatrix(
+                        custom_quant_matrix=False,
+                    ),
                 ),
                 state,
             )
@@ -403,7 +425,9 @@ def test_whole_picture(parse_code):
                 frame_height=4,
             ),
             clean_area=bitstream.CleanArea(
-                custom_clean_area_flag=True, clean_width=4, clean_height=4,
+                custom_clean_area_flag=True,
+                clean_width=4,
+                clean_height=4,
             ),
         ),
     )

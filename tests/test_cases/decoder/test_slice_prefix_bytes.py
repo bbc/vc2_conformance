@@ -222,7 +222,9 @@ class TestSlicePrefixBytes(object):
 
         with alternative_level_1():
             codec_features = CodecFeatures(
-                MINIMAL_CODEC_FEATURES, profile=Profiles.high_quality, level=Levels(1),
+                MINIMAL_CODEC_FEATURES,
+                profile=Profiles.high_quality,
+                level=Levels(1),
             )
 
             test_cases = list(slice_prefix_bytes(codec_features))

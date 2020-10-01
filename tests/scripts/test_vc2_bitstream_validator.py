@@ -97,7 +97,9 @@ class TestBitstreamValidator(object):
                             previous_parse_offset=19,
                         ),
                         picture_parse=bitstream.PictureParse(
-                            picture_header=bitstream.PictureHeader(picture_number=100,),
+                            picture_header=bitstream.PictureHeader(
+                                picture_number=100,
+                            ),
                         ),
                     ),
                     bitstream.DataUnit(
@@ -107,7 +109,9 @@ class TestBitstreamValidator(object):
                             previous_parse_offset=24,
                         ),
                         picture_parse=bitstream.PictureParse(
-                            picture_header=bitstream.PictureHeader(picture_number=101,),
+                            picture_header=bitstream.PictureHeader(
+                                picture_number=101,
+                            ),
                         ),
                     ),
                     bitstream.DataUnit(
@@ -144,7 +148,11 @@ class TestBitstreamValidator(object):
             assert picture["pic_num"] == expected_picture_number
 
     def test_valid_multi_sequence_stream(
-        self, tmpdir, valid_bitstream, output_name, capsys,
+        self,
+        tmpdir,
+        valid_bitstream,
+        output_name,
+        capsys,
     ):
         filename = str(tmpdir.join("multi_sequence.vc2"))
 

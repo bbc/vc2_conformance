@@ -121,7 +121,9 @@ def assert_level_constraint(state, key, value):
     state.setdefault("_level_constrained_values", OrderedDict())
 
     allowed_values = allowed_values_for(
-        LEVEL_CONSTRAINTS, key, state["_level_constrained_values"],
+        LEVEL_CONSTRAINTS,
+        key,
+        state["_level_constrained_values"],
     )
 
     if value not in allowed_values:

@@ -415,11 +415,17 @@ def iter_color_spec_options(
         )
         and False in level_constraints_dict["custom_color_spec_flag"]
     ):
-        yield ColorSpec(custom_color_spec_flag=False,)
+        yield ColorSpec(
+            custom_color_spec_flag=False,
+        )
 
     # Can a preset (other than 0) satisfy the requirement (and are we allowed
     # to use it)?
-    for index, (primaries, matrix, tf,) in PRESET_COLOR_SPECS.items():
+    for index, (
+        primaries,
+        matrix,
+        tf,
+    ) in PRESET_COLOR_SPECS.items():
         if (
             index != 0
             and video_parameters["color_primaries_index"] == primaries
@@ -429,7 +435,8 @@ def iter_color_spec_options(
             and index in level_constraints_dict["color_spec_index"]
         ):
             yield ColorSpec(
-                custom_color_spec_flag=True, index=index,
+                custom_color_spec_flag=True,
+                index=index,
             )
 
     # Work through all possible ways to express this using fully custom formats
@@ -450,13 +457,19 @@ def iter_color_spec_options(
             transfer_function,
         ) in zip_longest_repeating_final_value(
             iter_color_primaries_options(
-                custom_base_vp, video_parameters, level_constraints_dict,
+                custom_base_vp,
+                video_parameters,
+                level_constraints_dict,
             ),
             iter_color_matrix_options(
-                custom_base_vp, video_parameters, level_constraints_dict,
+                custom_base_vp,
+                video_parameters,
+                level_constraints_dict,
             ),
             iter_transfer_function_options(
-                custom_base_vp, video_parameters, level_constraints_dict,
+                custom_base_vp,
+                video_parameters,
+                level_constraints_dict,
             ),
         ):
             # Give up if we're unable to produce a needed custom color option
@@ -577,7 +590,8 @@ def count_video_parameter_differences(a, b):
 
 
 def rank_base_video_format_similarity(
-    video_parameters, base_video_formats=list(BaseVideoFormats),
+    video_parameters,
+    base_video_formats=list(BaseVideoFormats),
 ):
     """
     Given a set of
@@ -608,7 +622,8 @@ def rank_base_video_format_similarity(
             )
         ),
         key=lambda index: count_video_parameter_differences(
-            set_source_defaults(index), video_parameters,
+            set_source_defaults(index),
+            video_parameters,
         ),
     )
 

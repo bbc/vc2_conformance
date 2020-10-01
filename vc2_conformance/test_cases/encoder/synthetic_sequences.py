@@ -29,7 +29,8 @@ def synthetic_moving_sprite(codec_features):
     illustration above), the pictures will appear to have ragged edges.
     """
     return picture_generator_to_test_case(
-        picture_generators.moving_sprite, codec_features,
+        picture_generators.moving_sprite,
+        codec_features,
     )
 
 
@@ -74,7 +75,8 @@ def synthetic_linear_ramps(codec_features):
         output range to over-saturated signals.
     """
     return picture_generator_to_test_case(
-        picture_generators.linear_ramps, codec_features,
+        picture_generators.linear_ramps,
+        codec_features,
     )
 
 
@@ -92,7 +94,10 @@ def synthetic_gray(codec_features):
     coding modes, this should also produce produce the smallest possible
     bitstream.
     """
-    return picture_generator_to_test_case(picture_generators.mid_gray, codec_features,)
+    return picture_generator_to_test_case(
+        picture_generators.mid_gray,
+        codec_features,
+    )
 
 
 @encoder_test_case_generator
@@ -112,5 +117,6 @@ def synthetic_noise(codec_features):
         similar results.
     """
     return picture_generator_to_test_case(
-        picture_generators.white_noise, codec_features,
+        picture_generators.white_noise,
+        codec_features,
     )

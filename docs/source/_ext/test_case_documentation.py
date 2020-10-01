@@ -83,7 +83,9 @@ class TestCaseDocumentation(SphinxDirective):
 
             section += nodes.Text("")  # Required to make ref below work...
             nested_parse_with_titles(
-                self.state, ViewList(tc_docs.splitlines(), tc_file), section,
+                self.state,
+                ViewList(tc_docs.splitlines(), tc_file),
+                section,
             )
 
             out.append(

@@ -98,7 +98,10 @@ restrictions on sequences imposed by each VC-2 level.
 
 
 LEVEL_CONSTRAINTS = read_constraints_from_csv(
-    os.path.join(os.path.dirname(__file__), "level_constraints.csv",)
+    os.path.join(
+        os.path.dirname(__file__),
+        "level_constraints.csv",
+    )
 )
 """
 A constraint table (see :py:mod:`vc2_conformance.constraint_table`) loaded

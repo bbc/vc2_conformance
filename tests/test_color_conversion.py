@@ -43,7 +43,14 @@ from vc2_conformance.color_conversion import (
 
 # Used by various tests
 REC709 = PrimaryChromacities(
-    xw=0.3127, yw=0.3290, xr=0.640, yr=0.330, xg=0.300, yg=0.600, xb=0.150, yb=0.060,
+    xw=0.3127,
+    yw=0.3290,
+    xr=0.640,
+    yr=0.330,
+    xg=0.300,
+    yg=0.600,
+    xb=0.150,
+    yb=0.060,
 )
 
 
@@ -144,15 +151,40 @@ def test_matrix_conversions(index):
     "a_int,a_float,offset,excursion",
     [
         # Full-range 8-bit Y signal
-        ([0, 51, 204, 255], [0.0, 0.2, 0.8, 1.0], 0, 255,),
+        (
+            [0, 51, 204, 255],
+            [0.0, 0.2, 0.8, 1.0],
+            0,
+            255,
+        ),
         # Full-range 8-bit Cx signal
-        ([26, 128, 230], [-0.4, 0.0, 0.4], 128, 255,),
+        (
+            [26, 128, 230],
+            [-0.4, 0.0, 0.4],
+            128,
+            255,
+        ),
         # Video-range 10-bit Y signal
-        ([64, 283, 502, 721, 940], [0.0, 0.25, 0.5, 0.75, 1.0], 64, 876,),
+        (
+            [64, 283, 502, 721, 940],
+            [0.0, 0.25, 0.5, 0.75, 1.0],
+            64,
+            876,
+        ),
         # Video-range 10-bit Cx signal
-        ([64, 288, 512, 736, 960], [-0.5, -0.25, 0.0, 0.25, 0.5], 512, 896,),
+        (
+            [64, 288, 512, 736, 960],
+            [-0.5, -0.25, 0.0, 0.25, 0.5],
+            512,
+            896,
+        ),
         # Out of range values shouldn't be clipped
-        ([-255, 0, 255, 510], [-1.0, 0.0, 1.0, 2.0], 0, 255,),
+        (
+            [-255, 0, 255, 510],
+            [-1.0, 0.0, 1.0, 2.0],
+            0,
+            255,
+        ),
     ],
 )
 def test_int_to_float_and_float_to_int(a_int, a_float, offset, excursion):
@@ -172,11 +204,26 @@ def test_int_to_float_and_float_to_int(a_int, a_float, offset, excursion):
         ([0.5], [128], 0, 255),
         ([-0.5, 0.5], [0, 255], 128, 255),
         # Check clamping: 8 bit full range Y signal
-        ([-2.0, -0.01, 0.0, 1.0, 1.01, 2.0], [0, 0, 0, 255, 255, 255], 0, 255,),
+        (
+            [-2.0, -0.01, 0.0, 1.0, 1.01, 2.0],
+            [0, 0, 0, 255, 255, 255],
+            0,
+            255,
+        ),
         # Check clamping: 8 bit full range Cx signal
-        ([-2.0, -0.51, -0.5, 0.5, 0.51, 2.0], [0, 0, 0, 255, 255, 255], 128, 255,),
+        (
+            [-2.0, -0.51, -0.5, 0.5, 0.51, 2.0],
+            [0, 0, 0, 255, 255, 255],
+            128,
+            255,
+        ),
         # Check clamping: 10 bit video range Y signal
-        ([-2.0, -0.0731, 0.0, 1.0, 1.0947, 2.0], [0, 0, 64, 940, 1023, 1023], 64, 876,),
+        (
+            [-2.0, -0.0731, 0.0, 1.0, 1.0947, 2.0],
+            [0, 0, 64, 940, 1023, 1023],
+            64,
+            876,
+        ),
     ],
 )
 def test_float_to_int_clipped(a_float, a_int, offset, excursion):
@@ -273,7 +320,8 @@ def test_to_xyz():
         ]
     )
     test_colors_xyz = np.matmul(
-        LINEAR_RGB_TO_XYZ[video_parameters["color_primaries_index"]], test_colors_rgb,
+        LINEAR_RGB_TO_XYZ[video_parameters["color_primaries_index"]],
+        test_colors_rgb,
     )
 
     # The following test image is defined in the XYZ domain
@@ -316,7 +364,10 @@ def test_to_xyz():
     test_picture_xyz = np.stack([row_0, row_1, row_2, row_3], axis=0)
 
     # Colors should come out as expected RGB values in GBR order
-    g, b, r = from_xyz(test_picture_xyz, video_parameters,)
+    g, b, r = from_xyz(
+        test_picture_xyz,
+        video_parameters,
+    )
 
     # First row: solid colors
     #                            Wht      Blk    Red     Grn       Blu
@@ -406,21 +457,31 @@ def test_matmul_colors():
 
 
 def test_swap_primaries():
-    vp_before = VideoParameters(color_primaries_index=PresetColorPrimaries.hdtv,)
-    vp_after = VideoParameters(color_primaries_index=PresetColorPrimaries.uhdtv,)
+    vp_before = VideoParameters(
+        color_primaries_index=PresetColorPrimaries.hdtv,
+    )
+    vp_after = VideoParameters(
+        color_primaries_index=PresetColorPrimaries.uhdtv,
+    )
 
     linear_rgb_before = np.array(
         [[[0, 0, 0], [0.5, 0.5, 0.5], [1, 1, 1]], [[1, 0, 0], [0, 1, 0], [0, 0, 1]]]
     )
 
     xyz_before = matmul_colors(
-        LINEAR_RGB_TO_XYZ[vp_before["color_primaries_index"]], linear_rgb_before,
+        LINEAR_RGB_TO_XYZ[vp_before["color_primaries_index"]],
+        linear_rgb_before,
     )
 
-    xyz_after = swap_primaries(xyz_before, vp_before, vp_after,)
+    xyz_after = swap_primaries(
+        xyz_before,
+        vp_before,
+        vp_after,
+    )
 
     linear_rgb_after = matmul_colors(
-        XYZ_TO_LINEAR_RGB[vp_after["color_primaries_index"]], xyz_after,
+        XYZ_TO_LINEAR_RGB[vp_after["color_primaries_index"]],
+        xyz_after,
     )
 
     assert not np.all(np.isclose(xyz_before, xyz_after))

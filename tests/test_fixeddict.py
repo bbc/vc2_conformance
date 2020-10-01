@@ -229,7 +229,11 @@ class TestFixedDict(object):
         assert type(d1) is type(unpickled_d1)
 
     def test_docstring_no_help(self):
-        Undocumented = fixeddict("Undocumented", Entry("foo"), Entry("bar"),)
+        Undocumented = fixeddict(
+            "Undocumented",
+            Entry("foo"),
+            Entry("bar"),
+        )
         assert (
             Undocumented.__doc__
             == dedent(

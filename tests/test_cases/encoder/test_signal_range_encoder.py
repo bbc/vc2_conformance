@@ -45,7 +45,10 @@ class TestSignalRange(object):
         ],
     )
     def test_works_as_intended(
-        self, codec_features, picture_coding_mode, color_diff_format_index,
+        self,
+        codec_features,
+        picture_coding_mode,
+        color_diff_format_index,
     ):
         # A simple transform
         codec_features["wavelet_index"] = WaveletFilters.le_gall_5_3
@@ -112,7 +115,8 @@ class TestSignalRange(object):
                     picture_coding_mode=codec_features["picture_coding_mode"],
                 )
                 set_coding_parameters(
-                    state, codec_features["video_parameters"],
+                    state,
+                    codec_features["video_parameters"],
                 )
                 picture_encode(state, deepcopy(picture))
                 encoded = state["{}_transform".format(component.lower())]

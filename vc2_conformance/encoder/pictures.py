@@ -265,8 +265,14 @@ def quantize_coeffs(qindex, coeff_values, quant_matrix_values):
     quantized_coeff_values : [int, ...]
     """
     return [
-        forward_quant(coeff_value, max(0, qindex - quant_matrix_value),)
-        for coeff_value, quant_matrix_value in zip(coeff_values, quant_matrix_values,)
+        forward_quant(
+            coeff_value,
+            max(0, qindex - quant_matrix_value),
+        )
+        for coeff_value, quant_matrix_value in zip(
+            coeff_values,
+            quant_matrix_values,
+        )
     ]
 
 
@@ -446,7 +452,12 @@ def transform_and_slice_picture(codec_features, picture):
 
 
 def make_hq_slice(
-    y_transform, c1_transform, c2_transform, total_length, qindex, slice_size_scaler=1,
+    y_transform,
+    c1_transform,
+    c2_transform,
+    total_length,
+    qindex,
+    slice_size_scaler=1,
 ):
     """
     Create a :py:class:`vc2_conformance.bitstream.HQSlice` containing the
@@ -764,10 +775,16 @@ def make_transform_data_ld_lossy(picture_bytes, transform_coeffs, minimum_qindex
 
             # Quantize each slice to fit
             qindex, (y_transform, c_transform) = quantize_to_fit(
-                target_size, [y_coeffs, c_coeffs], minimum_qindex=minimum_qindex,
+                target_size,
+                [y_coeffs, c_coeffs],
+                minimum_qindex=minimum_qindex,
             )
             transform_data["ld_slices"].append(
-                make_ld_slice(y_transform, c_transform, qindex,)
+                make_ld_slice(
+                    y_transform,
+                    c_transform,
+                    qindex,
+                )
             )
 
     return transform_data
@@ -853,7 +870,9 @@ def make_extended_transform_parameters(codec_features):
         etp["wavelet_index_ho"] = codec_features["wavelet_index_ho"]
 
     etp["asym_transform_flag"] = decide_flag(
-        codec_features, "asym_transform_flag", codec_features["dwt_depth_ho"] != 0,
+        codec_features,
+        "asym_transform_flag",
+        codec_features["dwt_depth_ho"] != 0,
     )
     if etp["asym_transform_flag"]:
         etp["dwt_depth_ho"] = codec_features["dwt_depth_ho"]
@@ -905,7 +924,8 @@ def make_picture_parse(
         picture_header["picture_number"] = picture["pic_num"]
 
     slice_parameters = SliceParameters(
-        slices_x=codec_features["slices_x"], slices_y=codec_features["slices_y"],
+        slices_x=codec_features["slices_x"],
+        slices_y=codec_features["slices_y"],
     )
 
     # Quantize coefficients as required and set slice_size_scaler (HQ Only) and
@@ -916,7 +936,8 @@ def make_picture_parse(
             if codec_features["picture_bytes"] is not None:
                 raise PictureBytesSpecifiedForLosslessModeError(codec_features)
             slice_size_scaler, transform_data = make_transform_data_hq_lossless(
-                transform_coeffs, minimum_slice_size_scaler,
+                transform_coeffs,
+                minimum_slice_size_scaler,
             )
         else:
             try:
@@ -942,7 +963,9 @@ def make_picture_parse(
             raise LosslessUnsupportedByLowDelayError(codec_features)
         try:
             transform_data = make_transform_data_ld_lossy(
-                codec_features["picture_bytes"], transform_coeffs, minimum_qindex,
+                codec_features["picture_bytes"],
+                transform_coeffs,
+                minimum_qindex,
             )
         except InsufficientLDPictureBytesError:
             # Re-raise with codec features dict
@@ -973,11 +996,13 @@ def make_picture_parse(
             raise AsymmetricTransformPreVersion3Error(codec_features)
 
     wavelet_transform = WaveletTransform(
-        transform_parameters=transform_parameters, transform_data=transform_data,
+        transform_parameters=transform_parameters,
+        transform_data=transform_data,
     )
 
     return PictureParse(
-        picture_header=picture_header, wavelet_transform=wavelet_transform,
+        picture_header=picture_header,
+        wavelet_transform=wavelet_transform,
     )
 
 
@@ -1080,7 +1105,8 @@ def make_fragment_parse_data_units(
             parse_info=ParseInfo(parse_code=parse_code),
             fragment_parse=FragmentParse(
                 fragment_header=FragmentHeader(
-                    fragment_data_length=0, fragment_slice_count=0,
+                    fragment_data_length=0,
+                    fragment_slice_count=0,
                 ),
                 transform_parameters=transform_parameters,
             ),
@@ -1136,7 +1162,10 @@ def make_fragment_parse_data_units(
 
 
 def make_picture_data_units(
-    codec_features, picture, minimum_qindex=0, minimum_slice_size_scaler=1,
+    codec_features,
+    picture,
+    minimum_qindex=0,
+    minimum_slice_size_scaler=1,
 ):
     r"""
     Create a seires of one or more :py:class:`DataUnits

@@ -84,7 +84,11 @@ def get_picture_filename_pattern(filename):
     Given the filename of a picture file (*.raw), return a version with the
     number replaced with '%d'.
     """
-    return re.sub(r"(.*)_[0-9]+\.raw", r"\1_%d.raw", filename,)
+    return re.sub(
+        r"(.*)_[0-9]+\.raw",
+        r"\1_%d.raw",
+        filename,
+    )
 
 
 def write(picture, video_parameters, picture_coding_mode, filename):
@@ -134,11 +138,18 @@ def read(filename):
     metadata_filename, picture_filename = get_metadata_and_picture_filenames(filename)
 
     with open(metadata_filename, "rb") as f:
-        (video_parameters, picture_coding_mode, picture_number,) = read_metadata(f)
+        (
+            video_parameters,
+            picture_coding_mode,
+            picture_number,
+        ) = read_metadata(f)
 
     with open(picture_filename, "rb") as f:
         picture = read_picture(
-            video_parameters, picture_coding_mode, picture_number, f,
+            video_parameters,
+            picture_coding_mode,
+            picture_number,
+            f,
         )
 
     return (picture, video_parameters, picture_coding_mode)
@@ -275,7 +286,8 @@ def read_picture(video_parameters, picture_coding_mode, picture_number, file):
         (width, height, depth_bits, bytes_per_sample),
     ) in dims_and_depths.items():
         data = np.frombuffer(
-            file.read(height * width * bytes_per_sample), dtype=np.uint8,
+            file.read(height * width * bytes_per_sample),
+            dtype=np.uint8,
         ).reshape(height, width, bytes_per_sample)
 
         # Mask off just the intended bits

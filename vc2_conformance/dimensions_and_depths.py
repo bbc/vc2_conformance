@@ -25,7 +25,8 @@ __all__ = [
 
 
 DimensionsAndDepths = namedtuple(
-    "DimensionsAndDepths", "width,height,depth_bits,bytes_per_sample",
+    "DimensionsAndDepths",
+    "width,height,depth_bits,bytes_per_sample",
 )
 """
 A set of picture component dimensions and bit depths.

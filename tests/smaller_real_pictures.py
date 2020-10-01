@@ -14,7 +14,11 @@ from vc2_conformance_data import NATURAL_PICTURES_FILENAMES
 
 # All of these contain a 16x16 pixel white square on a black background.
 TEST_PICTURES_PATHS = [
-    os.path.join(os.path.dirname(__file__), "test_images", filename,)
+    os.path.join(
+        os.path.dirname(__file__),
+        "test_images",
+        filename,
+    )
     for filename in ["square.raw", "wide.raw", "tall.raw"]
 ]
 

@@ -75,7 +75,8 @@ def alternative_level_1():
         LEVEL_CONSTRAINTS.extend(
             read_constraints_from_csv(
                 os.path.join(
-                    os.path.dirname(__file__), "alternative_level_constraints.csv",
+                    os.path.dirname(__file__),
+                    "alternative_level_constraints.csv",
                 )
             )
         )

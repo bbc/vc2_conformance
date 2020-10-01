@@ -122,7 +122,9 @@ class TestParseStreamAndParseSequence(object):
                         parse_code=tables.ParseCodes.high_quality_picture,
                     ),
                     picture_parse=bitstream.PictureParse(
-                        picture_header=bitstream.PictureHeader(picture_number=n,),
+                        picture_header=bitstream.PictureHeader(
+                            picture_number=n,
+                        ),
                     ),
                 )
                 for n in range(num_pictures)
@@ -186,7 +188,8 @@ class TestParseStreamAndParseSequence(object):
                         ),
                         transform_parameters=bitstream.TransformParameters(
                             slice_parameters=bitstream.SliceParameters(
-                                slices_x=3, slices_y=2,
+                                slices_x=3,
+                                slices_y=2,
                             ),
                         ),
                     ),
@@ -267,11 +270,13 @@ class TestParseStreamAndParseSequence(object):
                     ),
                     fragment_parse=bitstream.FragmentParse(
                         fragment_header=bitstream.FragmentHeader(
-                            picture_number=0, fragment_slice_count=0,
+                            picture_number=0,
+                            fragment_slice_count=0,
                         ),
                         transform_parameters=bitstream.TransformParameters(
                             slice_parameters=bitstream.SliceParameters(
-                                slices_x=3, slices_y=2,
+                                slices_x=3,
+                                slices_y=2,
                             ),
                         ),
                     ),
@@ -282,7 +287,8 @@ class TestParseStreamAndParseSequence(object):
                     ),
                     fragment_parse=bitstream.FragmentParse(
                         fragment_header=bitstream.FragmentHeader(
-                            picture_number=0, fragment_slice_count=num_slices_to_send,
+                            picture_number=0,
+                            fragment_slice_count=num_slices_to_send,
                         ),
                     ),
                 ),
@@ -291,7 +297,9 @@ class TestParseStreamAndParseSequence(object):
                         parse_code=tables.ParseCodes.high_quality_picture,
                     ),
                     picture_parse=bitstream.PictureParse(
-                        picture_header=bitstream.PictureHeader(picture_number=1,),
+                        picture_header=bitstream.PictureHeader(
+                            picture_number=1,
+                        ),
                     ),
                 ),
                 bitstream.DataUnit(
@@ -378,7 +386,9 @@ class TestParseStreamAndParseSequence(object):
                         parse_code=tables.ParseCodes.high_quality_picture,
                     ),
                     picture_parse=bitstream.PictureParse(
-                        picture_header=bitstream.PictureHeader(picture_number=10,),
+                        picture_header=bitstream.PictureHeader(
+                            picture_number=10,
+                        ),
                     ),
                 ),
                 # A fragmented HQ picture (sent over two fragments to ensure the
@@ -389,11 +399,13 @@ class TestParseStreamAndParseSequence(object):
                     ),
                     fragment_parse=bitstream.FragmentParse(
                         fragment_header=bitstream.FragmentHeader(
-                            picture_number=11, fragment_slice_count=0,
+                            picture_number=11,
+                            fragment_slice_count=0,
                         ),
                         transform_parameters=bitstream.TransformParameters(
                             slice_parameters=bitstream.SliceParameters(
-                                slices_x=2, slices_y=1,
+                                slices_x=2,
+                                slices_y=1,
                             ),
                         ),
                     ),
@@ -516,7 +528,11 @@ class TestParseStreamAndParseSequence(object):
 class TestParseInfo(object):
     def test_bad_parse_info_prefix(self):
         state = bytes_to_state(
-            serialise_to_bytes(bitstream.ParseInfo(parse_info_prefix=0xDEADBEEF,))
+            serialise_to_bytes(
+                bitstream.ParseInfo(
+                    parse_info_prefix=0xDEADBEEF,
+                )
+            )
         )
         state["_generic_sequence_matcher"] = Matcher(".*")
         with pytest.raises(decoder.BadParseInfoPrefix) as exc_info:
@@ -569,7 +585,10 @@ class TestParseInfo(object):
     def test_allowed_zero_next_parse_offset_for_pictures(self, parse_code):
         state = bytes_to_state(
             serialise_to_bytes(
-                bitstream.ParseInfo(parse_code=parse_code, next_parse_offset=0,)
+                bitstream.ParseInfo(
+                    parse_code=parse_code,
+                    next_parse_offset=0,
+                )
             )
         )
         state["_generic_sequence_matcher"] = Matcher(".*")
@@ -586,7 +605,10 @@ class TestParseInfo(object):
     def test_not_allowed_zero_next_parse_offset_for_non_pictures(self, parse_code):
         state = bytes_to_state(
             serialise_to_bytes(
-                bitstream.ParseInfo(parse_code=parse_code, next_parse_offset=0,)
+                bitstream.ParseInfo(
+                    parse_code=parse_code,
+                    next_parse_offset=0,
+                )
             )
         )
         state["_generic_sequence_matcher"] = Matcher(".*")
@@ -609,7 +631,8 @@ class TestParseInfo(object):
         state = bytes_to_state(
             serialise_to_bytes(
                 bitstream.ParseInfo(
-                    parse_code=parse_code, next_parse_offset=next_parse_offset,
+                    parse_code=parse_code,
+                    next_parse_offset=next_parse_offset,
                 )
             )
         )
@@ -622,7 +645,8 @@ class TestParseInfo(object):
         state = bytes_to_state(
             serialise_to_bytes(
                 bitstream.ParseInfo(
-                    parse_code=tables.ParseCodes.end_of_sequence, next_parse_offset=1,
+                    parse_code=tables.ParseCodes.end_of_sequence,
+                    next_parse_offset=1,
                 )
             )
         )
@@ -679,7 +703,9 @@ class TestParseInfo(object):
     def test_invalid_generic_sequence(self):
         state = bytes_to_state(
             serialise_to_bytes(
-                bitstream.ParseInfo(parse_code=tables.ParseCodes.end_of_sequence,)
+                bitstream.ParseInfo(
+                    parse_code=tables.ParseCodes.end_of_sequence,
+                )
             )
         )
         state["_generic_sequence_matcher"] = Matcher("sequence_header")
@@ -723,7 +749,9 @@ class TestParseInfo(object):
     def test_level_restricts_sequence(self):
         state = bytes_to_state(
             serialise_to_bytes(
-                bitstream.ParseInfo(parse_code=tables.ParseCodes.end_of_sequence,)
+                bitstream.ParseInfo(
+                    parse_code=tables.ParseCodes.end_of_sequence,
+                )
             )
         )
         state["_generic_sequence_matcher"] = Matcher(".*")
