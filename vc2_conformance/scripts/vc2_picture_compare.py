@@ -521,8 +521,8 @@ def enumerate_directories(dirname_a, dirname_b):
         sys.exit(108)
 
     return [
-        (filename_a, filenames_b[number])
-        for number, filename_a in sorted(filenames_a.items())
+        (filename_a, filenames_b[num])
+        for num, filename_a in sorted(filenames_a.items())
     ]
 
 
