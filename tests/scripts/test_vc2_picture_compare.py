@@ -594,8 +594,8 @@ class TestEnumerateDirectories(object):
             dir_a = tmpdir.join("a")
             dir_b = tmpdir.join("b")
 
-            os.mkdir(dir_a)
-            os.mkdir(dir_b)
+            os.mkdir(str(dir_a))
+            os.mkdir(str(dir_b))
 
             for filename in filenames_a:
                 open(str(dir_a.join(filename)), "w").close()
