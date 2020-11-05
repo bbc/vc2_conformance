@@ -5,7 +5,8 @@ r"""
 =======================
 
 A command-line utility which compares pairs of raw pictures (see
-:ref:`file-format`).
+:ref:`file-format`), or pairs of directories containing a series of raw
+pictures.
 
 Usage
 -----
@@ -18,6 +19,21 @@ be compared as follows::
       Y: Different: PSNR = 55.6 dB, 1426363 pixels (68.8%) differ
       C1: Different: PSNR = 57.7 dB, 662607 pixels (63.9%) differ
       C2: Different: PSNR = 56.8 dB, 703531 pixels (67.9%) differ
+
+Alternatively a pair of directories containing images whose filenames end
+with a number (and the extensions ``.raw`` and ``.json``). For example::
+
+    $ vc2-picture-compare ./directory_a/ ./directory_b/
+    Comparing ./directory_a/picture_0.raw and ./directory_b/picture_0.raw:
+      Pictures are identical
+    Comparing ./directory_a/picture_1.raw and ./directory_b/picture_1.raw:
+      Pictures are different:
+        Y: Different: PSNR = 55.6 dB, 1426363 pixels (68.8%) differ
+        C1: Different: PSNR = 57.7 dB, 662607 pixels (63.9%) differ
+        C2: Different: PSNR = 56.8 dB, 703531 pixels (67.9%) differ
+    Comparing ./directory_a/picture_2.raw and ./directory_b/picture_2.raw:
+      Pictures are identical
+    Summary: 2 identical, 1 different
 
 Differences in the encoded values are reported separately for each picture
 component.
@@ -81,7 +97,8 @@ The ``vc2-picture-compare`` tool can optionally output a simple difference mask
 image using ``--difference-mask``/``-D``. The generated image contains white
 pixels wherever the inputs differed and black pixels wherever they were
 identical. The generated difference mask is output as a raw file of the same
-format as the two input files.
+format as the two input files. This mode is only supported when two individual
+files are provided, not two directories.
 
 For example::
 
@@ -104,7 +121,11 @@ The complete set of arguments can be listed using ``--help``
 
 """
 
+import os
+
 import sys
+
+import re
 
 from argparse import ArgumentParser
 
@@ -256,14 +277,18 @@ def parse_args(*args, **kwargs):
     parser.add_argument(
         "filename_a",
         help="""
-            The filename of a .raw or .json raw picture.
+            The filename of a .raw or .json raw picture, or a directory
+            containing a series of .raw and .json files whose names end in a
+            number.
         """,
     )
 
     parser.add_argument(
         "filename_b",
         help="""
-            The filename of a .raw or .json raw picture.
+            The filename of a .raw or .json raw picture, or a directory
+            containing a series of .raw and .json files whose names end in a
+            number.
         """,
     )
 
@@ -279,7 +304,8 @@ def parse_args(*args, **kwargs):
         help="""
             Output a difference mask image to the specified file. This mask
             will contain white pixels wherever the input images differ and
-            black pixels where they match.
+            black pixels where they match. Only available when comparing files
+            (not directories).
         """,
     )
 
@@ -437,36 +463,107 @@ def generate_difference_mask_picture(deltas, video_parameters, picture_number=0)
     }
 
 
-def main(*args, **kwargs):
-    args = parse_args(*args, **kwargs)
+def enumerate_directories(dirname_a, dirname_b):
+    """
+    Given two directory names, return a list [(file_a, file_b), ...] of
+    pictures to compare.
+
+    Produces an error on stderr and call sys.exit if the files in the
+    directories contain duplicate numbers, mismatched numbers or no numbered
+    files at all.
+    """
+    file_lists = []  # [{number: filename_a, ...}, {number: filename_b, ...}]
+    for dirname in [dirname_a, dirname_b]:
+        # Find just the .raw files
+        filenames = [
+            os.path.join(dirname, name)
+            for name in os.listdir(dirname)
+            if name.endswith(".raw") and os.path.isfile(os.path.join(dirname, name))
+        ]
+
+        # Extract the numbers (checking for duplicates)
+        numbered_filenames = {}  # {number: filename, ...}
+        for filename in filenames:
+            match = re.search(r"([0-9]+)\.raw$", filename)
+            if match is None:
+                sys.stderr.write(
+                    "Error: An unnumbered file was found: {}\n".format(filename)
+                )
+                sys.exit(105)
+            number = int(match.group(1))
+            if number in numbered_filenames:
+                sys.stderr.write(
+                    "Error: More than one filename with number {} found in {}\n".format(
+                        number,
+                        dirname,
+                    )
+                )
+                sys.exit(106)
+            numbered_filenames[number] = filename
+
+        if len(numbered_filenames) == 0:
+            sys.stderr.write(
+                "Error: No pictures found in directory {}\n".format(dirname)
+            )
+            sys.exit(107)
+
+        file_lists.append(numbered_filenames)
+
+    # Check numbers in filenames match
+    filenames_a, filenames_b = file_lists
+    unmatched_numbers = set(filenames_a).symmetric_difference(set(filenames_b))
+    if unmatched_numbers:
+        sys.stderr.write(
+            "Error: Pictures numbered {} found in only one directory\n".format(
+                ", ".join(map(str, sorted(unmatched_numbers)))
+            )
+        )
+        sys.exit(108)
+
+    return [
+        (filename_a, filenames_b[number])
+        for number, filename_a in sorted(filenames_a.items())
+    ]
+
+
+def compare_pictures(filename_a, filename_b, difference_mask_filename=None):
+    """
+    Compare a pair of pictures.
+
+    Returns a string describing the differences
+    between the pictures (if any) and integer return code which is non-zero iff
+    the pictures differ.
+
+    If a difference_mask filename is given, writes a difference mask to that
+    file.
+    """
+    out = ""
 
     (
         (picture_a, video_parameters_a, picture_coding_mode_a),
         (picture_b, video_parameters_b, picture_coding_mode_b),
         byte_for_byte_identical,
-    ) = read_pictures_with_only_one_metadata_file_required(
-        args.filename_a,
-        args.filename_b,
-    )
+    ) = read_pictures_with_only_one_metadata_file_required(filename_a, filename_b)
 
     if video_parameters_a != video_parameters_b:
-        print("Video parameters are different:")
-        print(indent(video_parameter_diff(video_parameters_a, video_parameters_b)))
-        return 1
+        out += "Video parameters are different:\n"
+        out += indent(video_parameter_diff(video_parameters_a, video_parameters_b))
+        out += "\n"
+        return (out.rstrip(), 1)
 
     if picture_coding_mode_a != picture_coding_mode_b:
-        print("Picture coding modes are different:")
-        print(
-            indent(
-                picture_coding_mode_diff(picture_coding_mode_a, picture_coding_mode_b)
-            )
+        out += "Picture coding modes are different:\n"
+        out += indent(
+            picture_coding_mode_diff(picture_coding_mode_a, picture_coding_mode_b)
         )
-        return 2
+        out += "\n"
+        return (out.rstrip(), 2)
 
     if picture_a["pic_num"] != picture_b["pic_num"]:
-        print("Picture numbers are different:")
-        print(indent(picture_number_diff(picture_a["pic_num"], picture_b["pic_num"])))
-        return 3
+        out += "Picture numbers are different:\n"
+        out += indent(picture_number_diff(picture_a["pic_num"], picture_b["pic_num"]))
+        out += "\n"
+        return (out.rstrip(), 3)
 
     deltas = OrderedDict(
         (
@@ -483,25 +580,73 @@ def main(*args, **kwargs):
     )
     if identical:
         if not byte_for_byte_identical:
-            print(
+            out += (
                 "Warning: Padding bits in raw picture data are different "
-                "(is file endianness correct?)"
+                "(is file endianness correct?)\n"
             )
-        print("Pictures are identical")
+        out += "Pictures are identical\n"
     else:
-        print("Pictures are different:")
-        print(indent(differences))
+        out += "Pictures are different:\n"
+        out += indent(differences)
+        out += "\n"
 
     # Write difference mask, as required
-    if args.difference_mask is not None:
+    if difference_mask_filename is not None:
         mask = generate_difference_mask_picture(
             deltas,
             video_parameters_a,
             picture_number=picture_a["pic_num"],
         )
-        write(mask, video_parameters_a, picture_coding_mode_a, args.difference_mask)
+        write(mask, video_parameters_a, picture_coding_mode_a, difference_mask_filename)
 
-    return 0 if identical else 4
+    return (out.rstrip(), 0 if identical else 4)
+
+
+def main(*args, **kwargs):
+    args = parse_args(*args, **kwargs)
+
+    a_is_dir = os.path.isdir(args.filename_a)
+    b_is_dir = os.path.isdir(args.filename_b)
+
+    if a_is_dir != b_is_dir:
+        sys.stderr.write(
+            "Error: Arguments must both be files or both be directories.\n"
+        )
+        return 103
+
+    if a_is_dir and b_is_dir:
+        if args.difference_mask is not None:
+            sys.stderr.write(
+                "Error: --difference-mask/-D may only be used "
+                "when files (not directories) are compared.\n"
+            )
+            return 104
+
+        final_exitcode = 0
+        num_different = 0
+        num_same = 0
+        for filename_a, filename_b in enumerate_directories(
+            args.filename_a, args.filename_b
+        ):
+            print("Comparing {} and {}:".format(filename_a, filename_b))
+            message, exitcode = compare_pictures(filename_a, filename_b)
+            print(indent(message))
+            if exitcode != 0:
+                final_exitcode = exitcode
+                num_different += 1
+            else:
+                num_same += 1
+
+        print("Summary: {} identical, {} different".format(num_same, num_different))
+        return final_exitcode
+    else:
+        message, exitcode = compare_pictures(
+            args.filename_a,
+            args.filename_b,
+            args.difference_mask,
+        )
+        print(message)
+        return exitcode
 
 
 if __name__ == "__main__":

@@ -31,15 +31,20 @@ name>/decoder/<test-case-name>_expected/`` directory. The output of the decoder
 under test must be identical to the reference decoding.
 
 The :ref:`vc2-picture-compare` tool is provided for comparing decoder outputs
-with the reference decodings. It takes as argument the name of two raw picture
-files and reports on differences between them.
+with the reference decodings. It takes as argument either the names of two raw
+picture files, or the names of two directories containing numbered raw picture
+files.  Differences between pictures are then reported.
 
 For example::
 
-    $ vc2-picture-compare \
-        test_cases/decoder/real_pictures_expected/picture_0.raw \
-        decoder_output/real_pictures/picture_0.raw
-    Pictures are identical
+    $ vc2-picture-compare expected/ actual/
+    Comparing expected/picture_0.raw and actual/picture_0.raw
+      Pictures are identical
+    Comparing expected/picture_1.raw and actual/picture_1.raw
+      Pictures are identical
+    Comparing expected/picture_2.raw and actual/picture_2.raw
+      Pictures are identical
+    Summary: 3 identical, 0 different
 
 For a test case to pass:
 

@@ -51,16 +51,27 @@ error message will be produced explaining the problem.
 Once a bitstream has been validated and decoded using
 :ref:`vc2-bitstream-validator`, the :ref:`vc2-picture-compare` may be used to
 compare the output against the original pictures.  The script must be provided
-with two raw picture filenames: an original image, and its encoded and decoded
-counterpart. The similarity of the two images will be reported. For example::
+with two raw picture filenames, or two directory names containing raw pictures.
+One should contain the original images, and the other its encoded then decoded
+counterpart. The similarity of the images will be reported. For example::
 
-    $ vc2-picture-compare \
-        test_cases/encoder/real_pictures/picture_0.raw \
-        real_picutres_decoded/picture_0.raw
-    Pictures are different:
-      Y: Different: PSNR = 55.6 dB, 1426363 pixels (68.8%) differ
-      C1: Different: PSNR = 57.7 dB, 662607 pixels (63.9%) differ
-      C2: Different: PSNR = 56.8 dB, 703531 pixels (67.9%) differ
+    $ vc2-picture-compare real_pictures/ real_pictures_decoded/
+    Comparing real_pictures/picture_0.raw and real_pictures_decoded/picture_0.raw
+      Pictures are different:
+        Y: Different: PSNR = 55.6 dB, 1426363 pixels (68.8%) differ
+        C1: Different: PSNR = 57.7 dB, 662607 pixels (63.9%) differ
+        C2: Different: PSNR = 56.8 dB, 703531 pixels (67.9%) differ
+    Comparing real_pictures/picture_1.raw and real_pictures_decoded/picture_1.raw
+      Pictures are different:
+        Y: Different: PSNR = 55.6 dB, 1426363 pixels (68.8%) differ
+        C1: Different: PSNR = 57.7 dB, 662607 pixels (63.9%) differ
+        C2: Different: PSNR = 56.8 dB, 703531 pixels (67.9%) differ
+    Comparing real_pictures/picture_2.raw and real_pictures_decoded/picture_2.raw
+      Pictures are different:
+        Y: Different: PSNR = 55.6 dB, 1426363 pixels (68.8%) differ
+        C1: Different: PSNR = 57.7 dB, 662607 pixels (63.9%) differ
+        C2: Different: PSNR = 56.8 dB, 703531 pixels (67.9%) differ
+    Summary: 0 identical, 3 different
 
 For a test case to pass:
 
