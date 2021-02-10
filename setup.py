@@ -9,7 +9,6 @@ with open(version_file, "r") as f:
     exec (f.read())  # noqa: E211
 
 install_requires = [
-    "enum34",
     # NB: bitarray-hardbyte is used in place of official 'bitarray' package
     # due to provision of a binary wheel.
     "bitarray-hardbyte",
@@ -19,12 +18,21 @@ install_requires = [
     "vc2_conformance_data>=0.1.0",
 ]
 
-# Use old versions of libraries which have deprecated Python 2.7 support
-if sys.version[0] == "2":
+if sys.version_info < (3, 0):
+    install_requires.append("enum34")
+
+# Use old versions of libraries which have deprecated older Python version
+# support
+if sys.version_info < (3, 0):
     install_requires.append("pillow<7")
-    install_requires.append("numpy<1.17")
 else:
     install_requires.append("pillow")
+
+if sys.version_info < (3, 0):
+    install_requires.append("numpy<1.17")
+elif sys.version_info < (3, 7):
+    install_requires.append("numpy<1.20")
+else:
     install_requires.append("numpy")
 
 setup(
