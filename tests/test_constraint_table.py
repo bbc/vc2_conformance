@@ -276,6 +276,13 @@ class TestAnyValue(object):
         assert 123 in a
         assert "foo" in a
 
+    def test_add(self):
+        a = AnyValue()
+
+        # Should do nothing
+        a.add_value(123)
+        a.add_range(10, 20)
+
     def test_combine(self):
         a1 = AnyValue()
         a2 = AnyValue()

@@ -403,11 +403,11 @@ class AnyValue(ValueSet):
     def __init__(self):
         pass
 
-    def add_value(self):
-        raise AttributeError("add_value")
+    def add_value(self, value):
+        pass
 
-    def add_range(self):
-        raise AttributeError("add_range")
+    def add_range(self, lower_bound, upper_bound):
+        pass
 
     def __contains__(self, value):
         return True
