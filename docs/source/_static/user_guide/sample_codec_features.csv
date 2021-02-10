@@ -3,8 +3,6 @@ name,hd_lossy,hd_fragmented,hd_lossless,custom_8_bit_rgb
 # (11.2.1),,,,
 level,unconstrained,unconstrained,unconstrained,unconstrained
 profile,high_quality,high_quality,high_quality,high_quality
-major_version,3,3,3,3
-minor_version,0,0,0,0
 ,,,,
 # (11.1),,,,
 base_video_format,hd1080p_50,hd1080p_50,hd1080p_50,hd1080p_50

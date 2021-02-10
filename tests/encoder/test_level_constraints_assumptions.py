@@ -187,8 +187,6 @@ from sample_codec_features import MINIMAL_CODEC_FEATURES
 PARAMETERS_FIXED_BY_CODEC_FEATURES = [
     "level",
     "profile",
-    "major_version",
-    "minor_version",
     "picture_coding_mode",
     "wavelet_index",
     "dwt_depth",

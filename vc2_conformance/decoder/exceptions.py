@@ -12,6 +12,8 @@ error.
 
 from textwrap import dedent
 
+from fractions import Fraction
+
 from vc2_conformance.string_utils import wrap_paragraphs
 
 from vc2_conformance.pseudocode.vc2_math import intlog2
@@ -19,13 +21,31 @@ from vc2_conformance.pseudocode.vc2_math import intlog2
 from vc2_data_tables import (
     PARSE_INFO_PREFIX,
     PARSE_INFO_HEADER_BYTES,
+    PRESET_FRAME_RATES,
     ParseCodes,
     Profiles,
     LEVELS,
+    PresetSignalRanges,
+    PresetColorSpecs,
+    PresetColorPrimaries,
+    PresetColorMatrices,
+    PresetTransferFunctions,
     WaveletFilters,
 )
 
 from vc2_conformance.level_constraints import LEVEL_SEQUENCE_RESTRICTIONS
+
+from vc2_conformance.version_constraints import (
+    MINIMUM_MAJOR_VERSION,
+    preset_frame_rate_version_implication,
+    preset_signal_range_version_implication,
+    preset_color_spec_version_implication,
+    preset_color_primaries_version_implication,
+    preset_color_matrix_version_implication,
+    preset_transfer_function_version_implication,
+    parse_code_version_implication,
+    profile_version_implication,
+)
 
 from vc2_conformance.bitstream.io import to_bit_offset
 
@@ -1995,4 +2015,285 @@ class FragmentSlicesNotContiguous(ConformanceError):
                 {{cmd}} {{file}} --from-offset {} --to_offset {{offset}} --show fragment_parse --hide slice
         """.format(
             to_bit_offset(*self.initial_fragment_offset),
+        )
+
+
+class PresetFrameRateNotSupportedByVersion(ConformanceError):
+    """
+    preset_frame_rate (11.4.6) was given a value not supported by stream
+    version specified specified (11.2.2).
+
+    The exception argument will contain the offending index and specified
+    version number.
+    """
+
+    def __init__(self, index, major_version):
+        self.index = index
+        self.major_version = major_version
+        super(PresetFrameRateNotSupportedByVersion, self).__init__()
+
+    def explain(self):
+        return """
+            The preset frame rate index {:d} ({} FPS) (11.4.6) is only supported
+            when major_version is at least {} but major_version is {}.  See
+            (11.2.2).
+        """.format(
+            self.index,
+            Fraction(*PRESET_FRAME_RATES[self.index]),
+            preset_frame_rate_version_implication(self.index),
+            self.major_version,
+        )
+
+
+class PresetSignalRangeNotSupportedByVersion(ConformanceError):
+    """
+    preset_signal_range (11.4.9) was given a value not supported by stream
+    version specified specified (11.2.2).
+
+    The exception argument will contain the offending index and specified
+    version number.
+    """
+
+    def __init__(self, index, major_version):
+        self.index = index
+        self.major_version = major_version
+        super(PresetSignalRangeNotSupportedByVersion, self).__init__()
+
+    def explain(self):
+        return """
+            The preset signal range index {:d} ({}) (11.4.9) is only supported
+            when major_version is at least {} but major_version is {}. See
+            (11.2.2).
+        """.format(
+            self.index,
+            PresetSignalRanges(self.index).name,
+            preset_signal_range_version_implication(self.index),
+            self.major_version,
+        )
+
+
+class PresetColorSpecNotSupportedByVersion(ConformanceError):
+    """
+    preset_color_spec (11.4.10.1) was given a value not supported by stream
+    version specified specified (11.2.2).
+
+    The exception argument will contain the offending index and specified
+    version number.
+    """
+
+    def __init__(self, index, major_version):
+        self.index = index
+        self.major_version = major_version
+        super(PresetColorSpecNotSupportedByVersion, self).__init__()
+
+    def explain(self):
+        return """
+            The preset color spec index {:d} ({}) (11.4.10.1) is only supported
+            when major_version is at least {} but major_version is {}.  See
+            (11.2.2).
+        """.format(
+            self.index,
+            PresetColorSpecs(self.index).name,
+            preset_color_spec_version_implication(self.index),
+            self.major_version,
+        )
+
+
+class PresetColorPrimariesNotSupportedByVersion(ConformanceError):
+    """
+    preset_color_primaries (11.4.10.2) was given a value not supported by
+    stream version specified specified (11.2.2).
+
+    The exception argument will contain the offending index and specified
+    version number.
+    """
+
+    def __init__(self, index, major_version):
+        self.index = index
+        self.major_version = major_version
+        super(PresetColorPrimariesNotSupportedByVersion, self).__init__()
+
+    def explain(self):
+        return """
+            The preset color primaries index {:d} ({}) (11.4.10.2) is only
+            supported when major_version is at least {} but major_version is
+            {}. See (11.2.2).
+        """.format(
+            self.index,
+            PresetColorPrimaries(self.index).name,
+            preset_color_primaries_version_implication(self.index),
+            self.major_version,
+        )
+
+
+class PresetColorMatrixNotSupportedByVersion(ConformanceError):
+    """
+    preset_color_matrix (11.4.10.3) was given a value not supported by
+    stream version specified specified (11.2.2).
+
+    The exception argument will contain the offending index and specified
+    version number.
+    """
+
+    def __init__(self, index, major_version):
+        self.index = index
+        self.major_version = major_version
+        super(PresetColorMatrixNotSupportedByVersion, self).__init__()
+
+    def explain(self):
+        return """
+            The preset color matrix index {:d} ({}) (11.4.10.3) is only
+            supported when major_version is at least {} but major_version is
+            {}. See (11.2.2).
+        """.format(
+            self.index,
+            PresetColorMatrices(self.index).name,
+            preset_color_matrix_version_implication(self.index),
+            self.major_version,
+        )
+
+
+class PresetTransferFunctionNotSupportedByVersion(ConformanceError):
+    """
+    preset_transfer_function (11.4.10.4) was given a value not supported by
+    stream version specified specified (11.2.2).
+
+    The exception argument will contain the offending index and specified
+    version number.
+    """
+
+    def __init__(self, index, major_version):
+        self.index = index
+        self.major_version = major_version
+        super(PresetTransferFunctionNotSupportedByVersion, self).__init__()
+
+    def explain(self):
+        return """
+            The preset transfer function index {:d} ({}) (11.4.10.4) is only
+            supported when major_version is at least {} but major_version is
+            {}. See (11.2.2).
+        """.format(
+            self.index,
+            PresetTransferFunctions(self.index).name,
+            preset_transfer_function_version_implication(self.index),
+            self.major_version,
+        )
+
+
+class ParseCodeNotSupportedByVersion(ConformanceError):
+    """
+    parse_code (10.5.1) specified a data unit type which is not supported by
+    stream version specified specified (11.2.2).
+
+    The exception argument will contain the parse code and specified version number.
+    """
+
+    def __init__(self, parse_code, major_version):
+        self.parse_code = parse_code
+        self.major_version = major_version
+        super(ParseCodeNotSupportedByVersion, self).__init__()
+
+    def explain(self):
+        return """
+            The parse code (10.5.1) specifies a {} data unit but this is only
+            supported when major_version is at least {} but major_version is
+            {}. See (11.2.2).
+        """.format(
+            known_parse_code_to_string(self.parse_code),
+            parse_code_version_implication(self.parse_code),
+            self.major_version,
+        )
+
+
+class ProfileNotSupportedByVersion(ConformanceError):
+    """
+    parse_parameters (11.2.1) specified a profile which is not supported by
+    stream version specified specified (11.2.2).
+
+    The exception argument will contain the profile and specified version number.
+    """
+
+    def __init__(self, profile, major_version):
+        self.profile = profile
+        self.major_version = major_version
+        super(ProfileNotSupportedByVersion, self).__init__()
+
+    def explain(self):
+        return """
+            The {} profile is only supported when major_version is at least {}
+            but major_version is {}. See (11.2.2).
+        """.format(
+            known_profile_to_string(self.profile),
+            profile_version_implication(self.profile),
+            self.major_version,
+        )
+
+
+class MajorVersionTooLow(ConformanceError):
+    """
+    Thrown when a sequence specifies a major_version (11.2.1) which is less
+    than 1 as required by (11.2.2).
+
+    The exception argument will contain the major_version given in the
+    sequence.
+    """
+
+    def __init__(self, major_version):
+        self.major_version = major_version
+        super(MajorVersionTooLow, self).__init__()
+
+    def explain(self):
+        return """
+            The major_version (11.2.1) must be at least {} but {} was given
+            instead, see (11.2.2).
+        """.format(
+            MINIMUM_MAJOR_VERSION,
+            self.major_version,
+        )
+
+
+class MinorVersionNotZero(ConformanceError):
+    """
+    Thrown when a sequence specifies a minor_version (11.2.1) which is not 0 as
+    required by (11.2.2).
+
+    The exception argument will contain the minor_version given in the
+    sequence.
+    """
+
+    def __init__(self, minor_version):
+        self.minor_version = minor_version
+        super(MinorVersionNotZero, self).__init__()
+
+    def explain(self):
+        return """
+            The minor_version (11.2.1) must be 0 but {} was given instead, see
+            (11.2.2).
+        """.format(
+            self.minor_version,
+        )
+
+
+class MajorVersionTooHigh(ConformanceError):
+    """
+    Thrown when a sequence specifies a major_version (11.2.1) which is higher
+    than required for the features actually used in the sequence.
+
+    The exception argument will contain the major_version given in the
+    sequence and the expected major_version.
+    """
+
+    def __init__(self, major_version, expected_major_version):
+        self.major_version = major_version
+        self.expected_major_version = expected_major_version
+        super(MajorVersionTooHigh, self).__init__()
+
+    def explain(self):
+        return """
+            The major_version (11.2.1) specified, {}, is too high: only
+            features requiring major_version {} were used in the sequence, see
+            (11.2.2).
+        """.format(
+            self.major_version,
+            self.expected_major_version,
         )

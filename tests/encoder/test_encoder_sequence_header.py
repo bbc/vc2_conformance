@@ -84,8 +84,6 @@ from sample_codec_features import MINIMAL_CODEC_FEATURES
 HD_1440X1080I60_OVER_SD_SDI_CODEC_FEATURES = CodecFeatures(
     level=Levels.hd_over_sd_sdi,
     profile=Profiles.low_delay,
-    major_version=2,
-    minor_version=0,
     picture_coding_mode=PictureCodingModes.pictures_are_fields,
     video_parameters=VideoParameters(
         frame_width=1440,
@@ -1032,7 +1030,7 @@ def serialise(context, pseudocode, state=None, file=None, *args, **kwargs):
 def test_make_parse_parameters():
     state = State()
     serialise(make_parse_parameters(MINIMAL_CODEC_FEATURES), parse_parameters, state)
-    assert state["major_version"] == 3
+    assert state["major_version"] == 3  # From vc2_default_values
     assert state["minor_version"] == 0
     assert state["profile"] == Profiles.high_quality
     assert state["level"] == Levels.unconstrained
@@ -1061,6 +1059,9 @@ def test_iter_sequence_headers(codec_features):
     )
 
     for sh in sequence_headers:
+        # Set the version to one compatible with the levels tried in this test
+        sh.setdefault("parse_parameters", {})["major_version"] = 2
+
         f = BytesIO()
         state = State()
         serialise(pi, parse_info, state, f)

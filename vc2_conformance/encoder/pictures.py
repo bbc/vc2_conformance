@@ -113,7 +113,7 @@ from vc2_conformance.pseudocode.picture_encoding import picture_encode
 
 from vc2_conformance.codec_features import codec_features_to_trivial_level_constraints
 
-from vc2_conformance.constraint_table import allowed_values_for
+from vc2_conformance.constraint_table import allowed_values_for, ValueSet
 
 from vc2_conformance.level_constraints import LEVEL_CONSTRAINTS
 
@@ -150,7 +150,6 @@ from vc2_conformance.bitstream.exp_golomb import signed_exp_golomb_length
 from vc2_conformance.encoder.exceptions import (
     MissingQuantizationMatrixError,
     IncompatibleLevelAndExtendedTransformParametersError,
-    AsymmetricTransformPreVersion3Error,
     PictureBytesSpecifiedForLosslessModeError,
     InsufficientHQPictureBytesError,
     InsufficientLDPictureBytesError,
@@ -814,7 +813,7 @@ def make_quant_matrix(codec_features):
         )
 
 
-def decide_flag(codec_features, flag_name, required):
+def decide_extended_transform_flag(codec_features, flag_name, required):
     """
     Decide what asym_transform*_flag setting to use, accounting for level
     restrictions.
@@ -846,6 +845,24 @@ def decide_flag(codec_features, flag_name, required):
         LEVEL_CONSTRAINTS, flag_name, constrained_values
     )
 
+    # Warning: Slight bodge/special case handled here...
+    #
+    # The make_extended_transform_parameters function (and by extension, this
+    # function) is required to return an ExtendedTransformParameters object
+    # even for streams with major_version < 3 which don't contain that field.
+    #
+    # To handle this case, we treat an empty constraint table entry as allowing
+    # 'False' as a valid flag option when in reality for < v3 streams no value
+    # is permitted.
+    #
+    # Note that we will still raise
+    # IncompatibleLevelAndExtendedTransformParametersError if required is True
+    # in this case. We also don't allow False if the level specifically
+    # requires the flag to be True (i.e. we only allow it when the level gives
+    # no values).
+    if permitted_flags == ValueSet():
+        permitted_flags.add_value(False)
+
     try:
         return next(flag for flag in usable_flags if flag in permitted_flags)
     except StopIteration:
@@ -861,7 +878,7 @@ def make_extended_transform_parameters(codec_features):
 
     etp = ExtendedTransformParameters()
 
-    etp["asym_transform_index_flag"] = decide_flag(
+    etp["asym_transform_index_flag"] = decide_extended_transform_flag(
         codec_features,
         "asym_transform_index_flag",
         codec_features["wavelet_index"] != codec_features["wavelet_index_ho"],
@@ -869,7 +886,7 @@ def make_extended_transform_parameters(codec_features):
     if etp["asym_transform_index_flag"]:
         etp["wavelet_index_ho"] = codec_features["wavelet_index_ho"]
 
-    etp["asym_transform_flag"] = decide_flag(
+    etp["asym_transform_flag"] = decide_extended_transform_flag(
         codec_features,
         "asym_transform_flag",
         codec_features["dwt_depth_ho"] != 0,
@@ -885,9 +902,6 @@ def make_picture_parse(
 ):
     """
     Compress a picture.
-
-    Raises :py:exc:`AsymmetricTransformPreVersion3Error` if an asymmetric
-    transform type is specified for a pre-version 3 stream.
 
     Raises :py:exc:`PictureBytesSpecifiedForLosslessModeError` if
     ``picture_bytes`` is specifiied for a lossless coding mode.
@@ -981,19 +995,17 @@ def make_picture_parse(
     transform_parameters = TransformParameters(
         wavelet_index=codec_features["wavelet_index"],
         dwt_depth=codec_features["dwt_depth"],
+        # NB: We *always* include an ExtendedTransformParameters field. This
+        # field will later be removed (if not supported by the major_version
+        # chosen for the stream) using the
+        # :py:func:`vc2_conformance.bitstream.vc2_autofill.autofill_major_version`
+        # function.
+        extended_transform_parameters=make_extended_transform_parameters(
+            codec_features
+        ),
         slice_parameters=slice_parameters,
         quant_matrix=make_quant_matrix(codec_features),
     )
-    if codec_features["major_version"] >= 3:
-        transform_parameters[
-            "extended_transform_parameters"
-        ] = make_extended_transform_parameters(codec_features)
-    else:
-        if (
-            codec_features["wavelet_index"] != codec_features["wavelet_index_ho"]
-            or codec_features["dwt_depth_ho"] != 0
-        ):
-            raise AsymmetricTransformPreVersion3Error(codec_features)
 
     wavelet_transform = WaveletTransform(
         transform_parameters=transform_parameters,

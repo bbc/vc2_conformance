@@ -7,7 +7,10 @@ from copy import deepcopy
 
 from vc2_data_tables import ParseCodes
 
-from vc2_conformance.bitstream import Stream
+from vc2_conformance.bitstream import (
+    Stream,
+    autofill_major_version,
+)
 
 from vc2_conformance.test_cases import (
     TestCase,
@@ -86,10 +89,6 @@ def extended_transform_parameters(codec_features):
     Additionally, these test cases are skipped for asymmetric transforms when
     the flag being tested must already be ``1``.
     """
-    # Nothing to do if not version 3
-    if codec_features["major_version"] < 3:
-        return
-
     # Generate a base sequence in which we'll replace the extended transform
     # parameters later
     base_sequence = make_sequence(
@@ -99,6 +98,17 @@ def extended_transform_parameters(codec_features):
             codec_features["picture_coding_mode"],
         ),
     )
+
+    # Skip this test if the generated sequence does not use major_version 3
+    # since no extended transform parameters field will be present.
+    autofill_major_version(Stream(sequences=[base_sequence]))
+    major_versions = [
+        data_unit["sequence_header"]["parse_parameters"]["major_version"]
+        for data_unit in base_sequence["data_units"]
+        if data_unit["parse_info"]["parse_code"] == ParseCodes.sequence_header
+    ]
+    if major_versions[0] != 3:
+        return
 
     # Try enabling the asym_transform_index_flag and asym_transform_flag, if
     # not already enabled and if the current level permits it

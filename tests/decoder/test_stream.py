@@ -100,6 +100,7 @@ class TestParseStreamAndParseSequence(object):
                     ),
                     sequence_header=bitstream.SequenceHeader(
                         picture_coding_mode=picture_coding_mode,
+                        parse_parameters=bitstream.ParseParameters(major_version=2),
                         video_parameters=bitstream.SourceParameters(
                             frame_size=bitstream.FrameSize(
                                 # Don't waste time on full-sized frames
@@ -452,6 +453,7 @@ class TestParseStreamAndParseSequence(object):
                         parse_code=tables.ParseCodes.sequence_header,
                     ),
                     sequence_header=bitstream.SequenceHeader(
+                        parse_parameters=bitstream.ParseParameters(major_version=2),
                         video_parameters=bitstream.SourceParameters(
                             frame_size=bitstream.FrameSize(
                                 # Don't waste time on full-sized frames
@@ -524,6 +526,191 @@ class TestParseStreamAndParseSequence(object):
             # And the picture coding mode too...
             assert args[2] == tables.PictureCodingModes.pictures_are_frames
 
+    def test_parse_code_version_restriction(self):
+        # A sequence with 1 HQ picture fragment but (incorrectly) major_version 2
+        seq = bitstream.Sequence(
+            data_units=[
+                bitstream.DataUnit(
+                    parse_info=bitstream.ParseInfo(
+                        parse_code=tables.ParseCodes.sequence_header,
+                    ),
+                    sequence_header=bitstream.SequenceHeader(
+                        parse_parameters=bitstream.ParseParameters(
+                            major_version=2,
+                        ),
+                        video_parameters=bitstream.SourceParameters(
+                            frame_size=bitstream.FrameSize(
+                                # Don't waste time on full-sized frames
+                                custom_dimensions_flag=True,
+                                frame_width=4,
+                                frame_height=4,
+                            ),
+                            clean_area=bitstream.CleanArea(
+                                custom_clean_area_flag=True,
+                                clean_width=4,
+                                clean_height=4,
+                            ),
+                        ),
+                    ),
+                ),
+                bitstream.DataUnit(
+                    parse_info=bitstream.ParseInfo(
+                        parse_code=tables.ParseCodes.high_quality_picture_fragment,
+                    ),
+                    fragment_parse=bitstream.FragmentParse(
+                        fragment_header=bitstream.FragmentHeader(
+                            fragment_slice_count=0,
+                        ),
+                        transform_parameters=bitstream.TransformParameters(
+                            slice_parameters=bitstream.SliceParameters(
+                                slices_x=1,
+                                slices_y=1,
+                            ),
+                        ),
+                    ),
+                ),
+                bitstream.DataUnit(
+                    parse_info=bitstream.ParseInfo(
+                        parse_code=tables.ParseCodes.high_quality_picture_fragment,
+                    ),
+                    fragment_parse=bitstream.FragmentParse(
+                        fragment_header=bitstream.FragmentHeader(
+                            fragment_slice_count=1,
+                        ),
+                    ),
+                ),
+                bitstream.DataUnit(
+                    parse_info=bitstream.ParseInfo(
+                        parse_code=tables.ParseCodes.end_of_sequence,
+                    ),
+                ),
+            ]
+        )
+        populate_parse_offsets(seq)
+
+        state = bytes_to_state(serialise_to_bytes(seq))
+        with pytest.raises(decoder.ParseCodeNotSupportedByVersion):
+            decoder.parse_stream(state)
+
+    def test_profile_version_restriction(self):
+        # A sequence with no pictures but (incorrectly) major_version 1 and
+        # profile high quality.
+        seq = bitstream.Sequence(
+            data_units=[
+                bitstream.DataUnit(
+                    parse_info=bitstream.ParseInfo(
+                        parse_code=tables.ParseCodes.sequence_header,
+                    ),
+                    sequence_header=bitstream.SequenceHeader(
+                        parse_parameters=bitstream.ParseParameters(
+                            major_version=1,
+                            profile=tables.Profiles.high_quality,
+                        ),
+                        video_parameters=bitstream.SourceParameters(
+                            frame_size=bitstream.FrameSize(
+                                # Don't waste time on full-sized frames
+                                custom_dimensions_flag=True,
+                                frame_width=4,
+                                frame_height=4,
+                            ),
+                            clean_area=bitstream.CleanArea(
+                                custom_clean_area_flag=True,
+                                clean_width=4,
+                                clean_height=4,
+                            ),
+                        ),
+                    ),
+                ),
+                bitstream.DataUnit(
+                    parse_info=bitstream.ParseInfo(
+                        parse_code=tables.ParseCodes.end_of_sequence,
+                    ),
+                ),
+            ]
+        )
+        populate_parse_offsets(seq)
+
+        state = bytes_to_state(serialise_to_bytes(seq))
+        with pytest.raises(decoder.ProfileNotSupportedByVersion):
+            decoder.parse_stream(state)
+
+    @pytest.mark.parametrize(
+        "num_pictures,major_version,expected_major_version,exp_fail",
+        [
+            # The underlying stream here only requires version 2
+            (1, 3, 2, True),
+            (1, 2, 2, False),
+            # Test the special case that for empty streams we can set the
+            # major_version to 3 and no problems should be detected
+            (0, 3, 2, False),
+            (0, 2, 2, False),
+        ],
+    )
+    def test_minimal_major_version_requirement(
+        self,
+        num_pictures,
+        major_version,
+        expected_major_version,
+        exp_fail,
+    ):
+        # A sequence with 1 (or zero) HQ pictures
+        seq = bitstream.Sequence(
+            data_units=[
+                bitstream.DataUnit(
+                    parse_info=bitstream.ParseInfo(
+                        parse_code=tables.ParseCodes.sequence_header,
+                    ),
+                    sequence_header=bitstream.SequenceHeader(
+                        parse_parameters=bitstream.ParseParameters(
+                            major_version=major_version,
+                        ),
+                        video_parameters=bitstream.SourceParameters(
+                            frame_size=bitstream.FrameSize(
+                                # Don't waste time on full-sized frames
+                                custom_dimensions_flag=True,
+                                frame_width=4,
+                                frame_height=4,
+                            ),
+                            clean_area=bitstream.CleanArea(
+                                custom_clean_area_flag=True,
+                                clean_width=4,
+                                clean_height=4,
+                            ),
+                        ),
+                    ),
+                ),
+            ]
+            + [
+                bitstream.DataUnit(
+                    parse_info=bitstream.ParseInfo(
+                        parse_code=tables.ParseCodes.high_quality_picture,
+                    ),
+                    picture_parse=bitstream.PictureParse(
+                        picture_header=bitstream.PictureHeader(
+                            picture_number=n,
+                        ),
+                    ),
+                )
+                for n in range(num_pictures)
+            ]
+            + [
+                bitstream.DataUnit(
+                    parse_info=bitstream.ParseInfo(
+                        parse_code=tables.ParseCodes.end_of_sequence,
+                    ),
+                ),
+            ]
+        )
+        populate_parse_offsets(seq)
+
+        state = bytes_to_state(serialise_to_bytes(seq))
+        if exp_fail:
+            with pytest.raises(decoder.MajorVersionTooHigh):
+                decoder.parse_stream(state)
+        else:
+            decoder.parse_stream(state)
+        assert state["_expected_major_version"] == expected_major_version
+
 
 class TestParseInfo(object):
     def test_bad_parse_info_prefix(self):
@@ -591,6 +778,7 @@ class TestParseInfo(object):
                 )
             )
         )
+        state["major_version"] = 3
         state["_generic_sequence_matcher"] = Matcher(".*")
         decoder.parse_info(state)
 

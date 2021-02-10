@@ -69,6 +69,9 @@ class TestBitstreamValidator(object):
                             next_parse_offset=19,
                         ),
                         sequence_header=bitstream.SequenceHeader(
+                            parse_parameters=bitstream.ParseParameters(
+                                major_version=2,
+                            ),
                             video_parameters=bitstream.SourceParameters(
                                 frame_size=bitstream.FrameSize(
                                     custom_dimensions_flag=True,

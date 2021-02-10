@@ -23,6 +23,17 @@ from vc2_data_tables import (
 
 from vc2_conformance.level_constraints import LEVEL_SEQUENCE_RESTRICTIONS
 
+from vc2_conformance.version_constraints import (
+    MINIMUM_MAJOR_VERSION,
+    preset_frame_rate_version_implication,
+    preset_signal_range_version_implication,
+    preset_color_spec_version_implication,
+    preset_color_primaries_version_implication,
+    preset_color_matrix_version_implication,
+    preset_transfer_function_version_implication,
+    profile_version_implication,
+)
+
 from vc2_conformance.pseudocode.video_parameters import (
     set_source_defaults,
     set_coding_parameters,
@@ -38,6 +49,7 @@ from vc2_conformance.pseudocode.video_parameters import (
 from vc2_conformance.decoder.assertions import (
     assert_in_enum,
     assert_level_constraint,
+    log_version_lower_bound,
 )
 
 from vc2_conformance.decoder.exceptions import (
@@ -62,6 +74,15 @@ from vc2_conformance.decoder.exceptions import (
     FrameRateHasZeroNumerator,
     FrameRateHasZeroDenominator,
     PixelAspectRatioContainsZeros,
+    PresetFrameRateNotSupportedByVersion,
+    PresetSignalRangeNotSupportedByVersion,
+    PresetColorSpecNotSupportedByVersion,
+    PresetColorPrimariesNotSupportedByVersion,
+    PresetColorMatrixNotSupportedByVersion,
+    PresetTransferFunctionNotSupportedByVersion,
+    ProfileNotSupportedByVersion,
+    MinorVersionNotZero,
+    MajorVersionTooLow,
 )
 
 from vc2_conformance.symbol_re import Matcher
@@ -187,11 +208,37 @@ def sequence_header(state):
 def parse_parameters(state):
     """(11.2.1)"""
     state["major_version"] = read_uint(state)
+
+    # (11.2.2) Check the major_version  is at least 1. (It may need to be
+    # higher depending on the features used on the sequence, but this will be
+    # checked as the stream is processed. Later, at the end of the stream we'll
+    # also check the major_version was not too high for the set of features
+    # actually used.)
+    ## Begin not in spec
+    if state["major_version"] < MINIMUM_MAJOR_VERSION:
+        raise MajorVersionTooLow(state["major_version"])
+    ## End not in spec
+
     state["minor_version"] = read_uint(state)
 
+    # (11.2.2) Check the minor_version is 0.
+    ## Begin not in spec
+    if state["minor_version"] != 0:
+        raise MinorVersionNotZero(state["minor_version"])
+    ## End not in spec
+
     state["profile"] = read_uint(state)
+
     # (C.2) Profile must be a supported value
     assert_in_enum(state["profile"], Profiles, BadProfile)  ## Not in spec
+
+    # (11.2.2) Profile must be supported by current version
+    ## Begin not in spec
+    minimum_required_version = profile_version_implication(state["profile"])
+    if state["major_version"] < minimum_required_version:
+        raise ProfileNotSupportedByVersion(state["profile"], state["major_version"])
+    log_version_lower_bound(state, minimum_required_version)
+    ## End not in spec
 
     state["level"] = read_uint(state)
 
@@ -396,6 +443,16 @@ def frame_rate(state, video_parameters):
             assert_in_enum(index, PresetFrameRates, BadPresetFrameRateIndex)
             ## End not in spec
 
+            # (11.2.2) Frame rate preset must be supported by current version
+            ## Begin not in spec
+            minimum_required_version = preset_frame_rate_version_implication(index)
+            if state["major_version"] < minimum_required_version:
+                raise PresetFrameRateNotSupportedByVersion(
+                    index, state["major_version"]
+                )
+            log_version_lower_bound(state, minimum_required_version)
+            ## End not in spec
+
             preset_frame_rate(video_parameters, index)
 
 
@@ -590,6 +647,16 @@ def signal_range(state, video_parameters):
             assert_in_enum(index, PresetSignalRanges, BadPresetSignalRange)
             ## End not in spec
 
+            # (11.2.2) Signal range preset must be supported by current version
+            ## Begin not in spec
+            minimum_required_version = preset_signal_range_version_implication(index)
+            if state["major_version"] < minimum_required_version:
+                raise PresetSignalRangeNotSupportedByVersion(
+                    index, state["major_version"]
+                )
+            log_version_lower_bound(state, minimum_required_version)
+            ## End not in spec
+
             preset_signal_range(video_parameters, index)
 
 
@@ -617,6 +684,16 @@ def color_spec(state, video_parameters):
             color_primaries(state, video_parameters)
             color_matrix(state, video_parameters)
             transfer_function(state, video_parameters)
+        ## Begin not in spec
+        else:
+            # (11.2.2) Color spec must be supported by current version
+            minimum_required_version = preset_color_spec_version_implication(index)
+            if state["major_version"] < minimum_required_version:
+                raise PresetColorSpecNotSupportedByVersion(
+                    index, state["major_version"]
+                )
+            log_version_lower_bound(state, minimum_required_version)
+        ## End not in spec
 
 
 @ref_pseudocode
@@ -643,6 +720,16 @@ def color_primaries(state, video_parameters):
         assert_level_constraint(state, "color_primaries_index", index)
         ## End not in spec
 
+        # (11.2.2) Preset must be supported by current version
+        ## Begin not in spec
+        minimum_required_version = preset_color_primaries_version_implication(index)
+        if state["major_version"] < minimum_required_version:
+            raise PresetColorPrimariesNotSupportedByVersion(
+                index, state["major_version"]
+            )
+        log_version_lower_bound(state, minimum_required_version)
+        ## End not in spec
+
         preset_color_primaries(video_parameters, index)
 
 
@@ -664,6 +751,14 @@ def color_matrix(state, video_parameters):
         # (C.3) Check level allows the specified preset
         ## Begin not in spec
         assert_level_constraint(state, "color_matrix_index", index)
+        ## End not in spec
+
+        # (11.2.2) Preset must be supported by current version
+        ## Begin not in spec
+        minimum_required_version = preset_color_matrix_version_implication(index)
+        if state["major_version"] < minimum_required_version:
+            raise PresetColorMatrixNotSupportedByVersion(index, state["major_version"])
+        log_version_lower_bound(state, minimum_required_version)
         ## End not in spec
 
         preset_color_matrix(video_parameters, index)
@@ -691,6 +786,16 @@ def transfer_function(state, video_parameters):
         # (C.3) Check level allows the specified preset
         ## Begin not in spec
         assert_level_constraint(state, "transfer_function_index", index)
+        ## End not in spec
+
+        # (11.2.2) Preset must be supported by current version
+        ## Begin not in spec
+        minimum_required_version = preset_transfer_function_version_implication(index)
+        if state["major_version"] < minimum_required_version:
+            raise PresetTransferFunctionNotSupportedByVersion(
+                index, state["major_version"]
+            )
+        log_version_lower_bound(state, minimum_required_version)
         ## End not in spec
 
         preset_transfer_function(video_parameters, index)

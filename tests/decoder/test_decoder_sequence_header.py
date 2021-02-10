@@ -12,12 +12,15 @@ class TestSequenceHeader(object):
     def test_byte_for_byte_identical(self):
         sh1 = serialise_to_bytes(
             bitstream.SequenceHeader(
-                parse_parameters=bitstream.ParseParameters(minor_version=0),
+                parse_parameters=bitstream.ParseParameters(
+                    major_version=1,
+                    profile=tables.Profiles.low_delay,
+                ),
             )
         )
         sh2 = serialise_to_bytes(
             bitstream.SequenceHeader(
-                parse_parameters=bitstream.ParseParameters(minor_version=1),
+                parse_parameters=bitstream.ParseParameters(major_version=2),
             )
         )
 
@@ -220,6 +223,48 @@ class TestParseParameters(object):
             "minor_version": 0,
         }
 
+    def test_major_version_must_be_at_least_one(self):
+        state = bytes_to_state(
+            serialise_to_bytes(
+                bitstream.ParseParameters(
+                    level=0,
+                    profile=0,
+                    major_version=0,
+                    minor_version=0,
+                )
+            )
+        )
+        with pytest.raises(decoder.MajorVersionTooLow):
+            decoder.parse_parameters(state)
+
+    def test_minor_version_must_be_zero(self):
+        state = bytes_to_state(
+            serialise_to_bytes(
+                bitstream.ParseParameters(
+                    level=0,
+                    profile=0,
+                    major_version=3,
+                    minor_version=1,
+                )
+            )
+        )
+        with pytest.raises(decoder.MinorVersionNotZero):
+            decoder.parse_parameters(state)
+
+    def test_high_quality_profile_requires_version_two(self):
+        state = bytes_to_state(
+            serialise_to_bytes(
+                bitstream.ParseParameters(
+                    level=0,
+                    profile=tables.Profiles.high_quality,
+                    major_version=1,
+                    minor_version=0,
+                )
+            )
+        )
+        with pytest.raises(decoder.ProfileNotSupportedByVersion):
+            decoder.parse_parameters(state)
+
 
 @pytest.mark.parametrize("frame_width,frame_height", [(0, 1000), (1000, 0), (0, 0)])
 def test_frame_size_must_not_be_zero(frame_width, frame_height):
@@ -310,6 +355,7 @@ class TestFrameRate(object):
                 {},
             )
         )
+        state["major_version"] = 3
         decoder.frame_rate(state, {})
 
         state = bytes_to_state(
@@ -322,6 +368,7 @@ class TestFrameRate(object):
                 {},
             )
         )
+        state["major_version"] = 3
         with pytest.raises(decoder.BadPresetFrameRateIndex) as exc_info:
             decoder.frame_rate(state, {})
         assert exc_info.value.index == 9999
@@ -339,6 +386,7 @@ class TestFrameRate(object):
                 {},
             )
         )
+        state["major_version"] = 3
 
         with pytest.raises(decoder.FrameRateHasZeroDenominator) as exc_info:
             decoder.frame_rate(state, {})
@@ -358,6 +406,7 @@ class TestFrameRate(object):
                 {},
             )
         )
+        state["major_version"] = 3
 
         with pytest.raises(decoder.FrameRateHasZeroNumerator) as exc_info:
             decoder.frame_rate(state, {})
@@ -377,8 +426,39 @@ class TestFrameRate(object):
                 {},
             )
         )
+        state["major_version"] = 3
 
         decoder.frame_rate(state, {})
+
+    @pytest.mark.parametrize(
+        "index, major_version, exp_fail",
+        [
+            (1, 1, False),
+            (1, 3, False),
+            (11, 1, False),
+            (11, 3, False),
+            (12, 1, True),
+            (12, 2, True),
+            (12, 3, False),
+        ],
+    )
+    def test_version_constraint(self, index, major_version, exp_fail):
+        state = bytes_to_state(
+            serialise_to_bytes(
+                bitstream.FrameRate(
+                    custom_frame_rate_flag=True,
+                    index=index,
+                ),
+                {},
+                {},
+            )
+        )
+        state["major_version"] = major_version
+        if exp_fail:
+            with pytest.raises(decoder.PresetFrameRateNotSupportedByVersion):
+                decoder.frame_rate(state, {})
+        else:
+            decoder.frame_rate(state, {})
 
 
 class TestPixelAspectRatio(object):
@@ -393,6 +473,7 @@ class TestPixelAspectRatio(object):
                 {},
             )
         )
+        state["major_version"] = 3
         decoder.pixel_aspect_ratio(state, {})
 
         state = bytes_to_state(
@@ -405,6 +486,7 @@ class TestPixelAspectRatio(object):
                 {},
             )
         )
+        state["major_version"] = 3
         with pytest.raises(decoder.BadPresetPixelAspectRatio) as exc_info:
             decoder.pixel_aspect_ratio(state, {})
         assert exc_info.value.index == 9999
@@ -426,6 +508,7 @@ class TestPixelAspectRatio(object):
                 {},
             )
         )
+        state["major_version"] = 3
 
         if exp_fail:
             with pytest.raises(decoder.PixelAspectRatioContainsZeros) as exc_info:
@@ -479,6 +562,7 @@ def test_custom_clean_area(
                 video_parameters,
             )
         )
+        state["major_version"] = 3
     else:
         video_parameters = {
             "frame_width": frame_width,
@@ -497,6 +581,7 @@ def test_custom_clean_area(
                 video_parameters,
             )
         )
+        state["major_version"] = 3
 
     if exp_fail:
         with pytest.raises(decoder.CleanAreaOutOfRange) as exc_info:
@@ -511,32 +596,65 @@ def test_custom_clean_area(
         decoder.clean_area(state, video_parameters)
 
 
-def test_signal_range_index_must_be_valid():
-    state = bytes_to_state(
-        serialise_to_bytes(
-            bitstream.SignalRange(
-                custom_signal_range_flag=True,
-                index=tables.PresetSignalRanges.video_8bit,
-            ),
-            {},
-            {},
+class TestSignalRange(object):
+    def test_index_must_be_valid(self):
+        state = bytes_to_state(
+            serialise_to_bytes(
+                bitstream.SignalRange(
+                    custom_signal_range_flag=True,
+                    index=tables.PresetSignalRanges.video_8bit,
+                ),
+                {},
+                {},
+            )
         )
-    )
-    decoder.signal_range(state, {})
-
-    state = bytes_to_state(
-        serialise_to_bytes(
-            bitstream.SignalRange(
-                custom_signal_range_flag=True,
-                index=9999,
-            ),
-            {},
-            {},
-        )
-    )
-    with pytest.raises(decoder.BadPresetSignalRange) as exc_info:
+        state["major_version"] = 3
         decoder.signal_range(state, {})
-    assert exc_info.value.index == 9999
+
+        state = bytes_to_state(
+            serialise_to_bytes(
+                bitstream.SignalRange(
+                    custom_signal_range_flag=True,
+                    index=9999,
+                ),
+                {},
+                {},
+            )
+        )
+        state["major_version"] = 3
+        with pytest.raises(decoder.BadPresetSignalRange) as exc_info:
+            decoder.signal_range(state, {})
+        assert exc_info.value.index == 9999
+
+    @pytest.mark.parametrize(
+        "index, major_version, exp_fail",
+        [
+            (1, 1, False),
+            (1, 3, False),
+            (4, 1, False),
+            (4, 3, False),
+            (5, 1, True),
+            (5, 2, True),
+            (5, 3, False),
+        ],
+    )
+    def test_version_constraint(self, index, major_version, exp_fail):
+        state = bytes_to_state(
+            serialise_to_bytes(
+                bitstream.SignalRange(
+                    custom_signal_range_flag=True,
+                    index=index,
+                ),
+                {},
+                {},
+            )
+        )
+        state["major_version"] = major_version
+        if exp_fail:
+            with pytest.raises(decoder.PresetSignalRangeNotSupportedByVersion):
+                decoder.signal_range(state, {})
+        else:
+            decoder.signal_range(state, {})
 
 
 @pytest.mark.parametrize(
@@ -560,6 +678,7 @@ def test_signal_range_excursion_must_be_valid(
             {},
         )
     )
+    state["major_version"] = 3
 
     if exp_component is None:
         # Should not fail
@@ -570,116 +689,248 @@ def test_signal_range_excursion_must_be_valid(
         assert exc_info.value.component_type_name == exp_component
 
 
-def test_color_spec_index_must_be_valid():
-    state = bytes_to_state(
-        serialise_to_bytes(
-            bitstream.ColorSpec(
-                custom_color_spec_flag=True,
-                index=tables.PresetColorSpecs.uhdtv,
-            ),
-            {},
-            {},
+class TestColorSpec(object):
+    def test_index_must_be_valid(self):
+        state = bytes_to_state(
+            serialise_to_bytes(
+                bitstream.ColorSpec(
+                    custom_color_spec_flag=True,
+                    index=tables.PresetColorSpecs.uhdtv,
+                ),
+                {},
+                {},
+            )
         )
-    )
-    decoder.color_spec(state, {})
-
-    state = bytes_to_state(
-        serialise_to_bytes(
-            bitstream.ColorSpec(
-                custom_color_spec_flag=True,
-                index=9999,
-            ),
-            {},
-            {},
-        )
-    )
-    with pytest.raises(decoder.BadPresetColorSpec) as exc_info:
+        state["major_version"] = 3
         decoder.color_spec(state, {})
-    assert exc_info.value.index == 9999
 
-
-def test_color_primaries_index_must_be_valid():
-    state = bytes_to_state(
-        serialise_to_bytes(
-            bitstream.ColorPrimaries(
-                custom_color_primaries_flag=True,
-                index=tables.PresetColorPrimaries.hdtv,
-            ),
-            {},
-            {},
+        state = bytes_to_state(
+            serialise_to_bytes(
+                bitstream.ColorSpec(
+                    custom_color_spec_flag=True,
+                    index=9999,
+                ),
+                {},
+                {},
+            )
         )
-    )
-    decoder.color_primaries(state, {})
+        state["major_version"] = 3
+        with pytest.raises(decoder.BadPresetColorSpec) as exc_info:
+            decoder.color_spec(state, {})
+        assert exc_info.value.index == 9999
 
-    state = bytes_to_state(
-        serialise_to_bytes(
-            bitstream.ColorPrimaries(
-                custom_color_primaries_flag=True,
-                index=9999,
-            ),
-            {},
-            {},
-        )
+    @pytest.mark.parametrize(
+        "index, major_version, exp_fail",
+        [
+            (1, 1, False),
+            (1, 3, False),
+            (4, 1, False),
+            (4, 3, False),
+            (5, 1, True),
+            (5, 2, True),
+            (5, 3, False),
+        ],
     )
-    with pytest.raises(decoder.BadPresetColorPrimaries) as exc_info:
+    def test_version_constraint(self, index, major_version, exp_fail):
+        state = bytes_to_state(
+            serialise_to_bytes(
+                bitstream.ColorSpec(
+                    custom_color_spec_flag=True,
+                    index=index,
+                ),
+                {},
+                {},
+            )
+        )
+        state["major_version"] = major_version
+        if exp_fail:
+            with pytest.raises(decoder.PresetColorSpecNotSupportedByVersion):
+                decoder.color_spec(state, {})
+        else:
+            decoder.color_spec(state, {})
+
+
+class TestColorPrimaries(object):
+    def test_index_must_be_valid(self):
+        state = bytes_to_state(
+            serialise_to_bytes(
+                bitstream.ColorPrimaries(
+                    custom_color_primaries_flag=True,
+                    index=tables.PresetColorPrimaries.hdtv,
+                ),
+                {},
+                {},
+            )
+        )
+        state["major_version"] = 3
         decoder.color_primaries(state, {})
-    assert exc_info.value.index == 9999
 
-
-def test_color_matrix_index_must_be_valid():
-    state = bytes_to_state(
-        serialise_to_bytes(
-            bitstream.ColorMatrix(
-                custom_color_matrix_flag=True,
-                index=tables.PresetColorMatrices.hdtv,
-            ),
-            {},
-            {},
+        state = bytes_to_state(
+            serialise_to_bytes(
+                bitstream.ColorPrimaries(
+                    custom_color_primaries_flag=True,
+                    index=9999,
+                ),
+                {},
+                {},
+            )
         )
-    )
-    decoder.color_matrix(state, {})
+        state["major_version"] = 3
+        with pytest.raises(decoder.BadPresetColorPrimaries) as exc_info:
+            decoder.color_primaries(state, {})
+        assert exc_info.value.index == 9999
 
-    state = bytes_to_state(
-        serialise_to_bytes(
-            bitstream.ColorMatrix(
-                custom_color_matrix_flag=True,
-                index=9999,
-            ),
-            {},
-            {},
-        )
+    @pytest.mark.parametrize(
+        "index, major_version, exp_fail",
+        [
+            (1, 1, False),
+            (1, 3, False),
+            (3, 1, False),
+            (3, 3, False),
+            (4, 1, True),
+            (4, 2, True),
+            (4, 3, False),
+        ],
     )
-    with pytest.raises(decoder.BadPresetColorMatrix) as exc_info:
+    def test_version_constraint(self, index, major_version, exp_fail):
+        state = bytes_to_state(
+            serialise_to_bytes(
+                bitstream.ColorPrimaries(
+                    custom_color_primaries_flag=True,
+                    index=index,
+                ),
+                {},
+                {},
+            )
+        )
+        state["major_version"] = major_version
+        if exp_fail:
+            with pytest.raises(decoder.PresetColorPrimariesNotSupportedByVersion):
+                decoder.color_primaries(state, {})
+        else:
+            decoder.color_primaries(state, {})
+
+
+class TestColorMatrix(object):
+    def test_index_must_be_valid(self):
+        state = bytes_to_state(
+            serialise_to_bytes(
+                bitstream.ColorMatrix(
+                    custom_color_matrix_flag=True,
+                    index=tables.PresetColorMatrices.hdtv,
+                ),
+                {},
+                {},
+            )
+        )
+        state["major_version"] = 3
         decoder.color_matrix(state, {})
-    assert exc_info.value.index == 9999
 
-
-def test_transfer_function_index_must_be_valid():
-    state = bytes_to_state(
-        serialise_to_bytes(
-            bitstream.TransferFunction(
-                custom_transfer_function_flag=True,
-                index=tables.PresetTransferFunctions.hybrid_log_gamma,
-            ),
-            {},
-            {},
+        state = bytes_to_state(
+            serialise_to_bytes(
+                bitstream.ColorMatrix(
+                    custom_color_matrix_flag=True,
+                    index=9999,
+                ),
+                {},
+                {},
+            )
         )
-    )
-    decoder.transfer_function(state, {})
+        state["major_version"] = 3
+        with pytest.raises(decoder.BadPresetColorMatrix) as exc_info:
+            decoder.color_matrix(state, {})
+        assert exc_info.value.index == 9999
 
-    state = bytes_to_state(
-        serialise_to_bytes(
-            bitstream.TransferFunction(
-                custom_transfer_function_flag=True,
-                index=9999,
-            ),
-            {},
-            {},
-        )
+    @pytest.mark.parametrize(
+        "index, major_version, exp_fail",
+        [
+            (1, 1, False),
+            (1, 3, False),
+            (3, 1, False),
+            (3, 3, False),
+            (4, 1, True),
+            (4, 2, True),
+            (4, 3, False),
+        ],
     )
-    with pytest.raises(decoder.BadPresetTransferFunction) as exc_info:
+    def test_version_constraint(self, index, major_version, exp_fail):
+        state = bytes_to_state(
+            serialise_to_bytes(
+                bitstream.ColorMatrix(
+                    custom_color_matrix_flag=True,
+                    index=index,
+                ),
+                {},
+                {},
+            )
+        )
+        state["major_version"] = major_version
+        if exp_fail:
+            with pytest.raises(decoder.PresetColorMatrixNotSupportedByVersion):
+                decoder.color_matrix(state, {})
+        else:
+            decoder.color_matrix(state, {})
+
+
+class TestTransferFunction(object):
+    def test_index_must_be_valid(self):
+        state = bytes_to_state(
+            serialise_to_bytes(
+                bitstream.TransferFunction(
+                    custom_transfer_function_flag=True,
+                    index=tables.PresetTransferFunctions.hybrid_log_gamma,
+                ),
+                {},
+                {},
+            )
+        )
+        state["major_version"] = 3
         decoder.transfer_function(state, {})
-    assert exc_info.value.index == 9999
+
+        state = bytes_to_state(
+            serialise_to_bytes(
+                bitstream.TransferFunction(
+                    custom_transfer_function_flag=True,
+                    index=9999,
+                ),
+                {},
+                {},
+            )
+        )
+        state["major_version"] = 3
+        with pytest.raises(decoder.BadPresetTransferFunction) as exc_info:
+            decoder.transfer_function(state, {})
+        assert exc_info.value.index == 9999
+
+    @pytest.mark.parametrize(
+        "index, major_version, exp_fail",
+        [
+            (1, 1, False),
+            (1, 3, False),
+            (3, 1, False),
+            (3, 3, False),
+            (4, 1, True),
+            (4, 2, True),
+            (4, 3, False),
+        ],
+    )
+    def test_version_constraint(self, index, major_version, exp_fail):
+        state = bytes_to_state(
+            serialise_to_bytes(
+                bitstream.TransferFunction(
+                    custom_transfer_function_flag=True,
+                    index=index,
+                ),
+                {},
+                {},
+            )
+        )
+        state["major_version"] = major_version
+        if exp_fail:
+            with pytest.raises(decoder.PresetTransferFunctionNotSupportedByVersion):
+                decoder.transfer_function(state, {})
+        else:
+            decoder.transfer_function(state, {})
 
 
 def test_level_constraints():

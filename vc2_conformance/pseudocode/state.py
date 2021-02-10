@@ -293,6 +293,18 @@ State = fixeddict(
             previous sequence_header has appeared.
         """,
     ),
+    # (11.2.2) Version number constraint checking
+    Entry(
+        "_expected_major_version",
+        help_type="int",
+        help="""
+            Not in spec, used by :py:mod:`vc2_conformance.decoder`. Used to
+            record the expected major_version (11.2.1) for this sequence
+            according to the constraints listed in (11.2.2). This field is set
+            by
+            :py:func:`~vc2_conformance.decoder.assertions.log_version_lower_bound`.
+        """,
+    ),
     # (12.2) picture_header and (14.2) fragment_header
     Entry(
         "_last_picture_number_offset",

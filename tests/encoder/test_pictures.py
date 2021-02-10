@@ -65,7 +65,6 @@ from vc2_conformance.level_constraints import LEVEL_CONSTRAINTS
 from vc2_conformance.encoder.exceptions import (
     MissingQuantizationMatrixError,
     IncompatibleLevelAndExtendedTransformParametersError,
-    AsymmetricTransformPreVersion3Error,
     PictureBytesSpecifiedForLosslessModeError,
     InsufficientLDPictureBytesError,
     InsufficientHQPictureBytesError,
@@ -91,7 +90,7 @@ from vc2_conformance.encoder.pictures import (
     interleave,
     make_transform_data_ld_lossy,
     make_quant_matrix,
-    decide_flag,
+    decide_extended_transform_flag,
     make_extended_transform_parameters,
     make_picture_parse_data_unit,
     make_fragment_parse_data_units,
@@ -376,8 +375,6 @@ class TestTransformAndSlicePicture(object):
             name="basic",
             level=Levels.unconstrained,
             profile=Profiles.high_quality,
-            major_version=3,
-            minor_version=0,
             picture_coding_mode=PictureCodingModes.pictures_are_frames,
             video_parameters=VideoParameters(
                 frame_width=12,
@@ -1090,7 +1087,7 @@ class TestMakeQuantMatrix(object):
         )
 
 
-class TestMakeDecideFlag(object):
+class TestMakeDecideExtendedTransformFlag(object):
     @pytest.yield_fixture
     def level_constraints(self):
         # Override allow temporary modifications to the level constraints
@@ -1105,7 +1102,7 @@ class TestMakeDecideFlag(object):
     @pytest.mark.parametrize("required,expected", [(True, True), (False, False)])
     def test_unconstrained(self, required, expected):
         assert (
-            decide_flag(
+            decide_extended_transform_flag(
                 MINIMAL_CODEC_FEATURES,
                 "asym_transform_index_flag",
                 required,
@@ -1113,24 +1110,23 @@ class TestMakeDecideFlag(object):
             is expected
         )
 
-    @pytest.mark.parametrize("required", [True, False])
-    def test_constrained_true(self, level_constraints, required):
+    def test_constrained_no_value(self, level_constraints):
         assert level_constraints[0]["level"] == ValueSet(0)
-        level_constraints[0]["asym_transform_index_flag"] = ValueSet(True)
+        level_constraints[0]["asym_transform_index_flag"] = ValueSet()
         assert (
-            decide_flag(
+            decide_extended_transform_flag(
                 MINIMAL_CODEC_FEATURES,
                 "asym_transform_index_flag",
-                required,
+                False,
             )
-            is True
+            is False
         )
 
     def test_constrained_false_not_required(self, level_constraints):
         assert level_constraints[0]["level"] == ValueSet(0)
         level_constraints[0]["asym_transform_index_flag"] = ValueSet(False)
         assert (
-            decide_flag(
+            decide_extended_transform_flag(
                 MINIMAL_CODEC_FEATURES,
                 "asym_transform_index_flag",
                 False,
@@ -1142,7 +1138,17 @@ class TestMakeDecideFlag(object):
         assert level_constraints[0]["level"] == ValueSet(0)
         level_constraints[0]["asym_transform_index_flag"] = ValueSet(False)
         with pytest.raises(IncompatibleLevelAndExtendedTransformParametersError):
-            decide_flag(
+            decide_extended_transform_flag(
+                MINIMAL_CODEC_FEATURES,
+                "asym_transform_index_flag",
+                True,
+            )
+
+    def test_level_prevents_true_but_required(self, level_constraints):
+        assert level_constraints[0]["level"] == ValueSet(0)
+        level_constraints[0]["asym_transform_index_flag"] = ValueSet()
+        with pytest.raises(IncompatibleLevelAndExtendedTransformParametersError):
+            decide_extended_transform_flag(
                 MINIMAL_CODEC_FEATURES,
                 "asym_transform_index_flag",
                 True,
@@ -1162,6 +1168,25 @@ class TestMakeExtendedTransformParameters(object):
             LEVEL_CONSTRAINTS.extend(original_constraints)
 
     def test_symmetric(self):
+        assert make_extended_transform_parameters(
+            CodecFeatures(
+                MINIMAL_CODEC_FEATURES,
+                wavelet_index=WaveletFilters.haar_with_shift,
+                wavelet_index_ho=WaveletFilters.haar_with_shift,
+                dwt_depth=2,
+                dwt_depth_ho=0,
+            )
+        ) == ExtendedTransformParameters(
+            asym_transform_index_flag=False,
+            asym_transform_flag=False,
+        )
+
+    def test_returns_even_for_v2_streams(self, level_constraints):
+        assert level_constraints[0]["level"] == ValueSet(0)
+        level_constraints[0]["major_version"] = ValueSet(2)
+        level_constraints[0]["asym_transform_index_flag"] = ValueSet()
+        level_constraints[0]["asym_transform_flag"] = ValueSet()
+
         assert make_extended_transform_parameters(
             CodecFeatures(
                 MINIMAL_CODEC_FEATURES,
@@ -1264,8 +1289,6 @@ class TestMakePictureParseDataUnit(object):
             name="basic",
             level=Levels.unconstrained,
             profile=Profiles.high_quality,
-            major_version=3,
-            minor_version=0,
             picture_coding_mode=PictureCodingModes.pictures_are_frames,
             video_parameters=VideoParameters(
                 frame_width=64,
@@ -1330,27 +1353,17 @@ class TestMakePictureParseDataUnit(object):
         return picture
 
     @pytest.mark.parametrize(
-        "major_version,wavelet_index,wavelet_index_ho,dwt_depth,dwt_depth_ho",
+        "wavelet_index,wavelet_index_ho,dwt_depth,dwt_depth_ho",
         [
-            # Version 2 (no extended_transform_parameters)
+            # Symmetric transform
             (
-                2,
-                WaveletFilters.le_gall_5_3,
-                WaveletFilters.le_gall_5_3,
-                2,
-                0,
-            ),
-            # Version 3 (has extended_transform_parameters)
-            (
-                3,
                 WaveletFilters.le_gall_5_3,
                 WaveletFilters.le_gall_5_3,
                 2,
                 0,
             ),
-            # Version 3 + asymmetric transform
+            # Asymmetric transform
             (
-                3,
                 WaveletFilters.haar_no_shift,
                 WaveletFilters.le_gall_5_3,
                 2,
@@ -1362,7 +1375,6 @@ class TestMakePictureParseDataUnit(object):
         self,
         codec_features,
         noise_picture,
-        major_version,
         wavelet_index,
         wavelet_index_ho,
         dwt_depth,
@@ -1378,7 +1390,6 @@ class TestMakePictureParseDataUnit(object):
         codec_features["lossless"] = True
         codec_features["picture_bytes"] = None
 
-        codec_features["major_version"] = major_version
         codec_features["wavelet_index"] = wavelet_index
         codec_features["wavelet_index_ho"] = wavelet_index_ho
         codec_features["dwt_depth"] = dwt_depth
@@ -1471,23 +1482,6 @@ class TestMakePictureParseDataUnit(object):
         with pytest.raises(exc):
             make_picture_parse_data_unit(codec_features, natural_picture)
 
-    @pytest.mark.parametrize(
-        "wavelet_index,dwt_depth_ho",
-        [(WaveletFilters.haar_no_shift, 0), (WaveletFilters.le_gall_5_3, 1)],
-    )
-    def test_asymmetric_version_2(
-        self,
-        codec_features,
-        natural_picture,
-        wavelet_index,
-        dwt_depth_ho,
-    ):
-        codec_features["major_version"] = 2
-        codec_features["wavelet_index"] = wavelet_index
-        codec_features["dwt_depth_ho"] = dwt_depth_ho
-        with pytest.raises(AsymmetricTransformPreVersion3Error):
-            make_picture_parse_data_unit(codec_features, natural_picture)
-
     def test_lossless_low_delay(self, codec_features, natural_picture):
         codec_features["profile"] = Profiles.low_delay
         codec_features["lossless"] = True
@@ -1538,8 +1532,6 @@ class TestMakeFragmentParseDataUnits(object):
             name="basic",
             level=Levels.unconstrained,
             profile=Profiles.high_quality,
-            major_version=3,
-            minor_version=0,
             # picture_coding_mode: set by ``natural_picture`` fixture
             # video_parameters: set by ``natural_picture`` fixture
             wavelet_index=WaveletFilters.le_gall_5_3,
@@ -1712,8 +1704,6 @@ def test_make_picture_data_units(fragment_slice_count, exp_data_units, lovell):
         name="basic",
         level=Levels.unconstrained,
         profile=Profiles.high_quality,
-        major_version=3,
-        minor_version=0,
         picture_coding_mode=picture_coding_mode,
         video_parameters=video_parameters,
         wavelet_index=WaveletFilters.le_gall_5_3,

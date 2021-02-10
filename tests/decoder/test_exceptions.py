@@ -1231,3 +1231,161 @@ def test_fragment_slices_not_contiguous():
             {cmd} {file} --from-offset 81 --to_offset {offset} --show fragment_parse --hide slice
     """
     )
+
+
+def test_preset_frame_rate_not_supported_by_version():
+    e = exceptions.PresetFrameRateNotSupportedByVersion(
+        index=12,
+        major_version=2,
+    )
+
+    assert wrap_paragraphs(e.explain()) == wrap_paragraphs(
+        """
+        The preset frame rate index 12 (48000/1001 FPS) (11.4.6) is only
+        supported when major_version is at least 3 but major_version is 2.  See
+        (11.2.2).
+        """
+    )
+
+
+def test_preset_signal_range_not_supported_by_version():
+    e = exceptions.PresetSignalRangeNotSupportedByVersion(
+        index=5,
+        major_version=2,
+    )
+
+    assert wrap_paragraphs(e.explain()) == wrap_paragraphs(
+        """
+        The preset signal range index 5 (video_10bit_full_range) (11.4.9) is
+        only supported when major_version is at least 3 but major_version is 2.
+        See (11.2.2).
+        """
+    )
+
+
+def test_preset_color_spec_not_supported_by_version():
+    e = exceptions.PresetColorSpecNotSupportedByVersion(
+        index=5,
+        major_version=2,
+    )
+
+    assert wrap_paragraphs(e.explain()) == wrap_paragraphs(
+        """
+        The preset color spec index 5 (uhdtv) (11.4.10.1) is only supported
+        when major_version is at least 3 but major_version is 2.  See
+        (11.2.2).
+        """
+    )
+
+
+def test_preset_color_primaries_not_supported_by_version():
+    e = exceptions.PresetColorPrimariesNotSupportedByVersion(
+        index=4,
+        major_version=2,
+    )
+
+    assert wrap_paragraphs(e.explain()) == wrap_paragraphs(
+        """
+        The preset color primaries index 4 (uhdtv) (11.4.10.2) is only
+        supported when major_version is at least 3 but major_version is
+        2. See (11.2.2).
+        """
+    )
+
+
+def test_preset_color_matrix_not_supported_by_version():
+    e = exceptions.PresetColorMatrixNotSupportedByVersion(
+        index=4,
+        major_version=2,
+    )
+
+    assert wrap_paragraphs(e.explain()) == wrap_paragraphs(
+        """
+        The preset color matrix index 4 (uhdtv) (11.4.10.3) is only supported
+        when major_version is at least 3 but major_version is 2. See (11.2.2).
+        """
+    )
+
+
+def test_preset_transfer_function_not_supported_by_version():
+    e = exceptions.PresetTransferFunctionNotSupportedByVersion(
+        index=4,
+        major_version=2,
+    )
+
+    assert wrap_paragraphs(e.explain()) == wrap_paragraphs(
+        """
+        The preset transfer function index 4 (perceptual_quantizer) (11.4.10.4)
+        is only supported when major_version is at least 3 but major_version is
+        2. See (11.2.2).
+        """
+    )
+
+
+def test_parse_code_not_supported_by_version():
+    e = exceptions.ParseCodeNotSupportedByVersion(
+        parse_code=tables.ParseCodes.high_quality_picture_fragment,
+        major_version=2,
+    )
+
+    assert wrap_paragraphs(e.explain()) == wrap_paragraphs(
+        """
+        The parse code (10.5.1) specifies a high quality picture fragment
+        (0xEC) data unit but this is only supported when major_version is at
+        least 3 but major_version is 2. See (11.2.2).
+        """
+    )
+
+
+def test_profile_not_supported_by_version():
+    e = exceptions.ProfileNotSupportedByVersion(
+        profile=tables.Profiles.high_quality,
+        major_version=1,
+    )
+
+    assert wrap_paragraphs(e.explain()) == wrap_paragraphs(
+        """
+        The high quality (3) profile is only supported when major_version is at
+        least 2 but major_version is 1. See (11.2.2).
+        """
+    )
+
+
+def test_major_version_too_low():
+    e = exceptions.MajorVersionTooLow(
+        major_version=0,
+    )
+
+    assert wrap_paragraphs(e.explain()) == wrap_paragraphs(
+        """
+        The major_version (11.2.1) must be at least 1 but 0 was given
+        instead, see (11.2.2).
+        """
+    )
+
+
+def test_minor_version_not_zero():
+    e = exceptions.MinorVersionNotZero(
+        minor_version=1,
+    )
+
+    assert wrap_paragraphs(e.explain()) == wrap_paragraphs(
+        """
+        The minor_version (11.2.1) must be 0 but 1 was given instead, see
+        (11.2.2).
+        """
+    )
+
+
+def test_major_version_too_high():
+    e = exceptions.MajorVersionTooHigh(
+        major_version=4,
+        expected_major_version=3,
+    )
+
+    assert wrap_paragraphs(e.explain()) == wrap_paragraphs(
+        """
+        The major_version (11.2.1) specified, 4, is too high: only features
+        requiring major_version 3 were used in the sequence, see (11.2.2).
+        """
+    )

@@ -21,7 +21,7 @@ from sample_codec_features import MINIMAL_CODEC_FEATURES
 
 def test_version_2():
     # Should never produce output for version 2
-    codec_features = CodecFeatures(MINIMAL_CODEC_FEATURES, major_version=2)
+    codec_features = CodecFeatures(MINIMAL_CODEC_FEATURES)
     assert len(list(extended_transform_parameters(codec_features))) == 0
 
 
@@ -58,9 +58,17 @@ def test_forces_flags(
     dwt_depth_ho,
     exp_asym_transform_flag_case,
 ):
+    # Spot parameter combinations which will result in a v2 stream (and thus no
+    # test cases being generated)
+    if (
+        fragment_slice_count == 0
+        and wavelet_index_ho == WaveletFilters.haar_no_shift
+        and dwt_depth_ho == 0
+    ):
+        return
+
     codec_features = CodecFeatures(
         MINIMAL_CODEC_FEATURES,
-        major_version=3,
         profile=profile,
         fragment_slice_count=fragment_slice_count,
         wavelet_index=WaveletFilters.haar_no_shift,
@@ -140,7 +148,7 @@ def test_level_overrides_obeyed(
 
     codec_features = CodecFeatures(
         MINIMAL_CODEC_FEATURES,
-        major_version=3,
+        fragment_slice_count=1,  # Force v3
         wavelet_index=WaveletFilters.haar_no_shift,
         wavelet_index_ho=WaveletFilters.haar_no_shift,
         dwt_depth=1,

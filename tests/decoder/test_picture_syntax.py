@@ -73,28 +73,64 @@ def test_transform_parameters_wavelet_index_must_be_valid():
     assert exc_info.value.wavelet_index == 9999
 
 
-def test_extended_transform_parameters_wavelet_index_ho_must_be_valid():
-    state = bytes_to_state(
-        serialise_to_bytes(
-            bitstream.ExtendedTransformParameters(
-                asym_transform_index_flag=True,
-                wavelet_index_ho=tables.WaveletFilters.haar_no_shift,
-            ),
+class TestExtendedTransformParameters(object):
+    def test_wavelet_index_ho_must_be_valid(self):
+        state = bytes_to_state(
+            serialise_to_bytes(
+                bitstream.ExtendedTransformParameters(
+                    asym_transform_index_flag=True,
+                    wavelet_index_ho=tables.WaveletFilters.haar_no_shift,
+                ),
+            )
         )
-    )
-    decoder.extended_transform_parameters(state)
-
-    state = bytes_to_state(
-        serialise_to_bytes(
-            bitstream.ExtendedTransformParameters(
-                asym_transform_index_flag=True,
-                wavelet_index_ho=9999,
-            ),
-        )
-    )
-    with pytest.raises(decoder.BadHOWaveletIndex) as exc_info:
+        state["wavelet_index"] = tables.WaveletFilters.haar_no_shift
+        state["wavelet_index_ho"] = tables.WaveletFilters.haar_no_shift
+        state["dwt_depth"] = 0
+        state["dwt_depth_ho"] = 0
         decoder.extended_transform_parameters(state)
-    assert exc_info.value.wavelet_index_ho == 9999
+
+        state = bytes_to_state(
+            serialise_to_bytes(
+                bitstream.ExtendedTransformParameters(
+                    asym_transform_index_flag=True,
+                    wavelet_index_ho=9999,
+                ),
+            )
+        )
+        state["wavelet_index"] = tables.WaveletFilters.haar_no_shift
+        state["wavelet_index_ho"] = tables.WaveletFilters.haar_no_shift
+        state["dwt_depth"] = 0
+        state["dwt_depth_ho"] = 0
+        with pytest.raises(decoder.BadHOWaveletIndex) as exc_info:
+            decoder.extended_transform_parameters(state)
+        assert exc_info.value.wavelet_index_ho == 9999
+
+    @pytest.mark.parametrize(
+        "wavelet_index_ho,dwt_depth_ho,expected_major_version",
+        [
+            (tables.WaveletFilters.haar_no_shift, 0, 1),
+            (tables.WaveletFilters.le_gall_5_3, 0, 3),
+            (tables.WaveletFilters.haar_no_shift, 1, 3),
+        ],
+    )
+    def test_minimum_version_logged(
+        self, wavelet_index_ho, dwt_depth_ho, expected_major_version
+    ):
+        state = bytes_to_state(
+            serialise_to_bytes(
+                bitstream.ExtendedTransformParameters(
+                    asym_transform_index_flag=True,
+                    wavelet_index_ho=wavelet_index_ho,
+                    asym_transform_flag=True,
+                    dwt_depth_ho=dwt_depth_ho,
+                ),
+            )
+        )
+        state["wavelet_index"] = tables.WaveletFilters.haar_no_shift
+        state["dwt_depth"] = 2
+        decoder.extended_transform_parameters(state)
+
+        assert state["_expected_major_version"] == expected_major_version
 
 
 minimal_slice_parameters_state = {

@@ -13,6 +13,8 @@ from vc2_data_tables import (
 
 from vc2_conformance.level_constraints import LEVEL_CONSTRAINTS
 
+from vc2_conformance.version_constraints import MINIMUM_MAJOR_VERSION
+
 from vc2_conformance.symbol_re import WILDCARD, END_OF_SEQUENCE
 
 from vc2_conformance.constraint_table import allowed_values_for
@@ -21,6 +23,7 @@ from vc2_conformance.decoder.exceptions import (
     ValueNotAllowedInLevel,
     NonConsecutivePictureNumbers,
     EarliestFieldHasOddPictureNumber,
+    MajorVersionTooHigh,
 )
 
 
@@ -184,3 +187,50 @@ def assert_picture_number_incremented_as_expected(state, picture_number_offset):
         if early_field and not even_number:
             raise EarliestFieldHasOddPictureNumber(state["picture_number"])
     state["_num_pictures_in_sequence"] += 1
+
+
+def log_version_lower_bound(state, minimum_major_version):
+    """
+    Records an instance where a value in the stream requires that
+    major_version have a certain value. These will later be checked by
+    :py:func:`assert_major_version_is_minimal`. Bounds are logged in
+    ``state["_expected_major_version"]``
+
+    Parameters
+    ==========
+    state : :py:class:`~vc2_conformance.pseudocode.state.State`
+    minimum_major_version : int
+        The minimum major version number allowed to support the feature being
+        logged.
+    """
+    state["_expected_major_version"] = max(
+        state.get("_expected_major_version", MINIMUM_MAJOR_VERSION),
+        minimum_major_version,
+    )
+
+
+def assert_major_version_is_minimal(state):
+    """
+    Checks whether the major_version number supplied is the lowest possible
+    major_version number for this stream (as required by (11.2.2)). Should be
+    called once at the end of a stream.
+    """
+    major_version = state["major_version"]
+    expected_major_version = state.get("_expected_major_version", MINIMUM_MAJOR_VERSION)
+
+    # Errata: The following special case was missing from the spec
+    #
+    # (11.2.2) Special case for empty sequences of fragmented pictures: When an
+    # encoder is configured to produce fragmented pictures in streams the
+    # major_version needs to be set to '3' to allow fragmented picture data
+    # units. In the case of an empty sequence, major_version may not have to be
+    # '3' since no data units with a fragment parse code will be present. To
+    # make the life of encoders developers easier in this special case, the
+    # spec permits them to set major_version to '3' even when no fragmented
+    # picture data units appear in the stream enabling them to use the same
+    # sequence header for all sequences, regardless of length.
+    if state["_num_pictures_in_sequence"] == 0 and major_version == 3:
+        return
+
+    if major_version > expected_major_version:
+        raise MajorVersionTooHigh(major_version, expected_major_version)

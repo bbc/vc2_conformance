@@ -73,8 +73,6 @@ CodecFeatures = fixeddict(
     # (11.2.1)
     Entry("level", enum=Levels),
     Entry("profile", enum=Profiles),
-    Entry("major_version"),
-    Entry("minor_version"),
     # (11.1)
     Entry("picture_coding_mode", enum=PictureCodingModes),
     # (11.4)
@@ -110,8 +108,6 @@ level : :py:class:`~vc2_data_tables.Levels`
     actually conform to this level.
 profile : :py:class:`~vc2_data_tables.Profiles`
     The VC-2 profile to use.
-major_version, minor_version : int
-    The VC-2 major and minor version numbers to use.
 picture_coding_mode : :py:class:`~vc2_data_tables.PictureCodingModes`
     The picture coding mode to use.
 video_parameters : :py:class:`~vc2_conformance.pseudocode.video_parameters.VideoParameters`
@@ -398,8 +394,6 @@ def read_codec_features_csv(csvfile):
         for field_name, field_type in [
             ("level", partial(parse_int_enum, Levels)),
             ("profile", partial(parse_int_enum, Profiles)),
-            ("major_version", partial(parse_int_at_least, 0)),
-            ("minor_version", partial(parse_int_at_least, 0)),
             ("picture_coding_mode", partial(parse_int_enum, PictureCodingModes)),
             ("wavelet_index", partial(parse_int_enum, WaveletFilters)),
             ("wavelet_index_ho", partial(parse_int_enum, WaveletFilters)),
@@ -509,8 +503,6 @@ def codec_features_to_trivial_level_constraints(codec_features):
 
         * level
         * profile
-        * major_version
-        * minor_version
         * picture_coding_mode
         * wavelet_index
         * dwt_depth
@@ -541,8 +533,6 @@ def codec_features_to_trivial_level_constraints(codec_features):
     for key in [
         "level",
         "profile",
-        "major_version",
-        "minor_version",
         "picture_coding_mode",
         "wavelet_index",
         "dwt_depth",

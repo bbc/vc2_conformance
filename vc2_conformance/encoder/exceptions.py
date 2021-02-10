@@ -155,34 +155,6 @@ class LosslessUnsupportedByLowDelayError(UnsatisfiableCodecFeaturesError):
         )
 
 
-class AsymmetricTransformPreVersion3Error(UnsatisfiableCodecFeaturesError):
-    """
-    Thrown when an asymmetric wavelet transform is used in a stream specified
-    as being version 2 or under.
-    """
-
-    def explain(self):
-        (codec_features,) = self.args
-
-        return """
-            An asymmetric wavelet transform was specified for {} but the
-            major_version was not >= 3 (12.4.1).
-
-            * wavelet_index: {} ({:d})
-            * wavelet_index_ho: {} ({:d})
-            * dwt_depth: {}
-            * dwt_depth_ho: {}
-        """.format(
-            codec_features["name"],
-            codec_features["wavelet_index"].name,
-            codec_features["wavelet_index"],
-            codec_features["wavelet_index_ho"].name,
-            codec_features["wavelet_index_ho"],
-            codec_features["dwt_depth"],
-            codec_features["dwt_depth_ho"],
-        )
-
-
 class IncompatibleLevelAndVideoFormatError(UnsatisfiableCodecFeaturesError):
     """
     Thrown when the codec features specified a particular VC-2 level which is

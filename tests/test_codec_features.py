@@ -185,8 +185,6 @@ class TestReadCodecFeaturesCSV(object):
                 "name,                      hd",
                 "level,                     unconstrained,        0",
                 "profile,                   high_quality,         3",
-                "major_version,             3,                    3",
-                "minor_version,             0,                    0",
                 "base_video_format,         hd1080p_50,           custom_format",
                 "picture_coding_mode,       pictures_are_frames,  pictures_are_frames",
                 "frame_width,               default,              8",
@@ -228,8 +226,6 @@ class TestReadCodecFeaturesCSV(object):
                         name="hd",
                         level=Levels.unconstrained,
                         profile=Profiles.high_quality,
-                        major_version=3,
-                        minor_version=0,
                         picture_coding_mode=PictureCodingModes.pictures_are_frames,
                         video_parameters=set_source_defaults(
                             BaseVideoFormats.hd1080p_50
@@ -252,8 +248,6 @@ class TestReadCodecFeaturesCSV(object):
                         name="column_C",
                         level=Levels.unconstrained,
                         profile=Profiles.high_quality,
-                        major_version=3,
-                        minor_version=0,
                         picture_coding_mode=PictureCodingModes.pictures_are_frames,
                         video_parameters=VideoParameters(
                             frame_width=8,
@@ -304,8 +298,6 @@ class TestReadCodecFeaturesCSV(object):
                     "name,                      hd,                 hd",
                     "level,                     unconstrained,      unconstrained",
                     "profile,                   high_quality,       high_quality",
-                    "major_version,             3,                  3",
-                    "minor_version,             0,                  0",
                     "base_video_format,         hd1080p_50,         hd1080p_50",
                     "picture_coding_mode,       pictures_are_frames,pictures_are_frames",  # noqa: E501
                     "frame_width,               default,            default",
@@ -348,8 +340,6 @@ class TestReadCodecFeaturesCSV(object):
                     "name,                      hd",
                     "level,                     unconstrained",
                     "profile,                   high_quality",
-                    "major_version,             3",
-                    "minor_version,             0",
                     "base_video_format,         hd1080p_50",
                     "picture_coding_mode,       pictures_are_frames",
                     "frame_width,               default",
@@ -392,8 +382,6 @@ class TestReadCodecFeaturesCSV(object):
                     "name,                      hd",
                     "level,                     unconstrained",
                     "profile,                   high_quality",
-                    "major_version,             3",
-                    "minor_version,             0",
                     "base_video_format,         hd1080p_50",
                     "picture_coding_mode,       pictures_are_frames",
                     "frame_width,               default",
@@ -437,8 +425,6 @@ class TestReadCodecFeaturesCSV(object):
                     "name,                      hd",
                     "level,                     unconstrained",
                     "profile,                   high_quality",
-                    "major_version,             3",
-                    "minor_version,             0",
                     "base_video_format,         hd1080p_50",
                     "picture_coding_mode,       pictures_are_frames",
                     "frame_width,               default",
@@ -477,8 +463,6 @@ class TestReadCodecFeaturesCSV(object):
     @pytest.mark.parametrize(
         "field,bad_value,expected_minimum",
         [
-            ("major_version", -1, 0),
-            ("minor_version", -1, 0),
             ("frame_width", 0, 1),
             ("frame_height", 0, 1),
             ("frame_rate_numer", 0, 1),
@@ -509,8 +493,6 @@ class TestReadCodecFeaturesCSV(object):
                         "name,                      hd",
                         "level,                     unconstrained",
                         "profile,                   high_quality",
-                        "major_version,             3",
-                        "minor_version,             0",
                         "base_video_format,         hd1080p_50",
                         "picture_coding_mode,       pictures_are_frames",
                         "frame_width,               default",
@@ -555,8 +537,6 @@ class TestCodecFeaturesToTrivialLevelConstraints(object):
             name="example",
             level=Levels.unconstrained,
             profile=Profiles.high_quality,
-            major_version=3,
-            minor_version=0,
             picture_coding_mode=PictureCodingModes.pictures_are_frames,
             video_parameters=set_source_defaults(BaseVideoFormats.hd1080p_50),
             wavelet_index=WaveletFilters.haar_with_shift,
@@ -576,8 +556,6 @@ class TestCodecFeaturesToTrivialLevelConstraints(object):
 
         assert values["level"] == Levels.unconstrained
         assert values["profile"] == Profiles.high_quality
-        assert values["major_version"] == 3
-        assert values["minor_version"] == 0
         assert values["picture_coding_mode"] == PictureCodingModes.pictures_are_frames
         assert values["wavelet_index"] == WaveletFilters.haar_with_shift
         assert values["dwt_depth"] == 2

@@ -658,13 +658,11 @@ def rank_allowed_base_video_format_similarity(codec_features):
 def make_parse_parameters(codec_features):
     """
     Create a :py:class:`~vc2_conformance.bitstream.ParseParameters` object
-    using the version, profile and level specified in the
-    :py:class:`~vc2_conformance.codec_features.CodecFeatures`
-    dictionary provided.
+    using the profile and level specified in the
+    :py:class:`~vc2_conformance.codec_features.CodecFeatures` dictionary
+    provided.
     """
     return ParseParameters(
-        major_version=codec_features["major_version"],
-        minor_version=codec_features["minor_version"],
         profile=codec_features["profile"],
         level=codec_features["level"],
     )

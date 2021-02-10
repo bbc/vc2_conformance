@@ -14,7 +14,6 @@ from vc2_conformance.encoder.exceptions import (
     InsufficientHQPictureBytesError,
     InsufficientLDPictureBytesError,
     LosslessUnsupportedByLowDelayError,
-    AsymmetricTransformPreVersion3Error,
     IncompatibleLevelAndVideoFormatError,
     IncompatibleLevelAndExtendedTransformParametersError,
 )
@@ -97,26 +96,6 @@ def test_lossless_unsuported_by_low_delay_error(codec_features):
     ) == wrap_paragraphs(
         """
             Low delay profile does not support lossless encoding for minimal.
-        """
-    )
-
-
-def test_asymmetric_transform_pre_version_3_error(codec_features):
-    codec_features["wavelet_index"] = WaveletFilters.haar_with_shift
-    codec_features["wavelet_index_ho"] = WaveletFilters.le_gall_5_3
-    codec_features["dwt_depth"] = 2
-    codec_features["dwt_depth_ho"] = 1
-    assert wrap_paragraphs(
-        AsymmetricTransformPreVersion3Error(codec_features).explain()
-    ) == wrap_paragraphs(
-        """
-            An asymmetric wavelet transform was specified for minimal but the
-            major_version was not >= 3 (12.4.1).
-
-            * wavelet_index: haar_with_shift (4)
-            * wavelet_index_ho: le_gall_5_3 (1)
-            * dwt_depth: 2
-            * dwt_depth_ho: 1
         """
     )
 

@@ -60,11 +60,6 @@ The following parameters must be given for each codec configuration.
         :value-heading: Profile
         :name-heading: Alias
 
-``major_version`` and ``minor_version``
-    Integer. The version number to report in the bitstream (see section
-    (11.2)). The major version should generally be either ``2`` or ``3`` and
-    the minor version ``0``.
-
 ``picture_coding_mode``
     Integer or alias. The picture coding mode to use (see section (11.5)).
     

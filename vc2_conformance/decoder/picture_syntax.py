@@ -26,11 +26,16 @@ from vc2_data_tables import (
 
 from vc2_conformance.level_constraints import LEVEL_CONSTRAINTS
 
+from vc2_conformance.version_constraints import (
+    wavelet_transform_version_implication,
+)
+
 from vc2_conformance.decoder.assertions import (
     assert_in,
     assert_in_enum,
     assert_level_constraint,
     assert_picture_number_incremented_as_expected,
+    log_version_lower_bound,
 )
 
 from vc2_conformance.decoder.exceptions import (
@@ -153,6 +158,17 @@ def extended_transform_parameters(state):
         ## Begin not in spec
         assert_level_constraint(state, "dwt_depth_ho", state["dwt_depth_ho"])
         ## End not in spec
+
+    # (11.2.2) Log increased minimum version requirements if an asymmetric
+    # transform was used.
+    ## Begin not in spec
+    minimum_required_version = wavelet_transform_version_implication(
+        state["wavelet_index"],
+        state["wavelet_index_ho"],
+        state["dwt_depth_ho"],
+    )
+    log_version_lower_bound(state, minimum_required_version)
+    ## End not in spec
 
 
 @ref_pseudocode

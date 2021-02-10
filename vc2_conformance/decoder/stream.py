@@ -22,6 +22,11 @@ from vc2_data_tables import (
     PictureCodingModes,
 )
 
+from vc2_conformance.version_constraints import (
+    MINIMUM_MAJOR_VERSION,
+    parse_code_version_implication,
+)
+
 from vc2_conformance.decoder.exceptions import (
     BadParseInfoPrefix,
     BadParseCode,
@@ -37,6 +42,7 @@ from vc2_conformance.decoder.exceptions import (
     OddNumberOfFieldsInSequence,
     SequenceContainsIncompleteFragmentedPicture,
     PictureInterleavedWithFragmentedPicture,
+    ParseCodeNotSupportedByVersion,
 )
 
 from vc2_conformance.symbol_re import Matcher
@@ -47,6 +53,8 @@ from vc2_conformance.decoder.assertions import (
     assert_in_enum,
     assert_parse_code_in_sequence,
     assert_parse_code_sequence_ended,
+    log_version_lower_bound,
+    assert_major_version_is_minimal,
 )
 
 from vc2_conformance.pseudocode.state import reset_state
@@ -163,6 +171,10 @@ def parse_sequence(state):
             raise OddNumberOfFieldsInSequence(state["_num_pictures_in_sequence"])
     ## End not in spec
 
+    # (11.2.2) Check that the major_version number used was the lowest which
+    # would be permissible for the features actually used
+    assert_major_version_is_minimal(state)  ## Not in spec
+
 
 @ref_pseudocode
 def auxiliary_data(state):
@@ -241,6 +253,19 @@ def parse_info(state):
         profile_params = PROFILES[state["profile"]]
         if state["parse_code"] not in profile_params.allowed_parse_codes:
             raise ParseCodeNotAllowedInProfile(state["parse_code"], state["profile"])
+    ## End not in spec
+
+    # (11.2.2) Check that the parse code used is supported by the current
+    # major_version.
+    ## Begin not in spec
+    minimum_required_version = parse_code_version_implication(state["parse_code"])
+    # NB: If this is the sequence header at the start of a sequence we may not
+    # know the major_version yet. In that case, we can safely skip this test as
+    # the sequence header is supported by all versions.
+    major_version = state.get("major_version", MINIMUM_MAJOR_VERSION)
+    if major_version < minimum_required_version:
+        raise ParseCodeNotSupportedByVersion(state["parse_code"], major_version)
+    log_version_lower_bound(state, minimum_required_version)
     ## End not in spec
 
     # (10.5.1) Check that the next_parse_offset holds a plausible value
