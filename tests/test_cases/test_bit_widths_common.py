@@ -32,7 +32,7 @@ BUNDLE_WIDTH_OPTIMISED_PATTERNS = os.path.join(
 )
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def custom_environ():
     orig_environ = os.environ.copy()
     os.environ.clear()

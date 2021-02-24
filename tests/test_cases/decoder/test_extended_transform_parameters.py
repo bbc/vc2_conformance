@@ -119,7 +119,7 @@ def test_forces_flags(
             assert False
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def level_constraints():
     # Revert modifications made to LEVEL_CONSTRAINTS in this test
     old = deepcopy(LEVEL_CONSTRAINTS)

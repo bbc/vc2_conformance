@@ -156,7 +156,7 @@ def test_source_parameters_encodings():
     )
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def level_sequence_restrictions():
     # Fixture which reverts any monkeypatches made to LEVEL_SEQUENCE_RESTRICTIONS
     old = deepcopy(LEVEL_SEQUENCE_RESTRICTIONS)

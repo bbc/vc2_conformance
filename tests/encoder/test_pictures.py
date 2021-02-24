@@ -1088,7 +1088,7 @@ class TestMakeQuantMatrix(object):
 
 
 class TestMakeDecideExtendedTransformFlag(object):
-    @pytest.yield_fixture
+    @pytest.fixture
     def level_constraints(self):
         # Override allow temporary modifications to the level constraints
         original_constraints = deepcopy(LEVEL_CONSTRAINTS)

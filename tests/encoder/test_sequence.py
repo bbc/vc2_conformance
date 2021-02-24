@@ -122,7 +122,7 @@ def test_minimum_qindex(kwargs, exp_qis):
     assert qis == exp_qis
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def patch_unconstratined_level_sequence_restrictions():
     # For test purposes, modify the unconstrained level so that it requires an
     # example of every non-picture data unit type to be inserted and that

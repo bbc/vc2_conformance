@@ -75,7 +75,7 @@ class TestPseudocodeDerivedFunction(object):
         assert pdf.citation == exp
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def restore_metadata_afterwards():
     """
     Fixture which reverts any changes made to pseudocode_derived_functions

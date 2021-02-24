@@ -48,7 +48,7 @@ def alternative_real_pictures(alternative_paths=TEST_PICTURES_PATHS):
         NATURAL_PICTURES_FILENAMES.extend(orig_paths)
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def replace_real_pictures_with_test_pictures():
     """
     Pytext fixture for alternative_real_pictures.
