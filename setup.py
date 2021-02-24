@@ -1,39 +1,10 @@
 import os
 
-import sys
-
 from setuptools import setup, find_packages
 
 version_file = os.path.join(os.path.dirname(__file__), "vc2_conformance", "version.py")
 with open(version_file, "r") as f:
     exec (f.read())  # noqa: E211
-
-install_requires = [
-    # NB: bitarray-hardbyte is used in place of official 'bitarray' package
-    # due to provision of a binary wheel.
-    "bitarray-hardbyte",
-    "sentinels",
-    "vc2_data_tables>=0.1.1",
-    "vc2_bit_widths>=0.1.1",
-    "vc2_conformance_data>=0.1.0",
-]
-
-if sys.version_info < (3, 0):
-    install_requires.append("enum34")
-
-# Use old versions of libraries which have deprecated older Python version
-# support
-if sys.version_info < (3, 0):
-    install_requires.append("pillow<7")
-else:
-    install_requires.append("pillow")
-
-if sys.version_info < (3, 0):
-    install_requires.append("numpy<1.17")
-elif sys.version_info < (3, 7):
-    install_requires.append("numpy<1.20")
-else:
-    install_requires.append("numpy")
 
 setup(
     name="vc2_conformance",
@@ -55,7 +26,23 @@ setup(
         "Programming Language :: Python :: 3",
     ],
     keywords="vc2 dirac dirac-pro conformance",
-    install_requires=install_requires,
+    install_requires=[
+        # NB: bitarray-hardbyte is used in place of official 'bitarray' package
+        # due to provision of a binary wheel.
+        "bitarray-hardbyte",
+        "sentinels",
+        "vc2_data_tables>=0.1.1",
+        "vc2_bit_widths>=0.1.1",
+        "vc2_conformance_data>=0.1.0",
+        # Use old versions/polyfill libraries which have deprecated older Python
+        # version support
+        "enum34; python_version<'3.4'",
+        "pillow<7; python_version<'3.0'",
+        "pillow; python_version>='3.0'",
+        "numpy<1.17; python_version<'3.0'",
+        "numpy<1.20; python_version>='3.0' and python_version<'3.7'",
+        "numpy; python_version>='3.7'",
+    ],
     entry_points={
         "console_scripts": [
             "vc2-bitstream-viewer=vc2_conformance.scripts.vc2_bitstream_viewer:main",
