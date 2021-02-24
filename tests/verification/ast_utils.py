@@ -4,6 +4,14 @@ Utility functions for working with AST nodes.
 
 import ast
 
+try:
+    # Python 3.x
+    from ast import Constant
+except ImportError:
+    # Python 2.7: Create a class which will never match an isinstance check
+    class Constant(object):
+        pass
+
 
 def name_to_str(attr_or_name):
     """
@@ -13,6 +21,17 @@ def name_to_str(attr_or_name):
     """
     if (
         isinstance(attr_or_name, ast.Subscript)
+        # As of Python 3.8, ast.Constant is used for constants here.
+        and isinstance(attr_or_name.slice, Constant)
+        and isinstance(attr_or_name.slice.value, (str, int, float))
+    ):
+        return "{}[{!r}]".format(
+            name_to_str(attr_or_name.value),
+            attr_or_name.slice.value,
+        )
+    elif (
+        isinstance(attr_or_name, ast.Subscript)
+        # Prior to Python 3.8, ast.Index is used for constants here
         and isinstance(attr_or_name.slice, ast.Index)
         and isinstance(attr_or_name.slice.value, (ast.Num, ast.Str))
     ):
