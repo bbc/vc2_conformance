@@ -12,9 +12,9 @@ cover the process under Linux.
 Python interpreter
 ------------------
 
-The VC-2 conformance software is compatible with both Python 2 and Python 3. If
-in doubt, you should prefer Python 3. You should also make sure that the
-``pip`` Python package manager is also installed.
+The VC-2 conformance software is compatible with both Python 2.7 and Python 3.6
+and later. If in doubt, you should prefer Python 3.x. You should also make sure
+that the ``pip`` Python package manager is also installed.
 
 Under Debian-like Linux distributions (e.g. Ubuntu), Python and ``pip`` can be
 installed using::
