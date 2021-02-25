@@ -4,6 +4,12 @@ VC-2 Conformance Software
 This is the manual for the VC-2 conformance testing software. This software is
 used to test implementations of the SMPTE 2042-1 (VC-2) video codec.
 
+.. note::
+
+    Throughout this software and documentation, perenthesised references of the
+    form '(1.2.3)' refer to section numbers within the SMPTE 2042-1:2017
+    specification unless otherwise indicated.
+
 This manual is split into two parts.
 
 The first (shorter) part, :ref:`user-documentation`, is aimed at codec
