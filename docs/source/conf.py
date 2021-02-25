@@ -19,8 +19,8 @@ sys.path.insert(0, os.path.abspath("_ext/"))
 # -- Project information -----------------------------------------------------
 
 project = "SMPTE VC-2 Conformance Software"
-copyright = "2020, SMPTE"
-author = "SMPTE"
+copyright = "2021, BBC"
+author = "BBC"
 
 from vc2_conformance import __version__ as version
 

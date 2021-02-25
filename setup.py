@@ -14,11 +14,11 @@ setup(
     url="https://github.com/bbc/vc2_conformance",
     author="BBC R&D",
     description="Conformance testing utilities for the VC-2 video codec.",
-    license="GPLv2",
+    license="GPL-3.0-only",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
-        "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Operating System :: POSIX :: Linux",
         "Operating System :: Microsoft :: Windows",
         "Operating System :: MacOS",
