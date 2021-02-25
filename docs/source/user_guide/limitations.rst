@@ -57,3 +57,9 @@ limited extent by the generated test cases. Some of these are listed below.
     The test case generator may not be able to generate test cases for all
     degenerate video formats. For example, picture component bit depths of
     greater than 32 bits or absurd transform depths are not supported.
+
+
+**Differences from specification**
+    The SMPTE ST 2042-1:2017 specification contains a small number of minor
+    errors. In these cases, this software assumes the intention of the
+    specification.
