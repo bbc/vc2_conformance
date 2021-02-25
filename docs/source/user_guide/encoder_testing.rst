@@ -86,6 +86,17 @@ For a test case to pass:
   visually indistinguishable.
 * No additional pictures must have been decoded.
 
+.. tip::
+
+    When viewing pictures using the ``ffplay`` commands suggested by
+    :ref:`vc2-picture-explain` you may sometimes find it helpful to use a very
+    low frame rate or playback the sequence in a loop.
+    
+    To reduce the frame rate such that each frame is shown for 5 seconds,
+    replace the value after ``-framerate`` to ``1/5``.
+    
+    To loop the sequence indefinately add ``-loop 0`` to the command.
+
 For an encoder to pass the conformance test, all test cases, for all supported
 codec feature sets must pass. If any tests fail, this indicates that the
 encoder is non-conformant to the VC-2 specification.
