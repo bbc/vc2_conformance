@@ -326,7 +326,7 @@ parallel to generate the test cases, for example using `GNU Parallel
     $ # Write test case generation commands to 'commands.txt'
     $ vc2-test-case-generator path/to/codec_features.csv --parallel > commands.txt
     
-    $ # Run test case generation in paralllel using GNU Parallel
+    $ # Run test case generation in parallel using GNU Parallel
     $ parallel -a commands.txt
 
 .. warning::
