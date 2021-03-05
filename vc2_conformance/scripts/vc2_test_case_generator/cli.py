@@ -167,7 +167,10 @@ def parse_args(*args, **kwargs):
 
     parser.add_argument(
         "codec_configurations",
-        type=FileType("r"),
+        # NB: utf-8-sig encoding ignores any Unicode BOM appearing at the start
+        # of the file sometimes inserted by Excel (and other Microsoft
+        # products).
+        type=FileType("r", encoding="utf-8-sig"),
         help="""
             CSV file containing the set of codec configurations to generate
             test cases for.

@@ -68,6 +68,17 @@ class TestParseArgs(object):
         with pytest.raises(SystemExit):
             parse_args([dummy_csv_filename, "-c", "["])
 
+    @pytest.mark.parametrize("with_bom", [False, True])
+    def test_ignores_unicode_bom(self, tmpdir, with_bom):
+        file_with_bom = str(tmpdir.join("with_bom.csv"))
+        with open(file_with_bom, "wb") as w:
+            if with_bom:
+                w.write(b"\xef\xbb\xbf")  # UTF-8 encoded BOM
+            w.write(b"Hello!")
+
+        args = parse_args([file_with_bom, "-c", "f.*o"])
+        assert args.codec_configurations.read() == "Hello!"
+
 
 class TestLoadCodecFeatures(object):
     @pytest.fixture
