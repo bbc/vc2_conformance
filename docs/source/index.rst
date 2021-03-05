@@ -2,12 +2,27 @@ VC-2 Conformance Software
 =========================
 
 This is the manual for the VC-2 conformance testing software. This software is
-used to test implementations of the SMPTE 2042-1 (VC-2) video codec.
+used to test implementations of the VC-2 video codec.
+
+Specifically, this software tests conformance with the following SMPTE
+standards and recommended practices:
+
+* `SMPTE ST 2042-1:2017 <ST2042-1_>`_ (VC-2)
+* `SMPTE ST 2042-2:2017 <ST2042-2_>`_ (VC-2 Level Definitions)
+* `SMPTE RP 2047-1:2009 <RP2047-1_>`_ (VC-2 Mezzanine Compression of 1080P High Definition Video Sources)
+* `SMPTE RP 2047-3:2016 <RP2047-3_>`_ (VC-2 Level 65 Compression of High Definition Video Sources for Use with a Standard Definition Infrastructure)
+* `SMPTE RP 2047-5:2017 <RP2047-5_>`_ (VC-2 Level 66 Compression of Ultra High Definition Video Sources for use with a High Definition Infrastructure)
+
+.. _ST2042-1: https://ieeexplore.ieee.org/document/7967896
+.. _ST2042-2: https://ieeexplore.ieee.org/document/8187792
+.. _RP2047-1: https://ieeexplore.ieee.org/document/7290342
+.. _RP2047-3: https://ieeexplore.ieee.org/document/7565453
+.. _RP2047-5: https://ieeexplore.ieee.org/document/8019813
 
 .. note::
 
     Throughout this software and documentation, perenthesised references of the
-    form '(1.2.3)' refer to section numbers within the SMPTE 2042-1:2017
+    form '(1.2.3)' refer to section numbers within the SMPTE ST 2042-1:2017
     specification unless otherwise indicated.
 
 This manual is split into two parts.
