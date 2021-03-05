@@ -7,6 +7,7 @@ from vc2_conformance.py2x_compat import (
     unwrap,
     zip,
     makedirs,
+    FileType,
 )
 
 import os
@@ -91,3 +92,46 @@ def test_mkdirs(tmpdir):
     makedirs(path, exist_ok=True)
     assert os.path.isdir(path)
     makedirs(path, exist_ok=True)
+
+
+class TestFileType(object):
+    def test_no_encoding_write(self, tmpdir):
+        text_filename = str(tmpdir.join("text_file"))
+        binary_filename = str(tmpdir.join("binary_file"))
+
+        tft = FileType("w")
+        with tft(text_filename) as f:
+            f.write("Hello!")
+        assert open(text_filename, "r").read() == "Hello!"
+
+        bft = FileType("wb")
+        with bft(binary_filename) as f:
+            f.write(b"\x00\xFF")
+        assert open(binary_filename, "rb").read() == b"\x00\xFF"
+
+    def test_no_encoding_read(self, tmpdir):
+        text_filename = str(tmpdir.join("text_file"))
+        binary_filename = str(tmpdir.join("binary_file"))
+
+        with open(text_filename, "w") as f:
+            f.write("Hello!")
+        with open(binary_filename, "wb") as f:
+            f.write(b"\x00\xFF")
+
+        tft = FileType("r")
+        assert tft(text_filename).read() == "Hello!"
+
+        bft = FileType("rb")
+        assert bft(binary_filename).read() == b"\x00\xFF"
+
+    def test_with_encoding_read(self, tmpdir):
+        text_filename = str(tmpdir.join("text_file"))
+
+        with open(text_filename, "wb") as f:
+            f.write(b"\xef\xbb\xbfHello!")  # With UTF-8 BOM
+
+        ft = FileType("r")
+        assert ft(text_filename).read() != "Hello!"
+
+        sft = FileType("r", encoding="utf-8-sig")
+        assert sft(text_filename).read() == "Hello!"

@@ -99,7 +99,7 @@ from collections import OrderedDict
 
 from io import BytesIO
 
-from argparse import ArgumentParser, FileType
+from argparse import ArgumentParser
 
 from vc2_conformance import __version__
 
@@ -113,6 +113,7 @@ from vc2_conformance.encoder import UnsatisfiableCodecFeaturesError
 from vc2_conformance.py2x_compat import (
     get_terminal_size,
     makedirs,
+    FileType,
 )
 
 from vc2_conformance.string_utils import wrap_paragraphs

@@ -60,6 +60,13 @@ software.
     In Python 3.x an alias for :py:func:`os.makedirs`. In Python 2.x, a
     backport of this function which includes the ``exist_ok`` argument.
 
+
+.. py:function:: FileType
+
+    In Python 3.x an alias for :py:class:`argparse.FileType`. In Python 2.x, a
+    wrapper around :py:class:`argparse.FileType` adding support for the
+    'encoding' keyword argument when opening with mode "r".
+
 """
 
 __all__ = [
@@ -72,11 +79,14 @@ __all__ = [
     "gcd",
     "zip",
     "makedirs",
+    "FileType",
 ]
 
 import os
 
 import sys
+
+import io
 
 
 try:
@@ -159,3 +169,27 @@ except TypeError:
             return
         else:
             os.makedirs(name, mode)
+
+
+if sys.version_info[0] >= 3:
+    from argparse import FileType
+else:
+    # In Python 2.x, the FileType class does not accept an 'encoding' argument.
+    # We reimplement this feature here.
+    from argparse import FileType as _FileType
+
+    class FileType(_FileType):
+        def __init__(self, mode, *args, **kwargs):
+            if mode == "r" and "encoding" in kwargs:
+                self._encoding = kwargs.pop("encoding")
+            else:
+                self._encoding = None
+            super(FileType, self).__init__(mode, *args, **kwargs)
+
+        def __call__(self, filename):
+            file_obj = super(FileType, self).__call__(filename)
+            if self._encoding is None:
+                return file_obj
+            else:
+                # Special case backported for Python 2.x
+                return io.open(filename, "r", encoding=self._encoding)
