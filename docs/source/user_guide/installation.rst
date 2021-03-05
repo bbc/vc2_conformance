@@ -32,26 +32,25 @@ installed using::
 Installation
 ------------
 
+You can install the VC-2 conformance software using any of the methods
+below.
 
-Via ``pip``
-```````````
 
-.. warning::
-    
-    The VC-2 conformance software has not yet been publicly released so the
-    following install instructions do not work yet.
+Via ``pip`` (recommended)
+`````````````````````````
 
 The VC-2 conformance software, along with all its dependencies, may be
 installed using ``pip``::
 
     $ python -m pip install --user vc2_conformance
 
-The ``--user`` argument may be omitted for a system-wide installation (not
-recommended).
+The ``--user`` argument may be omitted for a system-wide installation (strongly
+*not* recommended) or when installing in a `Python virtual environment
+<https://docs.python.org/3/tutorial/venv.html>`_.
 
 
-From ``.tar.gz.`` packages
-``````````````````````````
+From ``.tar.gz.`` packages (advanced)
+`````````````````````````````````````
 
 The VC-2 conformance software may be installed from Python packages. The
 following packages are required:
@@ -78,8 +77,8 @@ you may need to execute the following line prior to the above::
 
     $ export PIP_IGNORE_INSTALLED=0
 
-From source
-```````````
+From source (advanced)
+``````````````````````
 
 The latest VC-2 conformance software may be installed from the source as
 follows.
