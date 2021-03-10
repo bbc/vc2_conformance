@@ -970,6 +970,9 @@ def make_picture_parse(
         # not required by any existing VC-2 level. The assumption that this is
         # OK is verified in
         # ``tests/encoder/test_level_constraints_assumptions.py``.
+        #
+        # In addition, the `codec_features_to_trivial_level_constraints`
+        # function assumes that this value is always 0 too.
         slice_parameters["slice_prefix_bytes"] = 0
         slice_parameters["slice_size_scaler"] = slice_size_scaler
     elif codec_features["profile"] == Profiles.low_delay:
