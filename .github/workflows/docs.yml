@@ -15,35 +15,14 @@ jobs:
       run: |
         python -m pip install --upgrade pip
     - uses: actions/checkout@v2
-    - name: Fetch private vc2_data_tables repo
-      uses: actions/checkout@v2
-      with:
-        repository: bbc/vc2_data_tables
-        path: vc2_data_tables
-        token: ${{ secrets.PAT }}
-    - name: Fetch private vc2_conformance_data repo
-      uses: actions/checkout@v2
-      with:
-        repository: bbc/vc2_conformance_data
-        path: vc2_conformance_data
-        token: ${{ secrets.PAT }}
-    - name: Fetch private vc2_bit_widths repo
-      uses: actions/checkout@v2
-      with:
-        repository: bbc/vc2_bit_widths
-        path: vc2_bit_widths
-        token: ${{ secrets.PAT }}
     - name: Install doc dependencies
       run: |
-        (cd vc2_data_tables/ && python setup.py develop)
-        (cd vc2_bit_widths/ && python setup.py develop)
-        (cd vc2_conformance_data/ && python setup.py develop)
         python setup.py develop
         python -m pip install -r requirements-docs.txt
         sudo apt-get update -y
         sudo apt-get install -y \
-          latexmk \
           inkscape \
+          latexmk \
           texlive-latex-recommended \
           texlive-latex-extra \
           texlive-fonts-recommended

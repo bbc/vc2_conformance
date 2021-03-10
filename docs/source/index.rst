@@ -38,6 +38,25 @@ disregard this part. This section includes a general overview of the
 conformance software internals followed by detailed reference documentation on
 its various components.
 
+Finally, you can find the source code for
+:py:mod:`vc2_conformance` `on GitHub
+<https://github.com/bbc/vc2_conformance/>`_.
+
+.. only:: not latex
+
+    .. note::
+    
+        This documentation is also `available in PDF format
+        <https://bbc.github.io/vc2_conformance/vc2_conformance_manual.pdf>`_.
+
+.. only:: not html
+
+    .. note::
+    
+        This documentation is also `available to browse online in HTML format
+        <https://bbc.github.io/vc2_conformance/>`_.
+
+
 .. toctree::
    :hidden:
 

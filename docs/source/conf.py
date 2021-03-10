@@ -59,20 +59,28 @@ add_module_names = False
 intersphinx_mapping = {
     "python": ("http://docs.python.org/3", None),
     "ast": ("https://greentreesnakes.readthedocs.io/en/latest/", None),
+    "vc2_data_tables": ("https://bbc.github.io/vc2_data_tables/", None),
+    "vc2_bit_widths": ("https://bbc.github.io/vc2_bit_widths/", None),
+    "vc2_conformance_data": ("https://bbc.github.io/vc2_conformance_data/", None),
 }
 
 
 # -- Options for intertex ----------------------------------------------------
 
 intertex_mapping = {
-    "vc2_data_tables": "{vc2_data_tables}/../docs/build/latex/*.aux",
-    "vc2_bit_widths": "{vc2_bit_widths}/../docs/build/latex/*.aux",
-    "vc2_conformance_data": "{vc2_conformance_data}/../docs/build/latex/*.aux",
+    "vc2_data_tables": [
+        "{vc2_data_tables}/../docs/build/latex/*.aux",
+        "https://bbc.github.io/vc2_data_tables/vc2_data_tables_manual.aux",
+    ],
+    "vc2_bit_widths": [
+        "{vc2_bit_widths}/../docs/build/latex/*.aux",
+        "https://bbc.github.io/vc2_bit_widths/vc2_bit_widths_manual.aux",
+    ],
+    "vc2_conformance_data": [
+        "{vc2_conformance_data}/../docs/build/latex/*.aux",
+        "https://bbc.github.io/vc2_conformance_data/vc2_conformance_data_manual.aux",
+    ],
 }
-
-# While the other modules' documentation is not published publicly online,
-# we'll use Intersphinx in the HTML too.
-intertex_formats = ["html", "latex"]
 
 
 # -- Options for HTML output -------------------------------------------------
