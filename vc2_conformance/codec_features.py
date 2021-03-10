@@ -564,9 +564,9 @@ def codec_features_to_trivial_level_constraints(codec_features):
         constrained_values["slice_bytes_numerator"] = slice_bytes.numerator
         constrained_values["slice_bytes_denominator"] = slice_bytes.denominator
     elif codec_features["profile"] == Profiles.high_quality:
-        # TODO: At the moment the test case generator cannot generate streams
-        # which include prefix bytes (except when it hand-generates such
-        # streams) we assume it is zero below...
+        # NB: At the moment the test case generator cannot generate streams
+        # which include prefix bytes so we assume it is zero below... (See
+        # `vc2_conformance.encoder.pictures.make_picture_parse`)
         constrained_values["slice_prefix_bytes"] = 0
 
     # Determine custom quantisation matrix values
