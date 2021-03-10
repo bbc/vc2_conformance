@@ -10,42 +10,26 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-    - name: Set up Python 3.9
+    # Setup environment
+    - name: Set up Python
       uses: actions/setup-python@v2
       with:
         python-version: 3.9
-    - name: Upgrade pip
+    - name: Upgrade python build software
       run: |
-        python -m pip install --upgrade pip
+        python -m pip install --upgrade pip setuptools wheel
     - uses: actions/checkout@v2
+    
+    # Build Python packages
     - name: Build Python source package
       id: build_source_package
       run: |
         python setup.py sdist
-        echo ::set-output name=package::$(echo dist/*.tar.gz)
-    - name: Fetch private vc2_data_tables repo
-      uses: actions/checkout@v2
-      with:
-        repository: bbc/vc2_data_tables
-        path: vc2_data_tables
-        token: ${{ secrets.PAT }}
-    - name: Fetch private vc2_conformance_data repo
-      uses: actions/checkout@v2
-      with:
-        repository: bbc/vc2_conformance_data
-        path: vc2_conformance_data
-        token: ${{ secrets.PAT }}
-    - name: Fetch private vc2_bit_widths repo
-      uses: actions/checkout@v2
-      with:
-        repository: bbc/vc2_bit_widths
-        path: vc2_bit_widths
-        token: ${{ secrets.PAT }}
+        python setup.py bdist_wheel
+    
+    # Build documentation
     - name: Install doc dependencies
       run: |
-        (cd vc2_data_tables/ && python setup.py develop)
-        (cd vc2_bit_widths/ && python setup.py develop)
-        (cd vc2_conformance_data/ && python setup.py develop)
         python setup.py develop
         python -m pip install -r requirements-docs.txt
         sudo apt-get update -y
@@ -55,17 +39,31 @@ jobs:
           texlive-latex-recommended \
           texlive-latex-extra \
           texlive-fonts-recommended
-    - name: Build PDF documentation
-      id: build_pdf_docs
+    - name: Build HTML and PDF documentation
+      id: build_docs
       run: |
-        # NB: Also build vc2_data_tables, vc2_bit_widths and
-        # vc2_conformance_data docs in order to obtain a toc file for
-        # cross-referencing via intertex
-        make -C vc2_data_tables/docs/ latexpdf
-        make -C vc2_bit_widths/docs/ latexpdf
-        make -C vc2_conformance_data/docs/ latexpdf
-        make -C docs/ latexpdf
+        make -C docs/ html latexpdf
         echo ::set-output name=pdf::$(echo docs/build/latex/smpte*.pdf)
+        # Also put a copy of the docs and TOC in the HTML build to make it
+        # available via GitHub Pages
+        cp docs/build/latex/smpte*.pdf docs/build/html/${{ github.event.repository.name }}_manual.pdf
+        cp docs/build/latex/smpte*.aux docs/build/html/${{ github.event.repository.name }}_manual.aux
+    
+    # Publish built Python packages to PyPI
+    # TODO
+    ##- name: Publish Python packages to PyPI
+    ##  uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
+    ##  with:
+    ##    password: ${{ secrets.PYPI_API_TOKEN }}
+    
+    # Publish docs to GitHub Pages
+    - name: Publish HTML and PDF docs to GH Pages
+      uses: peaceiris/actions-gh-pages@bbdfb200618d235585ad98e965f4aafc39b4c501
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: docs/build/html/
+    
+    # Publish release notice (and docs) on GitHub
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
@@ -75,22 +73,13 @@ jobs:
         tag_name: ${{ github.ref }}
         release_name: ${{ github.ref }}
         draft: false
-        prerelease: true
-    - name: Upload source package
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ steps.build_source_package.outputs.package }}
-        asset_name: ${{ github.event.repository.name }}.tar.gz
-        asset_content_type: application/gzip
+        prerelease: false
     - name: Upload PDF docs
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ steps.build_pdf_docs.outputs.pdf }}
+        asset_path: ${{ steps.build_docs.outputs.pdf }}
         asset_name: manual.pdf
         asset_content_type: application/pdf

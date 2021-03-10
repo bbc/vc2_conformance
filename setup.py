@@ -45,9 +45,9 @@ setup(
         # due to provision of a binary wheel.
         "bitarray-hardbyte",
         "sentinels",
-        "vc2_data_tables>=0.1.1",
-        "vc2_bit_widths>=0.1.1",
-        "vc2_conformance_data>=0.1.0",
+        "vc2_data_tables==git+https://github.com/bbc/vc2_conformance_data.git@v1.0.0#egg=vc2_conformance_data",
+        "vc2_bit_widths~=1.0.0",
+        "vc2_conformance_data~=1.0.0",
         # Use old versions/polyfill libraries which have deprecated older Python
         # version support
         "enum34; python_version<'3.4'",
