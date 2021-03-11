@@ -6,7 +6,7 @@ video codec implementations to the [SMPTE ST 2042-1 (VC-2) family of
 standards](https://ieeexplore.ieee.org/document/7967896).
 
 To get started, please read the [`vc2_conformance`
-manual](https://bbc.github.io/vc2_conformance/) (also available as a [PDF
+manual](https://bbc.github.io/vc2_conformance/) (also available in [PDF
 format](https://bbc.github.io/vc2_conformance/vc2_conformance_manual.pdf)).
 This manual walks through the process of installing and using these tools to
 test the conformance of a VC-2 codec implementation.
