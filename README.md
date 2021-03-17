@@ -5,12 +5,15 @@ This repository contains software tools for checking the conformance of VC-2
 video codec implementations to the [SMPTE ST 2042-1 (VC-2) family of
 standards](https://ieeexplore.ieee.org/document/7967896).
 
-To get started, please read the [`vc2_conformance`
-manual](https://bbc.github.io/vc2_conformance/) (also available in [PDF
-format](https://bbc.github.io/vc2_conformance/vc2_conformance_manual.pdf)).
-This manual walks through the process of installing and using these tools to
-test the conformance of a VC-2 codec implementation.
+Getting started
+---------------
 
+The VC-2 conformance software manual walks through the process of installing
+and using these tools to test the conformance of a VC-2 codec implementation.
+You can read the manual online using one of the links below:
+
+* [**VC-2 conformance software manual (HTML version)**](https://bbc.github.io/vc2_conformance/)
+* [**VC-2 conformance software manual (PDF version)**](https://bbc.github.io/vc2_conformance/vc2_conformance_manual.pdf)
 
 
 See also
