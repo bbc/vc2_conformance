@@ -103,7 +103,8 @@ Running tests
 
 Test routines relating to the code in each repository can be found in the
 ``tests/`` directory of each repository. The test suites are built on `pytest
-<https://docs.pytest.org/en/latest/>`_ and may be executed as follows::
+<https://docs.pytest.org/en/latest/>`_ and, once a development install has been
+completed, may be executed as follows::
 
     $ py.test path/to/vc2_data_tables/tests/
     $ py.test path/to/vc2_bit_widths/tests/
@@ -115,12 +116,13 @@ Building documentation
 ----------------------
 
 HTML documentation (including the documentation you're reading now) is built as
-follows::
+follows (after a development install has been performed)::
 
     $ make -C path/to/vc2_data_tables/docs html
     $ make -C path/to/vc2_bit_widths/docs html
     $ make -C path/to/vc2_conformance_data/docs html
     $ make -C path/to/vc2_conformance/docs html
+
 
 HTML documentation will be written to the ``docs/build/html/`` directory (open
 the ``index.html`` file in a web browser to read it).
