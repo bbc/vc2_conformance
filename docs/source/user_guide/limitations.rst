@@ -7,7 +7,7 @@ The conformance testing procedures outlined in the previous sections are unable
 to guarantee the overall conformance of an implementation -- only their
 conformance with respect to particular bitstreams or pictures. Furthermore, not
 every possible combination of features are verified, though care has been taken
-to do so where it is likely to find issues.
+to include any combinations likely to uncover issues.
 
 There are also a small number of VC-2 features which are only tested to a
 limited extent by the generated test cases. Some of these are listed below.
@@ -34,10 +34,12 @@ limited extent by the generated test cases. Some of these are listed below.
     signal ranges.
 
 **Auxiliary data-units**
-    Auxiliary data units (10.4.4) are not tested. This is because the contents
-    of such units are not defined by the VC-2 standard and so in the event that
-    a particular codec supported some form of auxiliary data stream, its format
-    would not be known to the conformance software.
+    Auxiliary data units (10.4.4) are not included in any tests. This is
+    because the contents of such units are not defined by the VC-2 standard and
+    so in the event that a particular codec supported some form of auxiliary
+    data stream, its format would not be known to the conformance software.
+    Likewise, the contents of any auxiliary data units produced by an encoder
+    under test will be ignored by this software.
 
 **Variable slice sizes**
     In all non-lossless mode test cases, high quality picture slices are sized
@@ -49,9 +51,9 @@ limited extent by the generated test cases. Some of these are listed below.
 **Changing wavelet transform mid sequence**
     All test cases use the same wavelet transform and slice parameters for
     every picture in the sequence. Though the VC-2 specification permits these
-    parameters to change mid-sequence, though this is not the intended mode of
-    operation for VC-2. The range of potential behaviours to test would also be
-    numerous and so this scenario is not tested.
+    parameters to change mid-sequence, this is not the intended mode of
+    operation for VC-2. Because of this, and the number of test cases which
+    would be required, this scenario is not tested.
 
 **Degenerate formats**
     The test case generator may not be able to generate test cases for all
