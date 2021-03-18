@@ -63,9 +63,11 @@ the pseudocode within the VC-2 specification.
 
 The VC-2 specification uses pseudocode to define the nominal operation of a
 VC-2 decoder. The pseudocode language used is sufficiently similar to Python
-that a translation from pseudocode into executable Python is trivial. Once
-translated, the pseudocode may be used as the basis for correct-by-definition
-implementations of parts of a VC-2 codec.
+that a translation from pseudocode into executable Python is trivial. Automated
+translation is also possible using the `VC-2 Pseudocode Parser tool
+<https://github.com/bbc/vc2_pseudocode_parser>`_. Once translated, the
+pseudocode may be used as the basis for correct-by-definition implementations
+of parts of a VC-2 codec.
 
 The reference VC-2 decoder and bitstream validator
 (:py:mod:`vc2_conformance.decoder`) consists of the VC-2 pseudocode
