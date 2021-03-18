@@ -1,5 +1,5 @@
 """
-The :py:mod:`vc2_conformance.bitstream.autofill` module provides auto-fill
+The :py:mod:`vc2_conformance.bitstream.vc2_autofill` module provides auto-fill
 routines for automatically computing certain values for the context
 dictionaries used by the :py:mod:`vc2_conformance.bitstream.vc2`
 :py:mod:`~vc2_conformance.bitstream.serdes` functions. These values include the

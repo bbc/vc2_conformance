@@ -93,7 +93,7 @@ For a test case to pass:
     low frame rate or playback the sequence in a loop.
     
     To reduce the frame rate such that each frame is shown for 5 seconds,
-    replace the value after ``-framerate`` to ``1/5``.
+    replace the value after ``-framerate`` with ``1/5``.
     
     To loop the sequence indefinately add ``-loop 0`` to the command.
 

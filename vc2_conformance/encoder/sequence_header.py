@@ -1,7 +1,6 @@
 """
-The :py:mod:`vc2_conformance.encoder.encoder.sequence_header` module contains
-routines for encoding a set of video format and codec parameters into sequence
-headers.
+The :py:mod:`vc2_conformance.encoder.sequence_header` module contains routines
+for encoding a set of video format and codec parameters into sequence headers.
 
 The :py:func:`make_sequence_header_data_unit` function is used to generate
 sequence headers by the encoder:
@@ -14,10 +13,10 @@ a predefined base video format, the various ``custom_*_flag`` overrides may
 largely be omitted. This is optional, however, and an encoder is free to use
 these overrides explicitly even when they're not required.
 
-The :py:func:`make_sequence_header_data_unit` function always attempts to use a
-compact encoding it can. Some test cases, however may wish to use less compact
-encodings and so to support this the :py:func:`iter_sequence_headers` function
-is provided:
+The :py:func:`make_sequence_header_data_unit` function always attempts to use
+the most compact encoding it can. Some test cases, however may wish to use less
+compact encodings and so to support this the :py:func:`iter_sequence_headers`
+function is provided:
 
 .. autofunction:: iter_sequence_headers
 

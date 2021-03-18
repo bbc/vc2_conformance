@@ -23,7 +23,7 @@ be described like so::
 
     >>> FrameSize = fixeddict(
     ...     "FrameSize",
-    ...     "custom_dimensiions_flag",
+    ...     "custom_dimensions_flag",
     ...     "frame_width",
     ...     "frame_height",
     ... )
@@ -32,7 +32,7 @@ This produces a 'dict' subclass called ``FrameSize`` with all of the usual
 dictionary behaviour but which only allows the specified keys to be used::
 
     >>> f = FrameSize()
-    >>> f["custom_dimensiions_flag"] = True
+    >>> f["custom_dimensions_flag"] = True
     >>> f["frame_width"] = 1920
     >>> f["frame_height"] = 1080
 
@@ -51,7 +51,7 @@ representation.
 
     >>> print(f)
     FrameSize:
-      custom_dimensiions_flag: True
+      custom_dimensions_flag: True
       frame_width: 1920
       frame_height: 1080
 

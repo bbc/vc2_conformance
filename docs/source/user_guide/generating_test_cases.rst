@@ -197,17 +197,17 @@ The following parameters must be given for each codec configuration.
 
 ``picture_bytes``
     Integer or blank. The number of bytes to use to encode the slices in each
-    picture. Must be an integer when ``LOSSLESS`` is ``FALSE`` and blank when
-    ``LOSSLESS`` is ``TRUE``.
+    picture. Must be an integer when ``lossless`` is ``FALSE`` and blank when
+    ``lossless`` is ``TRUE``.
     
     For the low delay profile, this sets the ``slice_bytes_numerator`` and
     ``slice_bytes_denominator`` values used by the stream (see section
     (13.5.3.2)) to the value ``picture_bytes`` divided by the number of slices
     per picture.
     
-    For the high quality profile, when ``LOSSLESS`` is ``FALSE``, slices are
+    For the high quality profile, when ``lossless`` is ``FALSE``, slices are
     assigned sizes using the same formula as used for the low delay profile.
-    When ``LOSSLESS`` is ``TRUE``, slices are sized as small as possible for
+    When ``lossless`` is ``TRUE``, slices are sized as small as possible for
     the data they hold.
     
     .. note::
