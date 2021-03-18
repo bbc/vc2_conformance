@@ -13,6 +13,9 @@ The picture encoding behaviour used by the encoder is encapsulated by the
 Encoding algorithm
 ------------------
 
+Depending on the lossy/lossless coding mode chosen, one of two simple
+algorithms is used.
+
 Lossless mode
 `````````````
 
