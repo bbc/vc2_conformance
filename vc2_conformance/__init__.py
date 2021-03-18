@@ -38,7 +38,7 @@ The encoder is used internally to generate decoder test cases. This encoder is
 flexible enough to support all of VC-2 features but otherwise simplistic in
 terms of runtime performance and picture quality. Further documentation on the
 encoder's design and functionality can be found in the
-:py:mod;`vc2_conformance.encoder` module.
+:py:mod:`vc2_conformance.encoder` module.
 
 The bitstream manipulation library in the :py:mod:`vc2_conformance.bitstream`
 module is used internally for three purposes.  Firstly it is used during
@@ -77,10 +77,10 @@ The reference VC-2 decoder and bitstream validator
 The VC-2 encoder (:py:mod:`vc2_conformance.encoder`), though not specified by
 the VC-2 standard, nevertheless makes substantial use of the VC-2 pseudocode
 functions. For example routines for computing slice dimensions are reused while
-other parts, such as the forward discrete wavelet transform simple inversions
-of the decoder pseudocode. The correctness of these inversions is relatively
-easily verified in the test suite thanks to the investability of VC-2's
-transforms.
+other parts, such as the forward discrete wavelet transform are simple
+inversions of the decoder pseudocode. The correctness of these inversions is
+relatively easily verified in the test suite thanks to the invertability of
+VC-2's transforms.
 
 The bitstream manipulation library (:py:mod:`vc2_conformance.bitstream`)
 provides routines for serialising and deserialising binary bitstreams into
