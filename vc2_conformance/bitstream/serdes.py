@@ -150,12 +150,14 @@ returned have a 1:1 correspondence with values in the bitstream.
 
 * When values are read during deserialisation, :py:class:`Deserialiser` checks
   that names are not re-used, guaranteeing that if a value appears in the
-  bitstream it also appears in the output context dictionary.
+  bitstream it also appears in the output context dictionary (and are not
+  later overwritten).
 * When values are written during serialisation, :py:class:`Serialiser` checks
   that every value in the context dictionary is used exactly once, ensuring
   that every value provided is represented in the bitstream.
 * During serialisation, values are also checked to ensure they can be
-  correctly represented by the bitstream encoding.
+  correctly represented by the bitstream encoding. For example, providing a
+  negative value to :py:meth:`~SerDes.uint` will fail.
 
 
 Representing hierarchy
