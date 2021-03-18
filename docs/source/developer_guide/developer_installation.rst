@@ -45,9 +45,9 @@ standards in these repositories. These should be installed as follows::
 Virtual environment
 -------------------
 
-It is recommended that development be carried out in a `Python virtual
-environment <https://virtualenv.pypa.io/en/stable/>`_. This can be setup
-using::
+It is strongly recommended that development is carried out in a `Python virtual
+environment <https://virtualenv.pypa.io/en/stable/>`_ (see warning below). This
+can be setup using::
 
     $ python -m virtualenv --python <PYTHON INTERPRETER> venv
 
@@ -66,6 +66,21 @@ using::
     packages may be installed without impacting on the rest of the system.
     Once activated, the ``python`` and ``pip`` commands will use the python
     version and packages setup within the virtual environment.
+
+.. warning::
+
+    When working outside a virtual environment, Python packages included by
+    some operating systems (e.g. Ubuntu) can be very out of date leading to
+    problems during development. This is the result of certain development
+    dependencies not correctly specifiying their version requirements and is
+    outside of our control. By using a virtual environment, up-to-date versions
+    of all dependencies will be installed which avoids these problems.
+
+    .. note::
+
+        The VC-2 conformance software itself *does* correctly specify its
+        dependencies so these problems only apply during development and should
+        not affect end users.
 
 
 Development installation
