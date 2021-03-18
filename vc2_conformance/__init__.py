@@ -133,7 +133,7 @@ themselves, it also simplifies the testing process by ensuring only relevant
 test cases are produced. Furthermore, it allows certain tests to be highly
 tailored to a particular configuration.  For example, signal range tests are
 targeted specifically at the specific wavelet transform configuration, bit
-width and quantization indices used.
+width and quantization matrices used.
 
 
 External packages
