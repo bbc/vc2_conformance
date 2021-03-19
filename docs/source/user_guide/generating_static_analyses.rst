@@ -27,8 +27,8 @@ Static analyses must be created for every wavelet transform used by your codec
 (including those with a default quantisation matrix).
 
 The ``vc2-static-filter-analysis`` command (provided by the
-:py:mod:`vc2_bit_widths` package) may be used to generate a mathematical
-analysis of arbitrary VC-2 filter configurations.
+:py:mod:`vc2_bit_widths` package) is used to generate a mathematical analysis
+of arbitrary VC-2 filter configurations.
 
 For example, to analyse a filter which:
 
@@ -37,7 +37,7 @@ For example, to analyse a filter which:
 * With a 2 level 2D transform depth
 * And 1 level horizontal-only transform depth
 
-The following command may be used::
+The following command is used::
 
     $ vc2-static-filter-analysis \
         --wavelet-index 4 \
@@ -51,7 +51,7 @@ This command will compute the static analysis and write them to
 
 For modest transform depths, this process should take a few seconds. For larger
 transforms, this command can take several minutes or even hours to execute so
-the ``--verbose`` option may be added to track progress. For extremely large
+the ``--verbose`` option can be added to track progress. For extremely large
 filters, see the :mod:`vc2_bit_widths` package's user guide for further
 guidance.
 

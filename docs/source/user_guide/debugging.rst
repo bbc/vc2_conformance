@@ -23,7 +23,7 @@ region in the bitstream. See the :ref:`vc2-bitstream-viewer documentation
 
 In addition, error messages also provide a traceback of the pseudocode
 functions in the VC-2 specification which were running at the time of the
-error. It may be helpful to compare the logic in the relevant pseudocode
+error. It might be helpful to compare the logic in the relevant pseudocode
 functions side-by-side with the corresponding logic in an encoder when tracing
 an issue.
 
@@ -36,24 +36,24 @@ the VC-2 bitstream. If a decoder is encountering difficulties with a test case,
 it might be helpful to use the :ref:`vc2-bitstream-viewer` tool to display a
 human-readable version of the test case bitstream.
 
-The ``--hide slice`` argument may be used to suppress the printing of picture
+The ``--hide slice`` argument can be used to suppress the printing of picture
 slice data when this is not relevant. This dramatically reduces the quantity of
 output produced by the tool.
 
-The ``--offset <bit offset>`` argument may be used to display only the part of
+The ``--offset <bit offset>`` argument can be used to display only the part of
 a bitstream within a few bits of the specified bit (not byte) offset into the
-file. This may be useful when you know where in a decoder had read up to when
+file. This might be useful when you know where in a decoder had read up to when
 it failed.
 
-The ``--show <pseudocode function name>`` argument may be used to filter the
+The ``--show <pseudocode function name>`` argument can be used to filter the
 bitstream viewer output. This argument takes the name of a pseudocode function
 in the VC-2 specification and shows only parts of the bitstream read by that
 function.
 
 The ``--show-internal-state`` argument causes the bitstream viewer to print (a
 subset of) the contents of the ``state`` variable used by the VC-2 pseudocode.
-This may be useful if a decoder appears to be correctly deserialising a stream
-but may be interpreting its meaning differently.
+This might be useful if a decoder appears to be correctly deserialising a
+stream but is interpreting its meaning differently.
 
 See the :ref:`vc2-bitstream-viewer documentation <vc2-bitstream-viewer>` for a
 complete guide to using this tool.
@@ -91,8 +91,8 @@ infrequent production of easily visible artefacts such as illustrated below:
 
 The test signals used in these test cases are designed to achieve near worst
 case signal levels in every intermediate value of VC-2's wavelet transform but
-true worst-case signal levels may be larger still. This limitation arises from
-a number of factors:
+true worst-case signal levels might be larger still. This limitation arises
+from a number of factors:
 
 * The full VC-2 encoder-decoder signal chain is a non-linear system and so it
   is not possible to directly compute worst-case inputs or signal levels.
@@ -100,7 +100,7 @@ a number of factors:
   and so cannot guarantee worst-case behaviour.
 * The decoder test cases make some assumptions about encoder behaviours, since
   VC-2 does not specify an encoder design.  Consequently it is possible that an
-  encoder may produce outputs which yield higher worst-case signal levels.
+  encoder might produce outputs which yield higher worst-case signal levels.
 * These test signals assume the wavelet transform is carried out as outlined in
   the VC-2 pseudocode. Alternative implementations might have different
   worst-case characteristics.

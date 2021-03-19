@@ -25,7 +25,7 @@ limited extent by the generated test cases. Some of these are listed below.
     used in practice.
 
 **Quantisation in lossless formats**
-    Lossless formats may use quantization where transform coefficients happen
+    Lossless formats can use quantization where transform coefficients happen
     to be multiples of the quantisation factor. Because quantisation can, in the
     general case, result in larger intermediate signals within a decoder, it is
     not appropriate to use lossily encoded test signals to test a lossless
@@ -56,9 +56,9 @@ limited extent by the generated test cases. Some of these are listed below.
     would be required, this scenario is not tested.
 
 **Degenerate formats**
-    The test case generator may not be able to generate test cases for all
-    degenerate video formats. For example, picture component bit depths of
-    greater than 32 bits or absurd transform depths are not supported.
+    The test case generator cannot generate test cases for all degenerate video
+    formats. For example, picture component bit depths of greater than 32 bits
+    or absurd transform depths are not supported.
 
 
 **Differences from specification**

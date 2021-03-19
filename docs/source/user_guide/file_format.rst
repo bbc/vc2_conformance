@@ -65,7 +65,7 @@ bytes in which they fit. For example:
 
 .. note::
 
-    The luma (Y) and color difference (C1, C2) components may have different
+    The luma (Y) and color difference (C1, C2) components might have different
     bit depths, and therefore use a different number of bytes per sample in the
     raw format.
 
@@ -95,8 +95,8 @@ a ``.json`` extension. This file is a UTF-8 encoded `JSON (ECMA-404)
     }
 
 The ``picture_number`` field gives the picture number (see section (12.2) of
-the VC-2 standard) as a string. This may not be the same as the number used in
-the file name.
+the VC-2 standard) as a string. This might not be the same as the number used
+in the file name.
 
 .. note::
 
@@ -144,7 +144,7 @@ Computing picture component dimensions and depths
 `````````````````````````````````````````````````
 
 The dimensions of the Y, C1 and C2 components of each picture in the raw file
-may be computed from the metadata as specified in the ``picture_dimensions``
+can be computed from the metadata as specified in the ``picture_dimensions``
 pseudocode function from section (11.6.2) of the VC-2 standard::
 
     picture_dimensions(video_parameters, picture_coding_mode):
@@ -270,7 +270,7 @@ For example, given a typical raw 1080i60, 10-bit 4:2:2 video file as input::
     depth: 10 bits).
 
 Here, the 'explanation' section provides a human readable description of the
-raw format. This may be of help when trying to interpret the raw video data.
+raw format. This might be of help when trying to interpret the raw video data.
 
 Example invocations of `FFmpeg's <https://ffmpeg.org/>`_ ``ffplay`` command and
 `ImageMagick's <https://imagemagick.org/>`_ ``convert`` command are provided,
@@ -283,7 +283,7 @@ Tip: Splitting and combining picture data files
 Many codec implementations natively produce or expect a raw video format where
 picture data is stored concatenated in a single file rather than as individual
 files. If individual pictures within a concatenated video format use the same
-representation as the conformance software, the following commands may be used
+representation as the conformance software, the following commands can be used
 to convert picture data between single-file and file-per-picture forms.
 
 .. note::
@@ -302,7 +302,7 @@ Combining pictures
 ``````````````````
 
 To concatenate a series of (for example) 8 picture data (`*.raw`) files
-numbered 0 to 7 into a single file, ``cat`` may be used::
+numbered 0 to 7 into a single file, ``cat`` can be used::
 
     $ cat picture_{0..7}.raw > video.raw
 
@@ -317,7 +317,7 @@ Splitting concatenated pictures
 ```````````````````````````````
 
 To split a series of pictures concatenated together in a single file into
-individual pictures, ``split`` may be used::
+individual pictures, ``split`` can be used::
 
     $ split \
         video.raw \
