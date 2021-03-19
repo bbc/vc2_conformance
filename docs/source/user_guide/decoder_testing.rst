@@ -59,8 +59,8 @@ codec feature sets must pass. If any tests fail, this indicates that the
 decoder is non-conformant to the VC-2 specification.
 
 The section below outlines the purpose of each test case and gives advice on
-what that case failing may indicate. Alternatively, once all decoder tests have
-passed, we can continue onto :ref:`guide-encoder-testing`.
+what that case failing could indicate. Alternatively, once all decoder tests
+have passed, we can continue onto :ref:`guide-encoder-testing`.
 
 
 .. _decoder-test-cases:

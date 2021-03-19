@@ -33,7 +33,7 @@ detailed guides and references on using the tools provided by the conformance
 testing software.
 
 The second (longer) part, :ref:`maintainer-documentation`, is aimed at
-developers tasked with maintaining this software; codec developers may
+developers tasked with maintaining this software; codec developers can
 disregard this part. This section includes a general overview of the
 conformance software internals followed by detailed reference documentation on
 its various components.

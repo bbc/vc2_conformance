@@ -39,12 +39,12 @@ below.
 Via ``pip`` (recommended)
 `````````````````````````
 
-The VC-2 conformance software, along with all its dependencies, may be
+The VC-2 conformance software, along with all its dependencies, can be
 installed using ``pip``::
 
     $ python -m pip install --user vc2_conformance
 
-The ``--user`` argument may be omitted for a system-wide installation (strongly
+The ``--user`` argument can be omitted for a system-wide installation (strongly
 *not* recommended) or when installing in a `Python virtual environment
 <https://docs.python.org/3/tutorial/venv.html>`_.
 
@@ -52,7 +52,7 @@ The ``--user`` argument may be omitted for a system-wide installation (strongly
 From ``.tar.gz.`` packages (advanced)
 `````````````````````````````````````
 
-The VC-2 conformance software may be installed from Python packages. The
+The VC-2 conformance software can be installed from Python packages. The
 following packages are required:
 
 * ``vc2_data_tables-X.Y.Z.tar.gz``
@@ -69,18 +69,18 @@ The packages must then be installed as follows, in the order shown::
     $ python -m pip install --user vc2_conformance_data-X.Y.Z.tar.gz
     $ python -m pip install --user vc2_conformance-X.Y.Z.tar.gz
 
-The ``--user`` argument may be omitted for a system-wide installation (not
+The ``--user`` argument can be omitted for a system-wide installation (not
 recommended).
 
 If installation fails (requiring online download) on Debian and Ubuntu systems,
-you may need to execute the following line prior to the above::
+you might need to execute the following line prior to the above::
 
     $ export PIP_IGNORE_INSTALLED=0
 
 From source (advanced)
 ``````````````````````
 
-The latest VC-2 conformance software may be installed from the source as
+The latest VC-2 conformance software can be installed from the source as
 follows.
 
 First, you must checkout (or download a snapshot of) the following
@@ -97,7 +97,7 @@ following steps::
     $ cd path/to/repo/
     $ python setup.py install --user
 
-The ``--user`` argument may be omitted for a system-wide installation (not
+The ``--user`` argument can be omitted for a system-wide installation (not
 recommended).
 
 All other dependencies will be downloaded automatically during the installation
@@ -118,7 +118,7 @@ conformance software was installed into.
 .. tip::
 
     Under Linux, Python usually installs programmes into ``$HOME/.local/bin``.
-    This may be temporarily added to your path using::
+    This can be temporarily added to your path using::
 
         $ export PATH="$HOME/.local/bin:$PATH"
 

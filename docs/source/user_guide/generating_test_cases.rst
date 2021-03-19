@@ -42,7 +42,7 @@ The following parameters must be given for each codec configuration.
     parameters below must be set to values compatible with this level,
     otherwise the test case generator will reject the codec configuration.
     
-    The following aliases may be used in place of an integer for additional
+    The following aliases can be used in place of an integer for additional
     readability.
     
     .. enum-value-table:: vc2_data_tables.Levels
@@ -53,7 +53,7 @@ The following parameters must be given for each codec configuration.
     Integer or alias. The VC-2 profile number (see annex (C.2)). ``0`` for
     'low-delay' or ``3`` for 'high quality'.
     
-    The following aliases may be used in place of an integer for additional
+    The following aliases can be used in place of an integer for additional
     readability.
     
     .. enum-value-table:: vc2_data_tables.Profiles
@@ -63,7 +63,7 @@ The following parameters must be given for each codec configuration.
 ``picture_coding_mode``
     Integer or alias. The picture coding mode to use (see section (11.5)).
     
-    The following aliases may be used in place of an integer for additional
+    The following aliases can be used in place of an integer for additional
     readability.
     
     .. enum-value-table:: vc2_data_tables.PictureCodingModes
@@ -74,7 +74,7 @@ The following parameters must be given for each codec configuration.
     Integer or alias. The base video format index to use (see section (11.3) and annex
     (B)).
     
-    The following aliases may be used in place of an integer for additional
+    The following aliases can be used in place of an integer for additional
     readability.
     
     .. enum-value-table:: vc2_data_tables.BaseVideoFormats
@@ -100,7 +100,7 @@ The following parameters must be given for each codec configuration.
     use (see section (11.4.4)). If ``default``, uses the mode specified by the
     ``base_video_format``.
     
-    The following aliases may be used in place of an integer for additional
+    The following aliases can be used in place of an integer for additional
     readability.
     
     .. enum-value-table:: vc2_data_tables.ColorDifferenceSamplingFormats
@@ -112,7 +112,7 @@ The following parameters must be given for each codec configuration.
     (11.4.5)). If ``default``, uses the mode specified by the
     ``base_video_format``.
     
-    The following aliases may be used in place of an integer for additional
+    The following aliases can be used in place of an integer for additional
     readability.
     
     .. enum-value-table:: vc2_data_tables.SourceSamplingModes
@@ -153,7 +153,7 @@ The following parameters must be given for each codec configuration.
     (11.4.10)). If ``default``, uses the mode specified by the
     ``base_video_format``.
     
-    The following aliases may be used in place of an integer for additional
+    The following aliases can be used in place of an integer for additional
     readability.
     
     .. enum-value-table:: vc2_data_tables.PresetColorPrimaries
@@ -173,7 +173,7 @@ The following parameters must be given for each codec configuration.
     horizontally, respectively (see sections (11.4.1) and (11.4.4.1)). For
     symmetric transforms, these values must be the same.
     
-    The following aliases may be used in place of an integer for additional
+    The following aliases can be used in place of an integer for additional
     readability.
     
     .. enum-value-table:: vc2_data_tables.WaveletFilters
@@ -266,7 +266,7 @@ Generating test cases
 
 Once a codec features CSV has been created, with columns covering the major
 operating modes of the codec to be tested, the :ref:`vc2-test-case-generator`
-command may be used to generate test cases.
+command can be used to generate test cases.
 
 In the simplest case, the command should be provided with the filename of your
 codec features CSV::
@@ -275,11 +275,11 @@ codec features CSV::
 
 By default, a ``test_cases`` directory will be created into which the test
 cases are written. This can be changed using the ``--output <path>`` argument.
-The ``--verbose`` option may be used to keep track of progress.
+The ``--verbose`` option can be used to keep track of progress.
 
 If only test cases for an encoder are required, the ``--encoder-only`` option
-may be given. Alternatively if only decoder test cases are needed
-``--decoder-only`` may be used. By default, test cases are generated for both
+can be given. Alternatively if only decoder test cases are needed
+``--decoder-only`` can be used. By default, test cases are generated for both
 encoders and decoders.
 
 Before any test cases are generated, the test case generator internally
@@ -302,8 +302,8 @@ a warning. If any are produced, check your the values in your codec features
 CSV if warnings are encountered.
 
 
-Test case generation may require several hours, depending on the codec feature
-sets provided.
+Test case generation typically requires several hours, depending on the codec
+feature sets provided.
 
 .. note::
 
@@ -317,10 +317,10 @@ Parallel test case generation
 -----------------------------
 
 To speed up test case generation on multi-core systems, independent test cases
-may be generated in parallel. To do this, the ``--parallel`` argument may be
-used. Instead of generating test cases, when ``--parallel`` is used, the test
-case generator will print a series of commands which may be executed in
-parallel to generate the test cases, for example using `GNU Parallel
+can be generated in parallel. To do this, the ``--parallel`` argument is used.
+Instead of generating test cases, when ``--parallel`` is used, the test case
+generator will print a series of commands which can be executed in parallel to
+generate the test cases, for example using `GNU Parallel
 <https://www.gnu.org/software/parallel/>`_::
 
     $ # Write test case generation commands to 'commands.txt'
@@ -332,9 +332,9 @@ parallel to generate the test cases, for example using `GNU Parallel
 .. warning::
 
     Some test cases require relatively large quantities of RAM during test case
-    generation. You may need to reduce the number of commands run in parallel
+    generation. You might need to reduce the number of commands run in parallel
     if your system runs out of memory. If you're using GNU parallel, the ``-j
-    N`` argument may be used to set the number of parallel jobs to ``N`` (with
+    N`` argument can be used to set the number of parallel jobs to ``N`` (with
     the default being however many CPU cores are available).
 
 
