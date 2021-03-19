@@ -28,6 +28,8 @@ jobs:
     - name: Install with test dependencies
       shell: bash
       run: |
+        # Not yet available on PyPA
+        pip install "vc2_conformance_data @ https://github.com/bbc/vc2_conformance_data/releases/download/v1.0.0/vc2_conformance_data.tar.gz"
         pip install -e .
         python -m pip install -r requirements-test.txt
     - name: Install ffmpeg and imagemagick (extra test dependencies)

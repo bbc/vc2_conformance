@@ -43,8 +43,21 @@ below.
 Via ``pip`` (recommended)
 `````````````````````````
 
-The VC-2 conformance software, along with all its dependencies, can be
-installed using ``pip``::
+Before installing the VC-2 conformance software you must download and install
+the data files it requires as follows::
+
+    $ python -m pip install --user "vc2_conformance_data @ https://github.com/bbc/vc2_conformance_data/releases/download/v1.0.0/vc2_conformance_data.tar.gz"
+
+.. note::
+
+    We are `currently working
+    <https://github.com/bbc/vc2_conformance/issues/7>`_ to make the download
+    and installation of these data files automatic during the conformance
+    software installation. In the future you will be able to skip the step
+    above.
+
+Next, the VC-2 conformance software, along with all its dependencies, can be
+installed as follows::
 
     $ python -m pip install --user vc2_conformance
 
@@ -52,34 +65,14 @@ The ``--user`` argument can be omitted for a system-wide installation (strongly
 *not* recommended) or when installing in a `Python virtual environment
 <https://docs.python.org/3/tutorial/venv.html>`_.
 
+.. note::
 
-From ``.tar.gz.`` packages (advanced)
-`````````````````````````````````````
+    If installation fails on Debian and Ubuntu systems, you might need to execute
+    the following line prior to the above::
 
-The VC-2 conformance software can be installed from Python packages. The
-following packages are required:
+        $ export PIP_IGNORE_INSTALLED=0
 
-* ``vc2_data_tables-X.Y.Z.tar.gz``
-* ``vc2_bit_widths-X.Y.Z.tar.gz``
-* ``vc2_conformance_data-X.Y.Z.tar.gz``
-* ``vc2_conformance-X.Y.Z.tar.gz``
-
-All other dependencies will be downloaded automatically during installation.
-
-The packages must then be installed as follows, in the order shown::
-
-    $ python -m pip install --user vc2_data_tables-X.Y.Z.tar.gz
-    $ python -m pip install --user vc2_bit_widths-X.Y.Z.tar.gz
-    $ python -m pip install --user vc2_conformance_data-X.Y.Z.tar.gz
-    $ python -m pip install --user vc2_conformance-X.Y.Z.tar.gz
-
-The ``--user`` argument can be omitted for a system-wide installation (not
-recommended).
-
-If installation fails (requiring online download) on Debian and Ubuntu systems,
-you might need to execute the following line prior to the above::
-
-    $ export PIP_IGNORE_INSTALLED=0
+.. note 
 
 From source (advanced)
 ``````````````````````
