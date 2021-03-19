@@ -8,6 +8,12 @@ each of the bitstreams generated in the previous step
 (:ref:`guide-generating-test-cases`), we will be decoded using the candidate
 decoder and the resulting raw video compared with a reference decoding.
 
+.. note::
+
+    Whilst it is possible to carry out the decoder testing procedure manually,
+    we recommend producing a script to automate the steps required for the
+    particular decoder being tested.
+
 
 Decoding the reference bitstreams
 ---------------------------------

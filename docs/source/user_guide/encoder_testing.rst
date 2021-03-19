@@ -10,6 +10,13 @@ encoder. The resulting bitstream will then be checked using the
 :ref:`vc2-bitstream-validator` and encoded pictures compared with the originals
 for similarity.
 
+.. note::
+
+    Whilst it is possible to carry out the encoder testing procedure manually,
+    we recommend producing a script to automate most of the steps required for
+    the particular encoder being tested. You must still take care to manually
+    inspect and compare all decoded pictures, however.
+
 
 Encoding the reference bitstreams
 ---------------------------------
@@ -19,9 +26,9 @@ are located in directories matching the pattern ``<codec feature set
 name>/encoder/<test-case-name>/``. The specific test cases generated will vary
 depending on the codec features specified.
 
-Each bitstream must be encoded independently by the encoder under test and the
-encoded bitstreams stored on disk and the encoder must not crash or produce any
-warnings.
+Each test case must be encoded independently by the encoder under test and the
+encoded bitstreams stored on disk. The encoder must not crash or produce any
+warnings when encoding these test sequences.
 
 
 Checking the encoded bitstreams
