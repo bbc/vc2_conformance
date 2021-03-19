@@ -36,8 +36,8 @@ below:
 The first row should provide a unique name for each codec configuration for
 which test cases are to be generated with the left-most cell containing the
 text ``name``. The remaining rows specify the parameters which define the codec
-configurations. Rows whose first column starts with a ``#`` are ignored (i.e.
-treated as comments).
+configurations. Empty rows and rows whose first column starts with a ``#`` are
+ignored (i.e.  treated as comments).
 
 The following parameters must be given for each codec configuration.
 
