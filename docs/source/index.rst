@@ -57,12 +57,6 @@ Finally, you can find the source code for
         <https://bbc.github.io/vc2_conformance/>`_.
 
 
-.. toctree::
-   :hidden:
-
-   bibliography.rst
-
-
 .. _user-documentation:
 
 User's manual
@@ -96,3 +90,7 @@ Maintainer's manual
 
 
 
+.. toctree::
+   :hidden:
+
+   bibliography.rst
