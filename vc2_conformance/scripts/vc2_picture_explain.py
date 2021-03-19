@@ -15,7 +15,7 @@ Example usage
 
 An example invocation is shown below::
 
-    $ vc2-picture-explain path/to/raw/picture_0.raw
+    $ vc2-picture-explain path/to/raw/picture_0.json
     Normative description
     =====================
 
