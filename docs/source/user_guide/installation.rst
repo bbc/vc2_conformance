@@ -99,7 +99,7 @@ Next, each package should be installed (in the order shown above) using the
 following steps::
 
     $ cd path/to/repo/
-    $ python setup.py install --user
+    $ pip install --user .
 
 The ``--user`` argument can be omitted for a system-wide installation (not
 recommended).

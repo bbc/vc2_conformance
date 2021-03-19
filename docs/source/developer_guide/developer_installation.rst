@@ -96,8 +96,8 @@ directly from each of the cloned repositories as follows::
     $ # * vc2_conformance
     $ cd path/to/repo/
     
-    $ # Install in development mode (so edits take effect immediately)
-    $ python setup.py develop
+    $ # Install in editable/development mode (so edits take effect immediately)
+    $ pip install -e .
     
     $ # Install test suite dependencies
     $ pip install -r requirements-test.txt
