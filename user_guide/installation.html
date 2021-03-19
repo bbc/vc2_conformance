@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Conformance Software Installation &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <title>Conformance Software Installation &#8212; SMPTE VC-2 Conformance Software v0.4.3 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -32,7 +32,7 @@
         <li class="right" >
           <a href="introduction.html" title="Introduction"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.3 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">User’s guide (for codec testers)</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Conformance Software Installation</a></li> 
       </ul>
@@ -77,38 +77,32 @@ there is no need to take any action.</p>
 below.</p>
 <div class="section" id="via-pip-recommended">
 <h3>Via <code class="docutils literal notranslate"><span class="pre">pip</span></code> (recommended)<a class="headerlink" href="#via-pip-recommended" title="Permalink to this headline">¶</a></h3>
-<p>The VC-2 conformance software, along with all its dependencies, can be
-installed using <code class="docutils literal notranslate"><span class="pre">pip</span></code>:</p>
+<p>Before installing the VC-2 conformance software you must download and install
+the data files it requires as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python -m pip install --user &quot;vc2_conformance_data @ https://github.com/bbc/vc2_conformance_data/releases/download/v1.0.0/vc2_conformance_data.tar.gz&quot;
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We are <a class="reference external" href="https://github.com/bbc/vc2_conformance/issues/7">currently working</a> to make the download
+and installation of these data files automatic during the conformance
+software installation. In the future you will be able to skip the step
+above.</p>
+</div>
+<p>Next, the VC-2 conformance software, along with all its dependencies, can be
+installed as follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python -m pip install --user vc2_conformance
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">--user</span></code> argument can be omitted for a system-wide installation (strongly
 <em>not</em> recommended) or when installing in a <a class="reference external" href="https://docs.python.org/3/tutorial/venv.html">Python virtual environment</a>.</p>
-</div>
-<div class="section" id="from-tar-gz-packages-advanced">
-<h3>From <code class="docutils literal notranslate"><span class="pre">.tar.gz.</span></code> packages (advanced)<a class="headerlink" href="#from-tar-gz-packages-advanced" title="Permalink to this headline">¶</a></h3>
-<p>The VC-2 conformance software can be installed from Python packages. The
-following packages are required:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">vc2_data_tables-X.Y.Z.tar.gz</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">vc2_bit_widths-X.Y.Z.tar.gz</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">vc2_conformance_data-X.Y.Z.tar.gz</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">vc2_conformance-X.Y.Z.tar.gz</span></code></p></li>
-</ul>
-<p>All other dependencies will be downloaded automatically during installation.</p>
-<p>The packages must then be installed as follows, in the order shown:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python -m pip install --user vc2_data_tables-X.Y.Z.tar.gz
-$ python -m pip install --user vc2_bit_widths-X.Y.Z.tar.gz
-$ python -m pip install --user vc2_conformance_data-X.Y.Z.tar.gz
-$ python -m pip install --user vc2_conformance-X.Y.Z.tar.gz
-</pre></div>
-</div>
-<p>The <code class="docutils literal notranslate"><span class="pre">--user</span></code> argument can be omitted for a system-wide installation (not
-recommended).</p>
-<p>If installation fails (requiring online download) on Debian and Ubuntu systems,
-you might need to execute the following line prior to the above:</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If installation fails on Debian and Ubuntu systems, you might need to execute
+the following line prior to the above:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ export PIP_IGNORE_INSTALLED=0
 </pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="from-source-advanced">
@@ -169,7 +163,6 @@ This can be temporarily added to your path using:</p>
 <li><a class="reference internal" href="#python-interpreter">Python interpreter</a></li>
 <li><a class="reference internal" href="#installation">Installation</a><ul>
 <li><a class="reference internal" href="#via-pip-recommended">Via <code class="docutils literal notranslate"><span class="pre">pip</span></code> (recommended)</a></li>
-<li><a class="reference internal" href="#from-tar-gz-packages-advanced">From <code class="docutils literal notranslate"><span class="pre">.tar.gz.</span></code> packages (advanced)</a></li>
 <li><a class="reference internal" href="#from-source-advanced">From source (advanced)</a></li>
 </ul>
 </li>
@@ -220,7 +213,7 @@ This can be temporarily added to your path using:</p>
         <li class="right" >
           <a href="introduction.html" title="Introduction"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.3 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" >User’s guide (for codec testers)</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Conformance Software Installation</a></li> 
       </ul>
