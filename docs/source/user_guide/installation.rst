@@ -23,10 +23,14 @@ installed using::
 
 .. note::
 
-    It is recommended that you use 'CPython' -- the reference Python
-    interpreter. Other Python interpreters are available, such as `PyPy
-    <https://www.pypy.org/>`_, however these tend not to be as stable and have
-    not been tested with this software.
+    We strongly recommend running the VC-2 conformance software under the
+    standard Python interpreter ('CPython') as opposed to `other Python
+    implementations <https://www.python.org/download/alternatives/>`_ (such as
+    `PyPy <https://www.pypy.org/>`_). These alternative implementations are
+    often less stable and we have not tested this software running under them.
+    If you're not sure which Python interpreter you've got on your system
+    you'll almost certainly have the (correct) standard Python interpreter so
+    there is no need to take any action.
 
 
 Installation
