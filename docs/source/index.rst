@@ -27,13 +27,12 @@ standards and recommended practices:
 
 This manual is split into two parts.
 
-The first (shorter) part, :ref:`user-documentation`, is aimed at codec
-developers who wish to test their video codec implementations. It includes more
-detailed guides and references on using the tools provided by the conformance
-testing software.
+The first (shorter) part, :ref:`user-documentation`, is aimed at codec testers
+who wish to test a VC-2 code implementation. It includes more detailed guides
+and references on using the tools provided by the conformance testing software.
 
 The second (longer) part, :ref:`maintainer-documentation`, is aimed at
-developers tasked with maintaining this software; codec developers can
+developers tasked with maintaining this software; codec testers can
 disregard this part. This section includes a general overview of the
 conformance software internals followed by detailed reference documentation on
 its various components.
