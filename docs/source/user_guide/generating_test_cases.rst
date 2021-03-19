@@ -303,8 +303,8 @@ See :ref:`generating-static-analyses` for instructions on this specific case.
 
 Warning messages are otherwise only produced for degenerate codec
 configurations. It is very unlikely a useful codec configuration will result in
-a warning. If any are produced, check your the values in your codec features
-CSV if warnings are encountered.
+a warning. If any are produced, check the values in your codec features CSV if
+warnings are encountered.
 
 
 Test case generation typically requires several hours, depending on the codec

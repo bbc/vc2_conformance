@@ -369,13 +369,13 @@ class DanglingTransformValueType(Enum):
     stop_and_sign_dangling = 2
     """
     The final two bits (the stop bit and sign bit) of a non-zero exp-golomb
-    value is dangling beyond the end of the bounded block.
+    value are dangling beyond the end of the bounded block.
     """
 
     lsb_stop_and_sign_dangling = 3
     """
     The final three bits (the least significant bit, stop bit and sign bit) of
-    a non-zero exp-golomb value is dangling beyond the end of the bounded
+    a non-zero exp-golomb value are dangling beyond the end of the bounded
     block.
     """
 
@@ -779,13 +779,13 @@ def dangling_bounded_block_data(codec_features):
         .. image:: /_static/user_guide/dangling_bounded_block_data_stop_and_sign_dangling.svg
 
         The final two bits (the stop bit and sign bit) of a non-zero exp-golomb
-        value is dangling beyond the end of the bounded block.
+        value are dangling beyond the end of the bounded block.
 
     ``dangling_bounded_block_data[lsb_stop_and_sign_dangling]``
         .. image:: /_static/user_guide/dangling_bounded_block_data_lsb_stop_and_sign_dangling.svg
 
         The final three bits (the least significant bit, stop bit and sign bit)
-        of a non-zero exp-golomb value is dangling beyond the end of the
+        of a non-zero exp-golomb value are dangling beyond the end of the
         bounded block.
 
     .. note::
