@@ -27,6 +27,11 @@ below:
 
     `Download CSV <../_static/user_guide/sample_codec_features.csv>`_
 
+.. only:: latex
+
+    A CSV version of this table can be `downloaded here
+    <https://bbc.github.io/vc2_conformance/_static/user_guide/sample_codec_features.csv>`_.
+
 
 The first row should provide a unique name for each codec configuration for
 which test cases are to be generated with the left-most cell containing the
