@@ -1,7 +1,7 @@
 .. _user-guide:
 
-User's guide (for codec developers)
------------------------------------
+User's guide (for codec testers)
+--------------------------------
 
 In the following sections we'll walk through the process of installing,
 configuring and using the VC-2 conformance testing software.
