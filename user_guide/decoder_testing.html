@@ -1,0 +1,611 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VC-2 decoder conformance testing procedure &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="VC-2 encoder conformance testing procedure" href="encoder_testing.html" />
+    <link rel="prev" title="Generating test cases" href="generating_test_cases.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="encoder_testing.html" title="VC-2 encoder conformance testing procedure"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="generating_test_cases.html" title="Generating test cases"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">User’s guide (for codec testers)</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">VC-2 decoder conformance testing procedure</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="vc-2-decoder-conformance-testing-procedure">
+<span id="guide-decoder-testing"></span><h1>VC-2 decoder conformance testing procedure<a class="headerlink" href="#vc-2-decoder-conformance-testing-procedure" title="Permalink to this headline">¶</a></h1>
+<p>The VC-2 decoder conformance testing procedure is described below. In summary,
+each of the bitstreams generated in the previous step
+(<a class="reference internal" href="generating_test_cases.html#guide-generating-test-cases"><span class="std std-ref">Generating test cases</span></a>), we will be decoded using the candidate
+decoder and the resulting raw video compared with a reference decoding.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Whilst it is possible to carry out the decoder testing procedure manually,
+we recommend producing a script to automate the steps required for the
+particular decoder being tested.</p>
+</div>
+<div class="section" id="decoding-the-reference-bitstreams">
+<h2>Decoding the reference bitstreams<a class="headerlink" href="#decoding-the-reference-bitstreams" title="Permalink to this headline">¶</a></h2>
+<p>For each codec feature set provided, a set of bitstreams which test different
+decoder behaviours are produced. These are located in files whose names match
+the pattern <code class="docutils literal notranslate"><span class="pre">&lt;codec</span> <span class="pre">feature</span> <span class="pre">set</span> <span class="pre">name&gt;/decoder/&lt;test-case-name&gt;.vc2</span></code>. The
+specific test cases generated will vary depending on the codec features
+specified.</p>
+<p>Each bitstream must be decoded independently by the decoder under test. The
+decoded pictures must then be stored as raw video as described in the
+<a class="reference internal" href="file_format.html#guide-file-format"><span class="std std-ref">Video file format</span></a> section.</p>
+</div>
+<div class="section" id="checking-the-decoded-pictures">
+<h2>Checking the decoded pictures<a class="headerlink" href="#checking-the-decoded-pictures" title="Permalink to this headline">¶</a></h2>
+<p>Each bitstream has an associated reference decoding in the <code class="docutils literal notranslate"><span class="pre">&lt;codec</span> <span class="pre">feature</span> <span class="pre">set</span>
+<span class="pre">name&gt;/decoder/&lt;test-case-name&gt;_expected/</span></code> directory. The output of the decoder
+under test must be identical to the reference decoding.</p>
+<p>The <a class="reference internal" href="../cli/vc2_picture_compare.html#vc2-picture-compare"><span class="std std-ref">vc2-picture-compare</span></a> tool is provided for comparing decoder outputs
+with the reference decodings. It takes as argument either the names of two raw
+picture files, or the names of two directories containing numbered raw picture
+files.  Differences between pictures are then reported.</p>
+<p>For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ vc2-picture-compare expected/ actual/
+Comparing expected/picture_0.raw and actual/picture_0.raw
+  Pictures are identical
+Comparing expected/picture_1.raw and actual/picture_1.raw
+  Pictures are identical
+Comparing expected/picture_2.raw and actual/picture_2.raw
+  Pictures are identical
+Summary: 3 identical, 0 different
+</pre></div>
+</div>
+<p>For a test case to pass:</p>
+<ul class="simple">
+<li><p>The <a class="reference internal" href="../cli/vc2_picture_compare.html#vc2-picture-compare"><span class="std std-ref">vc2-picture-compare</span></a> tool must report <code class="docutils literal notranslate"><span class="pre">Pictures</span> <span class="pre">are</span> <span class="pre">identical</span></code>, with
+no warnings, for every picture in the reference decoding.</p></li>
+<li><p>No additional pictures must have been decoded by the decoder under test.</p></li>
+<li><p>The decoder under test must not have crashed or indicated an error condition
+while decoding the bitstream.</p></li>
+</ul>
+<p>For a decoder to pass the conformance test, all test cases, for all supported
+codec feature sets must pass. If any tests fail, this indicates that the
+decoder is non-conformant to the VC-2 specification.</p>
+<p>The section below outlines the purpose of each test case and gives advice on
+what that case failing could indicate. Alternatively, once all decoder tests
+have passed, we can continue onto <a class="reference internal" href="encoder_testing.html#guide-encoder-testing"><span class="std std-ref">VC-2 encoder conformance testing procedure</span></a>.</p>
+</div>
+<div class="section" id="decoder-test-cases">
+<span id="id1"></span><h2>Decoder Test Cases<a class="headerlink" href="#decoder-test-cases" title="Permalink to this headline">¶</a></h2>
+<p>The purpose of each test case (or group of test cases), along with advice on
+debugging failing tests is provided below. In all test cases, the bitstream
+provided is a valid bitstream permitted by the spec.</p>
+<div class="section" id="test-case-decoder-absent_next_parse_offset">
+<span id="std-decoder-test-case-absent_next_parse_offset"></span><span id="std:decoder-test-case-absent_next_parse_offset"></span><h3>Decoder test case: <code class="docutils literal notranslate"><span class="pre">absent_next_parse_offset</span></code><a class="headerlink" href="#test-case-decoder-absent_next_parse_offset" title="Permalink to this headline">¶</a></h3>
+<p><strong>Tests handling of missing ‘next parse offset’ field.</strong></p>
+<p>The ‘next parse offset’ field of the <code class="docutils literal notranslate"><span class="pre">parse_info</span></code> header (see (10.5.1))
+may be set to zero (i.e. omitted) for pictures. This test case verifies
+that decoders are still able to decode streams with this field absent.</p>
+</div>
+<div class="section" id="test-case-decoder-concatenated_sequences">
+<span id="std-decoder-test-case-concatenated_sequences"></span><span id="std:decoder-test-case-concatenated_sequences"></span><h3>Decoder test case: <code class="docutils literal notranslate"><span class="pre">concatenated_sequences</span></code><a class="headerlink" href="#test-case-decoder-concatenated_sequences" title="Permalink to this headline">¶</a></h3>
+<p><strong>Tests that streams containing multiple concatenated sequences can be
+decoded.</strong></p>
+<p>A stream consisting of the concatenation of two sequences (10.3) with one
+frame each, the first picture is given picture number zero in both
+sequences.</p>
+</div>
+<div class="section" id="test-case-decoder-custom_quantization_matrix">
+<span id="std-decoder-test-case-custom_quantization_matrix"></span><span id="std:decoder-test-case-custom_quantization_matrix"></span><h3>Decoder test case: <code class="docutils literal notranslate"><span class="pre">custom_quantization_matrix</span></code><a class="headerlink" href="#test-case-decoder-custom_quantization_matrix" title="Permalink to this headline">¶</a></h3>
+<p><strong>Tests that a custom quantization matrix can be specified.</strong></p>
+<p>A series of bitstreams with different custom quantisation matrices are
+generated as follows:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">custom_quantization_matrix[zeros]</span></code></dt><dd><p>Specifies a custom quantisation matrix with all matrix values set to zero.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">custom_quantization_matrix[arbitrary]</span></code></dt><dd><p>Specifies a custom quantisation matrix with all matrix values set to
+different, though arbitrary, values.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">custom_quantization_matrix[default]</span></code></dt><dd><p>Specifies a custom quantisation matrix containing the same values as
+the default quantisation matrix. This test case is only generated when
+a default quantization matrix is defined for the codec.</p>
+</dd>
+</dl>
+<p>These test cases are only generated when permitted by the VC-2 level in
+use.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For lossy coding modes, the encoded picture will contain a noise signal
+(see the <a class="reference internal" href="#std-decoder-test-case-static_noise"><code class="xref std std-decoder-test-case docutils literal notranslate"><span class="pre">static_noise</span></code></a> test case).</p>
+<p>For lossless coding modes, the encoded picture will be the test pattern
+used by the <a class="reference internal" href="#std-decoder-test-case-lossless_quantization"><code class="xref std std-decoder-test-case docutils literal notranslate"><span class="pre">lossless_quantization</span></code></a> test case. This
+test pattern is designed to be losslessly encodable when some
+quantization is applied.</p>
+</div>
+</div>
+<div class="section" id="test-case-decoder-dangling_bounded_block_data">
+<span id="std-decoder-test-case-dangling_bounded_block_data"></span><span id="std:decoder-test-case-dangling_bounded_block_data"></span><h3>Decoder test case: <code class="docutils literal notranslate"><span class="pre">dangling_bounded_block_data</span></code><a class="headerlink" href="#test-case-decoder-dangling_bounded_block_data" title="Permalink to this headline">¶</a></h3>
+<p><strong>Tests that transform values which lie beyond the end of a bounded block
+are read correctly.</strong></p>
+<p>Picture slices (13.5.3) and (13.5.4) contain transform values in bounded
+blocks (A.4.2). These test cases include bounded blocks in which some
+encoded values lie off the end of the block. Specifically, the following
+cases are tested:</p>
+<dl>
+<dt><code class="docutils literal notranslate"><span class="pre">dangling_bounded_block_data[zero_dangling]</span></code></dt><dd><img alt="../_images/dangling_bounded_block_data_zero_dangling.svg" src="../_images/dangling_bounded_block_data_zero_dangling.svg" /><p>A zero value (1 bit) is encoded entirely beyond the end of the bounded
+block.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">dangling_bounded_block_data[sign_dangling]</span></code></dt><dd><img alt="../_images/dangling_bounded_block_data_sign_dangling.svg" src="../_images/dangling_bounded_block_data_sign_dangling.svg" /><p>The final bit (the sign bit) of a non-zero exp-golomb value is dangling
+beyond the end of the bounded block.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">dangling_bounded_block_data[stop_and_sign_dangling]</span></code></dt><dd><img alt="../_images/dangling_bounded_block_data_stop_and_sign_dangling.svg" src="../_images/dangling_bounded_block_data_stop_and_sign_dangling.svg" /><p>The final two bits (the stop bit and sign bit) of a non-zero exp-golomb
+value are dangling beyond the end of the bounded block.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">dangling_bounded_block_data[lsb_stop_and_sign_dangling]</span></code></dt><dd><img alt="../_images/dangling_bounded_block_data_lsb_stop_and_sign_dangling.svg" src="../_images/dangling_bounded_block_data_lsb_stop_and_sign_dangling.svg" /><p>The final three bits (the least significant bit, stop bit and sign bit)
+of a non-zero exp-golomb value are dangling beyond the end of the
+bounded block.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The value and magnitudes of the dangling values are chosen depending on
+the wavelet transform in use and may differ from the illustrations
+above.</p>
+</div>
+</div>
+<div class="section" id="test-case-decoder-default_quantization_matrix">
+<span id="std-decoder-test-case-default_quantization_matrix"></span><span id="std:decoder-test-case-default_quantization_matrix"></span><h3>Decoder test case: <code class="docutils literal notranslate"><span class="pre">default_quantization_matrix</span></code><a class="headerlink" href="#test-case-decoder-default_quantization_matrix" title="Permalink to this headline">¶</a></h3>
+<p><strong>Tests that the default quantization matrix can be used.</strong></p>
+<p>This test case is only generated when a non <code class="docutils literal notranslate"><span class="pre">default</span></code> value is specified
+for the <code class="docutils literal notranslate"><span class="pre">quantization_matrix</span></code> codec features CSV entry but when a default
+quantization matrix is defined.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This is the only test case which sets the <code class="docutils literal notranslate"><span class="pre">custom_quant_matrix</span></code> flag
+(12.4.5.3) to 0 when a <code class="docutils literal notranslate"><span class="pre">quantization_matrix</span></code> is supplied in the codec
+features CSV.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For lossy coding modes, the encoded picture will contain a noise signal
+(see the <a class="reference internal" href="#std-decoder-test-case-static_noise"><code class="xref std std-decoder-test-case docutils literal notranslate"><span class="pre">static_noise</span></code></a> test case).</p>
+<p>For lossless coding modes, the encoded picture will be the test pattern
+used by the <a class="reference internal" href="#std-decoder-test-case-lossless_quantization"><code class="xref std std-decoder-test-case docutils literal notranslate"><span class="pre">lossless_quantization</span></code></a> test case. This
+test pattern is designed to be losslessly encodable when some
+quantization is applied.</p>
+</div>
+</div>
+<div class="section" id="test-case-decoder-extended_transform_parameters">
+<span id="std-decoder-test-case-extended_transform_parameters"></span><span id="std:decoder-test-case-extended_transform_parameters"></span><h3>Decoder test case: <code class="docutils literal notranslate"><span class="pre">extended_transform_parameters</span></code><a class="headerlink" href="#test-case-decoder-extended_transform_parameters" title="Permalink to this headline">¶</a></h3>
+<p><strong>Tests that extended transform parameter flags are handled correctly.</strong></p>
+<p>Ensures that extended transform parameters fields (12.4.4) are correctly
+handled by decoders for symmetric transform modes.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">extended_transform_parameters[asym_transform_index_flag]</span></code></dt><dd><p>Verifies that <code class="docutils literal notranslate"><span class="pre">asym_transform_index_flag</span></code> can be set to <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">extended_transform_parameters[asym_transform_flag]</span></code></dt><dd><p>Verifies that <code class="docutils literal notranslate"><span class="pre">asym_transform_flag</span></code> can be set to <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
+</dd>
+</dl>
+<p>These test cases are skipped for streams whose major version is less than 3
+(which do not support the extended transform parameters header).
+Additionally, these test cases are skipped for asymmetric transforms when
+the flag being tested must already be <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
+</div>
+<div class="section" id="test-case-decoder-interlace_mode_and_pixel_aspect_ratio">
+<span id="std-decoder-test-case-interlace_mode_and_pixel_aspect_ratio"></span><span id="std:decoder-test-case-interlace_mode_and_pixel_aspect_ratio"></span><h3>Decoder test case: <code class="docutils literal notranslate"><span class="pre">interlace_mode_and_pixel_aspect_ratio</span></code><a class="headerlink" href="#test-case-decoder-interlace_mode_and_pixel_aspect_ratio" title="Permalink to this headline">¶</a></h3>
+<p><strong>Tests that the interlacing mode and pixel aspect ratio is correctly
+decoded.</strong></p>
+<p>These tests require that the decoded pictures are observed using the
+intended display equipment for the decoder to ensure that the relevant
+display metadata is passed on.</p>
+<dl>
+<dt><code class="docutils literal notranslate"><span class="pre">interlace_mode_and_pixel_aspect_ratio[static_sequence]</span></code></dt><dd><p>A single frame containing a stationary graphic at the top-left corner
+on a black background, as illustrated below.</p>
+<img alt="../_images/interlace_mode_and_pixel_aspect_ratio_static_sequence.svg" src="../_images/interlace_mode_and_pixel_aspect_ratio_static_sequence.svg" /><p>If the field ordering (i.e. top field first flag, see (7.3) and (11.3))
+has been decoded correctly, the edges should be smooth. If the field
+order has been reversed the edges will appear jagged.</p>
+<p>If the pixel aspect ratio (see (11.4.7)) has been correctly decoded,
+the white triangle should be as wide as it is tall and the ‘hole’
+should be circular.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">interlace_mode_and_pixel_aspect_ratio[moving_sequence]</span></code></dt><dd><p>A sequence of 10 frames containing a graphic moving from left to right
+along the top of the frame. In each successive frame, the graphic moves
+16 luma samples to the right (i.e. 8 samples every field, for
+interlaced formats).</p>
+<img alt="../_images/interlace_mode_and_pixel_aspect_ratio_moving_sequence.svg" src="../_images/interlace_mode_and_pixel_aspect_ratio_moving_sequence.svg" /><p>For progressive formats, the graphic should appear with smooth edges in
+each frame.</p>
+<p>For interlaced formats, the graphic should move smoothly when displayed
+on an interlaced monitor. If displayed as progressive frames (as in the
+illustration above), the pictures will appear to have ragged edges.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="test-case-decoder-lossless_quantization">
+<span id="std-decoder-test-case-lossless_quantization"></span><span id="std:decoder-test-case-lossless_quantization"></span><h3>Decoder test case: <code class="docutils literal notranslate"><span class="pre">lossless_quantization</span></code><a class="headerlink" href="#test-case-decoder-lossless_quantization" title="Permalink to this headline">¶</a></h3>
+<p><strong>Tests support for quantization in lossless decoders.</strong></p>
+<p>Quantization can, in principle, be used in lossless coding modes in cases
+where all transform coefficients are divisible by the same factor. This
+test case contains a synthetic test pattern with this property.</p>
+<p>This test case is only generated for lossless codecs.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For informational purposes, an example decoded test pattern is shown
+below:</p>
+<img alt="../_images/lossless_quantization.png" src="../_images/lossless_quantization.png" />
+<p>Note the faint repeating pattern.</p>
+</div>
+</div>
+<div class="section" id="test-case-decoder-padding_data">
+<span id="std-decoder-test-case-padding_data"></span><span id="std:decoder-test-case-padding_data"></span><h3>Decoder test case: <code class="docutils literal notranslate"><span class="pre">padding_data</span></code><a class="headerlink" href="#test-case-decoder-padding_data" title="Permalink to this headline">¶</a></h3>
+<p><strong>Tests that the contents of padding data units are ignored.</strong></p>
+<p>This test case consists of a sequence containing two blank frames in which
+every-other data unit is a padding data unit (10.4.5) of various lengths
+and contents (described below).</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">padding_data[empty]</span></code></dt><dd><p>Padding data units containing zero padding bytes (i.e. just consisting
+of a parse info header).</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">padding_data[zero]</span></code></dt><dd><p>Padding data units containing 32 bytes set to 0x00.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">padding_data[non_zero]</span></code></dt><dd><p>Padding data units containing 32 bytes containing the ASCII encoding of
+the text <code class="docutils literal notranslate"><span class="pre">Ignore</span> <span class="pre">this</span> <span class="pre">padding</span> <span class="pre">data</span> <span class="pre">please!</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">padding_data[dummy_end_of_sequence]</span></code></dt><dd><p>Padding data units containing 32 bytes containing an encoding of an end
+of sequence data unit (10.4.1).</p>
+</dd>
+</dl>
+<p>Where padding data units are not permitted by the VC-2 level in use, these
+test cases are omitted.</p>
+</div>
+<div class="section" id="test-case-decoder-picture_numbers">
+<span id="std-decoder-test-case-picture_numbers"></span><span id="std:decoder-test-case-picture_numbers"></span><h3>Decoder test case: <code class="docutils literal notranslate"><span class="pre">picture_numbers</span></code><a class="headerlink" href="#test-case-decoder-picture_numbers" title="Permalink to this headline">¶</a></h3>
+<p><strong>Tests picture numbers are correctly read from the bitstream.</strong></p>
+<p>Each test case contains 8 blank pictures numbered in a particular way.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">picture_numbers[start_at_zero]</span></code></dt><dd><p>The first picture has picture number 0.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">picture_numbers[non_zero_start]</span></code></dt><dd><p>The first picture has picture number 1000.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">picture_numbers[wrap_around]</span></code></dt><dd><p>The first picture has picture number 4294967292, with the picture
+numbers wrapping around to 0 on the 4th picture in the sequence.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">picture_numbers[odd_first_picture]</span></code></dt><dd><p>The first picture has picture number 7. This test case is only included
+when the picture coding mode is 0 (i.e. pictures are frames) since the
+first field of each frame must have an even number when the picture
+coding mode is 1 (i.e. pictures are fields) (11.5).</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="test-case-decoder-real_pictures">
+<span id="std-decoder-test-case-real_pictures"></span><span id="std:decoder-test-case-real_pictures"></span><h3>Decoder test case: <code class="docutils literal notranslate"><span class="pre">real_pictures</span></code><a class="headerlink" href="#test-case-decoder-real_pictures" title="Permalink to this headline">¶</a></h3>
+<p><strong>Tests real pictures are decoded correctly.</strong></p>
+<p>A series of three still photographs.</p>
+<img alt="../_images/real_pictures.svg" src="../_images/real_pictures.svg" /><div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The images encoded in this sequence are generated from 4256 by 2832
+pixel, 4:4:4, 16 bit, standard dynamic range, RGB color images with the
+ITU-R BT.709 gamut. As such, the decoded pictures may be of reduced
+technical quality compared with the capabilities of the format. The
+rescaling, color conversion and encoding algorithms used are also basic
+in nature, potentially further reducing the picture quality.</p>
+</div>
+</div>
+<div class="section" id="test-case-decoder-repeated_sequence_headers">
+<span id="std-decoder-test-case-repeated_sequence_headers"></span><span id="std:decoder-test-case-repeated_sequence_headers"></span><h3>Decoder test case: <code class="docutils literal notranslate"><span class="pre">repeated_sequence_headers</span></code><a class="headerlink" href="#test-case-decoder-repeated_sequence_headers" title="Permalink to this headline">¶</a></h3>
+<p><strong>Tests the decoder can handle a stream with repeated sequence headers.</strong></p>
+<p>This test case consists of a sequence containing two frames in which the
+sequence header is repeated before every picture.</p>
+<p>This test may be omitted if the VC-2 level prohibits the repetition of the
+sequence header.</p>
+</div>
+<div class="section" id="test-case-decoder-signal_range">
+<span id="std-decoder-test-case-signal_range"></span><span id="std:decoder-test-case-signal_range"></span><h3>Decoder test case: <code class="docutils literal notranslate"><span class="pre">signal_range</span></code><a class="headerlink" href="#test-case-decoder-signal_range" title="Permalink to this headline">¶</a></h3>
+<p><strong>Tests that a decoder has sufficient numerical dynamic range.</strong></p>
+<p>These test cases contain a series of pictures containing test patterns
+designed to produce extreme signals within decoders. During these test
+cases, no integer clamping (except for final output clamping) or integer
+overflows must occur.</p>
+<p>A test case is produced for each picture component:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">signal_range[Y]</span></code></dt><dd><p>Luma component test patterns.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">signal_range[C1]</span></code></dt><dd><p>Color difference 1 component test patterns.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">signal_range[C2]</span></code></dt><dd><p>Color difference 2 component test patterns.</p>
+</dd>
+</dl>
+<p>These test cases are produced by encoding pictures consisting test patterns
+made up of entirely of legal (in range) signal values. Nevertheless, the
+resulting bitstreams may produce large intermediate values within a
+decoder, though these are not guaranteed to be worst-case.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For informational purposes, an example of a set of test patterns before
+and after encoding and quantisation is shown below:</p>
+<img alt="../_images/signal_range_decoder.svg" src="../_images/signal_range_decoder.svg" /></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The quantization indices used for lossy codecs are chosen to maximise
+the peak signal range produced by the test patterns. These are often
+higher than a typical VC-2 encoder might pick for a given bit rate but
+are nevertheless valid.</p>
+</div>
+<p>An informative metadata file is provided along side each test case which
+gives, for each picture in the bitstream, the parts of a decoder which are
+being tested by the test patterns. See
+<code class="xref py py-class docutils literal notranslate"><span class="pre">vc2_bit_widths.helpers.TestPoint</span></code> for details.</p>
+</div>
+<div class="section" id="test-case-decoder-slice_padding_data">
+<span id="std-decoder-test-case-slice_padding_data"></span><span id="std:decoder-test-case-slice_padding_data"></span><h3>Decoder test case: <code class="docutils literal notranslate"><span class="pre">slice_padding_data</span></code><a class="headerlink" href="#test-case-decoder-slice_padding_data" title="Permalink to this headline">¶</a></h3>
+<p><strong>Tests that padding bits in picture slices are ignored.</strong></p>
+<p>Picture slices (13.5.3) and (13.5.4) may contain padding bits beyond the
+end of the transform coefficients for each picture component. These test
+cases check that decoders correctly ignore these values. Padding values
+will be filled with the following:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">slice_padding_data[slice_?_all_zeros]</span></code></dt><dd><p>Padding bits are all zero.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">slice_padding_data[slice_?_all_ones]</span></code></dt><dd><p>Padding bits are all one.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">slice_padding_data[slice_?_alternating_1s_and_0s]</span></code></dt><dd><p>Padding bits alternate between one and zero, starting with one.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">slice_padding_data[slice_?_alternating_0s_and_1s]</span></code></dt><dd><p>Padding bits alternate between zero and one, starting with zero.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">slice_padding_data[slice_?_dummy_end_of_sequence]</span></code></dt><dd><p>Padding bits will contain bits which encode an end of sequence data
+unit (10.6).</p>
+</dd>
+</dl>
+<p>The above cases are repeated for the luma and color difference picture
+components as indicated by the value substituted for <code class="docutils literal notranslate"><span class="pre">?</span></code> in the test case
+names above. For low-delay pictures these will be <code class="docutils literal notranslate"><span class="pre">Y</span></code> (luma) and <code class="docutils literal notranslate"><span class="pre">C</span></code>
+(interleaved color difference). For high quality pictures these will be
+<code class="docutils literal notranslate"><span class="pre">Y</span></code> (luma), <code class="docutils literal notranslate"><span class="pre">C1</span></code> (color difference 1) and <code class="docutils literal notranslate"><span class="pre">C2</span></code> (color difference 2).</p>
+</div>
+<div class="section" id="test-case-decoder-slice_prefix_bytes">
+<span id="std-decoder-test-case-slice_prefix_bytes"></span><span id="std:decoder-test-case-slice_prefix_bytes"></span><h3>Decoder test case: <code class="docutils literal notranslate"><span class="pre">slice_prefix_bytes</span></code><a class="headerlink" href="#test-case-decoder-slice_prefix_bytes" title="Permalink to this headline">¶</a></h3>
+<p><strong>Tests the decoder can handle a non-zero number of slice prefix bytes.</strong></p>
+<p>Produces test cases with a non-zero number of slice prefix bytes
+containing the following values:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">slice_prefix_bytes[zeros]</span></code></dt><dd><p>All slice prefix bytes are 0x00.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">slice_prefix_bytes[ones]</span></code></dt><dd><p>All slice prefix bytes are 0xFF.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">slice_prefix_bytes[end_of_sequence]</span></code></dt><dd><p>All slice prefix bytes contain bits which encode an end of sequence
+data unit (10.4).</p>
+</dd>
+</dl>
+<p>These test cases apply only to the high quality profile and are omitted
+when the low delay profile is used.</p>
+</div>
+<div class="section" id="test-case-decoder-slice_size_scaler">
+<span id="std-decoder-test-case-slice_size_scaler"></span><span id="std:decoder-test-case-slice_size_scaler"></span><h3>Decoder test case: <code class="docutils literal notranslate"><span class="pre">slice_size_scaler</span></code><a class="headerlink" href="#test-case-decoder-slice_size_scaler" title="Permalink to this headline">¶</a></h3>
+<p><strong>Tests that the ‘slice_size_scaler’ field is correctly handled.</strong></p>
+<p>This test case generates a sequence which sets slice_size_scaler value
+(13.5.4) 1 larger than it otherwise would be.</p>
+<p>This test case is only generated for the high quality profile, and levels
+which permit a slice size scaler value greater than 1.</p>
+</div>
+<div class="section" id="test-case-decoder-source_parameters_encodings">
+<span id="std-decoder-test-case-source_parameters_encodings"></span><span id="std:decoder-test-case-source_parameters_encodings"></span><h3>Decoder test case: <code class="docutils literal notranslate"><span class="pre">source_parameters_encodings</span></code><a class="headerlink" href="#test-case-decoder-source_parameters_encodings" title="Permalink to this headline">¶</a></h3>
+<p><strong>Tests the decoder can decode different encodings of the video format
+metadata.</strong></p>
+<p>This series of test cases each contain the same source parameters (11.4),
+but in different ways.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">source_parameters_encodings[custom_flags_combination_?_base_video_format_?]</span></code></dt><dd><p>For these test cases, the base video format which most closely matches
+the desired video format is used. Each test case incrementally checks
+that source parameters may be explicitly set to their desired values
+(e.g. by setting <code class="docutils literal notranslate"><span class="pre">custom_*_flag</span></code> bits to 1).</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">source_parameters_encodings[base_video_format_?]</span></code></dt><dd><p>These test cases, check that other base video formats may be used (and
+overridden) to specify the desired video format. Each of these test
+cases will explicitly specify as few video parameters as possible (e.g.
+setting as many <code class="docutils literal notranslate"><span class="pre">custom_*_flag</span></code> fields to 0 as possible).</p>
+</dd>
+</dl>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The <a class="reference internal" href="../cli/vc2_bitstream_viewer.html#vc2-bitstream-viewer"><span class="std std-ref">vc2-bitstream-viewer</span></a> may be used to display the encoding
+used in a given test case as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ vc2-bitstream-viewer --show sequence_header path/to/test_case.vc2
+</pre></div>
+</div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Some VC-2 levels constrain the allowed encoding of source parameters in
+the bit stream and so fewer test cases will be produced in this
+instance.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Not all base video formats can be used as the basis for encoding a
+specific video format. For example, the ‘top field first’ flag (11.3)
+set by a base video format cannot be overridden. As a result, test
+cases will not include every base video format index.</p>
+</div>
+</div>
+<div class="section" id="test-case-decoder-static_gray">
+<span id="std-decoder-test-case-static_gray"></span><span id="std:decoder-test-case-static_gray"></span><h3>Decoder test case: <code class="docutils literal notranslate"><span class="pre">static_gray</span></code><a class="headerlink" href="#test-case-decoder-static_gray" title="Permalink to this headline">¶</a></h3>
+<p><strong>Tests that the decoder can decode a maximally compressible sequence.</strong></p>
+<p>This sequence contains an image in which every transform coefficient is
+zero. For most color specifications (11.4.10), this decodes to a mid-gray
+frame.</p>
+<p>This special case image is maximally compressible since no transform
+coefficients need to be explicitly coded in the bitstream. For lossless
+coding modes, this will also produce produce the smallest possible
+bitstream.</p>
+</div>
+<div class="section" id="test-case-decoder-static_noise">
+<span id="std-decoder-test-case-static_noise"></span><span id="std:decoder-test-case-static_noise"></span><h3>Decoder test case: <code class="docutils literal notranslate"><span class="pre">static_noise</span></code><a class="headerlink" href="#test-case-decoder-static_noise" title="Permalink to this headline">¶</a></h3>
+<p><strong>Tests that decoder correctly decodes a noise plate.</strong></p>
+<p>A static frame containing pseudo-random uniform noise as illustrated below:</p>
+<img alt="../_images/noise.png" src="../_images/noise.png" />
+</div>
+<div class="section" id="test-case-decoder-static_ramps">
+<span id="std-decoder-test-case-static_ramps"></span><span id="std:decoder-test-case-static_ramps"></span><h3>Decoder test case: <code class="docutils literal notranslate"><span class="pre">static_ramps</span></code><a class="headerlink" href="#test-case-decoder-static_ramps" title="Permalink to this headline">¶</a></h3>
+<p><strong>Tests that decoder correctly reports color encoding information.</strong></p>
+<p>This test requires that the decoded pictures are observed using the
+intended display equipment for the decoder to ensure that the relevant
+color coding metadata is passed on.</p>
+<p>A static frame containing linear signal ramps for white and primary
+red, green and blue (in that order, from top-to-bottom) as illustrated
+below:</p>
+<img alt="../_images/static_ramps.png" src="../_images/static_ramps.png" />
+<p>The color bands must be in the correct order (white, red, green, blue from
+top to bottom). If not, the color components may have been ordered
+incorrectly.</p>
+<p>The red, green and blue colors should correspond to the red, green and blue
+primaries for the color specification (11.4.10.2).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When D-Cinema primaries are specified (preset color primaries index 3),
+red, green and blue are replaced with CIE X, Y and Z respectively. Note
+that these may not represent physically realisable colors.</p>
+</div>
+<p>The left-most pixels in each band are notionally video black and the
+right-most pixels video white, red, green and blue (respectively). That is,
+oversaturated signals (e.g. ‘super-blacks’ and ‘super-white’) are not
+included.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For lossy codecs, the decoded signal values may vary due to coding
+artefacts.</p>
+</div>
+<p>The value ramps in the test picture are linear, meaning that the (linear)
+pixel values increase at a constant rate from left (black) to right
+(saturated white/red/green/blue). Due to the non-linear response of human
+vision, this will produce a non-linear brightness ramp which appears to
+quickly saturate. Further, when a non-linear transfer function is specified
+(11.4.10.4) the raw decoded picture values will not be linearly spaced.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When the D-Cinema transfer function is specified (preset transfer
+function index 3), the saturated signals do not correspond to a
+non-linear signal value of 1.0 but instead approximately 0.97. This is
+because the D-Cinema transfer function allocates part of its nominal
+output range to over-saturated signals.</p>
+</div>
+</div>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">VC-2 decoder conformance testing procedure</a><ul>
+<li><a class="reference internal" href="#decoding-the-reference-bitstreams">Decoding the reference bitstreams</a></li>
+<li><a class="reference internal" href="#checking-the-decoded-pictures">Checking the decoded pictures</a></li>
+<li><a class="reference internal" href="#decoder-test-cases">Decoder Test Cases</a><ul>
+<li><a class="reference internal" href="#test-case-decoder-absent_next_parse_offset">Decoder test case: <code class="docutils literal notranslate"><span class="pre">absent_next_parse_offset</span></code></a></li>
+<li><a class="reference internal" href="#test-case-decoder-concatenated_sequences">Decoder test case: <code class="docutils literal notranslate"><span class="pre">concatenated_sequences</span></code></a></li>
+<li><a class="reference internal" href="#test-case-decoder-custom_quantization_matrix">Decoder test case: <code class="docutils literal notranslate"><span class="pre">custom_quantization_matrix</span></code></a></li>
+<li><a class="reference internal" href="#test-case-decoder-dangling_bounded_block_data">Decoder test case: <code class="docutils literal notranslate"><span class="pre">dangling_bounded_block_data</span></code></a></li>
+<li><a class="reference internal" href="#test-case-decoder-default_quantization_matrix">Decoder test case: <code class="docutils literal notranslate"><span class="pre">default_quantization_matrix</span></code></a></li>
+<li><a class="reference internal" href="#test-case-decoder-extended_transform_parameters">Decoder test case: <code class="docutils literal notranslate"><span class="pre">extended_transform_parameters</span></code></a></li>
+<li><a class="reference internal" href="#test-case-decoder-interlace_mode_and_pixel_aspect_ratio">Decoder test case: <code class="docutils literal notranslate"><span class="pre">interlace_mode_and_pixel_aspect_ratio</span></code></a></li>
+<li><a class="reference internal" href="#test-case-decoder-lossless_quantization">Decoder test case: <code class="docutils literal notranslate"><span class="pre">lossless_quantization</span></code></a></li>
+<li><a class="reference internal" href="#test-case-decoder-padding_data">Decoder test case: <code class="docutils literal notranslate"><span class="pre">padding_data</span></code></a></li>
+<li><a class="reference internal" href="#test-case-decoder-picture_numbers">Decoder test case: <code class="docutils literal notranslate"><span class="pre">picture_numbers</span></code></a></li>
+<li><a class="reference internal" href="#test-case-decoder-real_pictures">Decoder test case: <code class="docutils literal notranslate"><span class="pre">real_pictures</span></code></a></li>
+<li><a class="reference internal" href="#test-case-decoder-repeated_sequence_headers">Decoder test case: <code class="docutils literal notranslate"><span class="pre">repeated_sequence_headers</span></code></a></li>
+<li><a class="reference internal" href="#test-case-decoder-signal_range">Decoder test case: <code class="docutils literal notranslate"><span class="pre">signal_range</span></code></a></li>
+<li><a class="reference internal" href="#test-case-decoder-slice_padding_data">Decoder test case: <code class="docutils literal notranslate"><span class="pre">slice_padding_data</span></code></a></li>
+<li><a class="reference internal" href="#test-case-decoder-slice_prefix_bytes">Decoder test case: <code class="docutils literal notranslate"><span class="pre">slice_prefix_bytes</span></code></a></li>
+<li><a class="reference internal" href="#test-case-decoder-slice_size_scaler">Decoder test case: <code class="docutils literal notranslate"><span class="pre">slice_size_scaler</span></code></a></li>
+<li><a class="reference internal" href="#test-case-decoder-source_parameters_encodings">Decoder test case: <code class="docutils literal notranslate"><span class="pre">source_parameters_encodings</span></code></a></li>
+<li><a class="reference internal" href="#test-case-decoder-static_gray">Decoder test case: <code class="docutils literal notranslate"><span class="pre">static_gray</span></code></a></li>
+<li><a class="reference internal" href="#test-case-decoder-static_noise">Decoder test case: <code class="docutils literal notranslate"><span class="pre">static_noise</span></code></a></li>
+<li><a class="reference internal" href="#test-case-decoder-static_ramps">Decoder test case: <code class="docutils literal notranslate"><span class="pre">static_ramps</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="generating_test_cases.html"
+                        title="previous chapter">Generating test cases</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="encoder_testing.html"
+                        title="next chapter">VC-2 encoder conformance testing procedure</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/user_guide/decoder_testing.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="encoder_testing.html" title="VC-2 encoder conformance testing procedure"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="generating_test_cases.html" title="Generating test cases"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >User’s guide (for codec testers)</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">VC-2 decoder conformance testing procedure</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>

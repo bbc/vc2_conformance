@@ -1,0 +1,159 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Introduction &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Conformance Software Installation" href="installation.html" />
+    <link rel="prev" title="User’s guide (for codec testers)" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Conformance Software Installation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="User’s guide (for codec testers)"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">User’s guide (for codec testers)</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Introduction</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="introduction">
+<span id="guide-introduction"></span><h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<p>In this guide we’ll walk through the steps involved in testing a VC-2
+implementation for conformance to SMPTE ST 2042-family of specifications.</p>
+<div class="section" id="testing-procedure-overview">
+<h2>Testing procedure overview<a class="headerlink" href="#testing-procedure-overview" title="Permalink to this headline">¶</a></h2>
+<p>The conformance testing processes for decoders and encoders is outlined below.</p>
+<img alt="../_images/overview_decoder.svg" src="../_images/overview_decoder.svg" /><p>Decoders are tested using a series of test bitstreams (generated using
+<a class="reference internal" href="../cli/vc2_test_case_generator.html#vc2-test-case-generator"><span class="std std-ref">vc2-test-case-generator</span></a>). The pictures produced by the decoder are then
+compared against reference decodings. If the decoded pictures are bit-for-bit
+identical (as checked by <a class="reference internal" href="../cli/vc2_picture_compare.html#vc2-picture-compare"><span class="std std-ref">vc2-picture-compare</span></a>), and the decoder did not
+crash, the decoder passes the test.</p>
+<img alt="../_images/overview_encoder.svg" src="../_images/overview_encoder.svg" /><p>Encoders are tested using a series of test pictures (generated using
+<a class="reference internal" href="../cli/vc2_test_case_generator.html#vc2-test-case-generator"><span class="std std-ref">vc2-test-case-generator</span></a>). The encoded bitstreams are then fed to a
+bitstream validator (<a class="reference internal" href="../cli/vc2_bitstream_validator.html#vc2-bitstream-validator"><span class="std std-ref">vc2-bitstream-validator</span></a>) which simultaneously
+validates the bitstream against the specification and decodes the encoded
+pictures. If the bitstream is free from technical errors, the decoded pictures
+are then compared with the input pictures (both visually and using
+<a class="reference internal" href="../cli/vc2_picture_compare.html#vc2-picture-compare"><span class="std std-ref">vc2-picture-compare</span></a>). If the decoded pictures are sufficiently similar to
+the inputs, the encoder passes the test.</p>
+</div>
+<div class="section" id="guide-outline">
+<h2>Guide outline<a class="headerlink" href="#guide-outline" title="Permalink to this headline">¶</a></h2>
+<p>In <a class="reference internal" href="installation.html#guide-installation"><span class="std std-ref">Conformance Software Installation</span></a> we will walk through the process of installing the
+VC-2 conformance software on your computer.</p>
+<p>In <a class="reference internal" href="file_format.html#guide-file-format"><span class="std std-ref">Video file format</span></a> the simple planar raw video file format used by the
+conformance software is introduced. You are responsible for converting between
+this format and the format natively accepted by the codec under test.</p>
+<p>In <a class="reference internal" href="generating_test_cases.html#guide-generating-test-cases"><span class="std std-ref">Generating test cases</span></a> we will use the
+<a class="reference internal" href="../cli/vc2_test_case_generator.html#vc2-test-case-generator"><span class="std std-ref">vc2-test-case-generator</span></a> tool to generate a set of test pictures and
+bitstreams. Because VC-2 supports such a wide variety of video formats and
+coding behaviours, test cases are generated on demand to suit the particular
+features of a codec under test.</p>
+<p>In <a class="reference internal" href="decoder_testing.html#guide-decoder-testing"><span class="std std-ref">VC-2 decoder conformance testing procedure</span></a> and <a class="reference internal" href="encoder_testing.html#guide-encoder-testing"><span class="std std-ref">VC-2 encoder conformance testing procedure</span></a> we describe
+how the test pictures and bitstreams should be processed by the codec under
+test. We also describe the procedures for verifying that the codecs behaved as
+expected.</p>
+<p>In <a class="reference internal" href="debugging.html#guide-debugging"><span class="std std-ref">Codec debugging suggestions</span></a> we provide some advice on how to approach the problem
+of debugging failing tests.</p>
+<p>Finally, in <a class="reference internal" href="limitations.html#guide-limitations"><span class="std std-ref">Conformance test limtations</span></a> some of the limitations of the conformance
+test cases and procedures are enumerated.</p>
+<p>So, lets move on to <a class="reference internal" href="installation.html#guide-installation"><span class="std std-ref">Conformance Software Installation</span></a>…</p>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Introduction</a><ul>
+<li><a class="reference internal" href="#testing-procedure-overview">Testing procedure overview</a></li>
+<li><a class="reference internal" href="#guide-outline">Guide outline</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">User’s guide (for codec testers)</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="installation.html"
+                        title="next chapter">Conformance Software Installation</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/user_guide/introduction.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Conformance Software Installation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="User’s guide (for codec testers)"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >User’s guide (for codec testers)</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Introduction</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>

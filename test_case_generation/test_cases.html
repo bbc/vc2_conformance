@@ -1,0 +1,336 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vc2_conformance.test_cases: VC-2 codec test case generation &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="vc2_conformance.codec_features: Codec feature definitions" href="codec_features.html" />
+    <link rel="prev" title="Test case generation" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="codec_features.html" title="vc2_conformance.codec_features: Codec feature definitions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Test case generation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Test case generation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.test_cases</span></code>: VC-2 codec test case generation</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-vc2_conformance.test_cases">
+<span id="vc2-conformance-test-cases-vc-2-codec-test-case-generation"></span><span id="maintainer-test-case-generator"></span><h1><a class="reference internal" href="#module-vc2_conformance.test_cases" title="vc2_conformance.test_cases"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.test_cases</span></code></a>: VC-2 codec test case generation<a class="headerlink" href="#module-vc2_conformance.test_cases" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-vc2_conformance.test_cases" title="vc2_conformance.test_cases"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.test_cases</span></code></a> module contains routines for
+generating test cases for VC-2 encoder and decoder implementations.</p>
+<p>A description of each test case generator can be found in
+<a class="reference internal" href="../user_guide/encoder_testing.html#encoder-test-cases"><span class="std std-ref">Encoder Test Cases</span></a> and <a class="reference internal" href="../user_guide/decoder_testing.html#decoder-test-cases"><span class="std std-ref">Decoder Test Cases</span></a> in the user guide.</p>
+<div class="section" id="test-case-generators">
+<h2>Test case generators<a class="headerlink" href="#test-case-generators" title="Permalink to this headline">¶</a></h2>
+<p>Test case generators are generator functions which take a
+<a class="reference internal" href="codec_features.html#vc2_conformance.codec_features.CodecFeatures" title="vc2_conformance.codec_features.CodecFeatures"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodecFeatures</span></code></a> dictionary as their
+only argument and produce picture sequences (for encoders) or bitstreams (for
+decoders). Test case generators may take one of the following forms:</p>
+<ul class="simple">
+<li><p>Function which returns a single test case</p></li>
+<li><p>Function which returns a single test case or None (indicating no test case
+was produced)</p></li>
+<li><p>Generator function which yields multiple test cases.</p></li>
+</ul>
+<p>A test case can be one of:</p>
+<ul class="simple">
+<li><p>For encoder test cases, a picture sequence in the form of an
+<a class="reference internal" href="#vc2_conformance.test_cases.EncoderTestSequence" title="vc2_conformance.test_cases.EncoderTestSequence"><code class="xref py py-class docutils literal notranslate"><span class="pre">EncoderTestSequence</span></code></a> object.</p></li>
+<li><p>For decoder test cases, a bitstream in the form of a
+<a class="reference internal" href="../bitstream.html#vc2_conformance.bitstream.Stream" title="vc2_conformance.bitstream.Stream"><code class="xref py py-class docutils literal notranslate"><span class="pre">Stream</span></code></a> object which can be serialised
+using
+<a class="reference internal" href="../bitstream.html#vc2_conformance.bitstream.vc2_autofill.autofill_and_serialise_stream" title="vc2_conformance.bitstream.vc2_autofill.autofill_and_serialise_stream"><code class="xref py py-func docutils literal notranslate"><span class="pre">autofill_and_serialise_stream()</span></code></a>.</p></li>
+<li><p>A <a class="reference internal" href="#vc2_conformance.test_cases.TestCase" title="vc2_conformance.test_cases.TestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></a> object containing one of the above as its
+<a class="reference internal" href="#vc2_conformance.test_cases.TestCase.value" title="vc2_conformance.test_cases.TestCase.value"><code class="xref py py-attr docutils literal notranslate"><span class="pre">value</span></code></a>.</p></li>
+</ul>
+<p>Test case generators may prefer to output <a class="reference internal" href="#vc2_conformance.test_cases.TestCase" title="vc2_conformance.test_cases.TestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></a> objects when
+multiple test cases are produced so that each testcase can be given its own
+‘subcase’ name. In addition, test cases may be accompanied by a freeform JSON
+serialisable metadata object when <a class="reference internal" href="#vc2_conformance.test_cases.TestCase" title="vc2_conformance.test_cases.TestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></a> objects are produced.</p>
+<dl class="py class">
+<dt id="vc2_conformance.test_cases.TestCase">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">TestCase</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subcase_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">case_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.test_cases.TestCase" title="Permalink to this definition">¶</a></dt>
+<dd><p>A test case, produced by a test case generator function.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>value</strong><span class="classifier"><a class="reference internal" href="#vc2_conformance.test_cases.EncoderTestSequence" title="vc2_conformance.test_cases.EncoderTestSequence"><code class="xref py py-class docutils literal notranslate"><span class="pre">EncoderTestSequence</span></code></a> or <a class="reference internal" href="../bitstream.html#vc2_conformance.bitstream.Stream" title="vc2_conformance.bitstream.Stream"><code class="xref py py-class docutils literal notranslate"><span class="pre">Stream</span></code></a></span></dt><dd><p>A value containing the test case itself. An
+<a class="reference internal" href="#vc2_conformance.test_cases.EncoderTestSequence" title="vc2_conformance.test_cases.EncoderTestSequence"><code class="xref py py-class docutils literal notranslate"><span class="pre">EncoderTestSequence</span></code></a> for encoder test cases or
+<a class="reference internal" href="../bitstream.html#vc2_conformance.bitstream.Stream" title="vc2_conformance.bitstream.Stream"><code class="xref py py-class docutils literal notranslate"><span class="pre">Stream</span></code></a> for decoder test cases.</p>
+</dd>
+<dt><strong>subcase_name</strong><span class="classifier">str or None</span></dt><dd><p>An identifier for the sub-case if this test case has several
+sub-cases.</p>
+</dd>
+<dt><strong>case_name</strong><span class="classifier">str or None</span></dt><dd><p>The name of the test case. If None, the <code class="docutils literal notranslate"><span class="pre">case_name</span></code> will be
+populated automatically with the name of the test case generator
+function which returned it.</p>
+</dd>
+<dt><strong>metadata</strong><span class="classifier">object or None</span></dt><dd><p>Optional JSON-serialisable metadata associated with this test case.
+The meaning and formatting of of this metadata is left to the
+individual test case to define.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="vc2_conformance.test_cases.TestCase.name">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">name</span></code><a class="headerlink" href="#vc2_conformance.test_cases.TestCase.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The complete name of this test case. Constructed from the
+<a class="reference internal" href="#vc2_conformance.test_cases.TestCase.case_name" title="vc2_conformance.test_cases.TestCase.case_name"><code class="xref py py-attr docutils literal notranslate"><span class="pre">case_name</span></code></a> and  <a class="reference internal" href="#vc2_conformance.test_cases.TestCase.subcase_name" title="vc2_conformance.test_cases.TestCase.subcase_name"><code class="xref py py-attr docutils literal notranslate"><span class="pre">subcase_name</span></code></a> attributes.</p>
+<p>A string of the form <code class="docutils literal notranslate"><span class="pre">&quot;case_name&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;case_name[subcase_name]&quot;</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.test_cases.TestCase.case_name">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">case_name</span></code><a class="headerlink" href="#vc2_conformance.test_cases.TestCase.case_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.test_cases.TestCase.subcase_name">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">subcase_name</span></code><a class="headerlink" href="#vc2_conformance.test_cases.TestCase.subcase_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.test_cases.TestCase.value">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">value</span></code><a class="headerlink" href="#vc2_conformance.test_cases.TestCase.value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.test_cases.TestCase.metadata">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">metadata</span></code><a class="headerlink" href="#vc2_conformance.test_cases.TestCase.metadata" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<p>All test case generator functions are run via
+<a class="reference internal" href="#vc2_conformance.test_cases.normalise_test_case_generator" title="vc2_conformance.test_cases.normalise_test_case_generator"><code class="xref py py-func docutils literal notranslate"><span class="pre">normalise_test_case_generator()</span></code></a> which normalises the function into the
+form of a generator which yields <a class="reference internal" href="#vc2_conformance.test_cases.TestCase" title="vc2_conformance.test_cases.TestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></a> objects. This also
+populates the <a class="reference internal" href="#vc2_conformance.test_cases.TestCase.case_name" title="vc2_conformance.test_cases.TestCase.case_name"><code class="xref py py-attr docutils literal notranslate"><span class="pre">case_name</span></code></a> field of the generated
+<a class="reference internal" href="#vc2_conformance.test_cases.TestCase" title="vc2_conformance.test_cases.TestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></a> automatically with the test case generator’s function
+name.</p>
+<dl class="py function">
+<dt id="vc2_conformance.test_cases.normalise_test_case_generator">
+<code class="sig-name descname"><span class="pre">normalise_test_case_generator</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.test_cases.normalise_test_case_generator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call a test case generator, f, and, regardless of its native output,
+produces a generator of <a class="reference internal" href="#vc2_conformance.test_cases.TestCase" title="vc2_conformance.test_cases.TestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></a> objects.</p>
+<p>If the function returns or yields <a class="reference internal" href="#vc2_conformance.test_cases.TestCase" title="vc2_conformance.test_cases.TestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></a> objects, their
+<a class="reference internal" href="#vc2_conformance.test_cases.TestCase.case_name" title="vc2_conformance.test_cases.TestCase.case_name"><code class="xref py py-attr docutils literal notranslate"><span class="pre">TestCase.case_name</span></code></a> attributes will be populated with the
+function name, if not already defined. If the function returns or generates
+other values, these will be wrapped in <a class="reference internal" href="#vc2_conformance.test_cases.TestCase" title="vc2_conformance.test_cases.TestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></a> objects
+automatically. If the function returns or generates None, no test case will
+be emitted.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="encoder-test-case-generators">
+<h2>Encoder test case generators<a class="headerlink" href="#encoder-test-case-generators" title="Permalink to this headline">¶</a></h2>
+<p>Encoder test case generators are located in
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.test_cases.encoder</span></code> must be decorated with the
+<a class="reference internal" href="#vc2_conformance.test_cases.encoder_test_case_generator" title="vc2_conformance.test_cases.encoder_test_case_generator"><code class="xref py py-data docutils literal notranslate"><span class="pre">vc2_conformance.test_cases.encoder_test_case_generator</span></code></a> decorator,
+take a <a class="reference internal" href="codec_features.html#vc2_conformance.codec_features.CodecFeatures" title="vc2_conformance.codec_features.CodecFeatures"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodecFeatures</span></code></a> and produce
+<a class="reference internal" href="#vc2_conformance.test_cases.EncoderTestSequence" title="vc2_conformance.test_cases.EncoderTestSequence"><code class="xref py py-class docutils literal notranslate"><span class="pre">EncoderTestSequence</span></code></a> objects.</p>
+<dl class="py data">
+<dt id="vc2_conformance.test_cases.encoder_test_case_generator">
+<code class="sig-name descname"><span class="pre">encoder_test_case_generator</span></code><a class="headerlink" href="#vc2_conformance.test_cases.encoder_test_case_generator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator to use to register all encoder test case generators.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="vc2_conformance.test_cases.EncoderTestSequence">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">EncoderTestSequence</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pictures</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">video_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">picture_coding_mode</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.test_cases.EncoderTestSequence" title="Permalink to this definition">¶</a></dt>
+<dd><p>A sequence of pictures to be encoded by a VC-2 encoder under test.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>pictures</strong><span class="classifier">[{“Y”: [[s, …], …], “C1”: …, “C2”: …, “pic_num”: int}, …]</span></dt><dd><p>A <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a> of dictionaries containing raw picture data in 2D arrays
+for each picture component.</p>
+</dd>
+<dt><strong>video_parameters</strong><span class="classifier"><a class="reference internal" href="../pseudocode.html#vc2_conformance.pseudocode.video_parameters.VideoParameters" title="vc2_conformance.pseudocode.video_parameters.VideoParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">VideoParameters</span></code></a></span></dt><dd><p>The video parameters associated with the test sequence.</p>
+</dd>
+<dt><strong>picture_coding_mode</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PictureCodingModes" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PictureCodingModes</span></code></a></span></dt><dd><p>The picture coding mode associated with the test sequence.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="decoder-test-case-generators">
+<h2>Decoder test case generators<a class="headerlink" href="#decoder-test-case-generators" title="Permalink to this headline">¶</a></h2>
+<p>Decoder test case generators are located in
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.test_cases.decoder</span></code> must be decorated with the
+<a class="reference internal" href="#vc2_conformance.test_cases.decoder_test_case_generator" title="vc2_conformance.test_cases.decoder_test_case_generator"><code class="xref py py-data docutils literal notranslate"><span class="pre">vc2_conformance.test_cases.decoder_test_case_generator</span></code></a> decorator,
+take a <a class="reference internal" href="codec_features.html#vc2_conformance.codec_features.CodecFeatures" title="vc2_conformance.codec_features.CodecFeatures"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodecFeatures</span></code></a> and produce
+<a class="reference internal" href="../bitstream.html#vc2_conformance.bitstream.Stream" title="vc2_conformance.bitstream.Stream"><code class="xref py py-class docutils literal notranslate"><span class="pre">vc2_conformance.bitstream.Stream</span></code></a> dictionaries which can be
+serialised using
+<a class="reference internal" href="../bitstream.html#vc2_conformance.bitstream.vc2_autofill.autofill_and_serialise_stream" title="vc2_conformance.bitstream.vc2_autofill.autofill_and_serialise_stream"><code class="xref py py-func docutils literal notranslate"><span class="pre">autofill_and_serialise_stream()</span></code></a>.</p>
+<dl class="py data">
+<dt id="vc2_conformance.test_cases.decoder_test_case_generator">
+<code class="sig-name descname"><span class="pre">decoder_test_case_generator</span></code><a class="headerlink" href="#vc2_conformance.test_cases.decoder_test_case_generator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator to use to register all decoder test case generators.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="test-case-generator-registries">
+<h2>Test case generator registries<a class="headerlink" href="#test-case-generator-registries" title="Permalink to this headline">¶</a></h2>
+<p>All test case generators are registered (by the
+<a class="reference internal" href="#vc2_conformance.test_cases.encoder_test_case_generator" title="vc2_conformance.test_cases.encoder_test_case_generator"><code class="xref py py-data docutils literal notranslate"><span class="pre">encoder_test_case_generator</span></code></a> and
+<a class="reference internal" href="#vc2_conformance.test_cases.decoder_test_case_generator" title="vc2_conformance.test_cases.decoder_test_case_generator"><code class="xref py py-data docutils literal notranslate"><span class="pre">decoder_test_case_generator</span></code></a> decorators) with one of two
+<a class="reference internal" href="#vc2_conformance.test_cases.Registry" title="vc2_conformance.test_cases.Registry"><code class="xref py py-class docutils literal notranslate"><span class="pre">Registry</span></code></a> singletons:</p>
+<dl class="py data">
+<dt id="vc2_conformance.test_cases.ENCODER_TEST_CASE_GENERATOR_REGISTRY">
+<code class="sig-name descname"><span class="pre">ENCODER_TEST_CASE_GENERATOR_REGISTRY</span></code><a class="headerlink" href="#vc2_conformance.test_cases.ENCODER_TEST_CASE_GENERATOR_REGISTRY" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#vc2_conformance.test_cases.Registry" title="vc2_conformance.test_cases.Registry"><code class="xref py py-class docutils literal notranslate"><span class="pre">Registry</span></code></a> singleton with which all VC-2 encoder test cases are
+registered.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="vc2_conformance.test_cases.DECODER_TEST_CASE_GENERATOR_REGISTRY">
+<code class="sig-name descname"><span class="pre">DECODER_TEST_CASE_GENERATOR_REGISTRY</span></code><a class="headerlink" href="#vc2_conformance.test_cases.DECODER_TEST_CASE_GENERATOR_REGISTRY" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#vc2_conformance.test_cases.Registry" title="vc2_conformance.test_cases.Registry"><code class="xref py py-class docutils literal notranslate"><span class="pre">Registry</span></code></a> singleton with which all VC-2 decoder test cases are
+registered.</p>
+</dd></dl>
+
+<p>The <a class="reference internal" href="#vc2_conformance.test_cases.Registry" title="vc2_conformance.test_cases.Registry"><code class="xref py py-class docutils literal notranslate"><span class="pre">Registry</span></code></a> class implements a registry of test case generators
+which the <a class="reference internal" href="../cli/vc2_test_case_generator.html#vc2-test-case-generator"><span class="std std-ref">vc2-test-case-generator</span></a> script uses to generate a complete set
+of test cases.</p>
+<dl class="py class">
+<dt id="vc2_conformance.test_cases.Registry">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">Registry</span></code><a class="headerlink" href="#vc2_conformance.test_cases.Registry" title="Permalink to this definition">¶</a></dt>
+<dd><p>A registry of test case generating functions.</p>
+<dl class="py method">
+<dt id="vc2_conformance.test_cases.Registry.register_test_case_generator">
+<code class="sig-name descname"><span class="pre">register_test_case_generator</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.test_cases.Registry.register_test_case_generator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a test case generator function with this registry.</p>
+<p>Returns the (unmodified) function allowing this method to be used as a
+decorator.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.test_cases.Registry.generate_test_cases">
+<code class="sig-name descname"><span class="pre">generate_test_cases</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.test_cases.Registry.generate_test_cases" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run every test case generator registered with this registry, passing
+each generator the supplied arguments. Generates all
+<a class="reference internal" href="#vc2_conformance.test_cases.TestCase" title="vc2_conformance.test_cases.TestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></a> objects.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.test_cases.Registry.iter_independent_generators">
+<code class="sig-name descname"><span class="pre">iter_independent_generators</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.test_cases.Registry.iter_independent_generators" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produce a series of generator functions which may be called in
+parallel. Each returned zero-argument function should be called and
+will generate a series of <a class="reference internal" href="#vc2_conformance.test_cases.TestCase" title="vc2_conformance.test_cases.TestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></a> objects.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.test_cases.Registry.iter_registered_functions">
+<code class="sig-name descname"><span class="pre">iter_registered_functions</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.test_cases.Registry.iter_registered_functions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterates over the raw functions registered with this registry.</p>
+<p>Only intended for use during documentation generation.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.test_cases</span></code>: VC-2 codec test case generation</a><ul>
+<li><a class="reference internal" href="#test-case-generators">Test case generators</a></li>
+<li><a class="reference internal" href="#encoder-test-case-generators">Encoder test case generators</a></li>
+<li><a class="reference internal" href="#decoder-test-case-generators">Decoder test case generators</a></li>
+<li><a class="reference internal" href="#test-case-generator-registries">Test case generator registries</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Test case generation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="codec_features.html"
+                        title="next chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.codec_features</span></code>: Codec feature definitions</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/test_case_generation/test_cases.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="codec_features.html" title="vc2_conformance.codec_features: Codec feature definitions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Test case generation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Test case generation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.test_cases</span></code>: VC-2 codec test case generation</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,459 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vc2_conformance.constraint_table: A simple constraints model &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="vc2_conformance.pseudocode: VC-2 pseudocode function implementations" href="../pseudocode.html" />
+    <link rel="prev" title="vc2_conformance.symbol_re: Regular expressions for VC-2 sequences" href="symbol_re.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../pseudocode.html" title="vc2_conformance.pseudocode: VC-2 pseudocode function implementations"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="symbol_re.html" title="vc2_conformance.symbol_re: Regular expressions for VC-2 sequences"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Level constraint checking/solving reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.constraint_table</span></code>: A simple constraints model</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-vc2_conformance.constraint_table">
+<span id="vc2-conformance-constraint-table-a-simple-constraints-model"></span><h1><a class="reference internal" href="#module-vc2_conformance.constraint_table" title="vc2_conformance.constraint_table"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.constraint_table</span></code></a>: A simple constraints model<a class="headerlink" href="#module-vc2_conformance.constraint_table" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-vc2_conformance.constraint_table" title="vc2_conformance.constraint_table"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.constraint_table</span></code></a> module describes a constraint
+system which is used to describe restrictions imposed by VC-2 levels. See
+<a class="reference internal" href="level_constraints.html#vc2_conformance.level_constraints.LEVEL_CONSTRAINTS" title="vc2_conformance.level_constraints.LEVEL_CONSTRAINTS"><code class="xref py py-data docutils literal notranslate"><span class="pre">vc2_conformance.level_constraints.LEVEL_CONSTRAINTS</span></code></a> for the actual
+level constraints table.</p>
+<div class="section" id="tutorial">
+<h2>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h2>
+<p>Constraint tables enumerate allowed combinations of values as a list of
+dictionaries containing <a class="reference internal" href="#vc2_conformance.constraint_table.ValueSet" title="vc2_conformance.constraint_table.ValueSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueSet</span></code></a> objects. Each dictionary describes
+a valid combination of values. In the contrived running example below we’ll
+define valid food-color combinations (rather than VC-2 codec options):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">real_foods</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">ValueSet</span><span class="p">(</span><span class="s2">&quot;tomato&quot;</span><span class="p">),</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="n">ValueSet</span><span class="p">(</span><span class="s2">&quot;red&quot;</span><span class="p">)},</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">ValueSet</span><span class="p">(</span><span class="s2">&quot;apple&quot;</span><span class="p">),</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="n">ValueSet</span><span class="p">(</span><span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="s2">&quot;green&quot;</span><span class="p">)},</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">ValueSet</span><span class="p">(</span><span class="s2">&quot;beetroot&quot;</span><span class="p">),</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="n">ValueSet</span><span class="p">(</span><span class="s2">&quot;purple&quot;</span><span class="p">)},</span>
+<span class="gp">... </span><span class="p">]</span>
+</pre></div>
+</div>
+<p>We can check dictionaries of values against this permitted list of
+combinations using <a class="reference internal" href="#vc2_conformance.constraint_table.is_allowed_combination" title="vc2_conformance.constraint_table.is_allowed_combination"><code class="xref py py-func docutils literal notranslate"><span class="pre">is_allowed_combination()</span></code></a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Allowed combinations</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_allowed_combination</span><span class="p">(</span><span class="n">real_foods</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tomato&quot;</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span><span class="p">})</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_allowed_combination</span><span class="p">(</span><span class="n">real_foods</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;apple&quot;</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span><span class="p">})</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_allowed_combination</span><span class="p">(</span><span class="n">real_foods</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;apple&quot;</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;green&quot;</span><span class="p">})</span>
+<span class="go">True</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Purple apples? I don&#39;t think so...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_allowed_combination</span><span class="p">(</span><span class="n">real_foods</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;apple&quot;</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;purple&quot;</span><span class="p">})</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p>But we don’t have to check a complete set of values. For example, we can check if a
+particular color is valid for any foodstuff:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">is_allowed_combination</span><span class="p">(</span><span class="n">real_foods</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span><span class="p">})</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_allowed_combination</span><span class="p">(</span><span class="n">real_foods</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;yellow&quot;</span><span class="p">})</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p>This behaviour allows us to detect the first non-constraint-satisfying value
+when values are obtained sequentially (as they are for a VC-2 bitstream). The
+bitstream validator (<a class="reference internal" href="../decoder.html#module-vc2_conformance.decoder" title="vc2_conformance.decoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder</span></code></a>) uses this functionality
+to check bitstream values conform to the constraints imposed by a specified
+VC-2 level.</p>
+<p>Given an incomplete set of values, we can use <a class="reference internal" href="#vc2_conformance.constraint_table.allowed_values_for" title="vc2_conformance.constraint_table.allowed_values_for"><code class="xref py py-func docutils literal notranslate"><span class="pre">allowed_values_for()</span></code></a> to
+discover what values are permissible for values we’ve not yet assigned. For
+example:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># If we have an apple, what colors can it be?</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">allowed_values_for</span><span class="p">(</span><span class="n">real_foods</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;apple&quot;</span><span class="p">})</span>
+<span class="go">ValueSet(&#39;red&#39;, &#39;green&#39;)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># If we have something red, what might it be?</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">allowed_values_for</span><span class="p">(</span><span class="n">real_foods</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span><span class="p">})</span>
+<span class="go">ValueSet(&#39;apple&#39;, &#39;tomato&#39;)</span>
+</pre></div>
+</div>
+<p>This functionality is used by the test case generators and encoder
+(<a class="reference internal" href="../test_case_generation/test_cases.html#module-vc2_conformance.test_cases" title="vc2_conformance.test_cases"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.test_cases</span></code></a> and <a class="reference internal" href="../encoder.html#module-vc2_conformance.encoder" title="vc2_conformance.encoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.encoder</span></code></a>) to
+discover combinations of bitstream features which satisfy particular level
+requirements.</p>
+</div>
+<div class="section" id="valueset">
+<h2><a class="reference internal" href="#vc2_conformance.constraint_table.ValueSet" title="vc2_conformance.constraint_table.ValueSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueSet</span></code></a><a class="headerlink" href="#valueset" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="vc2_conformance.constraint_table.ValueSet">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">ValueSet</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values_and_ranges</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.constraint_table.ValueSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a set of allowed values. May consist of anything from a single
+value, a range of values or a combination of several of these.</p>
+<dl class="py method">
+<dt id="vc2_conformance.constraint_table.ValueSet.__init__">
+<code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values_and_ranges</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.constraint_table.ValueSet.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a <a class="reference internal" href="#vc2_conformance.constraint_table.ValueSet" title="vc2_conformance.constraint_table.ValueSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueSet</span></code></a> containing the specified set of values:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">no_values</span> <span class="o">=</span> <span class="n">ValueSet</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="mi">100</span> <span class="ow">in</span> <span class="n">no_values</span>
+<span class="go">False</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">single_value</span> <span class="o">=</span> <span class="n">ValueSet</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="mi">100</span> <span class="ow">in</span> <span class="n">single_value</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="mi">200</span> <span class="ow">in</span> <span class="n">single_value</span>
+<span class="go">False</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">range_of_values</span> <span class="o">=</span> <span class="n">ValueSet</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="mi">9</span> <span class="ow">in</span> <span class="n">range_of_values</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="mi">10</span> <span class="ow">in</span> <span class="n">range_of_values</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="mi">11</span> <span class="ow">in</span> <span class="n">range_of_values</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="mi">20</span> <span class="ow">in</span> <span class="n">range_of_values</span>  <span class="c1"># NB: Range is inclusive</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="mi">21</span> <span class="ow">in</span> <span class="n">range_of_values</span>
+<span class="go">False</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">many_values</span> <span class="o">=</span> <span class="n">ValueSet</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">400</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="mi">100</span> <span class="ow">in</span> <span class="n">many_values</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="mi">200</span> <span class="ow">in</span> <span class="n">many_values</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="mi">300</span> <span class="ow">in</span> <span class="n">many_values</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="mi">350</span> <span class="ow">in</span> <span class="n">many_values</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="mi">500</span> <span class="ow">in</span> <span class="n">many_values</span>
+<span class="go">False</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">non_numeric</span> <span class="o">=</span> <span class="n">ValueSet</span><span class="p">(</span><span class="s2">&quot;foo&quot;</span><span class="p">,</span> <span class="s2">&quot;bar&quot;</span><span class="p">,</span> <span class="s2">&quot;baz&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s2">&quot;foo&quot;</span> <span class="ow">in</span> <span class="n">non_numeric</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s2">&quot;nope&quot;</span> <span class="ow">in</span> <span class="n">non_numeric</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>*values_and_ranges</strong><span class="classifier">value, or (lower_value, upper_value)</span></dt><dd><p>Sets the initial set of values and (inclusive) ranges to be matched</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.constraint_table.ValueSet.add_value">
+<code class="sig-name descname"><span class="pre">add_value</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.constraint_table.ValueSet.add_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a single value to the set.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.constraint_table.ValueSet.add_range">
+<code class="sig-name descname"><span class="pre">add_range</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lower_bound</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_bound</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.constraint_table.ValueSet.add_range" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add the range of values between the two inclusive bounds to the set.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.constraint_table.ValueSet.__contains__">
+<code class="sig-name descname"><span class="pre">__contains__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.constraint_table.ValueSet.__contains__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if a value is a member of this set. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">value_set</span> <span class="o">=</span> <span class="n">ValueSet</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="mi">1</span> <span class="ow">in</span> <span class="n">value_set</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="mi">100</span> <span class="ow">in</span> <span class="n">value_set</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.constraint_table.ValueSet.is_disjoint">
+<code class="sig-name descname"><span class="pre">is_disjoint</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.constraint_table.ValueSet.is_disjoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if this <a class="reference internal" href="#vc2_conformance.constraint_table.ValueSet" title="vc2_conformance.constraint_table.ValueSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueSet</span></code></a> is disjoint from another – i.e. they
+share no common values.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.constraint_table.ValueSet.__eq__">
+<code class="sig-name descname"><span class="pre">__eq__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.constraint_table.ValueSet.__eq__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return self==value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.constraint_table.ValueSet.__add__">
+<code class="sig-name descname"><span class="pre">__add__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.constraint_table.ValueSet.__add__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Combine two <a class="reference internal" href="#vc2_conformance.constraint_table.ValueSet" title="vc2_conformance.constraint_table.ValueSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueSet</span></code></a> objects into a single object
+containing the union of both of their values.</p>
+<p>For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">ValueSet</span><span class="p">(</span><span class="mi">123</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">ValueSet</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
+<span class="go">ValueSet(123, (10, 20))</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.constraint_table.ValueSet.__iter__">
+<code class="sig-name descname"><span class="pre">__iter__</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.constraint_table.ValueSet.__iter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over the values and (lower_bound, upper_bound) tuples in this
+value set in no particular order.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.constraint_table.ValueSet.iter_values">
+<code class="sig-name descname"><span class="pre">iter_values</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.constraint_table.ValueSet.iter_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over the values (including the enumerated values of ranges) in
+this value set in no particular order.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.constraint_table.ValueSet.__str__">
+<code class="sig-name descname"><span class="pre">__str__</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.constraint_table.ValueSet.__str__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produce a human-readable description of the permitted values.</p>
+<p>For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">ValueSet</span><span class="p">())</span>
+<span class="go">{&lt;no values&gt;}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">ValueSet</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">)))</span>
+<span class="go">{1, 2, 3, 10-20}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="vc2_conformance.constraint_table.AnyValue">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">AnyValue</span></code><a class="headerlink" href="#vc2_conformance.constraint_table.AnyValue" title="Permalink to this definition">¶</a></dt>
+<dd><p>Like <a class="reference internal" href="#vc2_conformance.constraint_table.ValueSet" title="vc2_conformance.constraint_table.ValueSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueSet</span></code></a> but represents a ‘wildcard’ set of values which
+contains all possible values.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="constraint-tables">
+<h2>Constraint tables<a class="headerlink" href="#constraint-tables" title="Permalink to this headline">¶</a></h2>
+<p>A ‘constraint table’ is defined as a list of ‘allowed combination’ dictionaries.</p>
+<p>An ‘allowed combination’ dictionary defines a <a class="reference internal" href="#vc2_conformance.constraint_table.ValueSet" title="vc2_conformance.constraint_table.ValueSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueSet</span></code></a> for every
+permitted key.</p>
+<p>For example, the following is a constraint table containing three allowed
+combination dictionaries:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">real_foods</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">ValueSet</span><span class="p">(</span><span class="s2">&quot;tomato&quot;</span><span class="p">),</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="n">ValueSet</span><span class="p">(</span><span class="s2">&quot;red&quot;</span><span class="p">)},</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">ValueSet</span><span class="p">(</span><span class="s2">&quot;apple&quot;</span><span class="p">),</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="n">ValueSet</span><span class="p">(</span><span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="s2">&quot;green&quot;</span><span class="p">)},</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">ValueSet</span><span class="p">(</span><span class="s2">&quot;beetroot&quot;</span><span class="p">),</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="n">ValueSet</span><span class="p">(</span><span class="s2">&quot;purple&quot;</span><span class="p">)},</span>
+<span class="gp">... </span><span class="p">]</span>
+</pre></div>
+</div>
+<p>A set of values satisfies a constraint table if there is at least one allowed
+combination dictionary which contains the specified combination of values. For
+example, the following two dictionaries satisfy the constraint table:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;apple&quot;</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span><span class="p">}</span>
+
+<span class="p">{</span><span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>The first satisfies the constraint table because the combination of values
+given appears in the second entry of the constraint table.</p>
+<p>The second satisfies the constraint table because, even though it does not
+define a value for every key, the key it does define is included in both the
+first and second entries.</p>
+<p>Meanwhile, the following dictionaries do <em>not</em> satisfy the constraint table:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;apple&quot;</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;purple&quot;</span><span class="p">}</span>
+
+<span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;beetroot&quot;</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;purple&quot;</span><span class="p">,</span> <span class="s2">&quot;pickleable&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>The first of these contains values which, in isolation, would be permitted by
+the second and third entries of the table but which are not present together in
+any table entries. Consequently, this value does not satisfy the table.</p>
+<p>The second contains a ‘pickleable’ key which is not present in any of the
+allowed combinations in constraint table and so does not satisfy the table.</p>
+<p>The functions below may be used to interrogate a constraint table.</p>
+<dl class="py function">
+<dt id="vc2_conformance.constraint_table.filter_constraint_table">
+<code class="sig-name descname"><span class="pre">filter_constraint_table</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">constraint_table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.constraint_table.filter_constraint_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the subset of <code class="docutils literal notranslate"><span class="pre">constraint_table</span></code> entries which match all of the
+values in <code class="docutils literal notranslate"><span class="pre">values</span></code>. That is, with the entries whose constraints are not
+met by the provided values removed.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.constraint_table.is_allowed_combination">
+<code class="sig-name descname"><span class="pre">is_allowed_combination</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">constraint_table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.constraint_table.is_allowed_combination" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check to see if the <code class="docutils literal notranslate"><span class="pre">values</span></code> dictionary holds an allowed combination of
+values according to the provided constraint table.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A candidate containing only a subset of the keys listed in the
+constraint table is allowed if the fields it does define are a
+permitted combination.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>constraint_table: [{key: :py:class:`ValueSet`, …}, …]</strong></dt><dd></dd>
+<dt><strong>values</strong><span class="classifier">{key: value}</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.constraint_table.allowed_values_for">
+<code class="sig-name descname"><span class="pre">allowed_values_for</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">constraint_table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">any_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">AnyValue()</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.constraint_table.allowed_values_for" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a <a class="reference internal" href="#vc2_conformance.constraint_table.ValueSet" title="vc2_conformance.constraint_table.ValueSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueSet</span></code></a> which matches all allowed values for the
+specified key, given the existing values defined in <code class="docutils literal notranslate"><span class="pre">values</span></code>.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>constraint_table</strong><span class="classifier">[{key: <a class="reference internal" href="#vc2_conformance.constraint_table.ValueSet" title="vc2_conformance.constraint_table.ValueSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueSet</span></code></a>, …}, …]</span></dt><dd></dd>
+<dt><strong>key</strong><span class="classifier">key</span></dt><dd></dd>
+<dt><strong>values</strong><span class="classifier">{key: value, …}</span></dt><dd><p>Optional. The values already chosen. (Default: assume nothing chosen).</p>
+</dd>
+<dt><strong>any_value</strong><span class="classifier"><a class="reference internal" href="#vc2_conformance.constraint_table.ValueSet" title="vc2_conformance.constraint_table.ValueSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueSet</span></code></a></span></dt><dd><p>Optional. If provided and <a class="reference internal" href="#vc2_conformance.constraint_table.AnyValue" title="vc2_conformance.constraint_table.AnyValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnyValue</span></code></a> is allowed, this value
+will be substituted instead. This may be useful when
+<a class="reference internal" href="#vc2_conformance.constraint_table.AnyValue" title="vc2_conformance.constraint_table.AnyValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnyValue</span></code></a> is being used as a short-hand for a more concrete
+set of values.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="csv-format">
+<h2>CSV format<a class="headerlink" href="#csv-format" title="Permalink to this headline">¶</a></h2>
+<p>A Constraint table can be read from CSV files using the following function:</p>
+<dl class="py function">
+<dt id="vc2_conformance.constraint_table.read_constraints_from_csv">
+<code class="sig-name descname"><span class="pre">read_constraints_from_csv</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csv_filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.constraint_table.read_constraints_from_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads a table of constraints from a CSV file.</p>
+<p>The CSV file should be arranged with each row describing a particular value
+to be constrained and each column defining an allowed combination of
+values.</p>
+<p>Empty rows and rows containing only ‘#’ prefixed values will be skipped.</p>
+<p>The first column will be treated as the keys being constrained, remaining
+columns should contain allowed combinations of values. Each of these values
+will be converted into a <a class="reference internal" href="#vc2_conformance.constraint_table.ValueSet" title="vc2_conformance.constraint_table.ValueSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueSet</span></code></a> as follows:</p>
+<ul class="simple">
+<li><p>Values which contain integers will be converted to <code class="docutils literal notranslate"><span class="pre">int</span></code></p></li>
+<li><p>Values which contain ‘TRUE’ or ‘FALSE’ will be converted to <code class="docutils literal notranslate"><span class="pre">bool</span></code></p></li>
+<li><p>Values containing a pair of integers separated by a <code class="docutils literal notranslate"><span class="pre">-</span></code> will be treated
+as an incusive range.</p></li>
+<li><p>Several comma-separated instances of the above will be combined into a
+single <a class="reference internal" href="#vc2_conformance.constraint_table.ValueSet" title="vc2_conformance.constraint_table.ValueSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueSet</span></code></a>. (Cells containing comma-separated values
+will need to be enclosed in double quotes (<code class="docutils literal notranslate"><span class="pre">&quot;</span></code>) in the CSV).</p></li>
+<li><p>The value ‘any’ will be substituted for <a class="reference internal" href="#vc2_conformance.constraint_table.AnyValue" title="vc2_conformance.constraint_table.AnyValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnyValue</span></code></a>.</p></li>
+<li><p>Empty cells will be converted into empty <a class="reference internal" href="#vc2_conformance.constraint_table.ValueSet" title="vc2_conformance.constraint_table.ValueSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueSets</span></code></a>.</p></li>
+<li><p>Cells which contain only a pair of quotes (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;</span></code>, i.e. ditto) will
+be assigned the same value as the column to their left. (This is encoded
+using four double quotes (<code class="docutils literal notranslate"><span class="pre">&quot;&quot;&quot;&quot;</span></code>) in CSV format).</p></li>
+</ul>
+<p>The read constraint table will be returned as a list of dictionaries (one
+per column) as expected by the functions in
+<a class="reference internal" href="#module-vc2_conformance.constraint_table" title="vc2_conformance.constraint_table"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.constraint_table</span></code></a>.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.constraint_table</span></code>: A simple constraints model</a><ul>
+<li><a class="reference internal" href="#tutorial">Tutorial</a></li>
+<li><a class="reference internal" href="#valueset"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueSet</span></code></a></li>
+<li><a class="reference internal" href="#constraint-tables">Constraint tables</a></li>
+<li><a class="reference internal" href="#csv-format">CSV format</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="symbol_re.html"
+                        title="previous chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.symbol_re</span></code>: Regular expressions for VC-2 sequences</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../pseudocode.html"
+                        title="next chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode</span></code>: VC-2 pseudocode function implementations</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/level_constraints/constraint_table.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../pseudocode.html" title="vc2_conformance.pseudocode: VC-2 pseudocode function implementations"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="symbol_re.html" title="vc2_conformance.symbol_re: Regular expressions for VC-2 sequences"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Level constraint checking/solving reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.constraint_table</span></code>: A simple constraints model</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,258 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vc2_conformance.codec_features: Codec feature definitions &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="vc2_conformance.decoder: Reference decoder and bitstream validator" href="../decoder.html" />
+    <link rel="prev" title="vc2_conformance.test_cases: VC-2 codec test case generation" href="test_cases.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../decoder.html" title="vc2_conformance.decoder: Reference decoder and bitstream validator"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="test_cases.html" title="vc2_conformance.test_cases: VC-2 codec test case generation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Test case generation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.codec_features</span></code>: Codec feature definitions</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-vc2_conformance.codec_features">
+<span id="vc2-conformance-codec-features-codec-feature-definitions"></span><h1><a class="reference internal" href="#module-vc2_conformance.codec_features" title="vc2_conformance.codec_features"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.codec_features</span></code></a>: Codec feature definitions<a class="headerlink" href="#module-vc2_conformance.codec_features" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-vc2_conformance.codec_features" title="vc2_conformance.codec_features"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.codec_features</span></code></a> module defines the
+<a class="reference internal" href="#vc2_conformance.codec_features.CodecFeatures" title="vc2_conformance.codec_features.CodecFeatures"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodecFeatures</span></code></a> <a class="reference internal" href="../utility_modules/fixeddict.html#module-vc2_conformance.fixeddict" title="vc2_conformance.fixeddict"><code class="xref py py-mod docutils literal notranslate"><span class="pre">fixeddict</span></code></a> which is used to
+describe codec and video format configurations. These are used to control the
+test case generators (<a class="reference internal" href="test_cases.html#module-vc2_conformance.test_cases" title="vc2_conformance.test_cases"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.test_cases</span></code></a>) and encoder
+(<a class="reference internal" href="../encoder.html#module-vc2_conformance.encoder" title="vc2_conformance.encoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.encoder</span></code></a>).</p>
+<dl class="py fixeddict">
+<dt id="vc2_conformance.codec_features.CodecFeatures">
+<em class="property"><span class="pre">fixeddict</span> </em><code class="sig-name descname"><span class="pre">CodecFeatures</span></code><a class="headerlink" href="#vc2_conformance.codec_features.CodecFeatures" title="Permalink to this definition">¶</a></dt>
+<dd><p>A definition of a set of coding features supported by a video codec
+implementation. In practice, a particular codec’s feature set may be defined by
+a collection of these, defining support for several picture formats.</p>
+<dl class="field-list">
+<dt class="field-odd">Keys</dt>
+<dd class="field-odd"><dl>
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>A unique, human-readable name to identify this collection of features (e.g.
+<code class="docutils literal notranslate"><span class="pre">&quot;uhd_over_hd_sdi&quot;</span></code>).</p>
+</dd>
+<dt><strong>level</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.Levels" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Levels</span></code></a></span></dt><dd><p>The VC-2 level. The user is responsible for choosing settings below which
+actually conform to this level.</p>
+</dd>
+<dt><strong>profile</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.Profiles" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Profiles</span></code></a></span></dt><dd><p>The VC-2 profile to use.</p>
+</dd>
+<dt><strong>picture_coding_mode</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PictureCodingModes" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PictureCodingModes</span></code></a></span></dt><dd><p>The picture coding mode to use.</p>
+</dd>
+<dt><strong>video_parameters</strong><span class="classifier"><a class="reference internal" href="../pseudocode.html#vc2_conformance.pseudocode.video_parameters.VideoParameters" title="vc2_conformance.pseudocode.video_parameters.VideoParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">VideoParameters</span></code></a></span></dt><dd><p>The video format to use.</p>
+</dd>
+<dt><strong>wavelet_index, wavelet_index_ho</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.WaveletFilters" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">WaveletFilters</span></code></a></span></dt><dd><p>The wavelet transform to use. For symmetric transforms, both values must be
+equal.</p>
+</dd>
+<dt><strong>dwt_depth and dwt_depth_ho</strong><span class="classifier">int</span></dt><dd><p>The transform depths to use. For symmetric transforms, dwt_depth_ho must be
+zero.</p>
+</dd>
+<dt><strong>slices_x and slices_y</strong><span class="classifier">int</span></dt><dd><p>The number of picture slices, horizontally and vertically.</p>
+</dd>
+<dt><strong>fragment_slice_count</strong><span class="classifier">int</span></dt><dd><p>If fragmented pictures are in use, should be non-zero and contain the
+maximum number of slices to include in each fragment. Otherwise, should be
+zero.</p>
+</dd>
+<dt><strong>lossless</strong><span class="classifier">bool</span></dt><dd><p>If True, lossless variable-bit-rate coding will be used. If false,
+fixed-rate lossy coding is used.</p>
+</dd>
+<dt><strong>picture_bytes</strong><span class="classifier">int or None</span></dt><dd><p>When <code class="docutils literal notranslate"><span class="pre">lossless</span></code> is False, this gives the number of bytes per picture to
+use. Slices will be assigned (as close to) the same number of bytes each as
+possible. If <code class="docutils literal notranslate"><span class="pre">lossless</span></code> is True, this value should be None.</p>
+</dd>
+<dt><strong>quantization_matrix</strong><span class="classifier">None or {level: {orient: value, …}, …}</span></dt><dd><p>None or a hierarchy of dictionaries as constructed by the <code class="docutils literal notranslate"><span class="pre">quant_matrix</span></code>
+pseudocode function (12.4.5.3). If None, the default quantization matrix
+will be used.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<p>The <a class="reference internal" href="#vc2_conformance.codec_features.read_codec_features_csv" title="vc2_conformance.codec_features.read_codec_features_csv"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_codec_features_csv()</span></code></a> may be used to read these structures
+from a CSV. This functionality is used by the <a class="reference internal" href="../cli/vc2_test_case_generator.html#vc2-test-case-generator"><span class="std std-ref">vc2-test-case-generator</span></a>
+script.</p>
+<dl class="py function">
+<dt id="vc2_conformance.codec_features.read_codec_features_csv">
+<code class="sig-name descname"><span class="pre">read_codec_features_csv</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csvfile</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.codec_features.read_codec_features_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a set of <a class="reference internal" href="#vc2_conformance.codec_features.CodecFeatures" title="vc2_conformance.codec_features.CodecFeatures"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodecFeatures</span></code></a> from a CSV file in the format
+described by <a class="reference internal" href="../user_guide/generating_test_cases.html#codec-features"><span class="std std-ref">Defining codec features</span></a>.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>csvfile</strong><span class="classifier">iterable</span></dt><dd><p>An iterable of lines from a CSV file, e.g. an open <code class="xref py py-class docutils literal notranslate"><span class="pre">file</span></code>
+object.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>codec_feature_sets</strong><span class="classifier">OrderedDict([(name, <a class="reference internal" href="#vc2_conformance.codec_features.CodecFeatures" title="vc2_conformance.codec_features.CodecFeatures"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodecFeatures</span></code></a>), …])</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><dl>
+<dt><a class="reference internal" href="#vc2_conformance.codec_features.InvalidCodecFeaturesError" title="vc2_conformance.codec_features.InvalidCodecFeaturesError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">InvalidCodecFeaturesError</span></code></a></dt><dd><p>Raised if the provided CSV contains invalid or incomplete data.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Validation largely extends only to syntactic issues (e.g. invalid
+integer values, ‘picture_bytes’ being specified for lossless
+formats etc). It does not include validation of ‘deeper’ issues
+such as too-small picture_bytes values or parameters not being
+permitted by the specified level.</p>
+</div>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="vc2_conformance.codec_features.InvalidCodecFeaturesError">
+<em class="property"><span class="pre">exception</span> </em><code class="sig-name descname"><span class="pre">InvalidCodecFeaturesError</span></code><a class="headerlink" href="#vc2_conformance.codec_features.InvalidCodecFeaturesError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised by <a class="reference internal" href="#vc2_conformance.codec_features.read_codec_features_csv" title="vc2_conformance.codec_features.read_codec_features_csv"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_codec_features_csv()</span></code></a> encounters a problem with the
+data presented in a codec features listing CSV file.</p>
+</dd></dl>
+
+<p>Finally, the following function may be used when determining level-related
+restrictions which apply to a set of <a class="reference internal" href="#vc2_conformance.codec_features.CodecFeatures" title="vc2_conformance.codec_features.CodecFeatures"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodecFeatures</span></code></a>.</p>
+<dl class="py function">
+<dt id="vc2_conformance.codec_features.codec_features_to_trivial_level_constraints">
+<code class="sig-name descname"><span class="pre">codec_features_to_trivial_level_constraints</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codec_features</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.codec_features.codec_features_to_trivial_level_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the some of the values a given <a class="reference internal" href="#vc2_conformance.codec_features.CodecFeatures" title="vc2_conformance.codec_features.CodecFeatures"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodecFeatures</span></code></a> would
+assign in a <a class="reference internal" href="../level_constraints/level_constraints.html#module-vc2_conformance.level_constraints" title="vc2_conformance.level_constraints"><code class="xref py py-mod docutils literal notranslate"><span class="pre">level_constraints</span></code></a> table.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>codec_features</strong><span class="classifier"><a class="reference internal" href="#vc2_conformance.codec_features.CodecFeatures" title="vc2_conformance.codec_features.CodecFeatures"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodecFeatures</span></code></a></span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>constrained_values</strong><span class="classifier">{key: concrete_value, …}</span></dt><dd><p>A partial set of <a class="reference internal" href="../level_constraints/level_constraints.html#module-vc2_conformance.level_constraints" title="vc2_conformance.level_constraints"><code class="xref py py-mod docutils literal notranslate"><span class="pre">level_constraints</span></code></a>,
+specifically containing the following keys:</p>
+<ul class="simple">
+<li><p>level</p></li>
+<li><p>profile</p></li>
+<li><p>picture_coding_mode</p></li>
+<li><p>wavelet_index</p></li>
+<li><p>dwt_depth</p></li>
+<li><p>slices_x</p></li>
+<li><p>slices_y</p></li>
+<li><p>slices_have_same_dimensions</p></li>
+<li><p>custom_quant_matrix</p></li>
+</ul>
+<p>In addition for the low delay profile only:</p>
+<ul class="simple">
+<li><p>slice_bytes_numerator</p></li>
+<li><p>slice_bytes_denominator</p></li>
+</ul>
+<p>In addition for the high quality profile only:</p>
+<ul class="simple">
+<li><p>slice_prefix_bytes</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In principle, more keys could be determined, however a line in the
+sand is required for what is considered ‘simple’ to determine and
+what requires re-implementing much of the codec. We draw the line
+at these values since all of them are straight-forward to work out.</p>
+</div>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="test_cases.html"
+                        title="previous chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.test_cases</span></code>: VC-2 codec test case generation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../decoder.html"
+                        title="next chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder</span></code>: Reference decoder and bitstream validator</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/test_case_generation/codec_features.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../decoder.html" title="vc2_conformance.decoder: Reference decoder and bitstream validator"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="test_cases.html" title="vc2_conformance.test_cases: VC-2 codec test case generation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Test case generation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.codec_features</span></code>: Codec feature definitions</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>

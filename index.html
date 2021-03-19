@@ -1,0 +1,257 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VC-2 Conformance Software &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="User’s guide (for codec testers)" href="user_guide/index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="user_guide/index.html" title="User’s guide (for codec testers)"
+             accesskey="N">next</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">VC-2 Conformance Software</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="vc-2-conformance-software">
+<h1>VC-2 Conformance Software<a class="headerlink" href="#vc-2-conformance-software" title="Permalink to this headline">¶</a></h1>
+<p>This is the manual for the VC-2 conformance testing software. This software is
+used to test implementations of the VC-2 video codec.</p>
+<p>Specifically, this software tests conformance with the following SMPTE
+standards and recommended practices:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://ieeexplore.ieee.org/document/7967896">SMPTE ST 2042-1:2017</a> (VC-2)</p></li>
+<li><p><a class="reference external" href="https://ieeexplore.ieee.org/document/8187792">SMPTE ST 2042-2:2017</a> (VC-2 Level Definitions)</p></li>
+<li><p><a class="reference external" href="https://ieeexplore.ieee.org/document/7290342">SMPTE RP 2047-1:2009</a> (VC-2 Mezzanine Compression of 1080P High Definition Video Sources)</p></li>
+<li><p><a class="reference external" href="https://ieeexplore.ieee.org/document/7565453">SMPTE RP 2047-3:2016</a> (VC-2 Level 65 Compression of High Definition Video Sources for Use with a Standard Definition Infrastructure)</p></li>
+<li><p><a class="reference external" href="https://ieeexplore.ieee.org/document/8019813">SMPTE RP 2047-5:2017</a> (VC-2 Level 66 Compression of Ultra High Definition Video Sources for use with a High Definition Infrastructure)</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Throughout this software and documentation, perenthesised references of the
+form ‘(1.2.3)’ refer to section numbers within the SMPTE ST 2042-1:2017
+specification unless otherwise indicated.</p>
+</div>
+<p>This manual is split into two parts.</p>
+<p>The first (shorter) part, <a class="reference internal" href="#user-documentation"><span class="std std-ref">User’s manual</span></a>, is aimed at codec testers
+who wish to test a VC-2 codec implementation. This part includes software
+installation and codec testing procedures along with reference documentation
+for the tools provided.</p>
+<p>The second (longer) part, <a class="reference internal" href="#maintainer-documentation"><span class="std std-ref">Maintainer’s manual</span></a>, is aimed at
+developers tasked with maintaining this software; codec testers can
+disregard this part. This section includes a general overview of the
+conformance software internals followed by detailed reference documentation on
+its various components.</p>
+<p>Finally, you can find the source code for
+<a class="reference internal" href="developer_guide/overview.html#module-vc2_conformance" title="vc2_conformance"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance</span></code></a> <a class="reference external" href="https://github.com/bbc/vc2_conformance/">on GitHub</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This documentation is also <a class="reference external" href="https://bbc.github.io/vc2_conformance/vc2_conformance_manual.pdf">available in PDF format</a>.</p>
+</div>
+<div class="section" id="user-s-manual">
+<span id="user-documentation"></span><h2>User’s manual<a class="headerlink" href="#user-s-manual" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/index.html">User’s guide (for codec testers)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/installation.html">Conformance Software Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/file_format.html">Video file format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/generating_test_cases.html">Generating test cases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/decoder_testing.html">VC-2 decoder conformance testing procedure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/encoder_testing.html">VC-2 encoder conformance testing procedure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/generating_static_analyses.html">Generating static wavelet filter analyses</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/debugging.html">Codec debugging suggestions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/limitations.html">Conformance test limtations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cli/index.html">Software tools reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cli/vc2_test_case_generator.html"><code class="docutils literal notranslate"><span class="pre">vc2-test-case-generator</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli/vc2_bitstream_validator.html"><code class="docutils literal notranslate"><span class="pre">vc2-bitstream-validator</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli/vc2_picture_compare.html"><code class="docutils literal notranslate"><span class="pre">vc2-picture-compare</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli/vc2_picture_explain.html"><code class="docutils literal notranslate"><span class="pre">vc2-picture-explain</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli/vc2_bitstream_viewer.html"><code class="docutils literal notranslate"><span class="pre">vc2-bitstream-viewer</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="maintainer-s-manual">
+<span id="maintainer-documentation"></span><h2>Maintainer’s manual<a class="headerlink" href="#maintainer-s-manual" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="developer_guide/index.html">Conformance software development guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="developer_guide/developer_installation.html">Development setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developer_guide/overview.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance</span></code> internals overview</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="test_case_generation/index.html">Test case generation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="test_case_generation/test_cases.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.test_cases</span></code>: VC-2 codec test case generation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="test_case_generation/codec_features.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.codec_features</span></code>: Codec feature definitions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="decoder.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder</span></code>: Reference decoder and bitstream validator</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="decoder.html#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decoder.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decoder.html#module-vc2_conformance.decoder.io">Stream I/O</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decoder.html#module-vc2_conformance.decoder.exceptions">Conformance exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decoder.html#sequence-composition-restrictions">Sequence composition restrictions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decoder.html#level-constraints">Level constraints</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="encoder.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.encoder</span></code>: Internal VC-2 encoder</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="encoder.html#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="encoder.html#bitstream-conformance">Bitstream conformance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="encoder.html#module-vc2_conformance.encoder.exceptions">Exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="encoder.html#module-vc2_conformance.encoder.sequence_header">Sequence header generation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="encoder.html#module-vc2_conformance.encoder.pictures">Picture encoding &amp; compression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="encoder.html#module-vc2_conformance.encoder.sequence">Sequence generation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="encoder.html#level-constraints">Level constraints</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="bitstream.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.bitstream</span></code>: Bitstream manipulation module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="bitstream.html#how-the-serialiser-deserialiser-module-is-used">How the serialiser/deserialiser module is used</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bitstream.html#quick-start-guide">Quick-start guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bitstream.html#deserialised-vc-2-bitstream-data-types">Deserialised VC-2 bitstream data types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bitstream.html#module-vc2_conformance.bitstream.serdes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">serdes</span></code>: A serialiser/deserialiser framework</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bitstream.html#module-vc2_conformance.bitstream.io">Low-level bitstream IO</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bitstream.html#module-vc2_conformance.bitstream.vc2_fixeddicts">Fixeddicts and pseudocode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bitstream.html#module-vc2_conformance.bitstream.vc2_autofill">Autofill</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bitstream.html#module-vc2_conformance.bitstream.metadata">Metadata</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="picture_generation/index.html">Test picture generation reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="picture_generation/picture_generators.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.picture_generators</span></code>: Picture generators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="picture_generation/dimensions_and_depths.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.dimensions_and_depths</span></code>: Picture dimension and depth calculation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="picture_generation/color_conversion.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.color_conversion</span></code>: Color conversion routines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="picture_generation/file_format.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.file_format</span></code>: Picture file format I/O</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="level_constraints/index.html">Level constraint checking/solving reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="level_constraints/level_constraints.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.level_constraints</span></code>: Level constraint definitions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="level_constraints/symbol_re.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.symbol_re</span></code>: Regular expressions for VC-2 sequences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="level_constraints/constraint_table.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.constraint_table</span></code>: A simple constraints model</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pseudocode.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode</span></code>: VC-2 pseudocode function implementations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pseudocode.html#module-vc2_conformance.pseudocode.arrays"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.arrays</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pseudocode.html#module-vc2_conformance.pseudocode.offsetting"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.offsetting</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pseudocode.html#module-vc2_conformance.pseudocode.parse_code_functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.parse_code_functions</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pseudocode.html#module-vc2_conformance.pseudocode.picture_decoding"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.picture_decoding</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pseudocode.html#module-vc2_conformance.pseudocode.picture_encoding"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.picture_encoding</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pseudocode.html#module-vc2_conformance.pseudocode.quantization"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.quantization</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pseudocode.html#module-vc2_conformance.pseudocode.slice_sizes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.slice_sizes</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pseudocode.html#module-vc2_conformance.pseudocode.state"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.state</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pseudocode.html#module-vc2_conformance.pseudocode.vc2_math"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.vc2_math</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pseudocode.html#module-vc2_conformance.pseudocode.video_parameters"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.video_parameters</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pseudocode.html#module-vc2_conformance.pseudocode.metadata"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.metadata</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="verification.html">Automated Static Code Verification</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="verification.html#pseudocode-deviations">Pseudocode deviations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="verification.html#amendment-comments">Amendment comments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="verification.html#internals">Internals</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="utility_modules/index.html">Utility module references</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="utility_modules/fixeddict.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.fixeddict</span></code>: Fixed-key dictionaries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utility_modules/string_formatters.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.string_formatters</span></code>: Value-to-string formatting utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utility_modules/string_utils.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.string_utils</span></code>: String formatting utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utility_modules/py2x_compat.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.py2x_compat</span></code>: Python 3.x backports</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">VC-2 Conformance Software</a><ul>
+<li><a class="reference internal" href="#user-s-manual">User’s manual</a></li>
+<li><a class="reference internal" href="#maintainer-s-manual">Maintainer’s manual</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="user_guide/index.html"
+                        title="next chapter">User’s guide (for codec testers)</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="user_guide/index.html" title="User’s guide (for codec testers)"
+             >next</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">VC-2 Conformance Software</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>

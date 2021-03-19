@@ -1,0 +1,163 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User’s guide (for codec testers) &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Introduction" href="introduction.html" />
+    <link rel="prev" title="VC-2 Conformance Software" href="../index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="Introduction"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../index.html" title="VC-2 Conformance Software"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">User’s guide (for codec testers)</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="user-s-guide-for-codec-testers">
+<span id="user-guide"></span><h1>User’s guide (for codec testers)<a class="headerlink" href="#user-s-guide-for-codec-testers" title="Permalink to this headline">¶</a></h1>
+<p>In the following sections we’ll walk through the process of installing,
+configuring and using the VC-2 conformance testing software.</p>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#testing-procedure-overview">Testing procedure overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#guide-outline">Guide outline</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Conformance Software Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#python-interpreter">Python interpreter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#verifying-installation">Verifying installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="file_format.html">Video file format</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="file_format.html#format-description">Format description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="file_format.html#vc2-picture-explain-utility"><code class="docutils literal notranslate"><span class="pre">vc2-picture-explain</span></code> utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="file_format.html#tip-splitting-and-combining-picture-data-files">Tip: Splitting and combining picture data files</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="generating_test_cases.html">Generating test cases</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generating_test_cases.html#defining-codec-features">Defining codec features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generating_test_cases.html#id1">Generating test cases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generating_test_cases.html#parallel-test-case-generation">Parallel test case generation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generating_test_cases.html#directory-structure">Directory structure</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="decoder_testing.html">VC-2 decoder conformance testing procedure</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="decoder_testing.html#decoding-the-reference-bitstreams">Decoding the reference bitstreams</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decoder_testing.html#checking-the-decoded-pictures">Checking the decoded pictures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decoder_testing.html#decoder-test-cases">Decoder Test Cases</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="encoder_testing.html">VC-2 encoder conformance testing procedure</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="encoder_testing.html#encoding-the-reference-bitstreams">Encoding the reference bitstreams</a></li>
+<li class="toctree-l2"><a class="reference internal" href="encoder_testing.html#checking-the-encoded-bitstreams">Checking the encoded bitstreams</a></li>
+<li class="toctree-l2"><a class="reference internal" href="encoder_testing.html#encoder-test-cases">Encoder Test Cases</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="generating_static_analyses.html">Generating static wavelet filter analyses</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generating_static_analyses.html#step-1-generating-static-analyses">Step 1: Generating static analyses</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generating_static_analyses.html#step-2-bundling-static-analyses">Step 2: Bundling static analyses</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generating_static_analyses.html#step-3-run-test-case-generation">Step 3: Run test case generation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="debugging.html">Codec debugging suggestions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="debugging.html#encoder-bitstream-conformance-issues">Encoder bitstream conformance issues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debugging.html#decoder-bitstream-syntax-issues">Decoder bitstream syntax issues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debugging.html#signal-range-test-cases">Signal range test cases</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="limitations.html">Conformance test limtations</a></li>
+</ul>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../index.html"
+                        title="previous chapter">VC-2 Conformance Software</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="introduction.html"
+                        title="next chapter">Introduction</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/user_guide/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="Introduction"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../index.html" title="VC-2 Conformance Software"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">User’s guide (for codec testers)</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>

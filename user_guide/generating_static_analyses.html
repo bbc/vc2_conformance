@@ -1,0 +1,184 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Generating static wavelet filter analyses &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Codec debugging suggestions" href="debugging.html" />
+    <link rel="prev" title="VC-2 encoder conformance testing procedure" href="encoder_testing.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="debugging.html" title="Codec debugging suggestions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="encoder_testing.html" title="VC-2 encoder conformance testing procedure"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">User’s guide (for codec testers)</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Generating static wavelet filter analyses</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="generating-static-wavelet-filter-analyses">
+<span id="guide-generating-static-analyses"></span><span id="generating-static-analyses"></span><h1>Generating static wavelet filter analyses<a class="headerlink" href="#generating-static-wavelet-filter-analyses" title="Permalink to this headline">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>This section does not apply to most codecs.</strong> You can skip this section
+if your codec only uses combinations of wavelet transforms and depths for
+which a default quantisation matrix is defined in annex (D) (even if you
+don’t use the default quantisation matrix).</p>
+</div>
+<p>The generation of certain test cases requires a mathematical analysis of the
+wavelet filter used by the codec under test. The VC-2 conformance software is
+supplied with analyses for all wavelet filter configurations for which a
+default quantisation matrix is defined in annex (D). If your codec uses a
+wavelet and depth combination for which no default quantisation matrix is
+defined, a suitable analysis must be produced to enable tests to be generated
+for this codec. The steps below walk through the process of using the
+<code class="docutils literal notranslate"><span class="pre">vc2-static-filter-analysis</span></code> tool to produce the required analyses.</p>
+<div class="section" id="step-1-generating-static-analyses">
+<h2>Step 1: Generating static analyses<a class="headerlink" href="#step-1-generating-static-analyses" title="Permalink to this headline">¶</a></h2>
+<p>Static analyses must be created for every wavelet transform used by your codec
+(including those with a default quantisation matrix).</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">vc2-static-filter-analysis</span></code> command (provided by the
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_bit_widths</span></code> package) is used to generate a mathematical analysis
+of arbitrary VC-2 filter configurations.</p>
+<p>For example, to analyse a filter which:</p>
+<ul class="simple">
+<li><p>Uses the Haar (with shift) filter (wavelet index 4) vertically</p></li>
+<li><p>Uses the Le Gall (5, 3) filter (wavelet index 1) horizontally</p></li>
+<li><p>With a 2 level 2D transform depth</p></li>
+<li><p>And 1 level horizontal-only transform depth</p></li>
+</ul>
+<p>The following command is used:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ vc2-static-filter-analysis \
+    --wavelet-index 4 \
+    --wavelet-index-ho 1 \
+    --dwt-depth 2 \
+    --dwt-depth-ho 1 \
+    --output filter_analysis.json
+</pre></div>
+</div>
+<p>This command will compute the static analysis and write them to
+<code class="docutils literal notranslate"><span class="pre">filter_analysis.json</span></code>.</p>
+<p>For modest transform depths, this process should take a few seconds. For larger
+transforms, this command can take several minutes or even hours to execute so
+the <code class="docutils literal notranslate"><span class="pre">--verbose</span></code> option can be added to track progress. For extremely large
+filters, see the <code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_bit_widths</span></code> package’s user guide for further
+guidance.</p>
+</div>
+<div class="section" id="step-2-bundling-static-analyses">
+<h2>Step 2: Bundling static analyses<a class="headerlink" href="#step-2-bundling-static-analyses" title="Permalink to this headline">¶</a></h2>
+<p>Once static analyses have been produced for all required wavelets, these must
+be combined into an analysis bundle file as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ vc2-bundle create bundle.zip \
+      --static-filter-analysis path/to/analyses/*.json
+</pre></div>
+</div>
+</div>
+<div class="section" id="step-3-run-test-case-generation">
+<h2>Step 3: Run test case generation<a class="headerlink" href="#step-3-run-test-case-generation" title="Permalink to this headline">¶</a></h2>
+<p>Finally, to use the generated filter analyses during test case generation, the
+<code class="docutils literal notranslate"><span class="pre">VC2_BIT_WIDTHS_BUNDLE</span></code> environment variale must be set to the location of
+the bundle file generated in step 2. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ export VC2_BIT_WIDTHS_BUNDLE=&quot;path/to/bundle.zip&quot;
+$ vc2-test-case-generator path/to/codec_features.csv
+</pre></div>
+</div>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Generating static wavelet filter analyses</a><ul>
+<li><a class="reference internal" href="#step-1-generating-static-analyses">Step 1: Generating static analyses</a></li>
+<li><a class="reference internal" href="#step-2-bundling-static-analyses">Step 2: Bundling static analyses</a></li>
+<li><a class="reference internal" href="#step-3-run-test-case-generation">Step 3: Run test case generation</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="encoder_testing.html"
+                        title="previous chapter">VC-2 encoder conformance testing procedure</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="debugging.html"
+                        title="next chapter">Codec debugging suggestions</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/user_guide/generating_static_analyses.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="debugging.html" title="Codec debugging suggestions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="encoder_testing.html" title="VC-2 encoder conformance testing procedure"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >User’s guide (for codec testers)</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Generating static wavelet filter analyses</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>

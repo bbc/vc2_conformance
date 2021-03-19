@@ -1,0 +1,207 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Codec debugging suggestions &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Conformance test limtations" href="limitations.html" />
+    <link rel="prev" title="Generating static wavelet filter analyses" href="generating_static_analyses.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="limitations.html" title="Conformance test limtations"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="generating_static_analyses.html" title="Generating static wavelet filter analyses"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">User’s guide (for codec testers)</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Codec debugging suggestions</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="codec-debugging-suggestions">
+<span id="guide-debugging"></span><h1>Codec debugging suggestions<a class="headerlink" href="#codec-debugging-suggestions" title="Permalink to this headline">¶</a></h1>
+<p>The following sections provide suggestions for tackling some of the issues
+which can be found in encoders and decoders.</p>
+<div class="section" id="encoder-bitstream-conformance-issues">
+<h2>Encoder bitstream conformance issues<a class="headerlink" href="#encoder-bitstream-conformance-issues" title="Permalink to this headline">¶</a></h2>
+<p>When validating an encoded bitstream with the <a class="reference internal" href="../cli/vc2_bitstream_validator.html#vc2-bitstream-validator"><span class="std std-ref">vc2-bitstream-validator</span></a>
+tool, conformance issues often relate to syntactic features of the bitstream
+format itself. Consequently, it can be useful to inspect the bitstream in a
+human-readable form using the <a class="reference internal" href="../cli/vc2_bitstream_viewer.html#vc2-bitstream-viewer"><span class="std std-ref">vc2-bitstream-viewer</span></a> tool.</p>
+<p>Every conformance error message includes a ‘Suggested bitstream viewer
+commands’ section which provides a sample invocation of the
+<a class="reference internal" href="../cli/vc2_bitstream_viewer.html#vc2-bitstream-viewer"><span class="std std-ref">vc2-bitstream-viewer</span></a> command intended to display just the problematic
+region in the bitstream. See the <a class="reference internal" href="../cli/vc2_bitstream_viewer.html#vc2-bitstream-viewer"><span class="std std-ref">vc2-bitstream-viewer documentation</span></a> for a more detailed guide to the bitstream viewer.</p>
+<p>In addition, error messages also provide a traceback of the pseudocode
+functions in the VC-2 specification which were running at the time of the
+error. It might be helpful to compare the logic in the relevant pseudocode
+functions side-by-side with the corresponding logic in an encoder when tracing
+an issue.</p>
+</div>
+<div class="section" id="decoder-bitstream-syntax-issues">
+<h2>Decoder bitstream syntax issues<a class="headerlink" href="#decoder-bitstream-syntax-issues" title="Permalink to this headline">¶</a></h2>
+<p>Many decoder test cases are designed to exercise specific syntactic features of
+the VC-2 bitstream. If a decoder is encountering difficulties with a test case,
+it might be helpful to use the <a class="reference internal" href="../cli/vc2_bitstream_viewer.html#vc2-bitstream-viewer"><span class="std std-ref">vc2-bitstream-viewer</span></a> tool to display a
+human-readable version of the test case bitstream.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">--hide</span> <span class="pre">slice</span></code> argument can be used to suppress the printing of picture
+slice data when this is not relevant. This dramatically reduces the quantity of
+output produced by the tool.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">--offset</span> <span class="pre">&lt;bit</span> <span class="pre">offset&gt;</span></code> argument can be used to display only the part of
+a bitstream within a few bits of the specified bit (not byte) offset into the
+file. This might be useful when you know where in a decoder had read up to when
+it failed.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">--show</span> <span class="pre">&lt;pseudocode</span> <span class="pre">function</span> <span class="pre">name&gt;</span></code> argument can be used to filter the
+bitstream viewer output. This argument takes the name of a pseudocode function
+in the VC-2 specification and shows only parts of the bitstream read by that
+function.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">--show-internal-state</span></code> argument causes the bitstream viewer to print (a
+subset of) the contents of the <code class="docutils literal notranslate"><span class="pre">state</span></code> variable used by the VC-2 pseudocode.
+This might be useful if a decoder appears to be correctly deserialising a
+stream but is interpreting its meaning differently.</p>
+<p>See the <a class="reference internal" href="../cli/vc2_bitstream_viewer.html#vc2-bitstream-viewer"><span class="std std-ref">vc2-bitstream-viewer documentation</span></a> for a
+complete guide to using this tool.</p>
+</div>
+<div class="section" id="signal-range-test-cases">
+<h2>Signal range test cases<a class="headerlink" href="#signal-range-test-cases" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="decoder_testing.html#std-decoder-test-case-signal_range"><code class="xref std std-decoder-test-case docutils literal notranslate"><span class="pre">decoder</span> <span class="pre">signal_range</span></code></a> and
+<a class="reference internal" href="encoder_testing.html#std-encoder-test-case-signal_range"><code class="xref std std-encoder-test-case docutils literal notranslate"><span class="pre">encoder</span> <span class="pre">signal_range</span></code></a> test cases are
+designed to result in large, near worst case, numerical values within a codec’s
+wavelet transform. These tests are intended to determine if a codec has used
+integers of sufficient size for their wavelet transform implementation.</p>
+<p>If these test cases do not pass, it is likely that the codec being tested has
+used integers too small for the wavelet transform and picture bit depths in
+use. Try increasing the size of the integers used to hold intermediate wavelet
+transform values.</p>
+<p>Typical symptoms of codecs with insufficiently large integers are the
+infrequent production of easily visible artefacts such as illustrated below:</p>
+<blockquote>
+<div><img alt="../_images/bit_width_artefacts.png" src="../_images/bit_width_artefacts.png" />
+</div></blockquote>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>It is extremely easy to under-estimate the size of integers required within
+a codec, and within decoders especially. In particular, the peak signal
+levels produced within a codec can differ by multiple orders of magnitude
+between different pictures. Even large suites of test material (whether
+pictures or noise) are unlikely to reach worst-case signal levels within
+every wavelet transform stage. Because peak levels vary so much between
+pictures, the possibility of encountering occasional near-worst case
+signals in production is actually relatively high.</p>
+</div>
+<p>The test signals used in these test cases are designed to achieve near worst
+case signal levels in every intermediate value of VC-2’s wavelet transform but
+true worst-case signal levels might be larger still. This limitation arises
+from a number of factors:</p>
+<ul class="simple">
+<li><p>The full VC-2 encoder-decoder signal chain is a non-linear system and so it
+is not possible to directly compute worst-case inputs or signal levels.
+Instead, the test patterns in these test cases are derived from heuristics
+and so cannot guarantee worst-case behaviour.</p></li>
+<li><p>The decoder test cases make some assumptions about encoder behaviours, since
+VC-2 does not specify an encoder design.  Consequently it is possible that an
+encoder might produce outputs which yield higher worst-case signal levels.</p></li>
+<li><p>These test signals assume the wavelet transform is carried out as outlined in
+the VC-2 pseudocode. Alternative implementations might have different
+worst-case characteristics.</p></li>
+</ul>
+<p>For more in-depth information on codec integer bit width selection for VC-2
+implementations, see the <code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_bit_widths</span></code> package documentation.</p>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Codec debugging suggestions</a><ul>
+<li><a class="reference internal" href="#encoder-bitstream-conformance-issues">Encoder bitstream conformance issues</a></li>
+<li><a class="reference internal" href="#decoder-bitstream-syntax-issues">Decoder bitstream syntax issues</a></li>
+<li><a class="reference internal" href="#signal-range-test-cases">Signal range test cases</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="generating_static_analyses.html"
+                        title="previous chapter">Generating static wavelet filter analyses</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="limitations.html"
+                        title="next chapter">Conformance test limtations</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/user_guide/debugging.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="limitations.html" title="Conformance test limtations"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="generating_static_analyses.html" title="Generating static wavelet filter analyses"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >User’s guide (for codec testers)</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Codec debugging suggestions</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>

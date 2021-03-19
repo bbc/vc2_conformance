@@ -1,0 +1,153 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vc2_conformance.dimensions_and_depths: Picture dimension and depth calculation &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="vc2_conformance.color_conversion: Color conversion routines" href="color_conversion.html" />
+    <link rel="prev" title="vc2_conformance.picture_generators: Picture generators" href="picture_generators.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="color_conversion.html" title="vc2_conformance.color_conversion: Color conversion routines"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="picture_generators.html" title="vc2_conformance.picture_generators: Picture generators"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Test picture generation reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.dimensions_and_depths</span></code>: Picture dimension and depth calculation</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-vc2_conformance.dimensions_and_depths">
+<span id="vc2-conformance-dimensions-and-depths-picture-dimension-and-depth-calculation"></span><h1><a class="reference internal" href="#module-vc2_conformance.dimensions_and_depths" title="vc2_conformance.dimensions_and_depths"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.dimensions_and_depths</span></code></a>: Picture dimension and depth calculation<a class="headerlink" href="#module-vc2_conformance.dimensions_and_depths" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-vc2_conformance.dimensions_and_depths" title="vc2_conformance.dimensions_and_depths"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.dimensions_and_depths</span></code></a> module contains the
+<a class="reference internal" href="#vc2_conformance.dimensions_and_depths.compute_dimensions_and_depths" title="vc2_conformance.dimensions_and_depths.compute_dimensions_and_depths"><code class="xref py py-func docutils literal notranslate"><span class="pre">compute_dimensions_and_depths()</span></code></a> function which returns the picture
+dimensions and bit depths implied by a VC-2 video format.</p>
+<dl class="py function">
+<dt id="vc2_conformance.dimensions_and_depths.compute_dimensions_and_depths">
+<code class="sig-name descname"><span class="pre">compute_dimensions_and_depths</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">picture_coding_mode</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.dimensions_and_depths.compute_dimensions_and_depths" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the dimensions, bit depth and bytes-per-sample of a picture.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>video_parameters</strong><span class="classifier"><a class="reference internal" href="../pseudocode.html#vc2_conformance.pseudocode.video_parameters.VideoParameters" title="vc2_conformance.pseudocode.video_parameters.VideoParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">VideoParameters</span></code></a></span></dt><dd></dd>
+<dt><strong>picture_coding_mode</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PictureCodingModes" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PictureCodingModes</span></code></a></span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>OrderedDict</dt><dd><p>An ordered dictionary mapping from component name (“Y”, “C1” and “C2”)
+to a <a class="reference internal" href="#vc2_conformance.dimensions_and_depths.DimensionsAndDepths" title="vc2_conformance.dimensions_and_depths.DimensionsAndDepths"><code class="xref py py-class docutils literal notranslate"><span class="pre">DimensionsAndDepths</span></code></a> (width, height, depth_bits,
+bytes_per_sample) namedtuple.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="vc2_conformance.dimensions_and_depths.DimensionsAndDepths">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">DimensionsAndDepths</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth_bits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bytes_per_sample</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.dimensions_and_depths.DimensionsAndDepths" title="Permalink to this definition">¶</a></dt>
+<dd><p>A set of picture component dimensions and bit depths.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>width, height</strong><span class="classifier">int</span></dt><dd><p>The dimensions of the picture.</p>
+</dd>
+<dt><strong>depth_bits</strong><span class="classifier">int</span></dt><dd><p>The number of bits per pixel.</p>
+</dd>
+<dt><strong>bytes_per_sample</strong><span class="classifier">int</span></dt><dd><p>The number of bytes used to store each pixel value in raw file formats (see
+<a class="reference internal" href="file_format.html#module-vc2_conformance.file_format" title="vc2_conformance.file_format"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.file_format</span></code></a>).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="picture_generators.html"
+                        title="previous chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.picture_generators</span></code>: Picture generators</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="color_conversion.html"
+                        title="next chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.color_conversion</span></code>: Color conversion routines</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/picture_generation/dimensions_and_depths.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="color_conversion.html" title="vc2_conformance.color_conversion: Color conversion routines"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="picture_generators.html" title="vc2_conformance.picture_generators: Picture generators"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Test picture generation reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.dimensions_and_depths</span></code>: Picture dimension and depth calculation</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>

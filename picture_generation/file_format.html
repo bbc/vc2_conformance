@@ -1,0 +1,248 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vc2_conformance.file_format: Picture file format I/O &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Level constraint checking/solving reference" href="../level_constraints/index.html" />
+    <link rel="prev" title="vc2_conformance.color_conversion: Color conversion routines" href="color_conversion.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../level_constraints/index.html" title="Level constraint checking/solving reference"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="color_conversion.html" title="vc2_conformance.color_conversion: Color conversion routines"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Test picture generation reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.file_format</span></code>: Picture file format I/O</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-vc2_conformance.file_format">
+<span id="vc2-conformance-file-format-picture-file-format-i-o"></span><h1><a class="reference internal" href="#module-vc2_conformance.file_format" title="vc2_conformance.file_format"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.file_format</span></code></a>: Picture file format I/O<a class="headerlink" href="#module-vc2_conformance.file_format" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-vc2_conformance.file_format" title="vc2_conformance.file_format"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.file_format</span></code></a> module contains functions for reading
+and writing raw pictures and their metadata as files.</p>
+<p>Picture and metadata files must come in pairs with the raw planar picture data
+file having the extension ‘.raw’ and the metadata file having the extension
+‘.json’. See <a class="reference internal" href="../user_guide/file_format.html#file-format"><span class="std std-ref">Video file format</span></a> for a description of the file format.</p>
+<p>The following functions may be used to read and write picture/metadata files:</p>
+<dl class="py function">
+<dt id="vc2_conformance.file_format.read">
+<code class="sig-name descname"><span class="pre">read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.file_format.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a picture from a data and metadata file.</p>
+<p>Convenience wrapper around <a class="reference internal" href="#vc2_conformance.file_format.read_picture" title="vc2_conformance.file_format.read_picture"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_picture()</span></code></a> and
+<a class="reference internal" href="#vc2_conformance.file_format.read_metadata" title="vc2_conformance.file_format.read_metadata"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_metadata()</span></code></a>.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">str</span></dt><dd><p>The filename of either the picture data file (.raw) or metadata file
+(.json). The name of the other file will be inferred automatically.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>picture</strong><span class="classifier">{“Y”: [[s, …], …], “C1”: …, “C2”: …, “pic_num”: int}</span></dt><dd></dd>
+<dt><strong>video_parameters</strong><span class="classifier"><a class="reference internal" href="../pseudocode.html#vc2_conformance.pseudocode.video_parameters.VideoParameters" title="vc2_conformance.pseudocode.video_parameters.VideoParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">VideoParameters</span></code></a></span></dt><dd></dd>
+<dt><strong>picture_coding_mode</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PictureCodingModes" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PictureCodingModes</span></code></a></span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.file_format.write">
+<code class="sig-name descname"><span class="pre">write</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">picture</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">video_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">picture_coding_mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.file_format.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a picture to a data and metadata file.</p>
+<p>Convenience wrapper around <a class="reference internal" href="#vc2_conformance.file_format.write_picture" title="vc2_conformance.file_format.write_picture"><code class="xref py py-func docutils literal notranslate"><span class="pre">write_picture()</span></code></a> and
+<a class="reference internal" href="#vc2_conformance.file_format.write_metadata" title="vc2_conformance.file_format.write_metadata"><code class="xref py py-func docutils literal notranslate"><span class="pre">write_metadata()</span></code></a>.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>picture</strong><span class="classifier">{“Y”: [[s, …], …], “C1”: …, “C2”: …, “pic_num”: int}</span></dt><dd></dd>
+<dt><strong>video_parameters</strong><span class="classifier"><a class="reference internal" href="../pseudocode.html#vc2_conformance.pseudocode.video_parameters.VideoParameters" title="vc2_conformance.pseudocode.video_parameters.VideoParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">VideoParameters</span></code></a></span></dt><dd></dd>
+<dt><strong>picture_coding_mode</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PictureCodingModes" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PictureCodingModes</span></code></a></span></dt><dd></dd>
+<dt><strong>filename</strong><span class="classifier">str</span></dt><dd><p>The filename of either the picture data file (.raw) or metadata file
+(.json). The name of the other file will be inferred automatically.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<p>The above functions are just wrappers around the following functions which read
+and write picture and metadata files in isolation:</p>
+<dl class="py function">
+<dt id="vc2_conformance.file_format.read_metadata">
+<code class="sig-name descname"><span class="pre">read_metadata</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.file_format.read_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a JSON picture metadata file.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>file</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">file</span></code></span></dt><dd><p>A file open for binary reading.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>video_parameters</strong><span class="classifier"><a class="reference internal" href="../pseudocode.html#vc2_conformance.pseudocode.video_parameters.VideoParameters" title="vc2_conformance.pseudocode.video_parameters.VideoParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">VideoParameters</span></code></a></span></dt><dd></dd>
+<dt><strong>picture_coding_mode</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PictureCodingModes" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PictureCodingModes</span></code></a></span></dt><dd></dd>
+<dt><strong>picture_number</strong><span class="classifier">int</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.file_format.read_picture">
+<code class="sig-name descname"><span class="pre">read_picture</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">picture_coding_mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">picture_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.file_format.read_picture" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a picture from a file.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>video_parameters</strong><span class="classifier"><a class="reference internal" href="../pseudocode.html#vc2_conformance.pseudocode.video_parameters.VideoParameters" title="vc2_conformance.pseudocode.video_parameters.VideoParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">VideoParameters</span></code></a></span></dt><dd></dd>
+<dt><strong>picture_coding_mode</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PictureCodingModes" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PictureCodingModes</span></code></a></span></dt><dd></dd>
+<dt><strong>picture_number</strong><span class="classifier">int</span></dt><dd></dd>
+<dt><strong>file</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">file</span></code></span></dt><dd><p>A file open for binary reading.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>picture</strong><span class="classifier">{“Y”: [[s, …], …], “C1”: …, “C2”: …, “pic_num”: int}</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.file_format.write_metadata">
+<code class="sig-name descname"><span class="pre">write_metadata</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">picture</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">video_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">picture_coding_mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.file_format.write_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the metadata associated with a decoded picture to a file as JSON.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>picture</strong><span class="classifier">{“Y”: [[s, …], …], “C1”: …, “C2”: …, “pic_num”: int}</span></dt><dd></dd>
+<dt><strong>video_parameters</strong><span class="classifier"><a class="reference internal" href="../pseudocode.html#vc2_conformance.pseudocode.video_parameters.VideoParameters" title="vc2_conformance.pseudocode.video_parameters.VideoParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">VideoParameters</span></code></a></span></dt><dd></dd>
+<dt><strong>picture_coding_mode</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PictureCodingModes" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PictureCodingModes</span></code></a></span></dt><dd></dd>
+<dt><strong>file</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">file</span></code></span></dt><dd><p>A file open for binary writing.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.file_format.write_picture">
+<code class="sig-name descname"><span class="pre">write_picture</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">picture</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">video_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">picture_coding_mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.file_format.write_picture" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a decoded picture to a file as a planar image.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>picture</strong><span class="classifier">{“Y”: [[s, …], …], “C1”: …, “C2”: …, “pic_num”: int}</span></dt><dd></dd>
+<dt><strong>video_parameters</strong><span class="classifier"><a class="reference internal" href="../pseudocode.html#vc2_conformance.pseudocode.video_parameters.VideoParameters" title="vc2_conformance.pseudocode.video_parameters.VideoParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">VideoParameters</span></code></a></span></dt><dd></dd>
+<dt><strong>picture_coding_mode</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PictureCodingModes" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PictureCodingModes</span></code></a></span></dt><dd></dd>
+<dt><strong>file</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">file</span></code></span></dt><dd><p>A file open for binary writing.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<p>Finally, the following function may be used to get the filenames for both parts
+of a picture/metadata file pair:</p>
+<dl class="py function">
+<dt id="vc2_conformance.file_format.get_metadata_and_picture_filenames">
+<code class="sig-name descname"><span class="pre">get_metadata_and_picture_filenames</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.file_format.get_metadata_and_picture_filenames" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given either the filename of a saved picture (.raw) or metadata file
+(.json), return a (metadata_filename, picture_filename) tuple with the
+names of the two corresponding files.</p>
+</dd></dl>
+
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="color_conversion.html"
+                        title="previous chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.color_conversion</span></code>: Color conversion routines</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../level_constraints/index.html"
+                        title="next chapter">Level constraint checking/solving reference</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/picture_generation/file_format.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../level_constraints/index.html" title="Level constraint checking/solving reference"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="color_conversion.html" title="vc2_conformance.color_conversion: Color conversion routines"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Test picture generation reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.file_format</span></code>: Picture file format I/O</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,335 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vc2_conformance.fixeddict: Fixed-key dictionaries &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="vc2_conformance.string_formatters: Value-to-string formatting utilities" href="string_formatters.html" />
+    <link rel="prev" title="Utility module references" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="string_formatters.html" title="vc2_conformance.string_formatters: Value-to-string formatting utilities"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Utility module references"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Utility module references</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.fixeddict</span></code>: Fixed-key dictionaries</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-vc2_conformance.fixeddict">
+<span id="vc2-conformance-fixeddict-fixed-key-dictionaries"></span><h1><a class="reference internal" href="#module-vc2_conformance.fixeddict" title="vc2_conformance.fixeddict"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.fixeddict</span></code></a>: Fixed-key dictionaries<a class="headerlink" href="#module-vc2_conformance.fixeddict" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-vc2_conformance.fixeddict" title="vc2_conformance.fixeddict"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.fixeddict</span></code></a> module provides the
+<a class="reference internal" href="#vc2_conformance.fixeddict.fixeddict" title="vc2_conformance.fixeddict.fixeddict"><code class="xref py py-func docutils literal notranslate"><span class="pre">fixeddict()</span></code></a> function for creating new <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a> subclasses
+which permit only certain keys to be used.  These new types may be used like
+ordinary Python dictionaries but add three main features:</p>
+<ul class="simple">
+<li><p>Explicitness – The VC-2 pseudocode creates and uses many dictionaries
+(called ‘maps’ in the specification) in place of struct-like objects.
+<a class="reference internal" href="#module-vc2_conformance.fixeddict" title="vc2_conformance.fixeddict"><code class="xref py py-mod docutils literal notranslate"><span class="pre">fixeddicts</span></code></a> provide a way to give these
+clear names.</p></li>
+<li><p>Avoidance of typos – Misspelt key names will result in a
+<a class="reference internal" href="#vc2_conformance.fixeddict.FixedDictKeyError" title="vc2_conformance.fixeddict.FixedDictKeyError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">FixedDictKeyError</span></code></a>.</p></li>
+<li><p>Better pretty printing – See more below…</p></li>
+</ul>
+<div class="section" id="tutorial">
+<h2>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h2>
+<p>Using <a class="reference internal" href="#vc2_conformance.fixeddict.fixeddict" title="vc2_conformance.fixeddict.fixeddict"><code class="xref py py-func docutils literal notranslate"><span class="pre">fixeddict()</span></code></a>, dictionary-like types with well defined fields can
+be described like so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">vc2_conformance.fixeddict</span> <span class="kn">import</span> <span class="n">fixeddict</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">FrameSize</span> <span class="o">=</span> <span class="n">fixeddict</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;FrameSize&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s2">&quot;custom_dimensions_flag&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s2">&quot;frame_width&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s2">&quot;frame_height&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This produces a ‘dict’ subclass called <code class="docutils literal notranslate"><span class="pre">FrameSize</span></code> with all of the usual
+dictionary behaviour but which only allows the specified keys to be used:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="n">FrameSize</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">[</span><span class="s2">&quot;custom_dimensions_flag&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">[</span><span class="s2">&quot;frame_width&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1920</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">[</span><span class="s2">&quot;frame_height&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1080</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">[</span><span class="s2">&quot;frame_width&quot;</span><span class="p">]</span>
+<span class="go">1920</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">[</span><span class="s2">&quot;not_in_fixeddict&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">123</span>
+<span class="gt">Traceback (most recent call last):</span>
+  <span class="c">...</span>
+<span class="gr">FixedDictKeyError</span>: <span class="n">&#39;not_in_fixeddict&#39;</span>
+</pre></div>
+</div>
+<p>To improve readability when producing string representations of VC-2 data
+structures, the generated dictionary types have a ‘pretty’ string
+representation.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+<span class="go">FrameSize:</span>
+<span class="go">  custom_dimensions_flag: True</span>
+<span class="go">  frame_width: 1920</span>
+<span class="go">  frame_height: 1080</span>
+</pre></div>
+</div>
+<p>To further improve the readability of this output, custom string formatting
+functions may be provided for each entry in the dictionary. To define these,
+<a class="reference internal" href="#vc2_conformance.fixeddict.Entry" title="vc2_conformance.fixeddict.Entry"><code class="xref py py-class docutils literal notranslate"><span class="pre">Entry</span></code></a> instances must be used in place of key name strings like
+so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">vc2_conformance.string_formatters</span> <span class="kn">import</span> <span class="n">Hex</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">vc2_data_tables</span> <span class="kn">import</span> <span class="n">ParseCodes</span>  <span class="c1"># An IntEnum</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ParseInfo</span> <span class="o">=</span> <span class="n">fixeddict</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;ParseInfo&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">Entry</span><span class="p">(</span><span class="s2">&quot;parse_info_prefix&quot;</span><span class="p">,</span> <span class="n">formatter</span><span class="o">=</span><span class="n">Hex</span><span class="p">(</span><span class="mi">8</span><span class="p">)),</span>
+<span class="gp">... </span>    <span class="n">Entry</span><span class="p">(</span><span class="s2">&quot;parse_code&quot;</span><span class="p">,</span> <span class="n">enum</span><span class="o">=</span><span class="n">ParseCodes</span><span class="p">,</span> <span class="n">formatter</span><span class="o">=</span><span class="n">Hex</span><span class="p">(</span><span class="mi">2</span><span class="p">)),</span>
+<span class="gp">... </span>    <span class="n">Entry</span><span class="p">(</span><span class="s2">&quot;next_parse_offset&quot;</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">Entry</span><span class="p">(</span><span class="s2">&quot;previous_parse_offset&quot;</span><span class="p">),</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pi</span> <span class="o">=</span> <span class="n">ParseInfo</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">parse_info_prefix</span><span class="o">=</span><span class="mh">0x42424344</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">parse_code</span><span class="o">=</span><span class="mh">0x10</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">next_parse_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">previous_parse_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">pi</span><span class="p">)</span>
+<span class="go">ParseInfo:</span>
+<span class="go">   parse_info_prefix: 0x42424344</span>
+<span class="go">   parse_code: end_of_sequence (0x10)</span>
+<span class="go">   next_parse_offset: 0</span>
+<span class="go">   previous_parse_offset: 0</span>
+</pre></div>
+</div>
+<p>See the <a class="reference internal" href="string_formatters.html#module-vc2_conformance.string_formatters" title="vc2_conformance.string_formatters"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.string_formatters</span></code></a> module for a set of useful
+string formatting functions.</p>
+<p>Finally, documentation can optionally be added in the form of <code class="docutils literal notranslate"><span class="pre">help</span></code> and
+<code class="docutils literal notranslate"><span class="pre">help_type</span></code> arguments which will combined into the generated type’s
+docstring:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ParseInfo</span> <span class="o">=</span> <span class="n">fixeddict</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;ParseInfo&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">Entry</span><span class="p">(</span><span class="s2">&quot;parse_info_prefix&quot;</span><span class="p">,</span> <span class="n">formatter</span><span class="o">=</span><span class="n">Hex</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span> <span class="n">help_type</span><span class="o">=</span><span class="s2">&quot;int&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Always 0x42424344&quot;</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">Entry</span><span class="p">(</span><span class="s2">&quot;parse_code&quot;</span><span class="p">,</span> <span class="n">enum</span><span class="o">=</span><span class="n">ParseCodes</span><span class="p">,</span> <span class="n">formatter</span><span class="o">=</span><span class="n">Hex</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">help_type</span><span class="o">=</span><span class="s2">&quot;int&quot;</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">Entry</span><span class="p">(</span><span class="s2">&quot;next_parse_offset&quot;</span><span class="p">,</span> <span class="n">help_type</span><span class="o">=</span><span class="s2">&quot;int&quot;</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">Entry</span><span class="p">(</span><span class="s2">&quot;previous_parse_offset&quot;</span><span class="p">,</span> <span class="n">help_type</span><span class="o">=</span><span class="s2">&quot;int&quot;</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">help</span><span class="o">=</span><span class="s2">&quot;A deserialised parse info block.&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">ParseInfo</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+<span class="go">A deserialised parse info block.</span>
+
+<span class="go">Parameters</span>
+<span class="go">==========</span>
+<span class="go">parse_info_prefix : int</span>
+<span class="go">    Always 0x42424344</span>
+<span class="go">parse_code : int</span>
+<span class="go">next_parse_offset : int</span>
+<span class="go">previous_parse_offset : int</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="api">
+<h2>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="vc2_conformance.fixeddict.fixeddict">
+<code class="sig-name descname"><span class="pre">fixeddict</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">entries</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.fixeddict.fixeddict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a fixed-entry dictionary.</p>
+<p>A fixed-entry dictionary is a <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a> subclass which permits only
+a preset list of key names.</p>
+<p>The first argument is the name of the created class, the remaining
+arguments may be strings or <a class="reference internal" href="#vc2_conformance.fixeddict.Entry" title="vc2_conformance.fixeddict.Entry"><code class="xref py py-class docutils literal notranslate"><span class="pre">Entry</span></code></a> instances describing the
+allowed entries in the dictionary.</p>
+<p>Example usage:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ExampleDict</span> <span class="o">=</span> <span class="n">fixeddict</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;ExampleDict&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s2">&quot;attr&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">Entry</span><span class="p">(</span><span class="s2">&quot;attr_with_default&quot;</span><span class="p">),</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Instances of the dictionary can be created like an ordinary dictionary:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">ExampleDict</span><span class="p">(</span><span class="n">attr</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">attr_with_default</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;attr&quot;</span><span class="p">]</span>
+<span class="go">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;attr_with_default&quot;</span><span class="p">]</span>
+<span class="go">20</span>
+</pre></div>
+</div>
+<p>The string format of generated dictionaries includes certain
+pretty-printing behaviour (see <a class="reference internal" href="#vc2_conformance.fixeddict.Entry" title="vc2_conformance.fixeddict.Entry"><code class="xref py py-class docutils literal notranslate"><span class="pre">Entry</span></code></a>) and will also omit any
+entries whose name is prefixed with an underscore (<code class="docutils literal notranslate"><span class="pre">_</span></code>).</p>
+<p>The class itself will have a static (and read-only) attribute
+<code class="docutils literal notranslate"><span class="pre">entry_objs</span></code> which is a :py;class:<cite>collections.OrderedDict</cite> mapping from
+entry name to <a class="reference internal" href="#vc2_conformance.fixeddict.Entry" title="vc2_conformance.fixeddict.Entry"><code class="xref py py-class docutils literal notranslate"><span class="pre">Entry</span></code></a> object in the dictionary.</p>
+<p>The keyword-only argument, ‘module’ may be provided which overrides the
+<code class="docutils literal notranslate"><span class="pre">__module__</span></code> value of the returned fixeddict type. (By default the module
+name is inferred using runtime stack inspection, if possible). This must be
+set correctly for this type to be picklable.</p>
+<p>The keyword-only argument ‘help’ may be used to set the docstring of the
+returned class. This will automatically be appended with the list of
+entries allowed (and their help strings).</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="vc2_conformance.fixeddict.Entry">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">Entry</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.fixeddict.Entry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines advanced properties of of an entry in a <a class="reference internal" href="#vc2_conformance.fixeddict.fixeddict" title="vc2_conformance.fixeddict.fixeddict"><code class="xref py py-func docutils literal notranslate"><span class="pre">fixeddict()</span></code></a>
+dictionary.</p>
+<p>All constructor arguments, except name, are keyword-only.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>The name of this entry in the dictionary.</p>
+</dd>
+<dt><strong>formatter</strong><span class="classifier">function(value) -&gt; string</span></dt><dd><p>A function which takes a value and returns a string representation
+to use when printing this value as a string. Defaults to ‘str’.</p>
+</dd>
+<dt><strong>friendly_formatter</strong><span class="classifier">function(value) -&gt; string</span></dt><dd><p>If provided, when converting this value to a string, this function
+will be used to generate a ‘friendly’ name for this value. This
+will be followed by the actual value in brackets. If this function
+returns None, only the actual value will be shown (without
+brackets).</p>
+</dd>
+<dt><strong>enum</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></span></dt><dd><p>A convenience interface which is equivalent to the following
+<code class="docutils literal notranslate"><span class="pre">formatter</span></code> argument:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">enum_formatter</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">MyEnum</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And the following <code class="docutils literal notranslate"><span class="pre">friendly_formatter</span></code> argument:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">friendly_enum_formatter</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">MyEnum</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+</pre></div>
+</div>
+<p>If <code class="docutils literal notranslate"><span class="pre">formatter</span></code> or <code class="docutils literal notranslate"><span class="pre">friendly_formatter</span></code> are provided in addition
+to <code class="docutils literal notranslate"><span class="pre">enum</span></code>, they will override the functions implicitly defined by
+<code class="docutils literal notranslate"><span class="pre">enum</span></code>.</p>
+</dd>
+<dt><strong>help</strong><span class="classifier">str</span></dt><dd><p>Optional documentation string.</p>
+</dd>
+<dt><strong>help_type</strong><span class="classifier">str</span></dt><dd><p>Optional string describing the type of the entry.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="vc2_conformance.fixeddict.FixedDictKeyError">
+<em class="property"><span class="pre">exception</span> </em><code class="sig-name descname"><span class="pre">FixedDictKeyError</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixeddict_class</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.fixeddict.FixedDictKeyError" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#KeyError" title="(in Python v3.9)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">KeyError</span></code></a> which also includes information about which fixeddict
+dictionary it was produced by.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>key</strong></dt><dd><p>The key which was accessed.</p>
+</dd>
+<dt><strong>fixeddict_class</strong></dt><dd><p>The <a class="reference internal" href="#module-vc2_conformance.fixeddict" title="vc2_conformance.fixeddict"><code class="xref py py-mod docutils literal notranslate"><span class="pre">fixeddict</span></code></a> type of the dictionary used.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.fixeddict</span></code>: Fixed-key dictionaries</a><ul>
+<li><a class="reference internal" href="#tutorial">Tutorial</a></li>
+<li><a class="reference internal" href="#api">API</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Utility module references</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="string_formatters.html"
+                        title="next chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.string_formatters</span></code>: Value-to-string formatting utilities</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/utility_modules/fixeddict.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="string_formatters.html" title="vc2_conformance.string_formatters: Value-to-string formatting utilities"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Utility module references"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Utility module references</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.fixeddict</span></code>: Fixed-key dictionaries</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,162 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Software tools reference &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="vc2-test-case-generator" href="vc2_test_case_generator.html" />
+    <link rel="prev" title="Conformance test limtations" href="../user_guide/limitations.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="vc2_test_case_generator.html" title="vc2-test-case-generator"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../user_guide/limitations.html" title="Conformance test limtations"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Software tools reference</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="software-tools-reference">
+<h1>Software tools reference<a class="headerlink" href="#software-tools-reference" title="Permalink to this headline">¶</a></h1>
+<p>This chapter contains reference documentation and basic usage examples for each
+of the command line tools included with the VC-2 conformance software. In
+summary, these are:</p>
+<dl class="simple">
+<dt><a class="reference internal" href="vc2_test_case_generator.html#vc2-test-case-generator"><span class="std std-ref">vc2-test-case-generator</span></a></dt><dd><p>Generates test cases (i.e. pictures and bitstreams) for testing the
+conformance of VC-2 encoders and decoders.</p>
+</dd>
+<dt><a class="reference internal" href="vc2_bitstream_validator.html#vc2-bitstream-validator"><span class="std std-ref">vc2-bitstream-validator</span></a></dt><dd><p>Validates the conformance of a VC-2 bitstream and produces a reference
+decoding.</p>
+</dd>
+<dt><a class="reference internal" href="vc2_picture_compare.html#vc2-picture-compare"><span class="std std-ref">vc2-picture-compare</span></a></dt><dd><p>Compares pairs of pictures.</p>
+</dd>
+<dt><a class="reference internal" href="vc2_picture_explain.html#vc2-picture-explain"><span class="std std-ref">vc2-picture-explain</span></a></dt><dd><p>Produces informative explanations of the video formats written and accepted
+by the VC-2 conformance software. (See <a class="reference internal" href="../user_guide/file_format.html#file-format"><span class="std std-ref">Video file format</span></a>).</p>
+</dd>
+<dt><a class="reference internal" href="vc2_bitstream_viewer.html#vc2-bitstream-viewer"><span class="std std-ref">vc2-bitstream-viewer</span></a></dt><dd><p>Produces a human-readable low-level description of VC-2 bitstreams.</p>
+</dd>
+</dl>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="vc2_test_case_generator.html"><code class="docutils literal notranslate"><span class="pre">vc2-test-case-generator</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="vc2_test_case_generator.html#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vc2_test_case_generator.html#parallel-execution">Parallel execution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vc2_test_case_generator.html#static-wavelet-filter-analyses">Static wavelet filter analyses</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vc2_test_case_generator.html#arguments">Arguments</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="vc2_bitstream_validator.html"><code class="docutils literal notranslate"><span class="pre">vc2-bitstream-validator</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="vc2_bitstream_validator.html#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vc2_bitstream_validator.html#arguments">Arguments</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="vc2_picture_compare.html"><code class="docutils literal notranslate"><span class="pre">vc2-picture-compare</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="vc2_picture_compare.html#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vc2_picture_compare.html#generating-difference-masks">Generating difference masks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vc2_picture_compare.html#arguments">Arguments</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="vc2_picture_explain.html"><code class="docutils literal notranslate"><span class="pre">vc2-picture-explain</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="vc2_picture_explain.html#example-usage">Example usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vc2_picture_explain.html#arguments">Arguments</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="vc2_bitstream_viewer.html"><code class="docutils literal notranslate"><span class="pre">vc2-bitstream-viewer</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="vc2_bitstream_viewer.html#basic-usage">Basic usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vc2_bitstream_viewer.html#displaying-an-area-of-interest">Displaying an area of interest</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vc2_bitstream_viewer.html#filtering-displayed-values">Filtering displayed values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vc2_bitstream_viewer.html#showing-vc-2-decoder-state">Showing VC-2 decoder state</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vc2_bitstream_viewer.html#malformed-bitstream-handling">Malformed bitstream handling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vc2_bitstream_viewer.html#arguments">Arguments</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../user_guide/limitations.html"
+                        title="previous chapter">Conformance test limtations</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="vc2_test_case_generator.html"
+                        title="next chapter"><code class="docutils literal notranslate"><span class="pre">vc2-test-case-generator</span></code></a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/cli/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="vc2_test_case_generator.html" title="vc2-test-case-generator"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../user_guide/limitations.html" title="Conformance test limtations"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Software tools reference</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>

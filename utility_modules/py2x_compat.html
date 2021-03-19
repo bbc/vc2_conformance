@@ -1,0 +1,186 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vc2_conformance.py2x_compat: Python 3.x backports &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="&lt;no title&gt;" href="../bibliography.html" />
+    <link rel="prev" title="vc2_conformance.string_utils: String formatting utilities" href="string_utils.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../bibliography.html" title="&lt;no title&gt;"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="string_utils.html" title="vc2_conformance.string_utils: String formatting utilities"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Utility module references</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.py2x_compat</span></code>: Python 3.x backports</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-vc2_conformance.py2x_compat">
+<span id="vc2-conformance-py2x-compat-python-3-x-backports"></span><h1><a class="reference internal" href="#module-vc2_conformance.py2x_compat" title="vc2_conformance.py2x_compat"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.py2x_compat</span></code></a>: Python 3.x backports<a class="headerlink" href="#module-vc2_conformance.py2x_compat" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-vc2_conformance.py2x_compat" title="vc2_conformance.py2x_compat"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.py2x_compat</span></code></a> module provides backported
+implementations of various functions from Python 3 which are used by this
+software.</p>
+<dl class="py function">
+<dt id="vc2_conformance.py2x_compat.zip_longest">
+<code class="sig-name descname"><span class="pre">zip_longest</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.py2x_compat.zip_longest" title="Permalink to this definition">¶</a></dt>
+<dd><p>In Python 3.x an alias for <a class="reference external" href="https://docs.python.org/3/library/itertools.html#itertools.zip_longest" title="(in Python v3.9)"><code class="xref py py-func docutils literal notranslate"><span class="pre">itertools.zip_longest()</span></code></a>, in Python
+2.x, an alias for <code class="docutils literal notranslate"><span class="pre">itertools.izip_longest</span></code>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.py2x_compat.get_terminal_size">
+<code class="sig-name descname"><span class="pre">get_terminal_size</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.py2x_compat.get_terminal_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>In Python 3.x an alias for <a class="reference external" href="https://docs.python.org/3/library/shutil.html#shutil.get_terminal_size" title="(in Python v3.9)"><code class="xref py py-func docutils literal notranslate"><span class="pre">shutil.get_terminal_size()</span></code></a>, in Python
+2.x, a dummy function always returning <code class="docutils literal notranslate"><span class="pre">(80,</span> <span class="pre">20)</span></code>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.py2x_compat.wraps">
+<code class="sig-name descname"><span class="pre">wraps</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.py2x_compat.wraps" title="Permalink to this definition">¶</a></dt>
+<dd><p>In Python 3.x an alias for <a class="reference external" href="https://docs.python.org/3/library/functools.html#functools.wraps" title="(in Python v3.9)"><code class="xref py py-func docutils literal notranslate"><span class="pre">functools.wraps()</span></code></a>. In Python 2.x, an
+alternative implementation of <code class="docutils literal notranslate"><span class="pre">functools.wraps</span></code> which includes the Python
+3.x behaviour of setting the <code class="docutils literal notranslate"><span class="pre">__wrapped__</span></code> attribute to allow
+introspection of wrapped functions (see <a class="reference internal" href="#vc2_conformance.py2x_compat.unwrap" title="vc2_conformance.py2x_compat.unwrap"><code class="xref py py-func docutils literal notranslate"><span class="pre">unwrap()</span></code></a>).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.py2x_compat.unwrap">
+<code class="sig-name descname"><span class="pre">unwrap</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.py2x_compat.unwrap" title="Permalink to this definition">¶</a></dt>
+<dd><p>In Python 3.x an alias for <a class="reference external" href="https://docs.python.org/3/library/inspect.html#inspect.unwrap" title="(in Python v3.9)"><code class="xref py py-func docutils literal notranslate"><span class="pre">inspect.unwrap()</span></code></a>. In Python 2.x a
+backported implementation of that function. Relies on the backported
+<a class="reference internal" href="#vc2_conformance.py2x_compat.wraps" title="vc2_conformance.py2x_compat.wraps"><code class="xref py py-func docutils literal notranslate"><span class="pre">wraps()</span></code></a> implementation provided by this module.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.py2x_compat.quote">
+<code class="sig-name descname"><span class="pre">quote</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.py2x_compat.quote" title="Permalink to this definition">¶</a></dt>
+<dd><p>In Python 3.x an alias for <a class="reference external" href="https://docs.python.org/3/library/shlex.html#shlex.quote" title="(in Python v3.9)"><code class="xref py py-func docutils literal notranslate"><span class="pre">shlex.quote()</span></code></a>, in Python
+2.x, an alias for <code class="docutils literal notranslate"><span class="pre">pipes.quote</span></code>.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="vc2_conformance.py2x_compat.string_types">
+<code class="sig-name descname"><span class="pre">string_types</span></code><a class="headerlink" href="#vc2_conformance.py2x_compat.string_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>A tuple enumerating the native string-like types.  In Python 3.x, <code class="docutils literal notranslate"><span class="pre">(str,</span>
+<span class="pre">)</span></code>, in Python 2.x, <code class="docutils literal notranslate"><span class="pre">(str,</span> <span class="pre">unicode)</span></code>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.py2x_compat.gcd">
+<code class="sig-name descname"><span class="pre">gcd</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.py2x_compat.gcd" title="Permalink to this definition">¶</a></dt>
+<dd><p>In Python 3.x an alias for <a class="reference external" href="https://docs.python.org/3/library/math.html#math.gcd" title="(in Python v3.9)"><code class="xref py py-func docutils literal notranslate"><span class="pre">math.gcd()</span></code></a>, in Python
+2.x, an alias for <code class="docutils literal notranslate"><span class="pre">fractions.gcd</span></code>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.py2x_compat.zip">
+<code class="sig-name descname"><span class="pre">zip</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.py2x_compat.zip" title="Permalink to this definition">¶</a></dt>
+<dd><p>In Python 3.x an alias for <a class="reference internal" href="#vc2_conformance.py2x_compat.zip" title="vc2_conformance.py2x_compat.zip"><code class="xref py py-func docutils literal notranslate"><span class="pre">zip()</span></code></a>, in Python
+2.x, an alias for <code class="docutils literal notranslate"><span class="pre">itertools.izip</span></code>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.py2x_compat.makedirs">
+<code class="sig-name descname"><span class="pre">makedirs</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.py2x_compat.makedirs" title="Permalink to this definition">¶</a></dt>
+<dd><p>In Python 3.x an alias for <a class="reference external" href="https://docs.python.org/3/library/os.html#os.makedirs" title="(in Python v3.9)"><code class="xref py py-func docutils literal notranslate"><span class="pre">os.makedirs()</span></code></a>. In Python 2.x, a
+backport of this function which includes the <code class="docutils literal notranslate"><span class="pre">exist_ok</span></code> argument.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.py2x_compat.FileType">
+<code class="sig-name descname"><span class="pre">FileType</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.py2x_compat.FileType" title="Permalink to this definition">¶</a></dt>
+<dd><p>In Python 3.x an alias for <a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.FileType" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">argparse.FileType</span></code></a>. In Python 2.x, a
+wrapper around <a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.FileType" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">argparse.FileType</span></code></a> adding support for the
+‘encoding’ keyword argument when opening with mode “r”.</p>
+</dd></dl>
+
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="string_utils.html"
+                        title="previous chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.string_utils</span></code>: String formatting utilities</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../bibliography.html"
+                        title="next chapter">&lt;no title&gt;</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/utility_modules/py2x_compat.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../bibliography.html" title="&lt;no title&gt;"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="string_utils.html" title="vc2_conformance.string_utils: String formatting utilities"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Utility module references</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.py2x_compat</span></code>: Python 3.x backports</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>

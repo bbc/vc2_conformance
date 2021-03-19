@@ -1,0 +1,163 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Conformance test limtations &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Software tools reference" href="../cli/index.html" />
+    <link rel="prev" title="Codec debugging suggestions" href="debugging.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../cli/index.html" title="Software tools reference"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="debugging.html" title="Codec debugging suggestions"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">User’s guide (for codec testers)</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Conformance test limtations</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="conformance-test-limtations">
+<span id="guide-limitations"></span><h1>Conformance test limtations<a class="headerlink" href="#conformance-test-limtations" title="Permalink to this headline">¶</a></h1>
+<p>The conformance testing procedures outlined in the previous sections are unable
+to guarantee the overall conformance of an implementation – only their
+conformance with respect to particular bitstreams or pictures. Furthermore, not
+every possible combination of features are verified, though care has been taken
+to include any combinations likely to uncover issues.</p>
+<p>There are also a small number of VC-2 features which are only tested to a
+limited extent by the generated test cases. Some of these are listed below.</p>
+<dl class="simple">
+<dt><strong>Longer sequences</strong></dt><dd><p>The conformance test cases all consist of relatively short test sequences.
+Since VC-2 is an intra-frame only codec, codecs should only maintain
+limited state between pictures and so be insensitive to sequence length and
+so this limitation of the test suite should be immaterial.</p>
+</dd>
+<dt><strong>Mixing fragmented and non-fragmented picture data units</strong></dt><dd><p>The VC-2 standard does not prohibit the use of fragmented and
+non-fragmented pictures within the same sequence. No test cases are
+generated to test this esoteric case, however, since this is unlikely to be
+used in practice.</p>
+</dd>
+<dt><strong>Quantisation in lossless formats</strong></dt><dd><p>Lossless formats can use quantization where transform coefficients happen
+to be multiples of the quantisation factor. Because quantisation can, in the
+general case, result in larger intermediate signals within a decoder, it is
+not appropriate to use lossily encoded test signals to test a lossless
+decoder’s support for quantisation. As a result, a special test case is
+provided for lossless decoders which uses quantisation but ensures safe
+signal ranges.</p>
+</dd>
+<dt><strong>Auxiliary data-units</strong></dt><dd><p>Auxiliary data units (10.4.4) are not included in any tests. This is
+because the contents of such units are not defined by the VC-2 standard and
+so in the event that a particular codec supported some form of auxiliary
+data stream, its format would not be known to the conformance software.
+Likewise, the contents of any auxiliary data units produced by an encoder
+under test will be ignored by this software.</p>
+</dd>
+<dt><strong>Variable slice sizes</strong></dt><dd><p>In all non-lossless mode test cases, high quality picture slices are sized
+to (approximately) the same number of bytes each. Although in principle
+other modes of operation are possible (e.g. buffer-based byte allocation),
+these are not the intended mode of operation for VC-2 and would be too
+numerous to comprehensively test.</p>
+</dd>
+<dt><strong>Changing wavelet transform mid sequence</strong></dt><dd><p>All test cases use the same wavelet transform and slice parameters for
+every picture in the sequence. Though the VC-2 specification permits these
+parameters to change mid-sequence, this is not the intended mode of
+operation for VC-2. Because of this, and the number of test cases which
+would be required, this scenario is not tested.</p>
+</dd>
+<dt><strong>Degenerate formats</strong></dt><dd><p>The test case generator cannot generate test cases for all degenerate video
+formats. For example, picture component bit depths of greater than 32 bits
+or absurd transform depths are not supported.</p>
+</dd>
+<dt><strong>Differences from specification</strong></dt><dd><p>The SMPTE ST 2042-1:2017 specification contains a small number of minor
+errors. In these cases, this software assumes the intention of the
+specification.</p>
+</dd>
+</dl>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="debugging.html"
+                        title="previous chapter">Codec debugging suggestions</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../cli/index.html"
+                        title="next chapter">Software tools reference</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/user_guide/limitations.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../cli/index.html" title="Software tools reference"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="debugging.html" title="Codec debugging suggestions"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >User’s guide (for codec testers)</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Conformance test limtations</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>

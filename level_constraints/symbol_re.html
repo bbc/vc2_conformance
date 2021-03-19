@@ -1,0 +1,601 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vc2_conformance.symbol_re: Regular expressions for VC-2 sequences &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="vc2_conformance.constraint_table: A simple constraints model" href="constraint_table.html" />
+    <link rel="prev" title="vc2_conformance.level_constraints: Level constraint definitions" href="level_constraints.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="constraint_table.html" title="vc2_conformance.constraint_table: A simple constraints model"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="level_constraints.html" title="vc2_conformance.level_constraints: Level constraint definitions"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Level constraint checking/solving reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.symbol_re</span></code>: Regular expressions for VC-2 sequences</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-vc2_conformance.symbol_re">
+<span id="vc2-conformance-symbol-re-regular-expressions-for-vc-2-sequences"></span><h1><a class="reference internal" href="#module-vc2_conformance.symbol_re" title="vc2_conformance.symbol_re"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.symbol_re</span></code></a>: Regular expressions for VC-2 sequences<a class="headerlink" href="#module-vc2_conformance.symbol_re" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-vc2_conformance.symbol_re" title="vc2_conformance.symbol_re"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.symbol_re</span></code></a> module contains a regular expression
+matching system for sequences of data unit types in VC-2 bitstreams.</p>
+<p>This module has two main applications: checking the order of data units during
+validation and generating valid sequences during bitstream generation.</p>
+<p>During bitstream validation (see <a class="reference internal" href="../decoder.html#module-vc2_conformance.decoder" title="vc2_conformance.decoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder</span></code></a>) the
+validator must check that sequences contain the right pattern of data unit
+types. For example, some levels might require bitstreams to include a sequence
+header between each picture while others may require fragmented and
+non-fragmented picture types are not used in the same stream. These rules are
+described by regular expressions which are evaluated by this module.</p>
+<p>During bitstream generation, the encoder (see
+<a class="reference internal" href="../encoder.html#module-vc2_conformance.encoder" title="vc2_conformance.encoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.encoder</span></code></a>) must produce sequences conforming to the
+above patterns. To facilitate this, this module can also <em>generate</em> sequence
+orderings which fulfil the rules described by regular expressions.</p>
+<div class="section" id="regular-expressions-of-symbols">
+<h2>Regular expressions of symbols<a class="headerlink" href="#regular-expressions-of-symbols" title="Permalink to this headline">¶</a></h2>
+<p>Unlike string-matching regular expression libraries (e.g. <a class="reference external" href="https://docs.python.org/3/library/re.html#module-re" title="(in Python v3.9)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">re</span></code></a>) which
+match sequences of characters, this module is designed to match sequences of
+‘symbols’ where each symbol is just a string like <code class="docutils literal notranslate"><span class="pre">&quot;sequence_header&quot;</span></code> or
+<code class="docutils literal notranslate"><span class="pre">&quot;high_quality_picture&quot;</span></code>.</p>
+<p>As an example, we might write the following regular expression to describe the
+rule ‘all sequences must start with a sequence header and end with an
+end of sequence data unit’:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sequence_header</span> <span class="o">.*</span> <span class="n">end_of_sequence</span>
+</pre></div>
+</div>
+<p>In the regular expression syntax used by this module, whitespace is ignored but
+otherwise follows the typical form for regular expressions. For example, <code class="docutils literal notranslate"><span class="pre">.</span></code>
+is a wildcard which matches any symbol and <code class="docutils literal notranslate"><span class="pre">*</span></code> means ‘zero or more
+occurrences of the previous pattern’.</p>
+<p>This regular expression would match the following sequence of symbols (data
+unit type names):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;sequence_header&quot;</span>
+<span class="s2">&quot;high_quality_picture&quot;</span>
+<span class="s2">&quot;sequence_header&quot;</span>
+<span class="s2">&quot;high_quality_picture&quot;</span>
+<span class="s2">&quot;end_of_sequence&quot;</span>
+</pre></div>
+</div>
+<p>But would not match the following sequence (because it does not start with a
+sequence header):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;high_quality_picture&quot;</span>
+<span class="s2">&quot;sequence_header&quot;</span>
+<span class="s2">&quot;high_quality_picture&quot;</span>
+<span class="s2">&quot;end_of_sequence&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="matching-vc-2-sequences">
+<h2>Matching VC-2 sequences<a class="headerlink" href="#matching-vc-2-sequences" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="#vc2_conformance.symbol_re.Matcher" title="vc2_conformance.symbol_re.Matcher"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matcher</span></code></a> class implements a regular expression matching state
+machine, taking the regular expression to be matched as its argument.  By
+convention, we use the parse code names defined in
+<a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.ParseCodes" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParseCodes</span></code></a> as symbols to represent each type of
+data unit in a VC-2 sequence.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 41%" />
+<col style="width: 59%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Data unit parse code</p></th>
+<th class="head"><p>Symbol</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><code class="docutils literal notranslate"><span class="pre">sequence_header</span></code></td>
+</tr>
+<tr class="row-odd"><td><p>16</p></td>
+<td><code class="docutils literal notranslate"><span class="pre">end_of_sequence</span></code></td>
+</tr>
+<tr class="row-even"><td><p>32</p></td>
+<td><code class="docutils literal notranslate"><span class="pre">auxiliary_data</span></code></td>
+</tr>
+<tr class="row-odd"><td><p>48</p></td>
+<td><code class="docutils literal notranslate"><span class="pre">padding_data</span></code></td>
+</tr>
+<tr class="row-even"><td><p>200</p></td>
+<td><code class="docutils literal notranslate"><span class="pre">low_delay_picture</span></code></td>
+</tr>
+<tr class="row-odd"><td><p>232</p></td>
+<td><code class="docutils literal notranslate"><span class="pre">high_quality_picture</span></code></td>
+</tr>
+<tr class="row-even"><td><p>204</p></td>
+<td><code class="docutils literal notranslate"><span class="pre">low_delay_picture_fragment</span></code></td>
+</tr>
+<tr class="row-odd"><td><p>236</p></td>
+<td><code class="docutils literal notranslate"><span class="pre">high_quality_picture_fragment</span></code></td>
+</tr>
+</tbody>
+</table>
+<p>In this example below we’ll create a <a class="reference internal" href="#vc2_conformance.symbol_re.Matcher" title="vc2_conformance.symbol_re.Matcher"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matcher</span></code></a> which checks if a
+sequence consists of alternating sequence headers and high quality picture data
+units:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">vc2_conformance.symbol_re</span> <span class="kn">import</span> <span class="n">Matcher</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">Matcher</span><span class="p">(</span><span class="s2">&quot;(sequence_header high_quality_picture)* end_of_sequence&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This <a class="reference internal" href="#vc2_conformance.symbol_re.Matcher" title="vc2_conformance.symbol_re.Matcher"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matcher</span></code></a> instance is then used to check if a sequence matches
+the required pattern by feeding it symbols one at a time via the
+<a class="reference internal" href="#vc2_conformance.symbol_re.Matcher.match_symbol" title="vc2_conformance.symbol_re.Matcher.match_symbol"><code class="xref py py-meth docutils literal notranslate"><span class="pre">match_symbol()</span></code></a> method. This returns True so long as the
+sequence matches to expression:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m</span><span class="o">.</span><span class="n">match_symbol</span><span class="p">(</span><span class="s2">&quot;sequence_header&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span><span class="o">.</span><span class="n">match_symbol</span><span class="p">(</span><span class="s2">&quot;high_quality_picture&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span><span class="o">.</span><span class="n">match_symbol</span><span class="p">(</span><span class="s2">&quot;sequence_header&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span><span class="o">.</span><span class="n">match_symbol</span><span class="p">(</span><span class="s2">&quot;high_quality_picture&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>When we reach the end of the sequence, the <a class="reference internal" href="#vc2_conformance.symbol_re.Matcher.is_complete" title="vc2_conformance.symbol_re.Matcher.is_complete"><code class="xref py py-meth docutils literal notranslate"><span class="pre">is_complete()</span></code></a>
+method will check to see if the regular expression has completely matched the
+sequence (i.e. it isn’t expecting any other data units):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Missing the required end_of_sequence!</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span><span class="o">.</span><span class="n">is_complete</span><span class="p">()</span>
+<span class="go">False</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Now complete</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span><span class="o">.</span><span class="n">match_symbol</span><span class="p">(</span><span class="s2">&quot;end_of_sequence&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span><span class="o">.</span><span class="n">is_complete</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>When a non-matching sequence is encountered, the
+<a class="reference internal" href="#vc2_conformance.symbol_re.Matcher.valid_next_symbols" title="vc2_conformance.symbol_re.Matcher.valid_next_symbols"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Matcher.valid_next_symbols()</span></code></a> method may be used to enumerate which
+symbols the regular expression matcher was expecting. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># NB: Each Matcher can only be used once so we must create a new one</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># for this new sequence!</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">Matcher</span><span class="p">(</span><span class="s2">&quot;(sequence_header high_quality_picture)* end_of_sequence&quot;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span><span class="o">.</span><span class="n">match_symbol</span><span class="p">(</span><span class="s2">&quot;sequence_header&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span><span class="o">.</span><span class="n">match_symbol</span><span class="p">(</span><span class="s2">&quot;high_quality_picture&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span><span class="o">.</span><span class="n">match_symbol</span><span class="p">(</span><span class="s2">&quot;high_quality_picture&quot;</span><span class="p">)</span>  <span class="c1"># Not allowed!</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span><span class="o">.</span><span class="n">valid_next_symbols</span><span class="p">()</span>
+<span class="go">{&quot;sequence_header&quot;, &quot;end_of_sequence&quot;}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="generating-vc-2-sequences">
+<h2>Generating VC-2 sequences<a class="headerlink" href="#generating-vc-2-sequences" title="Permalink to this headline">¶</a></h2>
+<p>This module provides the <a class="reference internal" href="#vc2_conformance.symbol_re.make_matching_sequence" title="vc2_conformance.symbol_re.make_matching_sequence"><code class="xref py py-func docutils literal notranslate"><span class="pre">make_matching_sequence()</span></code></a> function which can
+generate minimal sequences matching a set of regular expressions. For example,
+say we wish to generate a sequence containing three pictures matching the
+regular expression we used in our previous example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">vc2_conformance.symbol_re</span> <span class="kn">import</span> <span class="n">make_matching_sequence</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">pprint</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pprint</span><span class="p">(</span><span class="n">make_matching_sequence</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">[</span><span class="s2">&quot;high_quality_picture&quot;</span><span class="p">]</span><span class="o">*</span><span class="mi">3</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s2">&quot;(sequence_header high_quality_picture)* end_of_sequence&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">))</span>
+<span class="go">[&#39;sequence_header&#39;,</span>
+<span class="go"> &#39;high_quality_picture&#39;,</span>
+<span class="go"> &#39;sequence_header&#39;,</span>
+<span class="go"> &#39;high_quality_picture&#39;,</span>
+<span class="go"> &#39;sequence_header&#39;,</span>
+<span class="go"> &#39;high_quality_picture&#39;,</span>
+<span class="go"> &#39;end_of_sequence&#39;]</span>
+</pre></div>
+</div>
+<p>Here, the sequence headers and the final end of sequence data units have been
+added automatically.</p>
+</div>
+<div class="section" id="api">
+<h2>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="vc2_conformance.symbol_re.Matcher">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">Matcher</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pattern</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.symbol_re.Matcher" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test whether a sequence of symbols (alpha-numeric strings with underscores,
+e.g. <code class="docutils literal notranslate"><span class="pre">&quot;foo&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;bar_123&quot;</span></code>) conforms to a pattern described by a
+regular expression.</p>
+<p><a class="reference internal" href="#vc2_conformance.symbol_re.Matcher.match_symbol" title="vc2_conformance.symbol_re.Matcher.match_symbol"><code class="xref py py-meth docutils literal notranslate"><span class="pre">match_symbol()</span></code></a> should be called for each symbol in the sequence.
+If <code class="docutils literal notranslate"><span class="pre">False</span></code> is returned, the sequence does not match the specified regular
+expression. <a class="reference internal" href="#vc2_conformance.symbol_re.Matcher.valid_next_symbols" title="vc2_conformance.symbol_re.Matcher.valid_next_symbols"><code class="xref py py-meth docutils literal notranslate"><span class="pre">valid_next_symbols()</span></code></a> may be used to list what symbols
+<em>would</em> have been allowed at this stage of the sequence. Once the entire
+sequence has been passed to <a class="reference internal" href="#vc2_conformance.symbol_re.Matcher.match_symbol" title="vc2_conformance.symbol_re.Matcher.match_symbol"><code class="xref py py-meth docutils literal notranslate"><span class="pre">match_symbol()</span></code></a>, <a class="reference internal" href="#vc2_conformance.symbol_re.Matcher.is_complete" title="vc2_conformance.symbol_re.Matcher.is_complete"><code class="xref py py-meth docutils literal notranslate"><span class="pre">is_complete()</span></code></a>
+should be used to check that a complete pattern has been matched.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Each instance of <a class="reference internal" href="#vc2_conformance.symbol_re.Matcher" title="vc2_conformance.symbol_re.Matcher"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matcher</span></code></a> can only be used to match a single
+sequence. To match another sequence a new <a class="reference internal" href="#vc2_conformance.symbol_re.Matcher" title="vc2_conformance.symbol_re.Matcher"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matcher</span></code></a> must be
+created.</p>
+</div>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>pattern</strong><span class="classifier">str</span></dt><dd><p>The regular expression describing the pattern this <a class="reference internal" href="#vc2_conformance.symbol_re.Matcher" title="vc2_conformance.symbol_re.Matcher"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matcher</span></code></a>
+should match.</p>
+<p>Regular expressions may be specified with a syntax similar (but
+different to) that used by common string-matching regular expression
+libraries.</p>
+<ul class="simple">
+<li><p>An alpha-numeric-with-underscore expression matches a single instance
+of the specified symbol. For example <code class="docutils literal notranslate"><span class="pre">foo_123</span></code> will match the
+symbol <code class="docutils literal notranslate"><span class="pre">&quot;foo_123&quot;</span></code>.</p></li>
+<li><p>A dot (<code class="docutils literal notranslate"><span class="pre">.</span></code>) will match any (singular) symbol.</p></li>
+<li><p>A dollar (<code class="docutils literal notranslate"><span class="pre">$</span></code>) will match only at the end of the sequence.</p></li>
+<li><p>Two expressions (separated by any amount of whitespace) will match
+the first expression followed by the second. For example <code class="docutils literal notranslate"><span class="pre">.</span> <span class="pre">foo</span></code>
+will match a sequence <code class="docutils literal notranslate"><span class="pre">&quot;anything&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;foo&quot;</span></code>.</p></li>
+<li><p>Two expressions separated by a bar (<code class="docutils literal notranslate"><span class="pre">|</span></code>) will match either the
+first expression or the second expression.</p></li>
+<li><p>A question mark (<code class="docutils literal notranslate"><span class="pre">?</span></code>) suffix to an expression will match zero or
+one instances of that expression. For example <code class="docutils literal notranslate"><span class="pre">foo?</span></code> will match an
+empty sequence or a single <code class="docutils literal notranslate"><span class="pre">&quot;foo&quot;</span></code>.</p></li>
+<li><p>An asterisk (<code class="docutils literal notranslate"><span class="pre">*</span></code>) suffix to an expression will match zero or more
+instances of that expression. For example <code class="docutils literal notranslate"><span class="pre">foo*</span></code> will match an
+empty sequence, a sequence of a single <code class="docutils literal notranslate"><span class="pre">&quot;foo&quot;</span></code> symbol or a sequence
+of many <code class="docutils literal notranslate"><span class="pre">&quot;foo&quot;</span></code> symbols.</p></li>
+<li><p>A plus (<code class="docutils literal notranslate"><span class="pre">+</span></code>) suffix to an expression will match one or more
+instances of that expression. For example <code class="docutils literal notranslate"><span class="pre">foo+</span></code> will match a
+sequence of a single <code class="docutils literal notranslate"><span class="pre">&quot;foo&quot;</span></code> symbol or a sequence of many <code class="docutils literal notranslate"><span class="pre">&quot;foo&quot;</span></code>
+symbols.</p></li>
+<li><p>Parentheses (<code class="docutils literal notranslate"><span class="pre">(</span></code> and <code class="docutils literal notranslate"><span class="pre">)</span></code>) may be used to group expressions
+together into a single logical expression.</p></li>
+</ul>
+<p>The expression suffixes bind tightly to their left-hand expression.
+Beyond this, consider operator precedence undefined: be explicit to
+help readability!</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="vc2_conformance.symbol_re.Matcher.match_symbol">
+<code class="sig-name descname"><span class="pre">match_symbol</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.symbol_re.Matcher.match_symbol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attempt to match the next symbol in the sequence.</p>
+<p>Returns True if the symbol matched and False otherwise.</p>
+<p>If no symbol was matched, the state machine will not be advanced (i.e.
+you can try again with a different symbol as if nothing happened).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.symbol_re.Matcher.is_complete">
+<code class="sig-name descname"><span class="pre">is_complete</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.symbol_re.Matcher.is_complete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is it valid for the sequence to terminate at this point?</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.symbol_re.Matcher.valid_next_symbols">
+<code class="sig-name descname"><span class="pre">valid_next_symbols</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.symbol_re.Matcher.valid_next_symbols" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">set</span></code></a> of valid next symbols in the sequence.</p>
+<p>If a wildcard is allowed, <a class="reference internal" href="#vc2_conformance.symbol_re.WILDCARD" title="vc2_conformance.symbol_re.WILDCARD"><code class="xref py py-data docutils literal notranslate"><span class="pre">WILDCARD</span></code></a> will be returned as one
+of the symbols in addition to any concretely allowed symbols.</p>
+<p>If it is valid for the sequence to end at this point,
+<a class="reference internal" href="#vc2_conformance.symbol_re.END_OF_SEQUENCE" title="vc2_conformance.symbol_re.END_OF_SEQUENCE"><code class="xref py py-data docutils literal notranslate"><span class="pre">END_OF_SEQUENCE</span></code></a> will be in the returned set.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.symbol_re.make_matching_sequence">
+<code class="sig-name descname"><span class="pre">make_matching_sequence</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initial_sequence</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">patterns</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.symbol_re.make_matching_sequence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a sequence of symbols, returns a new sequence based on this which
+matches the supplied set of patterns. The new sequence will be a copy of
+the supplied sequence with additional symbols inserted where necessary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>initial_sequence</strong><span class="classifier">[symbol, …]</span></dt><dd><p>The minimal set of entries which must be included in the sequence, in
+the order they are required to appear.</p>
+</dd>
+<dt><strong>patterns</strong><span class="classifier">str</span></dt><dd><p>A series of one or more regular expression specifications (as accepted
+by <a class="reference internal" href="#vc2_conformance.symbol_re.Matcher" title="vc2_conformance.symbol_re.Matcher"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matcher</span></code></a>) which the generated sequence must
+simultaneously satisfy.</p>
+</dd>
+<dt><strong>depth_limit</strong><span class="classifier">int</span></dt><dd><p>Keyword-only argument specifying the maximum number of consecutive
+symbols to try inserting before giving up on finding a matching
+sequence. Defaults to 4.</p>
+</dd>
+<dt><strong>symbol_priority</strong><span class="classifier">[symbol, …]</span></dt><dd><p>Keyword-only argument. If supplied, orders possible symbols from most
+to least preferable. Though this function will always return a sequence
+of the shortest possible length, when several equal-length sequences
+would be valid, this argument may be used to influence which is
+returned.  Any symbols not appearing in the list
+will be given the lowest priority, and sorted in alphabetical order.
+If this argument is not supplied (or is empty), whenever ‘wildcard’
+value (<code class="docutils literal notranslate"><span class="pre">.</span></code>) is required by a regular expression, the
+<a class="reference internal" href="#vc2_conformance.symbol_re.WILDCARD" title="vc2_conformance.symbol_re.WILDCARD"><code class="xref py py-data docutils literal notranslate"><span class="pre">WILDCARD</span></code></a> sentinel will be inserted into the output sequence
+rather than a concrete symbol.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>matching_sequence</strong><span class="classifier">[symbol, …]</span></dt><dd><p>The shortest sequence of symbols which satisfies all of the supplied
+regular expression patterns.  This will contain a superset of the
+sequence in <code class="docutils literal notranslate"><span class="pre">initial_sequence</span></code>, that is one where additional symbols
+may have been inserted but none are removed or reordered.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>ImpossibleSequenceError</dt><dd><p>Thrown if no sequence of symbols could be found which matches all of
+the supplied patterns.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt id="vc2_conformance.symbol_re.WILDCARD">
+<code class="sig-name descname"><span class="pre">WILDCARD</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'.'</span></em><a class="headerlink" href="#vc2_conformance.symbol_re.WILDCARD" title="Permalink to this definition">¶</a></dt>
+<dd><p>A constant representing a wildcard match.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="vc2_conformance.symbol_re.END_OF_SEQUENCE">
+<code class="sig-name descname"><span class="pre">END_OF_SEQUENCE</span></code><em class="property"> <span class="pre">=</span> <span class="pre">''</span></em><a class="headerlink" href="#vc2_conformance.symbol_re.END_OF_SEQUENCE" title="Permalink to this definition">¶</a></dt>
+<dd><p>A constant representing the end-of-sequence.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="vc2_conformance.symbol_re.SymbolRegexSyntaxError">
+<em class="property"><span class="pre">exception</span> </em><code class="sig-name descname"><span class="pre">SymbolRegexSyntaxError</span></code><a class="headerlink" href="#vc2_conformance.symbol_re.SymbolRegexSyntaxError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Thrown when a regular expression string is provided which could not be
+parsed.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="vc2_conformance.symbol_re.ImpossibleSequenceError">
+<em class="property"><span class="pre">exception</span> </em><code class="sig-name descname"><span class="pre">ImpossibleSequenceError</span></code><a class="headerlink" href="#vc2_conformance.symbol_re.ImpossibleSequenceError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Thrown when <a class="reference internal" href="#vc2_conformance.symbol_re.make_matching_sequence" title="vc2_conformance.symbol_re.make_matching_sequence"><code class="xref py py-func docutils literal notranslate"><span class="pre">make_matching_sequence()</span></code></a> is unable to find a suitable
+sequence of symbols.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="internals">
+<h2>Internals<a class="headerlink" href="#internals" title="Permalink to this headline">¶</a></h2>
+<p>Beyond the parts exposed by the public API above, this module internally is
+built on top of two main parts:</p>
+<ul class="simple">
+<li><p>A parser which parses the regular expression syntax accepted by
+<a class="reference internal" href="#vc2_conformance.symbol_re.Matcher" title="vc2_conformance.symbol_re.Matcher"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matcher</span></code></a> into an Abstract Syntax Tree (AST)</p></li>
+<li><p>A Non-deterministic Finite-state Automaton (NFA) representation which is
+constructed from the AST using <a class="reference external" href="https://en.wikipedia.org/wiki/Thompson%27s_construction">Thompson’s constructions</a>.</p></li>
+</ul>
+<p>The parser is broken into two stages: a simple tokenizer/lexer
+(<a class="reference internal" href="#vc2_conformance.symbol_re.tokenize_regex" title="vc2_conformance.symbol_re.tokenize_regex"><code class="xref py py-func docutils literal notranslate"><span class="pre">tokenize_regex()</span></code></a>) and a recursive descent parser
+(<a class="reference internal" href="#vc2_conformance.symbol_re.parse_expression" title="vc2_conformance.symbol_re.parse_expression"><code class="xref py py-func docutils literal notranslate"><span class="pre">parse_expression()</span></code></a>). A utility function combining these steps is
+provided by <a class="reference internal" href="#vc2_conformance.symbol_re.parse_regex" title="vc2_conformance.symbol_re.parse_regex"><code class="xref py py-func docutils literal notranslate"><span class="pre">parse_regex()</span></code></a>.</p>
+<dl class="py function">
+<dt id="vc2_conformance.symbol_re.tokenize_regex">
+<code class="sig-name descname"><span class="pre">tokenize_regex</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">regex_string</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.symbol_re.tokenize_regex" title="Permalink to this definition">¶</a></dt>
+<dd><p>A generator which tokenizes a sequence regular expression specification
+into (token_type, token_value, offset) 3-tuples.</p>
+<p>Token types are:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;string&quot;</span></code> (value is the string)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;modifier&quot;</span></code> (value is one of <code class="docutils literal notranslate"><span class="pre">?*+</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;wildcard&quot;</span></code> (value is <code class="docutils literal notranslate"><span class="pre">.</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;end_of_sequence&quot;</span></code> (value is <code class="docutils literal notranslate"><span class="pre">$</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;bar&quot;</span></code> (value is <code class="docutils literal notranslate"><span class="pre">|</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;parenthesis&quot;</span></code> (value is one of <code class="docutils literal notranslate"><span class="pre">()</span></code>)</p></li>
+</ul>
+<p>Throws a <a class="reference internal" href="#vc2_conformance.symbol_re.SymbolRegexSyntaxError" title="vc2_conformance.symbol_re.SymbolRegexSyntaxError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">SymbolRegexSyntaxError</span></code></a> if an invalid character is
+encountered.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.symbol_re.parse_expression">
+<code class="sig-name descname"><span class="pre">parse_expression</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tokens</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.symbol_re.parse_expression" title="Permalink to this definition">¶</a></dt>
+<dd><p>A recursive-descent parser which parses an Abstract Syntax Tree (AST) from
+the regex specification.</p>
+<p>The parsed tokens will be removed from the provided token list. Tokens are
+consumed right-to-left making implementing tight binding of modifiers (i.e.
+‘?’, ‘*’ and ‘+’) easy.</p>
+<p>This function will return as soon as it runs out of tokens or reaches an
+unmatched opening parenthesis.</p>
+<p>Returns an AST node: one of <a class="reference internal" href="#vc2_conformance.symbol_re.Symbol" title="vc2_conformance.symbol_re.Symbol"><code class="xref py py-class docutils literal notranslate"><span class="pre">Symbol</span></code></a>, <a class="reference internal" href="#vc2_conformance.symbol_re.Star" title="vc2_conformance.symbol_re.Star"><code class="xref py py-class docutils literal notranslate"><span class="pre">Star</span></code></a>,
+<a class="reference internal" href="#vc2_conformance.symbol_re.Concatenation" title="vc2_conformance.symbol_re.Concatenation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Concatenation</span></code></a>, <a class="reference internal" href="#vc2_conformance.symbol_re.Union" title="vc2_conformance.symbol_re.Union"><code class="xref py py-class docutils literal notranslate"><span class="pre">Union</span></code></a> or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.symbol_re.parse_regex">
+<code class="sig-name descname"><span class="pre">parse_regex</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">regex_string</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.symbol_re.parse_regex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse a sequence regular expression specification into an Abstract Syntax
+Tree (AST) consisting of None (empty), <a class="reference internal" href="#vc2_conformance.symbol_re.Symbol" title="vc2_conformance.symbol_re.Symbol"><code class="xref py py-class docutils literal notranslate"><span class="pre">Symbol</span></code></a>, <a class="reference internal" href="#vc2_conformance.symbol_re.Star" title="vc2_conformance.symbol_re.Star"><code class="xref py py-class docutils literal notranslate"><span class="pre">Star</span></code></a>
+<a class="reference internal" href="#vc2_conformance.symbol_re.Concatenation" title="vc2_conformance.symbol_re.Concatenation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Concatenation</span></code></a> and <a class="reference internal" href="#vc2_conformance.symbol_re.Union" title="vc2_conformance.symbol_re.Union"><code class="xref py py-class docutils literal notranslate"><span class="pre">Union</span></code></a> objects.</p>
+</dd></dl>
+
+<p>The parser outputs an AST constructed from the following
+elements:</p>
+<dl class="py class">
+<dt id="vc2_conformance.symbol_re.Symbol">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">Symbol</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.symbol_re.Symbol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Leaf AST node for a symbol.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="vc2_conformance.symbol_re.Star">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">Star</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.symbol_re.Star" title="Permalink to this definition">¶</a></dt>
+<dd><p>AST node for a Kleene Star pattern (<code class="docutils literal notranslate"><span class="pre">*</span></code>).</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="vc2_conformance.symbol_re.Concatenation">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">Concatenation</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.symbol_re.Concatenation" title="Permalink to this definition">¶</a></dt>
+<dd><p>AST node for a concatenation of two expressions.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="vc2_conformance.symbol_re.Union">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">Union</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.symbol_re.Union" title="Permalink to this definition">¶</a></dt>
+<dd><p>AST node for a union (<code class="docutils literal notranslate"><span class="pre">|</span></code>) of two expressions.</p>
+</dd></dl>
+
+<p>An NFA can be constructed from an AST using the <a class="reference internal" href="#vc2_conformance.symbol_re.NFA.from_ast" title="vc2_conformance.symbol_re.NFA.from_ast"><code class="xref py py-meth docutils literal notranslate"><span class="pre">NFA.from_ast()</span></code></a> class
+method.</p>
+<dl class="py class">
+<dt id="vc2_conformance.symbol_re.NFA">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">NFA</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.symbol_re.NFA" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Non-deterministic Finite-state Automaton (NFA) with a labelled ‘start’
+and ‘final’ state.</p>
+<dl class="field-list">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl>
+<dt><strong>start</strong><span class="classifier"><a class="reference internal" href="#vc2_conformance.symbol_re.NFANode" title="vc2_conformance.symbol_re.NFANode"><code class="xref py py-class docutils literal notranslate"><span class="pre">NFANode</span></code></a></span></dt><dd></dd>
+<dt><strong>final</strong><span class="classifier"><a class="reference internal" href="#vc2_conformance.symbol_re.NFANode" title="vc2_conformance.symbol_re.NFANode"><code class="xref py py-class docutils literal notranslate"><span class="pre">NFANode</span></code></a></span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="vc2_conformance.symbol_re.NFA.from_ast">
+<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">from_ast</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ast</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.symbol_re.NFA.from_ast" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a regular expression AST node into a new <a class="reference internal" href="#vc2_conformance.symbol_re.NFA" title="vc2_conformance.symbol_re.NFA"><code class="xref py py-class docutils literal notranslate"><span class="pre">NFA</span></code></a> object
+using <a class="reference external" href="https://en.wikipedia.org/wiki/Thompson%27s_construction">Thompson’s constructions</a>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="vc2_conformance.symbol_re.NFANode">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">NFANode</span></code><a class="headerlink" href="#vc2_conformance.symbol_re.NFANode" title="Permalink to this definition">¶</a></dt>
+<dd><p>A node (i.e. state) in a Non-deterministic Finite-state Automaton (NFA).</p>
+<dl class="field-list">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl>
+<dt><strong>transitions</strong><span class="classifier">{symbol: set([<a class="reference internal" href="#vc2_conformance.symbol_re.NFANode" title="vc2_conformance.symbol_re.NFANode"><code class="xref py py-class docutils literal notranslate"><span class="pre">NFANode</span></code></a>, …]), …}</span></dt><dd><p>The transition rules from this node.</p>
+<p>Empty transitions are listed under the symbol <code class="docutils literal notranslate"><span class="pre">None</span></code> and are always
+bidirectional.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="vc2_conformance.symbol_re.NFANode.add_transition">
+<code class="sig-name descname"><span class="pre">add_transition</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dest_node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.symbol_re.NFANode.add_transition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a transition rule from this node to the specified destination.</p>
+<p>If no symbols are specified, a (bidirectional) empty transition between
+the two nodes will be added.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.symbol_re.NFANode.equivalent_nodes">
+<code class="sig-name descname"><span class="pre">equivalent_nodes</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.symbol_re.NFANode.equivalent_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over the set of <a class="reference internal" href="#vc2_conformance.symbol_re.NFANode" title="vc2_conformance.symbol_re.NFANode"><code class="xref py py-class docutils literal notranslate"><span class="pre">NFANode</span></code></a> nodes connected to this one
+by only empty transitions (includes this node).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.symbol_re.NFANode.follow">
+<code class="sig-name descname"><span class="pre">follow</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.symbol_re.NFANode.follow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over the <a class="reference internal" href="#vc2_conformance.symbol_re.NFANode" title="vc2_conformance.symbol_re.NFANode"><code class="xref py py-class docutils literal notranslate"><span class="pre">NFANodes</span></code></a> reachable from this
+node following the given symbol.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.symbol_re</span></code>: Regular expressions for VC-2 sequences</a><ul>
+<li><a class="reference internal" href="#regular-expressions-of-symbols">Regular expressions of symbols</a></li>
+<li><a class="reference internal" href="#matching-vc-2-sequences">Matching VC-2 sequences</a></li>
+<li><a class="reference internal" href="#generating-vc-2-sequences">Generating VC-2 sequences</a></li>
+<li><a class="reference internal" href="#api">API</a></li>
+<li><a class="reference internal" href="#internals">Internals</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="level_constraints.html"
+                        title="previous chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.level_constraints</span></code>: Level constraint definitions</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="constraint_table.html"
+                        title="next chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.constraint_table</span></code>: A simple constraints model</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/level_constraints/symbol_re.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="constraint_table.html" title="vc2_conformance.constraint_table: A simple constraints model"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="level_constraints.html" title="vc2_conformance.level_constraints: Level constraint definitions"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Level constraint checking/solving reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.symbol_re</span></code>: Regular expressions for VC-2 sequences</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>

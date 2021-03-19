@@ -1,0 +1,218 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vc2-test-case-generator &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="vc2-bitstream-validator" href="vc2_bitstream_validator.html" />
+    <link rel="prev" title="Software tools reference" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="vc2_bitstream_validator.html" title="vc2-bitstream-validator"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Software tools reference"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Software tools reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="docutils literal notranslate"><span class="pre">vc2-test-case-generator</span></code></a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <span class="target" id="module-vc2_conformance.scripts.vc2_test_case_generator.cli"></span><div class="section" id="vc2-test-case-generator">
+<span id="id1"></span><h1><code class="docutils literal notranslate"><span class="pre">vc2-test-case-generator</span></code><a class="headerlink" href="#vc2-test-case-generator" title="Permalink to this headline">¶</a></h1>
+<p>This application generates test cases for VC-2 encoders and decoders given a
+set of codec features to target.</p>
+<ul class="simple">
+<li><p>For a guide to the codec features CSV file format see <a class="reference internal" href="../user_guide/generating_test_cases.html#codec-features"><span class="std std-ref">Defining codec features</span></a></p></li>
+<li><p>For a guide to encoder test cases see <a class="reference internal" href="../user_guide/encoder_testing.html#encoder-test-cases"><span class="std std-ref">Encoder Test Cases</span></a></p></li>
+<li><p>For a guide to decoder test cases see <a class="reference internal" href="../user_guide/decoder_testing.html#decoder-test-cases"><span class="std std-ref">Decoder Test Cases</span></a></p></li>
+</ul>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>A codec features CSV file should be created (as described in
+<a class="reference internal" href="../user_guide/generating_test_cases.html#guide-generating-test-cases"><span class="std std-ref">Generating test cases</span></a>). This can then be processed by
+<code class="docutils literal notranslate"><span class="pre">vc2-test-case-generator</span></code> to generate test cases for the codecs supporting
+the specific codec features described.</p>
+<p>Test case generation may be performed as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ vc2-test-case-generator path/to/codec_features.csv
+</pre></div>
+</div>
+<p>The test cases are written to a <code class="docutils literal notranslate"><span class="pre">test_cases</span></code> in the current working
+directory. The <code class="docutils literal notranslate"><span class="pre">--output</span></code> argument may be given to choose an alternative
+location. By default, if any existing test cases are present in the output
+directory, the test case generator will not run. The <code class="docutils literal notranslate"><span class="pre">--force</span></code> argument may
+be added to run the test case generator anyway.</p>
+<p>If only a subset of test cases are required, the following arguments may also
+be used:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--encoder-only</span></code>: Only generate test cases for encoders</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--decoder-only</span></code>: Only generate test cases for decoders</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--codec</span> <span class="pre">&lt;regexp&gt;</span></code>: Only generate test cases for codec feature sets whose
+names match a supplied pattern.</p></li>
+</ul>
+</div>
+<div class="section" id="parallel-execution">
+<h2>Parallel execution<a class="headerlink" href="#parallel-execution" title="Permalink to this headline">¶</a></h2>
+<p>The test case generator can take many hours to run. To speed up execution,
+test cases may be generated in parallel on multi-core machines. To do this the
+<code class="docutils literal notranslate"><span class="pre">--parallel</span></code> argument may be added to <code class="docutils literal notranslate"><span class="pre">vc2-test-case-generator</span></code>. Rather
+than performing test case generation, this command outputs a series of
+newline-separated commands which may be executed in parallel to perform test
+case generation. These may then be executed, for example using <a class="reference external" href="https://www.gnu.org/software/parallel/">GNU Parallel</a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ # Write test case generation commands to &#39;commands.txt&#39;
+$ vc2-test-case-generator path/to/codec_features.csv --parallel &gt; commands.txt
+
+$ # Run test case generation in parallel using GNU Parallel
+$ parallel -a commands.txt
+</pre></div>
+</div>
+</div>
+<div class="section" id="static-wavelet-filter-analyses">
+<h2>Static wavelet filter analyses<a class="headerlink" href="#static-wavelet-filter-analyses" title="Permalink to this headline">¶</a></h2>
+<p>Some test cases require a precomputed mathematical analysis of the wavelet
+transform used.</p>
+<p>The VC-2 conformance software includes suitable analyses for all wavelet
+transforms for which a default quantisation matrix is defined in the VC-2
+specification. To support additional wavelet transform combinations and depths,
+additional analyses must be generated as described in
+<a class="reference internal" href="../user_guide/generating_static_analyses.html#generating-static-analyses"><span class="std std-ref">Generating static wavelet filter analyses</span></a>.</p>
+<p>If the <code class="docutils literal notranslate"><span class="pre">VC2_BIT_WIDTHS_BUNDLE</span></code> environment variable is defined, the test case
+generator will attempt to read wavelet filter analyses from the file it
+specifies. This must be a filter analysis bundle file created by
+<code class="docutils literal notranslate"><span class="pre">vc2-bundle</span></code>.</p>
+</div>
+<div class="section" id="arguments">
+<h2>Arguments<a class="headerlink" href="#arguments" title="Permalink to this headline">¶</a></h2>
+<p>The complete set of arguments can be listed using <code class="docutils literal notranslate"><span class="pre">--help</span></code></p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>usage: vc2-test-case-generator [-h] [--version] [--verbose] [--parallel]
+                               [--output OUTPUT] [--force]
+                               [--encoder-only | --decoder-only]
+                               [--codecs REGEX]
+                               codec_configurations
+
+Generate test inputs for VC-2 encoder and decoder implementations.
+
+positional arguments:
+  codec_configurations  CSV file containing the set of codec configurations to
+                        generate test cases for.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --version             show program&#39;s version number and exit
+  --verbose, -v         Show additional status information during execution.
+  --parallel, -p        If given, don&#39;t generate test cases but instead
+                        produce a series of commands on stdout which may be
+                        executed in parallel to generate the test cases.
+  --output OUTPUT, -o OUTPUT
+                        Directory name to write test cases to. Will be created
+                        if it does not exist. Defaults to &#39;./test_cases/&#39;.
+  --force, -f           Force the test case generator to run even if the
+                        output directory is not empty.
+  --encoder-only, -e    If set, only generate test cases for VC-2 encoders.
+  --decoder-only, -d    If set, only generate test cases for VC-2 decoders.
+  --codecs REGEX, -c REGEX
+                        If given, a regular expression which selects which
+                        codec configurations to generate test cases for. If
+                        not given, test cases will be generated for all codec
+                        configurations.
+</pre></div>
+</div>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">vc2-test-case-generator</span></code></a><ul>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+<li><a class="reference internal" href="#parallel-execution">Parallel execution</a></li>
+<li><a class="reference internal" href="#static-wavelet-filter-analyses">Static wavelet filter analyses</a></li>
+<li><a class="reference internal" href="#arguments">Arguments</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Software tools reference</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="vc2_bitstream_validator.html"
+                        title="next chapter"><code class="docutils literal notranslate"><span class="pre">vc2-bitstream-validator</span></code></a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/cli/vc2_test_case_generator.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="vc2_bitstream_validator.html" title="vc2-bitstream-validator"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Software tools reference"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Software tools reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="docutils literal notranslate"><span class="pre">vc2-test-case-generator</span></code></a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>

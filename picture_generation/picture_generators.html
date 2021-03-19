@@ -1,0 +1,249 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vc2_conformance.picture_generators: Picture generators &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="vc2_conformance.dimensions_and_depths: Picture dimension and depth calculation" href="dimensions_and_depths.html" />
+    <link rel="prev" title="Test picture generation reference" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="dimensions_and_depths.html" title="vc2_conformance.dimensions_and_depths: Picture dimension and depth calculation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Test picture generation reference"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Test picture generation reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.picture_generators</span></code>: Picture generators</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-vc2_conformance.picture_generators">
+<span id="vc2-conformance-picture-generators-picture-generators"></span><h1><a class="reference internal" href="#module-vc2_conformance.picture_generators" title="vc2_conformance.picture_generators"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.picture_generators</span></code></a>: Picture generators<a class="headerlink" href="#module-vc2_conformance.picture_generators" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-vc2_conformance.picture_generators" title="vc2_conformance.picture_generators"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.picture_generators</span></code></a> module contains routines for
+generating video sequences for arbitrary VC-2 video formats.</p>
+<p>The picture generators in this module are used to generate encoder and decoder
+test cases (<a class="reference internal" href="../test_case_generation/test_cases.html#module-vc2_conformance.test_cases" title="vc2_conformance.test_cases"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.test_cases</span></code></a>).</p>
+<p>All picture generator functions take a
+<a class="reference internal" href="../pseudocode.html#vc2_conformance.pseudocode.video_parameters.VideoParameters" title="vc2_conformance.pseudocode.video_parameters.VideoParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">VideoParameters</span></code></a>, and
+<a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PictureCodingModes" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PictureCodingModes</span></code></a> as their arguments, defining the
+desired VC-2 video format. They then yield a sequence of <code class="docutils literal notranslate"><span class="pre">{&quot;Y&quot;:</span> <span class="pre">[[int,</span> <span class="pre">...],</span>
+<span class="pre">...],</span> <span class="pre">&quot;C1&quot;:</span> <span class="pre">[[int,</span> <span class="pre">...],</span> <span class="pre">...],</span> <span class="pre">&quot;C2&quot;:</span> <span class="pre">[[int,</span> <span class="pre">...],</span> <span class="pre">...],</span> <span class="pre">&quot;pic_num&quot;:</span> <span class="pre">int}</span></code>
+dictionaries containing integer picture component values, ready for encoding or
+writing to a file.</p>
+<p>The following picture generators are provided.</p>
+<dl class="py function">
+<dt id="vc2_conformance.picture_generators.moving_sprite">
+<code class="sig-name descname"><span class="pre">moving_sprite</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">picture_coding_mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_frames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.picture_generators.moving_sprite" title="Permalink to this definition">¶</a></dt>
+<dd><p>A video sequence containing a simple moving synthetic image.</p>
+<p>This sequence consists of a 128 by 128 pixel sprite (shown below) on a
+black background which traverses the screen from left-to-right moving 16
+pixels to the right every frame (or 8 every field). By default the sequence
+is 10 frames long.</p>
+<img alt="../_images/pointer.png" src="../_images/pointer.png" />
+<p>This test sequence may be used to verify that interlacing, pixel aspect
+ratio and frame-rate metadata is being correctly reported by a codec for
+display purposes.</p>
+<p>For interlaced formats (see <code class="docutils literal notranslate"><span class="pre">scan_format</span></code> (11.4.5)), sequential fields
+will contain the sprite at different horizontal positions, regardless of
+whether pictures are fields or frames (see picture coding mode (11.5)). As
+a result, when frames are viewed as a set of raw interleaved fields, ragged
+edges will be visible.</p>
+<p>Conversely, for progressive formats, sequential fields contain alternate
+lines from the same moment in time and when interleaved should produce
+smooth edges, regardless of the picture coding mode.</p>
+<p>In the very first field of the sequence, the left edge of the white
+triangle will touch the edge of the frame.  In interlaced formats, the top
+line of white pixels in the sprite will always be located on the top field.
+As a result, the line immediately below should always appear shifted to the
+right when top-field-first field order is used and shifted to the left when
+bottom-field-first order is used (see ‘top field first parameter’ (11.3)).</p>
+<p>The sprite should be square with the white triangle having equal height and
+length and the hypotenuse lying at an angle of 45 degrees. The circular
+cut-out should be a perfect circle. This verifies that the pictures are
+displayed with the correct pixel aspect ratio (11.4.7).</p>
+<p>The text in the sprite is provided to check that the correct picture
+orientation has been used.</p>
+<p>The colors of the characters ‘V’, ‘C’ and ‘2’ are colored saturated
+primary red, green, and blue for the color primaries used (11.4.10.2). This
+provides a basic verification that the color components have been provided
+to the display system and decoded correctly.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.picture_generators.static_sprite">
+<code class="sig-name descname"><span class="pre">static_sprite</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">picture_coding_mode</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.picture_generators.static_sprite" title="Permalink to this definition">¶</a></dt>
+<dd><p>A video sequence containing a exactly one frame containing a synthetic
+image.</p>
+<p>This sequence consists of a 128 by 128 pixel sprite (shown below) located
+at the top-left corner of the frame on a black background.</p>
+<img alt="../_images/pointer.png" src="../_images/pointer.png" />
+<p>This test sequence may be used to verify that interlacing, pixel aspect
+ratio and frame-rate metadata is being correctly reported by a codec for
+display purposes.</p>
+<p>For if incorrect field ordering is specified, edges will appear ragged and
+not smooth.</p>
+<p>The sprite should be square with the white triangle having equal height and
+length and the hypotenuse lying at an angle of 45 degrees. The circular
+cut-out should be a perfect circle. This verifies that the pictures are
+displayed with the correct pixel aspect ratio (11.4.7).</p>
+<p>The text in the sprite is provided to check that the correct picture
+orientation has been used.</p>
+<p>The colors of the characters ‘V’, ‘C’ and ‘2’ are colored saturated
+primary red, green, and blue for the color primaries used (11.4.10.2). This
+provides a basic verification that the color components have been provided
+to the display system and decoded correctly.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.picture_generators.mid_gray">
+<code class="sig-name descname"><span class="pre">mid_gray</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">picture_coding_mode</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.picture_generators.mid_gray" title="Permalink to this definition">¶</a></dt>
+<dd><p>A video sequence containing exactly one empty mid-gray frame.</p>
+<p>‘Mid gray’ is defined as having each color component set to the integer
+value exactly half-way along its range. When encoded using VC-2 all
+transform coefficients will be zero.</p>
+<p>The actual color will differ depending on the color model used and the
+signal offsets specified, though typically a gray color is produced.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.picture_generators.white_noise">
+<code class="sig-name descname"><span class="pre">white_noise</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">picture_coding_mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_frames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.picture_generators.white_noise" title="Permalink to this definition">¶</a></dt>
+<dd><p>A video sequence containing uniformly distributed pseudo-random full-range
+signal values.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Because all picture components are filled with noise, the resulting
+pictures will contain ‘color’ noise rather than black-and-white noise.
+This may include out-of-gamut signals.</p>
+</div>
+<p>By default a single frame is produced, but the <code class="docutils literal notranslate"><span class="pre">num_frames</span></code> argument may
+be used to specify more.</p>
+<p>By default a fixed seed is used, but alternative seeds may be provided in
+the <code class="docutils literal notranslate"><span class="pre">seed</span></code> argument.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.picture_generators.linear_ramps">
+<code class="sig-name descname"><span class="pre">linear_ramps</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">picture_coding_mode</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.picture_generators.linear_ramps" title="Permalink to this definition">¶</a></dt>
+<dd><p>An video sequence containing exactly one frame with a series of linear
+color ramps (illustrated below).</p>
+<img alt="../_images/linear_ramps.png" src="../_images/linear_ramps.png" />
+<p>The frame is split into horizontal bands which contain, top to bottom:</p>
+<ul class="simple">
+<li><p>A black-to-white linear ramp</p></li>
+<li><p>A black-to-red linear ramp</p></li>
+<li><p>A black-to-green linear ramp</p></li>
+<li><p>A black-to-blue linear ramp</p></li>
+</ul>
+<p>The color ramps are linear in intensity. For most color formats (using
+a non-linear transfer function) this produces a non-linear ramp in coded
+pixel values. Further, the ramp will not be perceptually linear since human
+vision does not have a linear response.</p>
+<p>This is provided for the purposes of checking that metadata related to
+color is correctly passed through for display purposes.</p>
+</dd></dl>
+
+<p>Longer sequences may be produced by repeating the pictures produced by the
+above generators:</p>
+<dl class="py function">
+<dt id="vc2_conformance.picture_generators.repeat_pictures">
+<code class="sig-name descname"><span class="pre">repeat_pictures</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pictures</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">count</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.picture_generators.repeat_pictures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Repeat a sequence of pictures produced by a picture generator to produce a
+longer sequence.</p>
+</dd></dl>
+
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Where the picture coding mode indicates that pictures represents fields
+(not frames), an even number of pictures (i.e. a whole number of frames) is
+always generated. This means that, for example, a single-frame picture
+generator will generate <em>two</em> pictures for these formats.</p>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Test picture generation reference</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="dimensions_and_depths.html"
+                        title="next chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.dimensions_and_depths</span></code>: Picture dimension and depth calculation</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/picture_generation/picture_generators.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="dimensions_and_depths.html" title="vc2_conformance.dimensions_and_depths: Picture dimension and depth calculation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Test picture generation reference"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Test picture generation reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.picture_generators</span></code>: Picture generators</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,325 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vc2-bitstream-viewer &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Conformance software development guide" href="../developer_guide/index.html" />
+    <link rel="prev" title="vc2-picture-explain" href="vc2_picture_explain.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../developer_guide/index.html" title="Conformance software development guide"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="vc2_picture_explain.html" title="vc2-picture-explain"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Software tools reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="docutils literal notranslate"><span class="pre">vc2-bitstream-viewer</span></code></a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <span class="target" id="module-vc2_conformance.scripts.vc2_bitstream_viewer"></span><div class="section" id="vc2-bitstream-viewer">
+<span id="id1"></span><h1><code class="docutils literal notranslate"><span class="pre">vc2-bitstream-viewer</span></code><a class="headerlink" href="#vc2-bitstream-viewer" title="Permalink to this headline">¶</a></h1>
+<p>A command-line utility for displaying VC-2 bitstreams in a human readable form.</p>
+<p>The following tutorials give a higher-level introduction to this tool.
+Complete usage information can be obtained by running <code class="docutils literal notranslate"><span class="pre">vc2-bitstream-viewer</span>
+<span class="pre">--help</span></code>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This program prioritises correctness over performance. Internally the
+pseudocode from the VC-2 specification is used to drive the bitstream
+parser. As a consequence this program is relatively slow, e.g. taking many
+seconds per HD frame.</p>
+</div>
+<div class="section" id="basic-usage">
+<h2>Basic usage<a class="headerlink" href="#basic-usage" title="Permalink to this headline">¶</a></h2>
+<p>In its simplest form, this command can be used to create a complete textual
+representation of a VC-2 bitstream:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ vc2-bitstream-viewer path/to/bitstream.vc2
+                                                  +- data_units:
+                                                  | +- 0:
+                                                  | | +- parse_info:
+000000000000:                                     | | | +- padding: 0b
+000000000000: 01000010010000100100001101000100    | | | +- parse_info_prefix: Correct (0x42424344)
+000000000032: 00010000                            | | | +- parse_code: end_of_sequence (0x10)
+000000000040: 00000000000000000000000000000000    | | | +- next_parse_offset: 0
+000000000072: 00000000000000000000000000000000    | | | +- previous_parse_offset: 0
+</pre></div>
+</div>
+<p>In the printed output, each value read from the bitstream is shown on its own
+line:</p>
+<ul class="simple">
+<li><p>The number at the start of the line is the offset (in bits) from the
+start of the file that that value begins.</p></li>
+<li><p>The next value is the value in the bitstream expressed as a binary number.
+If values are being read from the bounded block in the bitstream, a (<code class="docutils literal notranslate"><span class="pre">*</span></code>)
+indicates that any remaining bits in the value shown were read from beyond
+the end of the block (and read as ‘1’).</p></li>
+<li><p>The final part of the line indicates the name and decoded value of the read
+data. Where possible, the names used match the names of variables in the VC-2
+pseudocode.</p></li>
+</ul>
+<p>By default, every bit and every field in the bitstream will be visible,
+including padding bits.</p>
+</div>
+<div class="section" id="displaying-an-area-of-interest">
+<h2>Displaying an area of interest<a class="headerlink" href="#displaying-an-area-of-interest" title="Permalink to this headline">¶</a></h2>
+<p>It is possible to restrict the output to only parts of the bitstream
+surrounding a particular offset. For example, the <code class="docutils literal notranslate"><span class="pre">--offset</span></code>/<code class="docutils literal notranslate"><span class="pre">-o</span></code> argument
+may be used to restrict display to only the parts of the bitstream surrounding
+a particular bit offset:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ vc2-bitstream-viewer bitstream.vc2 --offset 40000
+</pre></div>
+</div>
+<p>See the <code class="docutils literal notranslate"><span class="pre">--context</span></code>/<code class="docutils literal notranslate"><span class="pre">-C</span></code>, <code class="docutils literal notranslate"><span class="pre">--context-after</span></code>/<code class="docutils literal notranslate"><span class="pre">-A</span></code> and
+<code class="docutils literal notranslate"><span class="pre">--context-before</span></code>/<code class="docutils literal notranslate"><span class="pre">-B</span></code> arguments to control the number of bits before and
+after the supplied offset to be shown. Alternatively, you can also specify an
+explicit range to display using the <code class="docutils literal notranslate"><span class="pre">--from-offset</span></code>/<code class="docutils literal notranslate"><span class="pre">-f</span></code> and
+<code class="docutils literal notranslate"><span class="pre">--to-offset</span></code>/<code class="docutils literal notranslate"><span class="pre">-t</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Though values before the specified bit offset will not be displayed, they
+must still be read and parsed by the bitstream viewer in order to correctly
+parse what comes later in the bitstream.</p>
+</div>
+</div>
+<div class="section" id="filtering-displayed-values">
+<h2>Filtering displayed values<a class="headerlink" href="#filtering-displayed-values" title="Permalink to this headline">¶</a></h2>
+<p>It is possible to filter the displayed values according to the VC-2 pseudocode
+function which read them. A common case might be to show only the parse_info
+headers from a stream:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ vc2-bitstream-viewer bitstream.vc2 --show parse_info
+</pre></div>
+</div>
+<p>Alternatively, you may wish to show everything in a bitstream except for the
+transform coefficients (slice data):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ vc2-bitstream-viewer bitstream.vc2 --hide slice
+</pre></div>
+</div>
+<p>For this particular action, the convenience alias <code class="docutils literal notranslate"><span class="pre">-S</span></code> for <code class="docutils literal notranslate"><span class="pre">--hide</span> <span class="pre">slice</span></code>
+is also provided.</p>
+</div>
+<div class="section" id="showing-vc-2-decoder-state">
+<h2>Showing VC-2 decoder state<a class="headerlink" href="#showing-vc-2-decoder-state" title="Permalink to this headline">¶</a></h2>
+<p>As well as displaying a textual representation of the VC-2 bitstream, this tool
+can also display (a subset of) the internal state of a VC-2 decoder based on
+the pseudocode in the specification at different points during bitstream
+processing. Use the <code class="docutils literal notranslate"><span class="pre">--show-internal-state</span></code> option to enable this. This may
+be useful when debugging the encoding of transform data whose organisation
+depends on various computed values earlier in the bitstream.</p>
+</div>
+<div class="section" id="malformed-bitstream-handling">
+<h2>Malformed bitstream handling<a class="headerlink" href="#malformed-bitstream-handling" title="Permalink to this headline">¶</a></h2>
+<p>The bitstream parser is as tolerant of malformed bitstreams as is practical and
+will accept, and blindly tolerate values which are out-of-spec so long as they
+do not lead to undefined behaviour. In the event that the parser encounters an
+anomaly that prevents it preceding further, an error will be shown and parsing
+will terminate.</p>
+<p>By default, error messages show only limited information about the failure.
+Adding the <code class="docutils literal notranslate"><span class="pre">--verbose</span></code>/<code class="docutils literal notranslate"><span class="pre">-v</span></code> option will cause additional details (such as
+the next few bits in the bitstream and details of what was being parsed at the
+time.</p>
+</div>
+<div class="section" id="arguments">
+<h2>Arguments<a class="headerlink" href="#arguments" title="Permalink to this headline">¶</a></h2>
+<p>The complete set of arguments can be listed using <code class="docutils literal notranslate"><span class="pre">--help</span></code></p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>usage: vc2-bitstream-viewer [-h] [--version] [--no-status] [--verbose]
+                            [--show-internal-state]
+                            [--ignore-parse-info-prefix]
+                            [--num-trailing-bits NUM_TRAILING_BITS]
+                            [--from-offset BIT_OFFSET]
+                            [--to-offset BIT_OFFSET] [--offset BIT_OFFSET]
+                            [--after-context NUM_BITS]
+                            [--before-context NUM_BITS] [--context NUM_BITS]
+                            [--show FUNCTION] [--hide FUNCTION] [--hide-slice]
+                            bitstream
+
+Display VC-2 bitstreams in a human-readable form.
+
+positional arguments:
+  bitstream             The filename of the bitstream to read.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --version             show program&#39;s version number and exit
+  --no-status, --quiet, -q
+                        Do not display a status line on stderr while reading
+                        the bitstream.
+  --verbose, -v         Increase the verbosity of error messages. Used once:
+                        also show bitstream offset, bitstream target value and
+                        next --num-trailing-bits bits in the bitstream at the
+                        time of the error. Used twice: also show the Python
+                        stack trace for the error.
+  --show-internal-state, -i
+                        Print the internal state variable used by the VC-2
+                        pseudo code after parsing each data unit. Parts of the
+                        pseudocode state not directly related to bitstream
+                        processing may or may not be included in this
+                        printout.
+  --ignore-parse-info-prefix, -p
+                        By default, parsing is halted if an invalid parse_info
+                        prefix is encountered. Giving this option supresses
+                        this check and allows parsing to continue.
+  --num-trailing-bits NUM_TRAILING_BITS, -b NUM_TRAILING_BITS
+                        When --verbose is used, this argument defines the
+                        number of bits to show from the bitstream after the
+                        point the error occurred. (Default: 128).
+
+range options:
+  --from-offset BIT_OFFSET, -f BIT_OFFSET
+                        Don&#39;t display bitstream values until the specified bit
+                        offset. If negative, gives an offset from the end of
+                        the file. Default: 0.
+  --to-offset BIT_OFFSET, -t BIT_OFFSET
+                        Stop reading the bitstream at the specified bit
+                        offset. If prefixed with &#39;+&#39;, the offset will be
+                        relative to the offset given to &#39;--from-offset&#39;. If
+                        negative, gives an offset from the end of the file.
+                        Default: the end of the file.
+  --offset BIT_OFFSET, -o BIT_OFFSET
+                        Shows the parts of the bitstream surrounding the
+                        specified bit offset. (An alternative to manually
+                        setting &#39;--from-offset&#39; and &#39;--to-offset&#39; to values
+                        either-side of the chosen offset). If none of &#39;--
+                        after-context&#39;, &#39;--before-context&#39; or &#39;--context&#39; are
+                        given, 128 bits of context either side of this offset
+                        will be shown.
+  --after-context NUM_BITS, -A NUM_BITS
+                        Sets the number of bits after &#39;--around-offset&#39; to be
+                        shown.
+  --before-context NUM_BITS, -B NUM_BITS
+                        Sets the number of bits before &#39;--around-offset&#39; to be
+                        shown.
+  --context NUM_BITS, -C NUM_BITS
+                        Sets the number of bits before and after &#39;--around-
+                        offset&#39; to be shown.
+
+filtering options:
+  --show FUNCTION, -s FUNCTION
+                        Display only parts of the bitstream which are
+                        processed by the specified pseudo-code function as
+                        described in the VC-2 specification. By default all
+                        parts of the bitstream are displayed. May be used
+                        multiple times to show different parts of the
+                        bitstream. Supported function names: auxiliary_data,
+                        clean_area, color_diff_sampling_format, color_matrix,
+                        color_primaries, color_spec,
+                        extended_transform_parameters, fragment_data,
+                        fragment_header, fragment_parse, frame_rate,
+                        frame_size, hq_slice, ld_slice, padding, parse_info,
+                        parse_parameters, parse_sequence, parse_stream,
+                        picture_header, picture_parse, pixel_aspect_ratio,
+                        quant_matrix, scan_format, sequence_header,
+                        signal_range, slice, slice_parameters,
+                        source_parameters, transfer_function, transform_data,
+                        transform_parameters, wavelet_transform.
+  --hide FUNCTION, -H FUNCTION
+                        Omit parts of the bitstream which are processed by the
+                        specified pseudo-code function as described in the
+                        VC-2 specification. Accepts the same values as --show.
+  --hide-slice, -S      Alias for &#39;--hide slice&#39;. Suppresses the printing of
+                        all transform coefficients, greatly reducing the
+                        quantity of output.
+</pre></div>
+</div>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">vc2-bitstream-viewer</span></code></a><ul>
+<li><a class="reference internal" href="#basic-usage">Basic usage</a></li>
+<li><a class="reference internal" href="#displaying-an-area-of-interest">Displaying an area of interest</a></li>
+<li><a class="reference internal" href="#filtering-displayed-values">Filtering displayed values</a></li>
+<li><a class="reference internal" href="#showing-vc-2-decoder-state">Showing VC-2 decoder state</a></li>
+<li><a class="reference internal" href="#malformed-bitstream-handling">Malformed bitstream handling</a></li>
+<li><a class="reference internal" href="#arguments">Arguments</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="vc2_picture_explain.html"
+                        title="previous chapter"><code class="docutils literal notranslate"><span class="pre">vc2-picture-explain</span></code></a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../developer_guide/index.html"
+                        title="next chapter">Conformance software development guide</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/cli/vc2_bitstream_viewer.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../developer_guide/index.html" title="Conformance software development guide"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="vc2_picture_explain.html" title="vc2-picture-explain"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Software tools reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="docutils literal notranslate"><span class="pre">vc2-bitstream-viewer</span></code></a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>

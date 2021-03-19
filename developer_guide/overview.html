@@ -1,0 +1,249 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vc2_conformance internals overview &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Test case generation" href="../test_case_generation/index.html" />
+    <link rel="prev" title="Development setup" href="developer_installation.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../test_case_generation/index.html" title="Test case generation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="developer_installation.html" title="Development setup"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Conformance software development guide</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance</span></code> internals overview</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-vc2_conformance">
+<span id="vc2-conformance-internals-overview"></span><h1><a class="reference internal" href="#module-vc2_conformance" title="vc2_conformance"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance</span></code></a> internals overview<a class="headerlink" href="#module-vc2_conformance" title="Permalink to this headline">¶</a></h1>
+<p>The main VC-2 conformance software is contained within the
+<a class="reference internal" href="#module-vc2_conformance" title="vc2_conformance"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance</span></code></a> module.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Before going any further you should familiarize yourself with the
+<a class="reference internal" href="../user_guide/index.html#user-guide"><span class="std std-ref">User’s guide (for codec testers)</span></a> which gives an introduction of the general tasks carried
+out by the conformance software.</p>
+</div>
+<p>Below we give a general overview of the design of the conformance software.</p>
+<div class="section" id="main-components">
+<h2>Main components<a class="headerlink" href="#main-components" title="Permalink to this headline">¶</a></h2>
+<p>The VC-2 conformance software consists of four main components:</p>
+<ul class="simple">
+<li><p>A reference VC-2 decoder, including bitstream validation logic
+(<a class="reference internal" href="../decoder.html#module-vc2_conformance.decoder" title="vc2_conformance.decoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder</span></code></a>)</p></li>
+<li><p>A flexible VC-2 encoder (<a class="reference internal" href="../encoder.html#module-vc2_conformance.encoder" title="vc2_conformance.encoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.encoder</span></code></a>)</p></li>
+<li><p>A VC-2 bitstream manipulation library (<a class="reference internal" href="../bitstream.html#module-vc2_conformance.bitstream" title="vc2_conformance.bitstream"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.bitstream</span></code></a>)</p></li>
+<li><p>A set of test case generation routines (<a class="reference internal" href="../test_case_generation/test_cases.html#module-vc2_conformance.test_cases" title="vc2_conformance.test_cases"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.test_cases</span></code></a>)</p></li>
+</ul>
+<p>The reference decoder and bitstream validator forms a key part of the
+conformance testing procedures (via the <a class="reference internal" href="../cli/vc2_bitstream_validator.html#vc2-bitstream-validator"><span class="std std-ref">vc2-bitstream-validator</span></a>
+command). This decoder is based directly on the pseudocode published in the
+VC-2 standard. Refer to the <a class="reference internal" href="../decoder.html#module-vc2_conformance.decoder" title="vc2_conformance.decoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder</span></code></a> module
+documentation for a full introduction to this component.</p>
+<p>The encoder is used internally to generate decoder test cases. This encoder is
+flexible enough to support all of VC-2 features but otherwise simplistic in
+terms of runtime performance and picture quality. Further documentation on the
+encoder’s design and functionality can be found in the
+<a class="reference internal" href="../encoder.html#module-vc2_conformance.encoder" title="vc2_conformance.encoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.encoder</span></code></a> module.</p>
+<p>The bitstream manipulation library in the <a class="reference internal" href="../bitstream.html#module-vc2_conformance.bitstream" title="vc2_conformance.bitstream"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.bitstream</span></code></a>
+module is used internally for three purposes.  Firstly it is used during
+decoder test case generation to produce bitstreams with specific properties.
+Secondly it is used by the <a class="reference internal" href="../cli/vc2_bitstream_viewer.html#vc2-bitstream-viewer"><span class="std std-ref">vc2-bitstream-viewer</span></a> command to produce human
+readable descriptions of bitstream contents. Finally it is used extensively by
+the VC-2 conformance software’s own test suite to generate and check
+bitstreams.</p>
+<p>Finally, the test case generation routines form the basis of the
+<a class="reference internal" href="../cli/vc2_test_case_generator.html#vc2-test-case-generator"><span class="std std-ref">vc2-test-case-generator</span></a> tool which generates test pictures and
+bitstreams used during conformance testing procedures. These will be introduced
+in <a class="reference internal" href="../test_case_generation/test_cases.html#maintainer-test-case-generator"><span class="std std-ref">vc2_conformance.test_cases: VC-2 codec test case generation</span></a>.</p>
+</div>
+<div class="section" id="use-of-vc-2-pseudocode">
+<h2>Use of VC-2 pseudocode<a class="headerlink" href="#use-of-vc-2-pseudocode" title="Permalink to this headline">¶</a></h2>
+<p>The VC-2 conformance software design prioritises correctness and consistency
+with the VC-2 specification. To achieve this, significant parts are built using
+the pseudocode within the VC-2 specification.</p>
+<p>The VC-2 specification uses pseudocode to define the nominal operation of a
+VC-2 decoder. The pseudocode language used is sufficiently similar to Python
+that a translation from pseudocode into executable Python is trivial. Automated
+translation is also possible using the <a class="reference external" href="https://github.com/bbc/vc2_pseudocode_parser">VC-2 Pseudocode Parser tool</a>. Once translated, the
+pseudocode may be used as the basis for correct-by-definition implementations
+of parts of a VC-2 codec.</p>
+<p>The reference VC-2 decoder and bitstream validator
+(<a class="reference internal" href="../decoder.html#module-vc2_conformance.decoder" title="vc2_conformance.decoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder</span></code></a>) consists of the VC-2 pseudocode
+(implementing the decoder behaviour) augmented with additional checks
+(implementing the validation logic).</p>
+<p>The VC-2 encoder (<a class="reference internal" href="../encoder.html#module-vc2_conformance.encoder" title="vc2_conformance.encoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.encoder</span></code></a>), though not specified by
+the VC-2 standard, nevertheless makes substantial use of the VC-2 pseudocode
+functions. For example routines for computing slice dimensions are reused while
+other parts, such as the forward discrete wavelet transform are simple
+inversions of the decoder pseudocode. The correctness of these inversions is
+relatively easily verified in the test suite thanks to the invertability of
+VC-2’s transforms.</p>
+<p>The bitstream manipulation library (<a class="reference internal" href="../bitstream.html#module-vc2_conformance.bitstream" title="vc2_conformance.bitstream"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.bitstream</span></code></a>)
+provides routines for serialising and deserialising binary bitstreams into
+easily manipulated Python data structures.  With the exception of the Python
+data structure definitions, this library is based entirely on the VC-2
+pseudocode, using the <a class="reference internal" href="../bitstream.html#module-vc2_conformance.bitstream.serdes" title="vc2_conformance.bitstream.serdes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">serdes</span></code></a> framework.</p>
+<p>To ensure consistency with the VC-2 pseudocode, the conformance software’s test
+suite automatically compares the software’s source code with the pseudocode to
+verify equivalence. See the <a class="reference internal" href="../verification.html#module-verification" title="verification"><code class="xref py py-mod docutils literal notranslate"><span class="pre">verification</span></code></a> module for details.</p>
+</div>
+<div class="section" id="performance">
+<h2>Performance<a class="headerlink" href="#performance" title="Permalink to this headline">¶</a></h2>
+<p>The major drawback of the pseudocode-driven approach used by this software is
+poor performance. The VC-2 pseudocode is structured with comprehensibility as
+its main priority and therefore often has poor algorithmic performance.
+Further, the use of Python – due to its similarity with the pseudocode and
+high level of abstraction – introduces an additional performance overhead.</p>
+<p>Another source of slow performance is the use of infinite precision (i.e.
+native Python) integers whenever possible. This helps avoid the class of bugs
+relating to the use of insufficient integer bit width in most calculations. The
+dynamic range of signals passing through a VC-2 codec can grow dramatically
+(i.e. by many orders of magnitude) and vary significantly between superficially
+similar inputs. As a consequence, this class of bug is all too easy to
+introduce without infinite precision arithmetic.</p>
+<p>As a result of the above factors, the conformance software may take on the
+order minutes to encode or decode each picture in a stream. While this would be
+unacceptable for a production encoder or decoder, the conformance software is
+intended only for use with only extremely short sequences, where correctness is
+the most significant factor.</p>
+<p>The majority of test cases apply to decoders for which all necessary materials
+(test bitstreams and reference decodings) may be produced in an ‘overnight’
+batch process after which the tools are not needed.  The remaining (encoder)
+test cases generally amount to fewer than ten frames.</p>
+</div>
+<div class="section" id="test-case-generation">
+<h2>Test case generation<a class="headerlink" href="#test-case-generation" title="Permalink to this headline">¶</a></h2>
+<p>Since VC-2 supports a great variety of configurations, parametrised test case
+generators (<a class="reference internal" href="../test_case_generation/test_cases.html#module-vc2_conformance.test_cases" title="vc2_conformance.test_cases"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.test_cases</span></code></a>) are used rather than a
+‘universal’ collection of bitstreams. While this means that users of the
+conformance software are required to configure and run the test case generator
+themselves, it also simplifies the testing process by ensuring only relevant
+test cases are produced. Furthermore, it allows certain tests to be highly
+tailored to a particular configuration.  For example, signal range tests are
+targeted specifically at the specific wavelet transform configuration, bit
+width and quantization matrices used.</p>
+</div>
+<div class="section" id="external-packages">
+<h2>External packages<a class="headerlink" href="#external-packages" title="Permalink to this headline">¶</a></h2>
+<p>Some smaller, or more specialised aspects of the conformance testing software
+have been split into their own separate Python packages. These are:</p>
+<dl class="simple">
+<dt><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance_data</span></code></dt><dd><p>Larger data files (including pictures and precomputed values) which are
+used to generate certain test cases.</p>
+</dd>
+<dt><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#module-vc2_data_tables" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_data_tables</span></code></a></dt><dd><p>General VC-2 related constants (e.g.
+<a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PARSE_INFO_PREFIX" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">PARSE_INFO_PREFIX</span></code></a>), enumerated values (e.g.
+<a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.ParseCodes" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParseCodes</span></code></a>) and tabular data used during
+coding (e.g. <a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PRESET_FRAME_RATES" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">PRESET_FRAME_RATES</span></code></a>).</p>
+</dd>
+<dt><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_bit_widths</span></code></dt><dd><p>Computes near worst-case inputs for VC-2 encoders and decoders which
+produce very large signal values. This package is used to generate test
+cases to verify codecs have used large enough integers in their
+implementations.</p>
+</dd>
+</dl>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance</span></code> internals overview</a><ul>
+<li><a class="reference internal" href="#main-components">Main components</a></li>
+<li><a class="reference internal" href="#use-of-vc-2-pseudocode">Use of VC-2 pseudocode</a></li>
+<li><a class="reference internal" href="#performance">Performance</a></li>
+<li><a class="reference internal" href="#test-case-generation">Test case generation</a></li>
+<li><a class="reference internal" href="#external-packages">External packages</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="developer_installation.html"
+                        title="previous chapter">Development setup</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../test_case_generation/index.html"
+                        title="next chapter">Test case generation</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/developer_guide/overview.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../test_case_generation/index.html" title="Test case generation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="developer_installation.html" title="Development setup"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Conformance software development guide</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance</span></code> internals overview</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>

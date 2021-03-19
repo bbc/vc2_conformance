@@ -1,0 +1,383 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vc2_conformance.decoder: Reference decoder and bitstream validator &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="vc2_conformance.encoder: Internal VC-2 encoder" href="encoder.html" />
+    <link rel="prev" title="vc2_conformance.codec_features: Codec feature definitions" href="test_case_generation/codec_features.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="encoder.html" title="vc2_conformance.encoder: Internal VC-2 encoder"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="test_case_generation/codec_features.html" title="vc2_conformance.codec_features: Codec feature definitions"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder</span></code>: Reference decoder and bitstream validator</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-vc2_conformance.decoder">
+<span id="vc2-conformance-decoder-reference-decoder-and-bitstream-validator"></span><span id="maintainer-decoder"></span><h1><a class="reference internal" href="#module-vc2_conformance.decoder" title="vc2_conformance.decoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder</span></code></a>: Reference decoder and bitstream validator<a class="headerlink" href="#module-vc2_conformance.decoder" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-vc2_conformance.decoder" title="vc2_conformance.decoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder</span></code></a> module contains the components of a VC-2
+decoder and bitstream validator. Along with the basic decoding logic,
+additional tests are included to check all conditions imposed on bitstreams by
+the VC-2 specification.</p>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>The bitstream decoder/validator is exposed to end-users via the
+<a class="reference internal" href="cli/vc2_bitstream_validator.html#vc2-bitstream-validator"><span class="std std-ref">vc2-bitstream-validator</span></a> command line utility.</p>
+<p>This module may also be used directly. The following snippet illustrates how a
+VC-2 bitstream might be decoded and verified using this module:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">vc2_conformance.string_utils</span> <span class="kn">import</span> <span class="n">wrap_paragraphs</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">vc2_conformance.pseudocode</span> <span class="kn">import</span> <span class="n">State</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">vc2_conformance.decoder</span> <span class="kn">import</span> <span class="n">init_io</span><span class="p">,</span> <span class="n">parse_stream</span><span class="p">,</span> <span class="n">ConformanceError</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Create a callback to be called with picture data whenever a picture</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># is decoded from the bitstream.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">output_picture_callback</span><span class="p">(</span><span class="n">picture</span><span class="p">,</span> <span class="n">video_parameters</span><span class="p">,</span> <span class="n">picture_coding_mode</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;A picture was decoded...&quot;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Create an initial state object ready to read the bitstream</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">state</span> <span class="o">=</span> <span class="n">State</span><span class="p">(</span><span class="n">_output_picture_callback</span><span class="o">=</span><span class="n">output_picture_callback</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;path/to/bitstream.vc2&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">init_io</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Decode and validate!</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">try</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">parse_stream</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Bitstream is valid!&quot;</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">except</span> <span class="n">ConformanceError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Bitstream is NOT valid:&quot;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">wrap_paragraphs</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">explain</span><span class="p">(),</span> <span class="mi">80</span><span class="p">))</span>
+<span class="go">Bitstream is NOT valid:</span>
+<span class="go">An invalid parse code, 0x0A, was provided to a parse info header (10.5.1).</span>
+
+<span class="go">See (Table 10.1) for the list of allowed parse codes.</span>
+
+<span class="go">Perhaps this bitstream conforms to an earlier or later version of the VC-2</span>
+<span class="go">standard?</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>This decoder is based on the pseudocode published in the VC-2 specification and
+consequently follows the same structure as the pseudocode with the
+<code class="xref py py-func docutils literal notranslate"><span class="pre">parse_stream()</span></code> function being used to
+decode a complete stream.</p>
+<p>The pseudocode is automatically verified for consistency with the VC-2
+specification by the conformance software test suite. Verified pseudocode
+functions are annotated with the
+<a class="reference internal" href="pseudocode.html#vc2_conformance.pseudocode.metadata.ref_pseudocode" title="vc2_conformance.pseudocode.metadata.ref_pseudocode"><code class="xref py py-func docutils literal notranslate"><span class="pre">ref_pseudocode()</span></code></a> decorator. See
+<a class="reference internal" href="verification.html#module-verification" title="verification"><code class="xref py py-mod docutils literal notranslate"><span class="pre">verification</span></code></a> (in the <code class="docutils literal notranslate"><span class="pre">tests/</span></code> directory) for details on the
+automated verification process. All bitstream validation logic, which doesn’t
+form part of the specified pseudocode, appears between <code class="docutils literal notranslate"><span class="pre">##</span> <span class="pre">Begin</span> <span class="pre">not</span> <span class="pre">in</span> <span class="pre">spec</span></code>
+and <code class="docutils literal notranslate"><span class="pre">##</span> <span class="pre">End</span> <span class="pre">not</span> <span class="pre">in</span> <span class="pre">spec</span></code> comments.</p>
+<p>All global state is passed around via the
+<a class="reference internal" href="pseudocode.html#vc2_conformance.pseudocode.state.State" title="vc2_conformance.pseudocode.state.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">State</span></code></a> dictionary. This dictionary
+is augmented with a number of additional entries not included in the VC-2
+specification but which are necessary for a ‘real’ decoder implementation (e.g.
+an input file handle) and for validation purposes (e.g. recorded offsets of
+previous data units). See <a class="reference internal" href="pseudocode.html#vc2_conformance.pseudocode.state.State" title="vc2_conformance.pseudocode.state.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.state.State</span></code></a>
+for a complete enumeration of these.</p>
+<p>Underlying I/O operations are not specified by the VC-2 specification. This
+decoder reads streams from file-like objects. See
+the <a class="reference internal" href="#module-vc2_conformance.decoder.io" title="vc2_conformance.decoder.io"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder.io</span></code></a> module for details. As illustrated in
+the example above, the <a class="reference internal" href="#vc2_conformance.decoder.io.init_io" title="vc2_conformance.decoder.io.init_io"><code class="xref py py-func docutils literal notranslate"><span class="pre">init_io()</span></code></a> function
+is used to specify the file-like object the stream will be read from.</p>
+<p>When conformance errors are detected,
+<a class="reference internal" href="#vc2_conformance.decoder.exceptions.ConformanceError" title="vc2_conformance.decoder.exceptions.ConformanceError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ConformanceError</span></code></a> exceptions are
+thrown. These exceptions provide in-depth human readable explanations of
+conformance issues along with suggested invocations of the
+<a class="reference internal" href="cli/vc2_bitstream_viewer.html#vc2-bitstream-viewer"><span class="std std-ref">vc2-bitstream-viewer</span></a> tool for diagnosing issues. See the
+<a class="reference internal" href="#module-vc2_conformance.decoder.exceptions" title="vc2_conformance.decoder.exceptions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder.exceptions</span></code></a> module for details. These
+exceptions are largely thrown directly by validation code spliced into the
+pseudocode routines. Some common checks are factored out into their own
+‘assertions’ in the <code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder.assertions</span></code>.</p>
+<p>The decoder logic is organised in line with the sections of the VC-2
+specification:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#module-vc2_conformance.decoder.io" title="vc2_conformance.decoder.io"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder.io</span></code></a>: (A) Bitstream I/O</p></li>
+<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder.stream</span></code>: (10) Stream syntax</p></li>
+<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder.sequence_header</span></code>: (11) Sequence header</p></li>
+<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder.picture_syntax</span></code>: (12) Picture syntax</p></li>
+<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder.transform_data_syntax</span></code>: (13) Transform data
+syntax</p></li>
+<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder.fragment_syntax</span></code>: (14) Fragment syntax</p></li>
+</ul>
+<p>The <a class="reference internal" href="#module-vc2_conformance.decoder" title="vc2_conformance.decoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder</span></code></a> module only includes pseudocode functions
+which define additional behaviour not defined by the spec.  Specifically, this
+includes performing I/O or additional checks for bitstream validation purposes.
+All other pseudocode routines are used ‘verbatim’ and can be found in
+<a class="reference internal" href="pseudocode.html#module-vc2_conformance.pseudocode" title="vc2_conformance.pseudocode"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode</span></code></a>.</p>
+</div>
+<div class="section" id="module-vc2_conformance.decoder.io">
+<span id="stream-i-o"></span><h2>Stream I/O<a class="headerlink" href="#module-vc2_conformance.decoder.io" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.io</span></code> module implements I/O functions for reading
+bitstreams from file-like objects. The exposed functions implement the
+interface specified in annex (A).</p>
+<div class="section" id="initialisation">
+<h3>Initialisation<a class="headerlink" href="#initialisation" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference internal" href="#vc2_conformance.decoder.io.init_io" title="vc2_conformance.decoder.io.init_io"><code class="xref py py-func docutils literal notranslate"><span class="pre">init_io()</span></code></a> function must be used to initialise a
+<a class="reference internal" href="pseudocode.html#vc2_conformance.pseudocode.state.State" title="vc2_conformance.pseudocode.state.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">State</span></code></a> dictionary so that it is
+ready to read a bitstream.</p>
+<dl class="py function">
+<dt id="vc2_conformance.decoder.io.init_io">
+<code class="sig-name descname"><span class="pre">init_io</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.decoder.io.init_io" title="Permalink to this definition">¶</a></dt>
+<dd><p>(A.2.1) Initialise the I/O-related variables in state.</p>
+<p>This function should be called exactly once to initialise the I/O-related
+parts of the state dictionary to their initial state as specified by
+(A.2.1):</p>
+<blockquote>
+<div><p>… a decoder is deemed to maintain a copy of the current byte,
+state[current_byte], and an index to the next bit (in the byte) to be
+read, state[next_bit] …</p>
+</div></blockquote>
+<p>As well as initialising the state[“current_byte”] and state[“next_bit”]
+fields, this sets the (out-of-spec) state[“_file”] entry to the provided
+file-like object.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>state</strong><span class="classifier"><a class="reference internal" href="pseudocode.html#vc2_conformance.pseudocode.state.State" title="vc2_conformance.pseudocode.state.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">State</span></code></a></span></dt><dd><p>The state dictionary to be initialised.</p>
+</dd>
+<dt><strong>f</strong><span class="classifier">file-like object</span></dt><dd><p>The file to read the bitstream from.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="determining-stream-position">
+<h3>Determining stream position<a class="headerlink" href="#determining-stream-position" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference internal" href="#vc2_conformance.decoder.io.tell" title="vc2_conformance.decoder.io.tell"><code class="xref py py-func docutils literal notranslate"><span class="pre">tell()</span></code></a> function (below) is used by verification logic to report
+and check offsets of values within a bitstream. For example, it may be used to
+check <code class="docutils literal notranslate"><span class="pre">next_parse_offset</span></code> fields are correct (see
+<code class="xref py py-func docutils literal notranslate"><span class="pre">vc2_conformance.decoder.stream.parse_info()</span></code>).</p>
+<dl class="py function">
+<dt id="vc2_conformance.decoder.io.tell">
+<code class="sig-name descname"><span class="pre">tell</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.decoder.io.tell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not part of spec; used to log bit offsets in the bitstream.</p>
+<p>Return a (byte, bit) tuple giving the offset of the next bit to be read in
+the stream.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="bitstream-recording">
+<h3>Bitstream recording<a class="headerlink" href="#bitstream-recording" title="Permalink to this headline">¶</a></h3>
+<p>The VC-2 specification sometimes requires that the coded bitstream
+representation of a particular set of repeated fields is consistent within a
+bitstream (e.g. see
+<code class="xref py py-func docutils literal notranslate"><span class="pre">vc2_conformance.decoder.sequence_header.sequence_header()</span></code>). To
+facilitate this test, the <a class="reference internal" href="#vc2_conformance.decoder.io.record_bitstream_start" title="vc2_conformance.decoder.io.record_bitstream_start"><code class="xref py py-func docutils literal notranslate"><span class="pre">record_bitstream_start()</span></code></a> and
+<a class="reference internal" href="#vc2_conformance.decoder.io.record_bitstream_finish" title="vc2_conformance.decoder.io.record_bitstream_finish"><code class="xref py py-func docutils literal notranslate"><span class="pre">record_bitstream_finish()</span></code></a> functions may be used to capture the
+bitstream bytes read within part of the bitstream.</p>
+<dl class="py function">
+<dt id="vc2_conformance.decoder.io.record_bitstream_start">
+<code class="sig-name descname"><span class="pre">record_bitstream_start</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.decoder.io.record_bitstream_start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not part of spec; used for verifying that repeated sequence_headers are
+byte-for-byte identical (11.1).</p>
+<p>This function causes all future bytes read from the bitstream to be logged
+into state[“_read_bytes”] until <a class="reference internal" href="#vc2_conformance.decoder.io.record_bitstream_finish" title="vc2_conformance.decoder.io.record_bitstream_finish"><code class="xref py py-func docutils literal notranslate"><span class="pre">record_bitstream_finish()</span></code></a> is
+called.</p>
+<p>Recordings must start byte aligned.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.decoder.io.record_bitstream_finish">
+<code class="sig-name descname"><span class="pre">record_bitstream_finish</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.decoder.io.record_bitstream_finish" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#vc2_conformance.decoder.io.record_bitstream_start" title="vc2_conformance.decoder.io.record_bitstream_start"><code class="xref py py-func docutils literal notranslate"><span class="pre">record_bitstream_start()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>bytearray</dt><dd><p>The bytes read since <a class="reference internal" href="#vc2_conformance.decoder.io.record_bitstream_start" title="vc2_conformance.decoder.io.record_bitstream_start"><code class="xref py py-func docutils literal notranslate"><span class="pre">record_bitstream_start()</span></code></a> was called. Any
+unread bits of the final byte will be set to zero.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="module-vc2_conformance.decoder.exceptions">
+<span id="conformance-exceptions"></span><h2>Conformance exceptions<a class="headerlink" href="#module-vc2_conformance.decoder.exceptions" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="#module-vc2_conformance.decoder.exceptions" title="vc2_conformance.decoder.exceptions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder.exceptions</span></code></a> module defines a number of
+exceptions derived from <a class="reference internal" href="#vc2_conformance.decoder.exceptions.ConformanceError" title="vc2_conformance.decoder.exceptions.ConformanceError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ConformanceError</span></code></a> representing different
+conformance errors a bitstream may contain. These exceptions provide additional
+methods which return detailed human-readable information about the conformance
+error.</p>
+<dl class="py exception">
+<dt id="vc2_conformance.decoder.exceptions.ConformanceError">
+<em class="property"><span class="pre">exception</span> </em><code class="sig-name descname"><span class="pre">ConformanceError</span></code><a class="headerlink" href="#vc2_conformance.decoder.exceptions.ConformanceError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for all bitstream conformance failure exceptions.</p>
+<dl class="py method">
+<dt id="vc2_conformance.decoder.exceptions.ConformanceError.explain">
+<code class="sig-name descname"><span class="pre">explain</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.decoder.exceptions.ConformanceError.explain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produce a detailed human readable explanation of the conformance
+failure.</p>
+<p>Should return a string which can be re-linewrapped by
+<a class="reference internal" href="utility_modules/string_utils.html#vc2_conformance.string_utils.wrap_paragraphs" title="vc2_conformance.string_utils.wrap_paragraphs"><code class="xref py py-func docutils literal notranslate"><span class="pre">vc2_conformance.string_utils.wrap_paragraphs()</span></code></a>.</p>
+<p>The first line will be used as a summary when the exception is printed
+using <code class="xref py py-func docutils literal notranslate"><span class="pre">str()</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.decoder.exceptions.ConformanceError.bitstream_viewer_hint">
+<code class="sig-name descname"><span class="pre">bitstream_viewer_hint</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.decoder.exceptions.ConformanceError.bitstream_viewer_hint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a set of sample command line arguments for the
+vc2-bitstream-viewer tool which will display the relevant portion of
+the bitstream.</p>
+<p>This string may include the following <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str.format" title="(in Python v3.9)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">str.format()</span></code></a>
+substitutions which should be filled in before display:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">{cmd}</span></code> The command name of the bitstream viewer (i.e. usually
+<code class="docutils literal notranslate"><span class="pre">vc2-bitstream-viewer</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">{file}</span></code> The filename of the bitstream.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">{offset}</span></code> The bit offset of the next bit in the bitstream to be
+read.</p></li>
+</ul>
+<p>This returned string should <em>not</em> be line-wrapped but should be
+de-indented by <a class="reference external" href="https://docs.python.org/3/library/textwrap.html#textwrap.dedent" title="(in Python v3.9)"><code class="xref py py-func docutils literal notranslate"><span class="pre">textwrap.dedent()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.decoder.exceptions.ConformanceError.offending_offset">
+<code class="sig-name descname"><span class="pre">offending_offset</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.decoder.exceptions.ConformanceError.offending_offset" title="Permalink to this definition">¶</a></dt>
+<dd><p>If known, return the bit-offset of the offending part of the bitstream.
+Otherwise return None (and the current offset will be assumed).</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="sequence-composition-restrictions">
+<h2>Sequence composition restrictions<a class="headerlink" href="#sequence-composition-restrictions" title="Permalink to this headline">¶</a></h2>
+<p>Various restrictions may be imposed on choice and order of data unit types in a
+sequence. For example, all sequences must start with a sequence header and end
+with an end of sequence. Some levels impose additional restrictions such as
+prohibiting the mixing of fragments and pictures or requiring sequence headers
+to be interleaved between every picture.</p>
+<p>Rather than using ad-hoc logic to enforce these restrictions, regular
+expressions are used to check the pattern of data unit types. See the
+<a class="reference internal" href="level_constraints/symbol_re.html#module-vc2_conformance.symbol_re" title="vc2_conformance.symbol_re"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.symbol_re</span></code></a> module for details on the regular
+expression matching system.</p>
+</div>
+<div class="section" id="level-constraints">
+<h2>Level constraints<a class="headerlink" href="#level-constraints" title="Permalink to this headline">¶</a></h2>
+<p>VC-2’s levels impose additional constraints on bitstreams, for example
+restricting some fields to particular ranges of values. Rather than including
+ad-hoc validation logic for each level, a ‘constraints table’ is used.
+Bitstream values which may be constrained are checked using
+<code class="xref py py-func docutils literal notranslate"><span class="pre">vc2_conformance.decoder.assertions.assert_level_constraint()</span></code>.</p>
+<p>See the <a class="reference internal" href="level_constraints/constraint_table.html#module-vc2_conformance.constraint_table" title="vc2_conformance.constraint_table"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.constraint_table</span></code></a> module for an introduction
+to constraint tables. See the <a class="reference internal" href="level_constraints/level_constraints.html#module-vc2_conformance.level_constraints" title="vc2_conformance.level_constraints"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.level_constraints</span></code></a>
+module for level-related constraint data, including documentation on the
+entries included in the levels constraints table.</p>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder</span></code>: Reference decoder and bitstream validator</a><ul>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#module-vc2_conformance.decoder.io">Stream I/O</a><ul>
+<li><a class="reference internal" href="#initialisation">Initialisation</a></li>
+<li><a class="reference internal" href="#determining-stream-position">Determining stream position</a></li>
+<li><a class="reference internal" href="#bitstream-recording">Bitstream recording</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-vc2_conformance.decoder.exceptions">Conformance exceptions</a></li>
+<li><a class="reference internal" href="#sequence-composition-restrictions">Sequence composition restrictions</a></li>
+<li><a class="reference internal" href="#level-constraints">Level constraints</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="test_case_generation/codec_features.html"
+                        title="previous chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.codec_features</span></code>: Codec feature definitions</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="encoder.html"
+                        title="next chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.encoder</span></code>: Internal VC-2 encoder</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/decoder.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="encoder.html" title="vc2_conformance.encoder: Internal VC-2 encoder"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="test_case_generation/codec_features.html" title="vc2_conformance.codec_features: Codec feature definitions"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder</span></code>: Reference decoder and bitstream validator</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,344 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vc2_conformance.level_constraints: Level constraint definitions &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="vc2_conformance.symbol_re: Regular expressions for VC-2 sequences" href="symbol_re.html" />
+    <link rel="prev" title="Level constraint checking/solving reference" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="symbol_re.html" title="vc2_conformance.symbol_re: Regular expressions for VC-2 sequences"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Level constraint checking/solving reference"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Level constraint checking/solving reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.level_constraints</span></code>: Level constraint definitions</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-vc2_conformance.level_constraints">
+<span id="vc2-conformance-level-constraints-level-constraint-definitions"></span><h1><a class="reference internal" href="#module-vc2_conformance.level_constraints" title="vc2_conformance.level_constraints"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.level_constraints</span></code></a>: Level constraint definitions<a class="headerlink" href="#module-vc2_conformance.level_constraints" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-vc2_conformance.level_constraints" title="vc2_conformance.level_constraints"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.level_constraints</span></code></a> module contains definitions of
+constraints imposed on VC-2 bitstreams by the various VC-2 level
+specifications.</p>
+<div class="section" id="sequence-data-unit-ordering-restrictions">
+<h2>Sequence data unit ordering restrictions<a class="headerlink" href="#sequence-data-unit-ordering-restrictions" title="Permalink to this headline">¶</a></h2>
+<p>Levels may restrict the ordering or choice of data unit types within a
+bitstream. These restrictions are described using
+<a class="reference internal" href="symbol_re.html#module-vc2_conformance.symbol_re" title="vc2_conformance.symbol_re"><code class="xref py py-mod docutils literal notranslate"><span class="pre">symbol_re</span></code></a> regular expressions provided in
+<a class="reference internal" href="#vc2_conformance.level_constraints.LEVEL_SEQUENCE_RESTRICTIONS" title="vc2_conformance.level_constraints.LEVEL_SEQUENCE_RESTRICTIONS"><code class="xref py py-data docutils literal notranslate"><span class="pre">LEVEL_SEQUENCE_RESTRICTIONS</span></code></a>.</p>
+<dl class="py data">
+<dt id="vc2_conformance.level_constraints.LEVEL_SEQUENCE_RESTRICTIONS">
+<code class="sig-name descname"><span class="pre">LEVEL_SEQUENCE_RESTRICTIONS</span></code><em class="property"> <span class="pre">=</span> <span class="pre">{level:</span> <span class="pre">LevelSequenceRestrictions,</span> <span class="pre">...}</span></em><a class="headerlink" href="#vc2_conformance.level_constraints.LEVEL_SEQUENCE_RESTRICTIONS" title="Permalink to this definition">¶</a></dt>
+<dd><p>A lookup from <code class="xref py py-class docutils literal notranslate"><span class="pre">Levels</span></code> to <a class="reference internal" href="#vc2_conformance.level_constraints.LevelSequenceRestrictions" title="vc2_conformance.level_constraints.LevelSequenceRestrictions"><code class="xref py py-class docutils literal notranslate"><span class="pre">LevelSequenceRestrictions</span></code></a>
+(loaded from <code class="docutils literal notranslate"><span class="pre">vc2_conformance/level_sequence_restrictions.csv</span></code>) describing the
+restrictions on sequences imposed by each VC-2 level.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="vc2_conformance.level_constraints.LevelSequenceRestrictions">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">LevelSequenceRestrictions</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequence_restriction_explanation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence_restriction_regex</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.level_constraints.LevelSequenceRestrictions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restrictions on sequence orderings for a VC-2 level.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>sequence_restriction_explanation</strong><span class="classifier">str</span></dt><dd><p>A human readable explanation of the restriction imposed (informative).</p>
+</dd>
+<dt><strong>sequence_restriction_regex</strong><span class="classifier">str</span></dt><dd><p>A regular expression describing the sequence ordering allowed which can be
+matched using a <a class="reference internal" href="symbol_re.html#vc2_conformance.symbol_re.Matcher" title="vc2_conformance.symbol_re.Matcher"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matcher</span></code></a>. Each symbol
+is a <a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.ParseCodes" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParseCodes</span></code></a> name string.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="coding-parameter-restrictions">
+<h2>Coding parameter restrictions<a class="headerlink" href="#coding-parameter-restrictions" title="Permalink to this headline">¶</a></h2>
+<p>Levels impose various restrictions on bitstream parameters and values. These
+restrictions are collected into a constraint table (see
+<a class="reference internal" href="constraint_table.html#module-vc2_conformance.constraint_table" title="vc2_conformance.constraint_table"><code class="xref py py-mod docutils literal notranslate"><span class="pre">constraint_table</span></code></a>) in <a class="reference internal" href="#vc2_conformance.level_constraints.LEVEL_CONSTRAINTS" title="vc2_conformance.level_constraints.LEVEL_CONSTRAINTS"><code class="xref py py-data docutils literal notranslate"><span class="pre">LEVEL_CONSTRAINTS</span></code></a>.</p>
+<dl class="py data">
+<dt id="vc2_conformance.level_constraints.LEVEL_CONSTRAINTS">
+<code class="sig-name descname"><span class="pre">LEVEL_CONSTRAINTS</span></code><em class="property"> <span class="pre">=</span> <span class="pre">&lt;constraint</span> <span class="pre">table&gt;</span></em><a class="headerlink" href="#vc2_conformance.level_constraints.LEVEL_CONSTRAINTS" title="Permalink to this definition">¶</a></dt>
+<dd><p>A constraint table (see <a class="reference internal" href="constraint_table.html#module-vc2_conformance.constraint_table" title="vc2_conformance.constraint_table"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.constraint_table</span></code></a>) loaded
+from <code class="docutils literal notranslate"><span class="pre">vc2_conformance/level_constraints.csv</span></code>.</p>
+<p>Constraints which apply due to levels. Keys correspond to particular bitstream
+values or properties and are enumerated below:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>(11.2.1)</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">level</span></code>: int (from the <code class="xref py py-class docutils literal notranslate"><span class="pre">Levels</span></code> enum)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">profile</span></code>: int (from the <code class="xref py py-class docutils literal notranslate"><span class="pre">Profiles</span></code> enum)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">major_version</span></code>: int</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">minor_version</span></code>: int</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>(11.1)</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">base_video_format</span></code>: int (from the <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseVideoFormats</span></code> enum)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>(11.4.3)</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">custom_dimensions_flag</span></code>: bool</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">frame_width</span></code>: int</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">frame_height</span></code>: int</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>(11.4.4)</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">custom_color_diff_format_flag</span></code>: bool</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">color_diff_format_index</span></code>: int (from the <code class="xref py py-class docutils literal notranslate"><span class="pre">ColorDifferenceSamplingFormats</span></code> enum)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>(11.4.5)</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">custom_scan_format_flag</span></code>: bool</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">source_sampling</span></code>: int (from the <code class="xref py py-class docutils literal notranslate"><span class="pre">SourceSamplingModes</span></code> enum)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>(11.4.6)</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">custom_frame_rate_flag</span></code>: bool</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">frame_rate_index</span></code>: int (from the <code class="xref py py-class docutils literal notranslate"><span class="pre">PresetFrameRates</span></code> enum, or 0)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">frame_rate_numer</span></code>: int</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">frame_rate_denom</span></code>: int</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>(11.4.7)</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">custom_pixel_aspect_ratio_flag</span></code>: bool</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pixel_aspect_ratio_index</span></code>: int (from the <code class="xref py py-class docutils literal notranslate"><span class="pre">PresetPixelAspectRatios</span></code> enum, or 0)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pixel_aspect_ratio_numer</span></code>: int</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pixel_aspect_ratio_denom</span></code>: int</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>(11.4.8)</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">custom_clean_area_flag</span></code>: bool</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">clean_width</span></code>: int</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">clean_height</span></code>: int</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">left_offset</span></code>: int</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">top_offset</span></code>: int</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>(11.4.9)</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">custom_signal_range_flag</span></code>: bool</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">custom_signal_range_index</span></code>: int (from the <code class="xref py py-class docutils literal notranslate"><span class="pre">PresetSignalRanges</span></code> enum, or 0)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">luma_offset</span></code>: int</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">luma_excursion</span></code>: int</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">color_diff_offset</span></code>: int</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">color_diff_excursion</span></code>: int</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>(11.4.10)</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">custom_color_spec_flag</span></code>: bool</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">color_spec_index</span></code>: int (from the <code class="xref py py-class docutils literal notranslate"><span class="pre">PresetColorSpecs</span></code> enum)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">custom_color_primaries_flag</span></code>: bool</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">color_primaries_index</span></code>: int (from the <code class="xref py py-class docutils literal notranslate"><span class="pre">PresetColorPrimaries</span></code> enum)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">custom_color_matrix_flag</span></code>: bool</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">color_matrix_index</span></code>: int (from the <code class="xref py py-class docutils literal notranslate"><span class="pre">PresetColorMatrices</span></code> enum)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">custom_transfer_function_flag</span></code>: bool</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">transfer_function_index</span></code>: int (from the <code class="xref py py-class docutils literal notranslate"><span class="pre">PresetTransferFunctions</span></code> enum)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>(11.1)</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">picture_coding_mode</span></code>: int (from the <code class="xref py py-class docutils literal notranslate"><span class="pre">PictureCodingModes</span></code> enum)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>(12.4.1)</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">wavelet_index</span></code>: int (from the <code class="xref py py-class docutils literal notranslate"><span class="pre">WaveletFilters</span></code> enum)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dwt_depth</span></code>: int</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>(12.4.4.1)</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">asym_transform_index_flag</span></code>: bool</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">wavelet_index_ho</span></code>: int (from the <code class="xref py py-class docutils literal notranslate"><span class="pre">WaveletFilters</span></code> enum)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">asym_transform_flag</span></code>: bool</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dwt_depth_ho</span></code>: int</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>(12.4.5.2)</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">slices_x</span></code>: int (giving the allowed number of slices in the x dimension)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">slices_y</span></code>: int (giving the allowed number of slices in the y dimension)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">slices_have_same_dimensions</span></code>: bool. True iff all slices contain
+exactly the same number of transform components.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">slice_bytes_numerator</span></code>: int</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">slice_bytes_denominator</span></code>: int</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">slice_prefix_bytes</span></code>: int</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">slice_size_scaler</span></code>: int</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>(12.4.5.3)</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">custom_quant_matrix</span></code>: bool</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">quant_matrix_values</span></code>: int (giving the allowed values within a custom
+quantisation matrix).</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>(13.5.3)</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">qindex</span></code>: int (the allowed qindex values as defined by individual slices)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>(13.5.3.2)</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">total_slice_bytes</span></code>: int (total number of bytes allowed in a high quality
+picture slice, including all prefix bytes and slice size fields.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p>See also: <a class="reference internal" href="#vc2_conformance.level_constraints.LEVEL_CONSTRAINT_ANY_VALUES" title="vc2_conformance.level_constraints.LEVEL_CONSTRAINT_ANY_VALUES"><code class="xref py py-data docutils literal notranslate"><span class="pre">LEVEL_CONSTRAINT_ANY_VALUES</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="vc2_conformance.level_constraints.LEVEL_CONSTRAINT_ANY_VALUES">
+<code class="sig-name descname"><span class="pre">LEVEL_CONSTRAINT_ANY_VALUES</span></code><em class="property"> <span class="pre">=</span> <span class="pre">{key:</span> <span class="pre">ValueSet,</span> <span class="pre">...}</span></em><a class="headerlink" href="#vc2_conformance.level_constraints.LEVEL_CONSTRAINT_ANY_VALUES" title="Permalink to this definition">¶</a></dt>
+<dd><p>For keys in <a class="reference internal" href="#vc2_conformance.level_constraints.LEVEL_CONSTRAINTS" title="vc2_conformance.level_constraints.LEVEL_CONSTRAINTS"><code class="xref py py-data docutils literal notranslate"><span class="pre">LEVEL_CONSTRAINTS</span></code></a> which may hold
+<a class="reference internal" href="constraint_table.html#vc2_conformance.constraint_table.AnyValue" title="vc2_conformance.constraint_table.AnyValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnyValue</span></code></a>, defines an explicit
+<a class="reference internal" href="constraint_table.html#vc2_conformance.constraint_table.ValueSet" title="vc2_conformance.constraint_table.ValueSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueSet</span></code></a> defining all valid
+values, for example when the key refers to an enumerated value. Where the range
+of allowed values is truly open ended, no value is provided in this dictionary.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.level_constraints</span></code>: Level constraint definitions</a><ul>
+<li><a class="reference internal" href="#sequence-data-unit-ordering-restrictions">Sequence data unit ordering restrictions</a></li>
+<li><a class="reference internal" href="#coding-parameter-restrictions">Coding parameter restrictions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Level constraint checking/solving reference</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="symbol_re.html"
+                        title="next chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.symbol_re</span></code>: Regular expressions for VC-2 sequences</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/level_constraints/level_constraints.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="symbol_re.html" title="vc2_conformance.symbol_re: Regular expressions for VC-2 sequences"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Level constraint checking/solving reference"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Level constraint checking/solving reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.level_constraints</span></code>: Level constraint definitions</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>

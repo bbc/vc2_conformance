@@ -1,0 +1,249 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vc2-picture-compare &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="vc2-picture-explain" href="vc2_picture_explain.html" />
+    <link rel="prev" title="vc2-bitstream-validator" href="vc2_bitstream_validator.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="vc2_picture_explain.html" title="vc2-picture-explain"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="vc2_bitstream_validator.html" title="vc2-bitstream-validator"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Software tools reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="docutils literal notranslate"><span class="pre">vc2-picture-compare</span></code></a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <span class="target" id="module-vc2_conformance.scripts.vc2_picture_compare"></span><div class="section" id="vc2-picture-compare">
+<span id="id1"></span><h1><code class="docutils literal notranslate"><span class="pre">vc2-picture-compare</span></code><a class="headerlink" href="#vc2-picture-compare" title="Permalink to this headline">¶</a></h1>
+<p>A command-line utility which compares pairs of raw pictures (see
+<a class="reference internal" href="../user_guide/file_format.html#file-format"><span class="std std-ref">Video file format</span></a>), or pairs of directories containing a series of raw
+pictures.</p>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>Given a pair of images in raw format (see <a class="reference internal" href="../user_guide/file_format.html#file-format"><span class="std std-ref">Video file format</span></a>), these images can
+be compared as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ vc2-picture-compare image_a.raw image_b.raw
+Pictures are different:
+  Y: Different: PSNR = 55.6 dB, 1426363 pixels (68.8%) differ
+  C1: Different: PSNR = 57.7 dB, 662607 pixels (63.9%) differ
+  C2: Different: PSNR = 56.8 dB, 703531 pixels (67.9%) differ
+</pre></div>
+</div>
+<p>Alternatively a pair of directories containing images whose filenames end
+with a number (and the extensions <code class="docutils literal notranslate"><span class="pre">.raw</span></code> and <code class="docutils literal notranslate"><span class="pre">.json</span></code>). For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ vc2-picture-compare ./directory_a/ ./directory_b/
+Comparing ./directory_a/picture_0.raw and ./directory_b/picture_0.raw:
+  Pictures are identical
+Comparing ./directory_a/picture_1.raw and ./directory_b/picture_1.raw:
+  Pictures are different:
+    Y: Different: PSNR = 55.6 dB, 1426363 pixels (68.8%) differ
+    C1: Different: PSNR = 57.7 dB, 662607 pixels (63.9%) differ
+    C2: Different: PSNR = 56.8 dB, 703531 pixels (67.9%) differ
+Comparing ./directory_a/picture_2.raw and ./directory_b/picture_2.raw:
+  Pictures are identical
+Summary: 2 identical, 1 different
+</pre></div>
+</div>
+<p>Differences in the encoded values are reported separately for each picture
+component.</p>
+<p>Peak Signal to Noise Ratio (PSNR) figures give the PSNR of the raw signal
+values (and not, for example, linear light levels).</p>
+<p>The number of pixels which are not bit-for-bit identical is also reported.</p>
+<p>The tool also compares the metadata of the raw images and will flag up
+differences here too, for example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ vc2-picture-compare picture_hd.raw picture_cif.raw
+Picture numbers are different:
+Video parameters are different:
+  - frame_width: 1920
+  + frame_width: 352
+  - frame_height: 1080
+  + frame_height: 288
+  - color_diff_format_index: color_4_2_2 (1)
+  + color_diff_format_index: color_4_2_0 (2)
+    source_sampling: progressive (0)
+    top_field_first: True
+  - frame_rate_numer: 50
+  + frame_rate_numer: 25
+  - frame_rate_denom: 1
+  + frame_rate_denom: 2
+  - pixel_aspect_ratio_numer: 1
+  + pixel_aspect_ratio_numer: 12
+  - pixel_aspect_ratio_denom: 1
+  + pixel_aspect_ratio_denom: 11
+  - clean_width: 1920
+  + clean_width: 352
+  - clean_height: 1080
+  + clean_height: 288
+    left_offset: 0
+    top_offset: 0
+  - luma_offset: 64
+  + luma_offset: 0
+  - luma_excursion: 876
+  + luma_excursion: 255
+  - color_diff_offset: 512
+  + color_diff_offset: 128
+  - color_diff_excursion: 896
+  + color_diff_excursion: 255
+  - color_primaries_index: hdtv (0)
+  + color_primaries_index: sdtv_625 (2)
+  - color_matrix_index: hdtv (0)
+  + color_matrix_index: sdtv (1)
+    transfer_function_index: tv_gamma (0)
+</pre></div>
+</div>
+<p>When picture metadata differs, the pixel values will not be compared since the
+difference in metadata typically means a difference in format making the
+pictures incomparable.</p>
+</div>
+<div class="section" id="generating-difference-masks">
+<h2>Generating difference masks<a class="headerlink" href="#generating-difference-masks" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">vc2-picture-compare</span></code> tool can optionally output a simple difference mask
+image using <code class="docutils literal notranslate"><span class="pre">--difference-mask</span></code>/<code class="docutils literal notranslate"><span class="pre">-D</span></code>. The generated image contains white
+pixels wherever the inputs differed and black pixels wherever they were
+identical. The generated difference mask is output as a raw file of the same
+format as the two input files. This mode is only supported when two individual
+files are provided, not two directories.</p>
+<p>For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ vc2-picture-compare \
+      image_a.raw \
+      image_b.raw \
+      --difference-mask difference_mask.raw
+Pictures are different:
+  Y: Different: PSNR = 55.6 dB, 1426363 pixels (68.8%) differ
+  C1: Different: PSNR = 57.7 dB, 662607 pixels (63.9%) differ
+  C2: Different: PSNR = 56.8 dB, 703531 pixels (67.9%) differ
+</pre></div>
+</div>
+</div>
+<div class="section" id="arguments">
+<h2>Arguments<a class="headerlink" href="#arguments" title="Permalink to this headline">¶</a></h2>
+<p>The complete set of arguments can be listed using <code class="docutils literal notranslate"><span class="pre">--help</span></code></p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>usage: vc2-picture-compare [-h] [--version] [--difference-mask FILENAME]
+                           filename_a filename_b
+
+Compare a pair of pictures in the raw format used by the VC-2 conformance
+software.
+
+positional arguments:
+  filename_a            The filename of a .raw or .json raw picture, or a
+                        directory containing a series of .raw and .json files
+                        whose names end in a number.
+  filename_b            The filename of a .raw or .json raw picture, or a
+                        directory containing a series of .raw and .json files
+                        whose names end in a number.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --version             show program&#39;s version number and exit
+
+difference image options:
+  --difference-mask FILENAME, -D FILENAME
+                        Output a difference mask image to the specified file.
+                        This mask will contain white pixels wherever the input
+                        images differ and black pixels where they match. Only
+                        available when comparing files (not directories).
+</pre></div>
+</div>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">vc2-picture-compare</span></code></a><ul>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+<li><a class="reference internal" href="#generating-difference-masks">Generating difference masks</a></li>
+<li><a class="reference internal" href="#arguments">Arguments</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="vc2_bitstream_validator.html"
+                        title="previous chapter"><code class="docutils literal notranslate"><span class="pre">vc2-bitstream-validator</span></code></a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="vc2_picture_explain.html"
+                        title="next chapter"><code class="docutils literal notranslate"><span class="pre">vc2-picture-explain</span></code></a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/cli/vc2_picture_compare.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="vc2_picture_explain.html" title="vc2-picture-explain"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="vc2_bitstream_validator.html" title="vc2-bitstream-validator"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Software tools reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="docutils literal notranslate"><span class="pre">vc2-picture-compare</span></code></a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,786 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Automated Static Code Verification &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Utility module references" href="utility_modules/index.html" />
+    <link rel="prev" title="vc2_conformance.pseudocode: VC-2 pseudocode function implementations" href="pseudocode.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="utility_modules/index.html" title="Utility module references"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pseudocode.html" title="vc2_conformance.pseudocode: VC-2 pseudocode function implementations"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Automated Static Code Verification</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-verification">
+<span id="automated-static-code-verification"></span><span id="maintainer-verification"></span><h1>Automated Static Code Verification<a class="headerlink" href="#module-verification" title="Permalink to this headline">¶</a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">tests/</span></code><a class="reference internal" href="#module-verification" title="verification"><code class="xref py py-mod docutils literal notranslate"><span class="pre">verification</span></code></a> module (and embedded tests) implement
+automatic checks that the code in <a class="reference internal" href="developer_guide/overview.html#module-vc2_conformance" title="vc2_conformance"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance</span></code></a> matches the
+pseudocode definitions in the VC-2 specification.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">tests/verification/test_equivalence.py</span></code> test script (which is part of
+the normal Pytest test suite) automatically finds functions in the
+<a class="reference internal" href="developer_guide/overview.html#module-vc2_conformance" title="vc2_conformance"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance</span></code></a> codebase (using <a class="reference internal" href="pseudocode.html#module-vc2_conformance.pseudocode.metadata" title="vc2_conformance.pseudocode.metadata"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.metadata</span></code></a>)
+and checks they match the equivalent function in the VC-2 specification (which
+are copied out verbatim in <code class="docutils literal notranslate"><span class="pre">tests/verification/reference_pseudocode.py</span></code>).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To ensure that <a class="reference internal" href="pseudocode.html#module-vc2_conformance.pseudocode.metadata" title="vc2_conformance.pseudocode.metadata"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.metadata</span></code></a> contains information
+about all submodules of <a class="reference internal" href="developer_guide/overview.html#module-vc2_conformance" title="vc2_conformance"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance</span></code></a>, the <code class="docutils literal notranslate"><span class="pre">conftest.py</span></code> file
+in this directory ensures all submodules of vc2_conformance are loaded.</p>
+</div>
+<div class="section" id="pseudocode-deviations">
+<span id="verification-deviation-types"></span><h2>Pseudocode deviations<a class="headerlink" href="#pseudocode-deviations" title="Permalink to this headline">¶</a></h2>
+<p>In some cases, a limited set of well-defined differences are allowed to exist
+between the specification and the code used in <a class="reference internal" href="developer_guide/overview.html#module-vc2_conformance" title="vc2_conformance"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance</span></code></a>. For
+example, docstrings need not match and in some cases, extra changes may be
+allowed to facilitate, e.g. bitstream deserialisation. The specific comparator
+used depends on the <code class="docutils literal notranslate"><span class="pre">deviation</span></code> parameter given in the metadata as follows:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">deviation=None</span></code>: <a class="reference internal" href="#verification.comparators.Identical" title="verification.comparators.Identical"><code class="xref py py-class docutils literal notranslate"><span class="pre">verification.comparators.Identical</span></code></a></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">deviation=&quot;serdes&quot;</span></code>: <a class="reference internal" href="#verification.comparators.SerdesChangesOnly" title="verification.comparators.SerdesChangesOnly"><code class="xref py py-class docutils literal notranslate"><span class="pre">verification.comparators.SerdesChangesOnly</span></code></a></p></li>
+</ul>
+<p>Functions marked with the following additional <code class="docutils literal notranslate"><span class="pre">deviation</span></code> values will not
+undergo automatic verification, but are used to indicate other kinds of
+pseudocode derived function:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">deviation=&quot;alternative_implementation&quot;</span></code>: An alternative, orthogonal
+implementation intended to perform the same role as an existing pseudocode
+function.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">deviation=&quot;inferred_implementation&quot;</span></code>: A function whose existence is
+implied or whose behaviour is explained in prose and therefore has no
+corresponding pseudocode definition.</p></li>
+</ul>
+</div>
+<div class="section" id="amendment-comments">
+<h2>Amendment comments<a class="headerlink" href="#amendment-comments" title="Permalink to this headline">¶</a></h2>
+<p>In some cases it is necessary for an implementation to differ arbitrarily from
+the standard (i.e. to make ‘amendments’). For example, additional type checks
+may be added or picture decoding functions disabled when not required. Such
+amendments must be marked by special ‘amendment comments’ which start with
+either two or three <code class="docutils literal notranslate"><span class="pre">#</span></code> characters, as shown by the snippet below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">example_function</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="c1"># The following lines are not part of the standard and so are marked by</span>
+    <span class="c1"># an amendment comment to avoid the pseudocode equivalence checking</span>
+    <span class="c1"># logic complaining about them</span>
+    <span class="c1">## Begin not in spec</span>
+    <span class="k">if</span> <span class="n">b</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;&#39;b&#39; cannot be zero or negative!&quot;</span><span class="p">)</span>
+    <span class="c1">## End not in spec</span>
+
+    <span class="c1"># For single-line snippets which are not in the standard you can use</span>
+    <span class="c1"># the following end-of-line amendment comment</span>
+    <span class="k">assert</span> <span class="n">b</span> <span class="o">&gt;</span> <span class="mi">0</span>  <span class="c1">## Not in spec</span>
+
+    <span class="c1"># The following code is part of the standard but is disabled in this</span>
+    <span class="c1"># example. Even though it is commented out, it will still be checked</span>
+    <span class="c1"># against the standard. If the standard changes this check ensures that</span>
+    <span class="c1"># the maintainer must revisit the commented-out code and re-evaluate</span>
+    <span class="c1"># the suitability of any amendments made.</span>
+    <span class="c1">### if do_something(a):</span>
+    <span class="c1">###     do_something_else(b)</span>
+
+    <span class="k">return</span> <span class="n">a</span> <span class="o">/</span> <span class="n">b</span>
+</pre></div>
+</div>
+<p>More details of the amendment comment syntax can be found in
+<a class="reference internal" href="#module-verification.amendment_comments" title="verification.amendment_comments"><code class="xref py py-mod docutils literal notranslate"><span class="pre">verification.amendment_comments</span></code></a>.</p>
+</div>
+<div class="section" id="internals">
+<h2>Internals<a class="headerlink" href="#internals" title="Permalink to this headline">¶</a></h2>
+<p>This module does <em>not</em> attempt to perform general purpose functional
+equivalence checking – a known uncomputable problem. Instead, comparisons are
+made at the Abstract Syntax Tree (AST) level. By performing checks at this
+level semantically insignificant differences (e.g. whitespace and comments) are
+ignored while all other changes are robustly identified. The Python built-in
+<a class="reference external" href="https://docs.python.org/3/library/ast.html#module-ast" title="(in Python v3.9)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ast</span></code></a> module is used to produce ASTs ensuring complete support for all
+Python language features.</p>
+<p>To compare ASTs, this module provides the
+<a class="reference internal" href="#verification.node_comparator.NodeComparator" title="verification.node_comparator.NodeComparator"><code class="xref py py-class docutils literal notranslate"><span class="pre">verification.node_comparator.NodeComparator</span></code></a>.  Instances of this
+class can be used to compare pairs of ASTs and report differences between them.</p>
+<p>The subclasses in <a class="reference internal" href="#module-verification.comparators" title="verification.comparators"><code class="xref py py-mod docutils literal notranslate"><span class="pre">verification.comparators</span></code></a> are similar but allow
+certain well-defined differences to exist between ASTs. As an example,
+<a class="reference internal" href="#verification.comparators.SerdesChangesOnly" title="verification.comparators.SerdesChangesOnly"><code class="xref py py-class docutils literal notranslate"><span class="pre">verification.comparators.SerdesChangesOnly</span></code></a> will allow calls to the
+<code class="docutils literal notranslate"><span class="pre">read_*</span></code> functions to be swapped for their equivalent
+<a class="reference internal" href="bitstream.html#vc2_conformance.bitstream.serdes.SerDes" title="vc2_conformance.bitstream.serdes.SerDes"><code class="xref py py-class docutils literal notranslate"><span class="pre">vc2_conformance.bitstream.serdes.SerDes</span></code></a> method calls with otherwise
+identical arguments.</p>
+<p>To allow differences between function implementations and the specification,
+functions are pre-processed according to the amendment comment syntax described
+above. This preprocessing step is implemented in
+<a class="reference internal" href="#module-verification.amendment_comments" title="verification.amendment_comments"><code class="xref py py-mod docutils literal notranslate"><span class="pre">verification.amendment_comments</span></code></a> and uses the built-in Python
+<a class="reference external" href="https://docs.python.org/3/library/tokenize.html#module-tokenize" title="(in Python v3.9)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">tokenize</span></code></a> module to ensure correct interoperability with all other
+Python language features.</p>
+<p>Finally the <a class="reference internal" href="#module-verification.compare" title="verification.compare"><code class="xref py py-mod docutils literal notranslate"><span class="pre">verification.compare</span></code></a> module provides the
+<a class="reference internal" href="#verification.compare.compare_functions" title="verification.compare.compare_functions"><code class="xref py py-func docutils literal notranslate"><span class="pre">compare_functions()</span></code></a> function which ties all of
+the above components together and produces human-readable reports of
+differences between functions.</p>
+<p>All of the above functionality is tested by the other <code class="docutils literal notranslate"><span class="pre">test_*.py</span></code> test
+scripts in this module’s directory.</p>
+<span class="target" id="module-verification.node_comparator"></span><div class="section" id="verification-node-comparator-ast-comparison-framework">
+<h3><a class="reference internal" href="#module-verification.node_comparator" title="verification.node_comparator"><code class="xref py py-mod docutils literal notranslate"><span class="pre">verification.node_comparator</span></code></a>: AST Comparison Framework<a class="headerlink" href="#verification-node-comparator-ast-comparison-framework" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference internal" href="#verification.node_comparator.NodeComparator" title="verification.node_comparator.NodeComparator"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodeComparator</span></code></a> class is intended to form the basis of
+comparison routines which allow controlled differences between two ASTs to be
+ignored.</p>
+<p>For exapmle, the following can be used to compare two ASTs, ignoring docstrings
+at the start of functions:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">dropwhile</span>
+
+<span class="kn">from</span> <span class="nn">verification.node_comparator</span> <span class="kn">import</span> <span class="n">NodeComparator</span>
+
+<span class="k">class</span> <span class="nc">SameExceptDocstrings</span><span class="p">(</span><span class="n">NodeComparator</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">compare_FunctionDef</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">without_docstrings</span><span class="p">(</span><span class="n">body</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">dropwhile</span><span class="p">(</span>
+                <span class="k">lambda</span> <span class="n">e</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">ast</span><span class="o">.</span><span class="n">Expr</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">ast</span><span class="o">.</span><span class="n">Str</span><span class="p">),</span>
+                <span class="n">body</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">generic_compare</span><span class="p">(</span>
+            <span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">,</span> <span class="n">filter_fields</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;body&quot;</span><span class="p">:</span> <span class="n">without_docstrings</span><span class="p">}</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+<p>This can then be used like so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">func_1</span> <span class="o">=</span> <span class="s2">&quot;def func(a, b):</span><span class="se">\n</span><span class="s2">    &#39;&#39;&#39;Add a and b&#39;&#39;&#39;</span><span class="se">\n</span><span class="s2">    return a + b&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">func_2</span> <span class="o">=</span> <span class="s2">&quot;def func(a, b):</span><span class="se">\n</span><span class="s2">    return a + b&quot;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">ast</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">SameExceptDocstrings</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">compare</span><span class="p">(</span><span class="n">ast</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">func_1</span><span class="p">),</span> <span class="n">ast</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">func_2</span><span class="p">))</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="section" id="nodecomparator-api">
+<h4><a class="reference internal" href="#verification.node_comparator.NodeComparator" title="verification.node_comparator.NodeComparator"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodeComparator</span></code></a> API<a class="headerlink" href="#nodecomparator-api" title="Permalink to this headline">¶</a></h4>
+<dl class="py class">
+<dt id="verification.node_comparator.NodeComparator">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">NodeComparator</span></code><a class="headerlink" href="#verification.node_comparator.NodeComparator" title="Permalink to this definition">¶</a></dt>
+<dd><p>An <a class="reference external" href="https://docs.python.org/3/library/ast.html#ast.AST" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ast.AST</span></code></a> visitor object (similar to
+<a class="reference external" href="https://docs.python.org/3/library/ast.html#ast.NodeVisitor" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ast.NodeVisitor</span></code></a> which simultaneously walks two ASTs, testing
+them for equivalence.</p>
+<p>The <a class="reference internal" href="#verification.node_comparator.NodeComparator.compare" title="verification.node_comparator.NodeComparator.compare"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compare()</span></code></a> method of instances of this class may be used to
+recursively compare two AST nodes.</p>
+<dl class="py method">
+<dt id="verification.node_comparator.NodeComparator.get_row_col">
+<code class="sig-name descname"><span class="pre">get_row_col</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#verification.node_comparator.NodeComparator.get_row_col" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the current row and column offsets for the tokens currently being
+compared with <a class="reference internal" href="#verification.node_comparator.NodeComparator.compare" title="verification.node_comparator.NodeComparator.compare"><code class="xref py py-func docutils literal notranslate"><span class="pre">compare()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="verification.node_comparator.NodeComparator.compare">
+<code class="sig-name descname"><span class="pre">compare</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#verification.node_comparator.NodeComparator.compare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recursively compare two AST nodes.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">n1</span></code> has the type named N1Type and <code class="docutils literal notranslate"><span class="pre">n2</span></code> has the type named
+N2Type, this function will try to call one of the following methods:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">compare_N1Type</span></code> (if N1Type is the same as N2Type)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compare_N1Type_N2_type</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compare_N1Type_ANY</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compare_ANY_N2Type</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">generic_compare</span></code></p></li>
+</ul>
+<p>The first method to be found will be called and its return value
+returned. The various <code class="docutils literal notranslate"><span class="pre">compare_*</span></code> methods may be overridden by
+subclasses of <a class="reference internal" href="#verification.node_comparator.NodeComparator" title="verification.node_comparator.NodeComparator"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodeComparator</span></code></a> and should implement the same
+interface as this method.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>n1, n2</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/ast.html#ast.AST" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ast.AST</span></code></a></span></dt><dd><p>The nodes to compare</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>result</strong><span class="classifier">True or <a class="reference internal" href="#verification.node_comparator.NodesDiffer" title="verification.node_comparator.NodesDiffer"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodesDiffer</span></code></a></span></dt><dd><p>True if the ASTs are equal and <a class="reference internal" href="#verification.node_comparator.NodesDiffer" title="verification.node_comparator.NodesDiffer"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodesDiffer</span></code></a> (which is
+faslsey) otherwise.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="verification.node_comparator.NodeComparator.generic_compare">
+<code class="sig-name descname"><span class="pre">generic_compare</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_fields</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_fields</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#verification.node_comparator.NodeComparator.generic_compare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base implementation of recurisive comparison of two AST nodes.</p>
+<p>Compare the type of AST node and recursively compares field values.
+Recursion is via calls to <a class="reference internal" href="#verification.node_comparator.NodeComparator.compare" title="verification.node_comparator.NodeComparator.compare"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compare()</span></code></a>.</p>
+<p>Options are provided for ignoring differences in certain fields of the
+passed AST nodes. Authors of custom <code class="docutils literal notranslate"><span class="pre">compare_*</span></code> methods may wish to
+use these arguments when calling <a class="reference internal" href="#verification.node_comparator.NodeComparator.generic_compare" title="verification.node_comparator.NodeComparator.generic_compare"><code class="xref py py-meth docutils literal notranslate"><span class="pre">generic_compare()</span></code></a> to allow
+certain fields to differ while still reporting equality.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>n1, n2</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/ast.html#ast.AST" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ast.AST</span></code></a></span></dt><dd><p>The nodes to compare</p>
+</dd>
+<dt><strong>ignore_fields</strong><span class="classifier">[str, …]</span></dt><dd><p>A list of field names to ignore while comparing the AST nodes.</p>
+</dd>
+<dt><strong>filter_fields</strong><span class="classifier">{fieldname: fn or (fn, fn) …}</span></dt><dd><p>When a list-containing field is encountered, functions may be
+provided for pre-filtering the entries of the lists being compared.
+For example, one might supply a filtering function which removes
+docstrings from function bodies.</p>
+<p>Entries in this dictionary may be either:</p>
+<ul class="simple">
+<li><p>Functions which take the list of values and should return a
+new list of values to use in the comparison.  This function must
+not mutate the list passed to it.</p></li>
+<li><p>A pair of functions like the one above but the first will be used
+for filtering n1’s field and the second for n2’s field. Either
+may be None if no filtering is to take place for one of the
+nodes.</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>result</strong><span class="classifier">True or <a class="reference internal" href="#verification.node_comparator.NodesDiffer" title="verification.node_comparator.NodesDiffer"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodesDiffer</span></code></a></span></dt><dd><p>True if the ASTs are equal and <a class="reference internal" href="#verification.node_comparator.NodesDiffer" title="verification.node_comparator.NodesDiffer"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodesDiffer</span></code></a> (which is
+faslsey) otherwise.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="nodesdiffer-types">
+<h4><a class="reference internal" href="#verification.node_comparator.NodesDiffer" title="verification.node_comparator.NodesDiffer"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodesDiffer</span></code></a> types<a class="headerlink" href="#nodesdiffer-types" title="Permalink to this headline">¶</a></h4>
+<dl class="py class">
+<dt id="verification.node_comparator.NodesDiffer">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">NodesDiffer</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n1_row_col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n2_row_col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reason</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#verification.node_comparator.NodesDiffer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A result from <a class="reference internal" href="#verification.node_comparator.NodeComparator" title="verification.node_comparator.NodeComparator"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodeComparator</span></code></a> indicating that two ASTs differ.</p>
+<p>This object is ‘falsy’ (i.e. calling <code class="xref py py-func docutils literal notranslate"><span class="pre">bool()</span></code> on a
+<a class="reference internal" href="#verification.node_comparator.NodeComparator" title="verification.node_comparator.NodeComparator"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodeComparator</span></code></a> instance returns False).</p>
+<dl class="field-list">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl>
+<dt><strong>n1, n2</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/ast.html#ast.AST" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ast.AST</span></code></a></span></dt><dd><p>The two ASTs being compared.</p>
+</dd>
+<dt><strong>n1_row_col, n2_row_col</strong><span class="classifier">(row, col) or (None, None)</span></dt><dd><p>The row and column of the ‘n1’ and ‘n2’ tokens, or the values for the
+row and column of the nearest token with a known position.</p>
+</dd>
+<dt><strong>reason</strong><span class="classifier">str or None</span></dt><dd><p>A string describing how the two nodes differ with a human-readable
+message.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="verification.node_comparator.NodeTypesDiffer">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">NodeTypesDiffer</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n1_row_col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n2_row_col</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#verification.node_comparator.NodeTypesDiffer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A pair of nodes have different types.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="verification.node_comparator.NodeFieldsDiffer">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">NodeFieldsDiffer</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n1_row_col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n2_row_col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#verification.node_comparator.NodeFieldsDiffer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A pair of nodes differ in the value of a particular field.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>field</strong><span class="classifier">str</span></dt><dd><p>The field name where the AST nodes differ.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="verification.node_comparator.NodeFieldLengthsDiffer">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">NodeFieldLengthsDiffer</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n1_row_col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n2_row_col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#verification.node_comparator.NodeFieldLengthsDiffer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A pair of nodes differ in the length of the list of values in a particular
+field.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>field</strong><span class="classifier">str</span></dt><dd><p>The field name where the AST nodes differ.</p>
+</dd>
+<dt><strong>v1, v2</strong><span class="classifier">list</span></dt><dd><p>The values of the fields (after any filtering has taken place).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="verification.node_comparator.NodeListFieldsDiffer">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">NodeListFieldsDiffer</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n1_row_col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n2_row_col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#verification.node_comparator.NodeListFieldsDiffer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A pair of nodes differ in the value of a list field entry.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>field</strong><span class="classifier">str</span></dt><dd><p>The field name where the AST nodes differ.</p>
+</dd>
+<dt><strong>index</strong><span class="classifier">int</span></dt><dd><p>The index of the value in the v1 and v2 lists.</p>
+</dd>
+<dt><strong>v1, v2</strong><span class="classifier">list</span></dt><dd><p>The values of the fields (after any filtering has taken place).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+<span class="target" id="module-verification.comparators"></span><div class="section" id="verification-comparators">
+<h3><a class="reference internal" href="#module-verification.comparators" title="verification.comparators"><code class="xref py py-mod docutils literal notranslate"><span class="pre">verification.comparators</span></code></a><a class="headerlink" href="#verification-comparators" title="Permalink to this headline">¶</a></h3>
+<p>A series of <a class="reference internal" href="#verification.node_comparator.NodeComparator" title="verification.node_comparator.NodeComparator"><code class="xref py py-class docutils literal notranslate"><span class="pre">verification.node_comparator.NodeComparator</span></code></a> based
+comparators for checking the equivalence of VC-2 pseudocode functions from the
+spec with their implementations in the <a class="reference internal" href="developer_guide/overview.html#module-vc2_conformance" title="vc2_conformance"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance</span></code></a> package.</p>
+<dl class="py class">
+<dt id="verification.comparators.Identical">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">Identical</span></code><a class="headerlink" href="#verification.comparators.Identical" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#verification.node_comparator.NodeComparator" title="verification.node_comparator.NodeComparator"><code class="xref py py-class docutils literal notranslate"><span class="pre">verification.node_comparator.NodeComparator</span></code></a></p>
+<p>Compares two function implementations only allowing the following
+differences:</p>
+<ol class="arabic simple">
+<li><p>Their docstrings may be different.</p></li>
+<li><p>A <a class="reference internal" href="pseudocode.html#vc2_conformance.pseudocode.metadata.ref_pseudocode" title="vc2_conformance.pseudocode.metadata.ref_pseudocode"><code class="xref py py-func docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.metadata.ref_pseudocode()</span></code></a>
+decorator may be used.</p></li>
+<li><p>Constants from  the <a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#module-vc2_data_tables" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_data_tables</span></code></a> module may be used in
+place of their numerical literal equivalents.</p></li>
+</ol>
+</dd></dl>
+
+<dl class="py class">
+<dt id="verification.comparators.SerdesChangesOnly">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">SerdesChangesOnly</span></code><a class="headerlink" href="#verification.comparators.SerdesChangesOnly" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#verification.node_comparator.NodeComparator" title="verification.node_comparator.NodeComparator"><code class="xref py py-class docutils literal notranslate"><span class="pre">verification.node_comparator.NodeComparator</span></code></a></p>
+<p>Compares two function implementations where the first is a VC-2 pseudocode
+definition and the second is a function for use with the
+<a class="reference internal" href="bitstream.html#module-vc2_conformance.bitstream.serdes" title="vc2_conformance.bitstream.serdes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.bitstream.serdes</span></code></a> framework. The following
+differences are allowed:</p>
+<ol class="arabic">
+<li><p>Differing docstrings. (Justification: has no effect on behaviour.)</p></li>
+<li><p>The addition of a <a class="reference internal" href="pseudocode.html#vc2_conformance.pseudocode.metadata.ref_pseudocode" title="vc2_conformance.pseudocode.metadata.ref_pseudocode"><code class="xref py py-func docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.metadata.ref_pseudocode()</span></code></a>
+decorator to the second function. (Justification: has no effect on
+behaviour.)</p></li>
+<li><p>The addition of a <a class="reference internal" href="bitstream.html#vc2_conformance.bitstream.serdes.context_type" title="vc2_conformance.bitstream.serdes.context_type"><code class="xref py py-func docutils literal notranslate"><span class="pre">vc2_conformance.bitstream.serdes.context_type()</span></code></a>
+decorator to the second function. (Justification: has no effect on
+behaviour.)</p></li>
+<li><p>The addition of <code class="docutils literal notranslate"><span class="pre">serdes</span></code> as a first argument to the second function.
+(Justification: required for use of the serdes framework, has no effect
+on behaviour.)</p></li>
+<li><p>The wrapping of statements in <code class="docutils literal notranslate"><span class="pre">with</span> <span class="pre">serdes.subcontext</span></code> context managers
+in the second function will be ignored. (Justification: these context
+managers have no effect on behaviour but are required to set the serdes
+state.)</p></li>
+<li><p>The addition of the following methods calls in the second function
+(Justification: these method calls have no effect on behaviour but are
+required to set the serdes state):</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference internal" href="bitstream.html#vc2_conformance.bitstream.serdes.SerDes.subcontext_enter" title="vc2_conformance.bitstream.serdes.SerDes.subcontext_enter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">vc2_conformance.bitstream.serdes.SerDes.subcontext_enter()</span></code></a></p></li>
+<li><p><a class="reference internal" href="bitstream.html#vc2_conformance.bitstream.serdes.SerDes.subcontext_leave" title="vc2_conformance.bitstream.serdes.SerDes.subcontext_leave"><code class="xref py py-meth docutils literal notranslate"><span class="pre">vc2_conformance.bitstream.serdes.SerDes.subcontext_leave()</span></code></a></p></li>
+<li><p><a class="reference internal" href="bitstream.html#vc2_conformance.bitstream.serdes.SerDes.set_context_type" title="vc2_conformance.bitstream.serdes.SerDes.set_context_type"><code class="xref py py-meth docutils literal notranslate"><span class="pre">vc2_conformance.bitstream.serdes.SerDes.set_context_type()</span></code></a></p></li>
+<li><p><a class="reference internal" href="bitstream.html#vc2_conformance.bitstream.serdes.SerDes.declare_list" title="vc2_conformance.bitstream.serdes.SerDes.declare_list"><code class="xref py py-meth docutils literal notranslate"><span class="pre">vc2_conformance.bitstream.serdes.SerDes.declare_list()</span></code></a></p></li>
+<li><p><a class="reference internal" href="bitstream.html#vc2_conformance.bitstream.serdes.SerDes.computed_value" title="vc2_conformance.bitstream.serdes.SerDes.computed_value"><code class="xref py py-meth docutils literal notranslate"><span class="pre">vc2_conformance.bitstream.serdes.SerDes.computed_value()</span></code></a></p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>The substitution of an assignment to <code class="docutils literal notranslate"><span class="pre">state.bits_left</span></code> with a call to
+<a class="reference internal" href="bitstream.html#vc2_conformance.bitstream.serdes.SerDes.bounded_block_begin" title="vc2_conformance.bitstream.serdes.SerDes.bounded_block_begin"><code class="xref py py-meth docutils literal notranslate"><span class="pre">vc2_conformance.bitstream.serdes.SerDes.bounded_block_begin()</span></code></a>
+in the second function, taking the assigned value as argument.
+(Justification: this has the equivalent effect in the bitstream I/O
+system).</p></li>
+<li><p>The following I/O function substitutions in the second function are
+allowed with an additional first argument (for the target name).
+(Justification: these functions have the equivalent effect in the
+bitstream I/O system).</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">read_bool</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">serdes.bool</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">read_nbits</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">serdes.nbits</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">read_uint_lit</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">serdes.uint_lit</span></code> or <code class="docutils literal notranslate"><span class="pre">serdes.bytes</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">read_uint</span></code> or <code class="docutils literal notranslate"><span class="pre">read_uintb</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">serdes.uint</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">read_sint</span></code> or <code class="docutils literal notranslate"><span class="pre">read_sintb</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">serdes.sint</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">byte_align</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">serdes.byte_align</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">flush_inputb</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">serdes.bounded_block_end</span></code></p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Substitution of empty dictionary creation for creation of
+<a class="reference internal" href="pseudocode.html#vc2_conformance.pseudocode.state.State" title="vc2_conformance.pseudocode.state.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.state.State</span></code></a> or
+<a class="reference internal" href="pseudocode.html#vc2_conformance.pseudocode.video_parameters.VideoParameters" title="vc2_conformance.pseudocode.video_parameters.VideoParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.video_parameters.VideoParameters</span></code></a>
+fixed dicts is allowed. (Justification: These are valid dictionary
+types, but provide better type checking and pretty printing which is
+valuable here).</p></li>
+</ol>
+</dd></dl>
+
+</div>
+<span class="target" id="module-verification.amendment_comments"></span><div class="section" id="verification-amendment-comments">
+<h3><a class="reference internal" href="#module-verification.amendment_comments" title="verification.amendment_comments"><code class="xref py py-mod docutils literal notranslate"><span class="pre">verification.amendment_comments</span></code></a><a class="headerlink" href="#verification-amendment-comments" title="Permalink to this headline">¶</a></h3>
+<p>In  the <a class="reference internal" href="developer_guide/overview.html#module-vc2_conformance" title="vc2_conformance"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance</span></code></a> module it is sometimes necessary to make
+amendments to the pseudocode. For example, validity checks may be added or
+unneeded steps removed (such as performing a wavelet transform while simply
+deserialising a bitstream).</p>
+<p>To make changes made to a VC-2 function implementations explicit, the following
+conventions are used:</p>
+<ul>
+<li><p>When code present in the spec is removed or disabled, it is commented out
+using triple-hash comments like so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">example_1</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="c1"># Code as-per the VC-2 spec</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
+
+    <span class="c1"># No need to actually perform wavelet transform</span>
+    <span class="c1">### if c &gt; 1:</span>
+    <span class="c1">###     wavelet_transform()</span>
+    <span class="c1">###     display_picture()</span>
+
+    <span class="c1"># More code per the spec</span>
+    <span class="k">return</span> <span class="n">c</span>
+</pre></div>
+</div>
+</li>
+<li><p>When code is added, it should be indicated using either a <code class="docutils literal notranslate"><span class="pre">##</span> <span class="pre">Not</span> <span class="pre">in</span> <span class="pre">spec</span></code>
+double-hash comment:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">example_2</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="n">b</span> <span class="o">&gt;</span> <span class="mi">0</span>  <span class="c1">## Not in spec</span>
+
+    <span class="k">return</span> <span class="n">a</span> <span class="o">/</span> <span class="n">b</span>
+</pre></div>
+</div>
+<p>Or within a <code class="docutils literal notranslate"><span class="pre">##</span> <span class="pre">Begin</span> <span class="pre">not</span> <span class="pre">in</span> <span class="pre">spec</span></code>, <code class="docutils literal notranslate"><span class="pre">##</span> <span class="pre">End</span> <span class="pre">not</span> <span class="pre">in</span> <span class="pre">spec</span></code> block:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">example_2</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="c1">## Begin not in spec</span>
+    <span class="k">if</span> <span class="n">b</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Negative &#39;b&#39; not allowed&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">b</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Can&#39;t divide by &#39;b&#39; when it is 0&quot;</span><span class="p">)</span>
+    <span class="c1">## End not in spec</span>
+
+    <span class="k">return</span> <span class="n">a</span> <span class="o">/</span> <span class="n">b</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<p>To enable the automated verification that implemented functions match the VC-2
+spec (e.g. using <a class="reference internal" href="#module-verification.comparators" title="verification.comparators"><code class="xref py py-mod docutils literal notranslate"><span class="pre">verification.comparators</span></code></a>), any amendments to the
+code must first be undone. The <a class="reference internal" href="#verification.amendment_comments.undo_amendments" title="verification.amendment_comments.undo_amendments"><code class="xref py py-func docutils literal notranslate"><span class="pre">undo_amendments()</span></code></a> function may be used
+to performs this step.</p>
+<dl class="py function">
+<dt id="verification.amendment_comments.undo_amendments">
+<code class="sig-name descname"><span class="pre">undo_amendments</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#verification.amendment_comments.undo_amendments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a Python source snippet, undo all amendments marked by special
+‘amendment comments’ (comments starting with <code class="docutils literal notranslate"><span class="pre">##</span></code> and <code class="docutils literal notranslate"><span class="pre">###</span></code>).</p>
+<p>The following actions will be taken:</p>
+<ul class="simple">
+<li><p>Disabled code prefixed <code class="docutils literal notranslate"><span class="pre">###</span> <span class="pre">...</span></code> (three hashes and a space) will be
+uncommented.</p></li>
+<li><p>Lines ending with a <code class="docutils literal notranslate"><span class="pre">##</span> <span class="pre">Not</span> <span class="pre">in</span> <span class="pre">spec</span></code> comment will be commented out.</p></li>
+<li><p>Blocks of code starting with a <code class="docutils literal notranslate"><span class="pre">##</span> <span class="pre">Begin</span> <span class="pre">not</span> <span class="pre">in</span> <span class="pre">spec</span></code> line and ending
+with a <code class="docutils literal notranslate"><span class="pre">##</span> <span class="pre">End</span> <span class="pre">not</span> <span class="pre">in</span> <span class="pre">spec</span></code> line will be commented out.</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>(source, indent_corrections)</dt><dd><p>The modified source is returned along with a dictionary mapping line
+number to an indentation correction. These corrections may be used to
+map column numbers in the new source to column numbers in the old
+source.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><dl class="simple">
+<dt><a class="reference external" href="https://docs.python.org/3/library/tokenize.html#tokenize.TokenError" title="(in Python v3.9)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">tokenize.TokenError</span></code></a></dt><dd></dd>
+<dt><a class="reference internal" href="#verification.amendment_comments.BadAmendmentCommentError" title="verification.amendment_comments.BadAmendmentCommentError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">BadAmendmentCommentError</span></code></a></dt><dd></dd>
+<dt><a class="reference internal" href="#verification.amendment_comments.UnmatchedNotInSpecBlockError" title="verification.amendment_comments.UnmatchedNotInSpecBlockError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">UnmatchedNotInSpecBlockError</span></code></a></dt><dd></dd>
+<dt><a class="reference internal" href="#verification.amendment_comments.UnclosedNotInSpecBlockError" title="verification.amendment_comments.UnclosedNotInSpecBlockError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">UnclosedNotInSpecBlockError</span></code></a></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<p>The following exception custom exception types are defined:</p>
+<dl class="py exception">
+<dt id="verification.amendment_comments.BadAmendmentCommentError">
+<em class="property"><span class="pre">exception</span> </em><code class="sig-name descname"><span class="pre">BadAmendmentCommentError</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">comment</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#verification.amendment_comments.BadAmendmentCommentError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An unrecognised amendment comment (a comment with two or more hashes) was
+found.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>comment</strong><span class="classifier">str</span></dt><dd><p>The contents of the comment</p>
+</dd>
+<dt><strong>row, col</strong><span class="classifier">int</span></dt><dd><p>The position in the source where the unrecognised comment starts</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="verification.amendment_comments.UnmatchedNotInSpecBlockError">
+<em class="property"><span class="pre">exception</span> </em><code class="sig-name descname"><span class="pre">UnmatchedNotInSpecBlockError</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">row</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#verification.amendment_comments.UnmatchedNotInSpecBlockError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An ‘End not in spec’ amendment comment block was encountered without a
+corresponding ‘Begin not in spec’ block.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>row</strong><span class="classifier">int</span></dt><dd><p>The line in the source where the ‘end’ comment was encounterd</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="verification.amendment_comments.UnclosedNotInSpecBlockError">
+<em class="property"><span class="pre">exception</span> </em><code class="sig-name descname"><span class="pre">UnclosedNotInSpecBlockError</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">row</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#verification.amendment_comments.UnclosedNotInSpecBlockError" title="Permalink to this definition">¶</a></dt>
+<dd><p>A ‘Begin not in spec’ amendment comment block was not closed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>row</strong><span class="classifier">int</span></dt><dd><p>The line in the source where the block was started.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<span class="target" id="module-verification.compare"></span><div class="section" id="verification-compare-compare-function-implementations">
+<h3><a class="reference internal" href="#module-verification.compare" title="verification.compare"><code class="xref py py-mod docutils literal notranslate"><span class="pre">verification.compare</span></code></a>: Compare function implementations<a class="headerlink" href="#verification-compare-compare-function-implementations" title="Permalink to this headline">¶</a></h3>
+<p>This module provides a function, <a class="reference internal" href="#verification.compare.compare_functions" title="verification.compare.compare_functions"><code class="xref py py-func docutils literal notranslate"><span class="pre">compare_functions()</span></code></a>, which uses a
+specified comparator (<a class="reference internal" href="#module-verification.comparators" title="verification.comparators"><code class="xref py py-mod docutils literal notranslate"><span class="pre">verification.comparators</span></code></a>) to determine if a
+given function matches the reference VC-2 pseudocode.</p>
+<dl class="py function">
+<dt id="verification.compare.compare_functions">
+<code class="sig-name descname"><span class="pre">compare_functions</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ref_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imp_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comparator</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#verification.compare.compare_functions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compare two Python functions where one is a reference implementation and
+the other an implementation used in <a class="reference internal" href="developer_guide/overview.html#module-vc2_conformance" title="vc2_conformance"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance</span></code></a>.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>ref_func</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">FunctionType</span></code></span></dt><dd><p>The reference VC-2 implementation of a function.</p>
+</dd>
+<dt><strong>imp_func</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">FunctionType</span></code></span></dt><dd><p>The implementation of the same function used in
+<a class="reference internal" href="developer_guide/overview.html#module-vc2_conformance" title="vc2_conformance"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance</span></code></a>. Will be pre-processed using
+<a class="reference internal" href="#verification.amendment_comments.undo_amendments" title="verification.amendment_comments.undo_amendments"><code class="xref py py-func docutils literal notranslate"><span class="pre">verification.amendment_comments.undo_amendments()</span></code></a> prior to
+comparison.</p>
+</dd>
+<dt><strong>comparator</strong><span class="classifier"><a class="reference internal" href="#verification.node_comparator.NodeComparator" title="verification.node_comparator.NodeComparator"><code class="xref py py-class docutils literal notranslate"><span class="pre">verification.node_comparator.NodeComparator</span></code></a></span></dt><dd><p>The comparator instance to use to test for equivalence.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>True or <a class="reference internal" href="#verification.compare.Difference" title="verification.compare.Difference"><code class="xref py py-class docutils literal notranslate"><span class="pre">Difference</span></code></a></dt><dd><p>True is returned if the implementations are equal (according to the
+supplied comparator). Otherwise a <a class="reference internal" href="#verification.compare.Difference" title="verification.compare.Difference"><code class="xref py py-class docutils literal notranslate"><span class="pre">Difference</span></code></a> is returned
+enumerating the differences.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><a class="reference internal" href="#verification.compare.ComparisonError" title="verification.compare.ComparisonError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ComparisonError</span></code></a></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="verification.compare.compare_sources">
+<code class="sig-name descname"><span class="pre">compare_sources</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ref_source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imp_source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comparator</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#verification.compare.compare_sources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compare two Python sources, one containing a reference VC-2 pseudocode
+function and the other containing an implementation.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>ref_source</strong><span class="classifier">str</span></dt><dd><p>The reference VC-2 pseudocode implementation of a function.</p>
+</dd>
+<dt><strong>imp_source</strong><span class="classifier">str</span></dt><dd><p>The implementation of the same function used in
+<a class="reference internal" href="developer_guide/overview.html#module-vc2_conformance" title="vc2_conformance"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance</span></code></a>. Will be pre-processed using
+<a class="reference internal" href="#verification.amendment_comments.undo_amendments" title="verification.amendment_comments.undo_amendments"><code class="xref py py-func docutils literal notranslate"><span class="pre">verification.amendment_comments.undo_amendments()</span></code></a> prior to
+comparison.</p>
+</dd>
+<dt><strong>comparator</strong><span class="classifier"><a class="reference internal" href="#verification.node_comparator.NodeComparator" title="verification.node_comparator.NodeComparator"><code class="xref py py-class docutils literal notranslate"><span class="pre">verification.node_comparator.NodeComparator</span></code></a></span></dt><dd><p>The comparator instance to use to test for equivalence.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>True or <a class="reference internal" href="#verification.compare.Difference" title="verification.compare.Difference"><code class="xref py py-class docutils literal notranslate"><span class="pre">Difference</span></code></a></dt><dd><p>True is returned if the implementations are equal (according to the
+supplied comparator). Otherwise a <a class="reference internal" href="#verification.compare.Difference" title="verification.compare.Difference"><code class="xref py py-class docutils literal notranslate"><span class="pre">Difference</span></code></a> is returned
+enumerating the differences.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><a class="reference internal" href="#verification.compare.ComparisonError" title="verification.compare.ComparisonError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ComparisonError</span></code></a></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="verification.compare.Difference">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">Difference</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_row</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imp_row</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imp_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imp_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#verification.compare.Difference" title="Permalink to this definition">¶</a></dt>
+<dd><p>A description of the difference between a reference function and its
+implementation.</p>
+<p>Use <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> to turn into a human-readable description (including
+source code snippets).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>message</strong><span class="classifier">str</span></dt><dd></dd>
+<dt><strong>ref_row, ref_col</strong><span class="classifier">int or None</span></dt><dd><p>The position in the reference code where the difference ocurred. May be
+None if not related to the reference code.</p>
+</dd>
+<dt><strong>imp_row, imp_col</strong><span class="classifier">int or None</span></dt><dd><p>The position in the implementation code where the difference ocurred.
+May be None if not related to the implementation code.</p>
+</dd>
+<dt><strong>ref_func, imp_func</strong><span class="classifier">FunctionType or None</span></dt><dd><p>The Python function objects being compared.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="verification.compare.ComparisonError">
+<em class="property"><span class="pre">exception</span> </em><code class="sig-name descname"><span class="pre">ComparisonError</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_row</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imp_row</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imp_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imp_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#verification.compare.ComparisonError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An error occurred while attempting to compare two function implementations.</p>
+<p>Use <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> to turn into a human-readable description (including
+source code snippets).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>message</strong><span class="classifier">str</span></dt><dd></dd>
+<dt><strong>ref_row, ref_col</strong><span class="classifier">int or None</span></dt><dd><p>The position in the reference code where the error ocurred. May be None
+if not related to the reference code.</p>
+</dd>
+<dt><strong>imp_row, imp_col</strong><span class="classifier">int or None</span></dt><dd><p>The position in the implementation code where the error ocurred. May be
+None if not related to the implementation code.</p>
+</dd>
+<dt><strong>ref_func, imp_func</strong><span class="classifier">FunctionType or None</span></dt><dd><p>The Python function objects being compared.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Automated Static Code Verification</a><ul>
+<li><a class="reference internal" href="#pseudocode-deviations">Pseudocode deviations</a></li>
+<li><a class="reference internal" href="#amendment-comments">Amendment comments</a></li>
+<li><a class="reference internal" href="#internals">Internals</a><ul>
+<li><a class="reference internal" href="#verification-node-comparator-ast-comparison-framework"><code class="xref py py-mod docutils literal notranslate"><span class="pre">verification.node_comparator</span></code>: AST Comparison Framework</a><ul>
+<li><a class="reference internal" href="#nodecomparator-api"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodeComparator</span></code> API</a></li>
+<li><a class="reference internal" href="#nodesdiffer-types"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodesDiffer</span></code> types</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#verification-comparators"><code class="xref py py-mod docutils literal notranslate"><span class="pre">verification.comparators</span></code></a></li>
+<li><a class="reference internal" href="#verification-amendment-comments"><code class="xref py py-mod docutils literal notranslate"><span class="pre">verification.amendment_comments</span></code></a></li>
+<li><a class="reference internal" href="#verification-compare-compare-function-implementations"><code class="xref py py-mod docutils literal notranslate"><span class="pre">verification.compare</span></code>: Compare function implementations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pseudocode.html"
+                        title="previous chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode</span></code>: VC-2 pseudocode function implementations</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="utility_modules/index.html"
+                        title="next chapter">Utility module references</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/verification.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="utility_modules/index.html" title="Utility module references"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pseudocode.html" title="vc2_conformance.pseudocode: VC-2 pseudocode function implementations"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Automated Static Code Verification</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,456 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Video file format &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Generating test cases" href="generating_test_cases.html" />
+    <link rel="prev" title="Conformance Software Installation" href="installation.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generating_test_cases.html" title="Generating test cases"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Conformance Software Installation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">User’s guide (for codec testers)</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Video file format</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="video-file-format">
+<span id="guide-file-format"></span><span id="file-format"></span><h1>Video file format<a class="headerlink" href="#video-file-format" title="Permalink to this headline">¶</a></h1>
+<p>The VC-2 conformance software uses a simple video and metadata format to
+represent uncompressed pictures consisting of a raw video file and associated
+JSON metadata file. This format is described below and it is left to the codec
+implementer to perform any translation necessary between this format and the
+format expected by the codec under test.</p>
+<p>Below we’ll describe the file format before introducing the
+<code class="docutils literal notranslate"><span class="pre">vc2-picture-explain</span></code> utility which can aid in understanding and displaying
+videos in this format.</p>
+<div class="section" id="format-description">
+<h2>Format description<a class="headerlink" href="#format-description" title="Permalink to this headline">¶</a></h2>
+<p>Each picture in a sequence is stored as a pair of files: a file containing only
+raw sample values (<code class="docutils literal notranslate"><span class="pre">.raw</span></code>) and a metadata file containing a JSON description
+of the video format and picture number (<code class="docutils literal notranslate"><span class="pre">.json</span></code>). Both files are necessary in
+order to correctly interpret the picture data.</p>
+<div class="section" id="file-names">
+<h3>File names<a class="headerlink" href="#file-names" title="Permalink to this headline">¶</a></h3>
+<p>The following naming convention is used for sequences of pictures:
+<code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_&lt;number&gt;.raw</span></code> and <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_&lt;number&gt;.json</span></code> where <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;</span></code> is the
+same for every picture in the sequence and <code class="docutils literal notranslate"><span class="pre">&lt;number&gt;</span></code> starts at <code class="docutils literal notranslate"><span class="pre">0</span></code> and
+increments contiguously. For example, a four picture sequence might use the
+following file names:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">my_sequence_0.raw</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">my_sequence_0.json</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">my_sequence_1.raw</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">my_sequence_1.json</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">my_sequence_2.raw</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">my_sequence_2.json</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">my_sequence_3.raw</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">my_sequence_3.json</span></code></p></li>
+</ul>
+</div>
+<div class="section" id="raw-picture-data-file-format">
+<h3><code class="docutils literal notranslate"><span class="pre">.raw</span></code> (picture data) file format<a class="headerlink" href="#raw-picture-data-file-format" title="Permalink to this headline">¶</a></h3>
+<p>The raw picture file (<code class="docutils literal notranslate"><span class="pre">*.raw</span></code>) contains sample values in ‘planar’ form where
+the values for each picture component are stored separately as illustrated
+below:</p>
+<img alt="../_images/planar_format.svg" src="../_images/planar_format.svg" /><p>Sample values are stored in raster scan order, starting with the top-left
+sample and working left-to-right then top-to-bottom.</p>
+<p>Samples are stored as unsigned integers in the smallest power-of-two number of
+bytes in which they fit. For example:</p>
+<ul class="simple">
+<li><p>1 to 8 bit formats use one byte per sample</p></li>
+<li><p>9 to 16 bit formats use two bytes per sample</p></li>
+<li><p>17 to 32 bit formats use four bytes per sample</p></li>
+<li><p>And so on…</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The luma (Y) and color difference (C1, C2) components might have different
+bit depths, and therefore use a different number of bytes per sample in the
+raw format.</p>
+</div>
+<p>Sample values are stored in little-endian byte order, least-significant-bit
+aligned and zero padded.</p>
+<p>For example, a 10 bit sample is stored as two bytes. The first byte contains
+the least significant eight bits of the sample value. The two least significant
+bits of the second byte contain the two most significant bits of the sample
+value. The six most significant bits of the second byte are all zero. This is
+illustrated below:</p>
+<img alt="../_images/sample_format.svg" src="../_images/sample_format.svg" /></div>
+<div class="section" id="json-metadata-file-format">
+<h3><code class="docutils literal notranslate"><span class="pre">.json</span></code> (metadata) file format<a class="headerlink" href="#json-metadata-file-format" title="Permalink to this headline">¶</a></h3>
+<p>Each raw picture file is accompanied by a metadata file with the same name but
+a <code class="docutils literal notranslate"><span class="pre">.json</span></code> extension. This file is a UTF-8 encoded <a class="reference external" href="https://www.json.org/">JSON (ECMA-404)</a> with the following structure:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;picture_number&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;picture_coding_mode&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">int</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;video_parameters&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">video</span><span class="o">-</span><span class="n">parameters</span><span class="o">&gt;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">picture_number</span></code> field gives the picture number (see section (12.2) of
+the VC-2 standard) as a string. This might not be the same as the number used
+in the file name.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A string is used for the <code class="docutils literal notranslate"><span class="pre">picture_number</span></code> field because JSON
+implementations handle large integers inconsistently.</p>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">picture_coding_mode</span></code> indicates whether each picture corresponds to a
+frame (0) or a field (1) in the video (see section (11.5)).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Note that the scan format flag defined in the <code class="docutils literal notranslate"><span class="pre">source_sampling</span></code> field of
+the <code class="docutils literal notranslate"><span class="pre">video_parameters</span></code> (11.4.5) does <em>not</em> control whether pictures
+correspond to frames or fields.</p>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">video_parameters</span></code> field contains an object of the following form:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">video</span><span class="o">-</span><span class="n">parameters</span><span class="o">&gt;</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;frame_width&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">int</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;frame_height&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">int</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;color_diff_format_index&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">int</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;source_sampling&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">int</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;top_field_first&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">bool</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;frame_rate_numer&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">int</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;frame_rate_denom&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">int</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;pixel_aspect_ratio_numer&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">int</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;pixel_aspect_ratio_denom&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">int</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;clean_width&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">int</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;clean_height&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">int</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;left_offset&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">int</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;top_offset&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">int</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;luma_offset&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">int</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;luma_excursion&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">int</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;color_diff_offset&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">int</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;color_diff_excursion&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">int</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;color_primaries_index&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">int</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;color_matrix_index&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">int</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;transfer_function_index&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">int</span><span class="o">&gt;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>This is the same structure described in section (11.4) of the VC-2 standard and
+populated by the <code class="docutils literal notranslate"><span class="pre">source_parameters</span></code> pseudocode function.</p>
+</div>
+<div class="section" id="computing-picture-component-dimensions-and-depths">
+<h3>Computing picture component dimensions and depths<a class="headerlink" href="#computing-picture-component-dimensions-and-depths" title="Permalink to this headline">¶</a></h3>
+<p>The dimensions of the Y, C1 and C2 components of each picture in the raw file
+can be computed from the metadata as specified in the <code class="docutils literal notranslate"><span class="pre">picture_dimensions</span></code>
+pseudocode function from section (11.6.2) of the VC-2 standard:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">picture_dimensions</span><span class="p">(</span><span class="n">video_parameters</span><span class="p">,</span> <span class="n">picture_coding_mode</span><span class="p">):</span>
+    <span class="n">state</span><span class="p">[</span><span class="n">luma_width</span><span class="p">]</span> <span class="o">=</span> <span class="n">video_parameters</span><span class="p">[</span><span class="n">frame_width</span><span class="p">]</span>
+    <span class="n">state</span><span class="p">[</span><span class="n">luma_height</span><span class="p">]</span> <span class="o">=</span> <span class="n">video_parameters</span><span class="p">[</span><span class="n">frame_height</span><span class="p">]</span>
+    <span class="n">state</span><span class="p">[</span><span class="n">color_diff_width</span><span class="p">]</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="n">luma_width</span><span class="p">]</span>
+    <span class="n">state</span><span class="p">[</span><span class="n">color_diff_height</span><span class="p">]</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="n">luma_height</span><span class="p">]</span>
+    <span class="n">color_diff_format_index</span> <span class="o">=</span> <span class="n">video_parameters</span><span class="p">[</span><span class="n">color_diff_format_index</span><span class="p">]</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">color_diff_format_index</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">state</span><span class="p">[</span><span class="n">color_diff_width</span><span class="p">]</span> <span class="o">//=</span> <span class="mi">2</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">color_diff_format_index</span> <span class="o">==</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="n">state</span><span class="p">[</span><span class="n">color_diff_width</span><span class="p">]</span> <span class="o">//=</span> <span class="mi">2</span>
+        <span class="n">state</span><span class="p">[</span><span class="n">color_diff_height</span><span class="p">]</span> <span class="o">//=</span> <span class="mi">2</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">picture_coding_mode</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">state</span><span class="p">[</span><span class="n">luma_height</span><span class="p">]</span> <span class="o">//=</span> <span class="mi">2</span>
+        <span class="n">state</span><span class="p">[</span><span class="n">color_diff_height</span><span class="p">]</span> <span class="o">//=</span> <span class="mi">2</span>
+</pre></div>
+</div>
+<p>The sample value bit depth is computed by the <code class="docutils literal notranslate"><span class="pre">video_depth</span></code> pseudocode
+function given in section (11.6.3) of the VC-2 standard:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">video_depth</span><span class="p">(</span><span class="n">video_parameters</span><span class="p">):</span>
+    <span class="n">state</span><span class="p">[</span><span class="n">luma_depth</span><span class="p">]</span> <span class="o">=</span> <span class="n">intlog2</span><span class="p">(</span><span class="n">video_parameters</span><span class="p">[</span><span class="n">luma_excursion</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">state</span><span class="p">[</span><span class="n">color_diff_depth</span><span class="p">]</span> <span class="o">=</span> <span class="n">intlog2</span><span class="p">(</span><span class="n">video_parameters</span><span class="p">[</span><span class="n">color_diff_excursion</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="vc2-picture-explain-utility">
+<h2><code class="docutils literal notranslate"><span class="pre">vc2-picture-explain</span></code> utility<a class="headerlink" href="#vc2-picture-explain-utility" title="Permalink to this headline">¶</a></h2>
+<p>The VC-2 conformance software provides the <a class="reference internal" href="../cli/vc2_picture_explain.html#vc2-picture-explain"><span class="std std-ref">vc2-picture-explain</span></a> command
+line utility which produces informative explanations of the raw format used by
+a particular video, along with commands to display the video directly, if
+possible.</p>
+<p>For example, given a typical raw 1080i60, 10-bit 4:2:2 video file as input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ vc2-picture-explain picture_0.raw
+Normative description
+=====================
+
+Picture coding mode: pictures_are_fields (1)
+
+Video parameters:
+
+* frame_width: 1920
+* frame_height: 1080
+* color_diff_format_index: color_4_2_2 (1)
+* source_sampling: interlaced (1)
+* top_field_first: True
+* frame_rate_numer: 30000
+* frame_rate_denom: 1001
+* pixel_aspect_ratio_numer: 1
+* pixel_aspect_ratio_denom: 1
+* clean_width: 1920
+* clean_height: 1080
+* left_offset: 0
+* top_offset: 0
+* luma_offset: 64
+* luma_excursion: 876
+* color_diff_offset: 512
+* color_diff_excursion: 896
+* color_primaries_index: hdtv (0)
+* color_matrix_index: hdtv (0)
+* transfer_function_index: tv_gamma (0)
+
+Explanation (informative)
+=========================
+
+Each raw picture contains a single field. The top field comes first.
+
+Pictures contain three planar components: Y, Cb and Cr, in that order, which are
+4:2:2 subsampled.
+
+The Y component consists of 1920x540 10 bit values stored as 16 bit (2 byte)
+values (with the 6 most significant bits set to 0) in little-endian byte order.
+Values run from 0 (video level -0.07) to 1023 (video level 1.09).
+
+The Cb and Cr components consist of 960x540 10 bit values stored as 16 bit (2
+byte) values (with the 6 most significant bits set to 0) in little-endian byte
+order. Values run from 0 (video level -0.57) to 1023 (video level 0.57).
+
+The color model uses the &#39;hdtv&#39; primaries (ITU-R BT.709), the &#39;hdtv&#39; color
+matrix (ITU-R BT.709) and the &#39;tv_gamma&#39; transfer function (ITU-R BT.2020).
+
+The pixel aspect ratio is 1:1 (not to be confused with the frame aspect ratio).
+
+Example FFMPEG command (informative)
+====================================
+
+The following command can be used to play back this video format using FFMPEG:
+
+    $ ffplay \
+        -f image2 \
+        -video_size 1920x540 \
+        -framerate 60000/1001 \
+        -pixel_format yuv422p10le \
+        -i picture_%d.raw \
+        -vf weave=t,yadif
+
+Where:
+
+* `-f image2` = Read pictures from individual files
+* `-video_size 1920x540` = Picture size (not frame size).
+* `-framerate 60000/1001` = Picture rate (not frame rate)
+* `-pixel_format` = Specifies raw picture encoding.
+* `yuv` = Y C1 C2 color.
+* `422` = 4:2:2 color difference subsampling.
+* `p` = Planar format.
+* `10le` = 10 bit little-endian values, LSB-aligned within 16 bit words.
+* `-i /tmp/picture_%d.raw` = Input raw picture filename pattern
+* `-vf` = define a pipeline of video filtering operations
+* `weave=t` = interleave pairs of pictures, top field first
+* `yadif` = (optional) apply a deinterlacing filter for display purposes
+
+This command is provided as a minimal example for basic playback of this raw
+video format.  While it attempts to ensure correct frame rate, pixel aspect
+ratio, interlacing mode and basic pixel format, color model options are omitted
+due to inconsistent handling by FFMPEG.
+
+Example ImageMagick command (informative)
+=========================================
+
+No ImageMagick command is available for this raw picture format (Unsupported bit
+depth: 10 bits).
+</pre></div>
+</div>
+<p>Here, the ‘explanation’ section provides a human readable description of the
+raw format. This might be of help when trying to interpret the raw video data.</p>
+<p>Example invocations of <a class="reference external" href="https://ffmpeg.org/">FFmpeg’s</a> <code class="docutils literal notranslate"><span class="pre">ffplay</span></code> command and
+<a class="reference external" href="https://imagemagick.org/">ImageMagick’s</a> <code class="docutils literal notranslate"><span class="pre">convert</span></code> command are provided,
+when possible, for displaying the raw picture data directly.</p>
+</div>
+<div class="section" id="tip-splitting-and-combining-picture-data-files">
+<h2>Tip: Splitting and combining picture data files<a class="headerlink" href="#tip-splitting-and-combining-picture-data-files" title="Permalink to this headline">¶</a></h2>
+<p>Many codec implementations natively produce or expect a raw video format where
+picture data is stored concatenated in a single file rather than as individual
+files. If individual pictures within a concatenated video format use the same
+representation as the conformance software, the following commands can be used
+to convert picture data between single-file and file-per-picture forms.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>All of the commands below assume you are using a Bash shell and GNU
+implementations of standard POSIX tools.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The commands described below only deal with picture data (<code class="docutils literal notranslate"><span class="pre">*.raw</span></code>) files.
+You will still need to process the metadata (<code class="docutils literal notranslate"><span class="pre">*.json</span></code> files) by other
+means.</p>
+</div>
+<div class="section" id="combining-pictures">
+<h3>Combining pictures<a class="headerlink" href="#combining-pictures" title="Permalink to this headline">¶</a></h3>
+<p>To concatenate a series of (for example) 8 picture data (<cite>*.raw</cite>) files
+numbered 0 to 7 into a single file, <code class="docutils literal notranslate"><span class="pre">cat</span></code> can be used:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cat picture_{0..7}.raw &gt; video.raw
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The explicit use of the Bash <code class="docutils literal notranslate"><span class="pre">{0..7}</span></code> range specifier is preferred over
+using a simple wildcard (e.g. <code class="docutils literal notranslate"><span class="pre">*</span></code>). This is because the order in which
+the individual pictures are listed by the wildcard expansion is not well
+defined.</p>
+</div>
+</div>
+<div class="section" id="splitting-concatenated-pictures">
+<h3>Splitting concatenated pictures<a class="headerlink" href="#splitting-concatenated-pictures" title="Permalink to this headline">¶</a></h3>
+<p>To split a series of pictures concatenated together in a single file into
+individual pictures, <code class="docutils literal notranslate"><span class="pre">split</span></code> can be used:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ split \
+    video.raw \
+    -b 12345 \
+    -d \
+    --additional-suffix=&quot;.raw&quot; \
+    picture_
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>The file to be split is given as the first argument (<code class="docutils literal notranslate"><span class="pre">video.raw</span></code> in this
+example)</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">-b</span> <span class="pre">12345</span></code> argument defines the number of bytes in each picture and
+<code class="docutils literal notranslate"><span class="pre">12345</span></code> should be replaced with the correct number for the format used.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">-d</span></code> argument causes <code class="docutils literal notranslate"><span class="pre">split</span></code> to number (rather than letter) each
+output file.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">--additional-suffix</span></code> argument ensures the output filenames end with
+<code class="docutils literal notranslate"><span class="pre">.raw</span></code>.</p></li>
+<li><p>Final argument gives the start of the output filenames (<code class="docutils literal notranslate"><span class="pre">picture_</span></code> in this
+example)</p></li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>An easy way to determine the picture size for a given video format is to
+use the <code class="docutils literal notranslate"><span class="pre">wc</span></code> command to get the size of a picture file generated by the
+conformance software. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ wc -c path/to/picture_0.raw
+12345
+</pre></div>
+</div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">split</span></code> command adds leading zeros in the picture numbers of the
+output files. These will not be found by the sample <code class="docutils literal notranslate"><span class="pre">ffplay</span></code> commands
+generated by <code class="docutils literal notranslate"><span class="pre">vc2-picture-explain</span></code>. Replace the <code class="docutils literal notranslate"><span class="pre">%d</span></code> in the picture
+filenames in the generated commands with <code class="docutils literal notranslate"><span class="pre">%02d</span></code> to handle this situation.</p>
+</div>
+<p>Next, let’s walk through the process of generating test cases in
+<a class="reference internal" href="generating_test_cases.html#guide-generating-test-cases"><span class="std std-ref">Generating test cases</span></a>.</p>
+</div>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Video file format</a><ul>
+<li><a class="reference internal" href="#format-description">Format description</a><ul>
+<li><a class="reference internal" href="#file-names">File names</a></li>
+<li><a class="reference internal" href="#raw-picture-data-file-format"><code class="docutils literal notranslate"><span class="pre">.raw</span></code> (picture data) file format</a></li>
+<li><a class="reference internal" href="#json-metadata-file-format"><code class="docutils literal notranslate"><span class="pre">.json</span></code> (metadata) file format</a></li>
+<li><a class="reference internal" href="#computing-picture-component-dimensions-and-depths">Computing picture component dimensions and depths</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#vc2-picture-explain-utility"><code class="docutils literal notranslate"><span class="pre">vc2-picture-explain</span></code> utility</a></li>
+<li><a class="reference internal" href="#tip-splitting-and-combining-picture-data-files">Tip: Splitting and combining picture data files</a><ul>
+<li><a class="reference internal" href="#combining-pictures">Combining pictures</a></li>
+<li><a class="reference internal" href="#splitting-concatenated-pictures">Splitting concatenated pictures</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="installation.html"
+                        title="previous chapter">Conformance Software Installation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="generating_test_cases.html"
+                        title="next chapter">Generating test cases</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/user_guide/file_format.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generating_test_cases.html" title="Generating test cases"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Conformance Software Installation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >User’s guide (for codec testers)</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Video file format</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,249 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vc2_conformance.string_utils: String formatting utilities &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="vc2_conformance.py2x_compat: Python 3.x backports" href="py2x_compat.html" />
+    <link rel="prev" title="vc2_conformance.string_formatters: Value-to-string formatting utilities" href="string_formatters.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="py2x_compat.html" title="vc2_conformance.py2x_compat: Python 3.x backports"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="string_formatters.html" title="vc2_conformance.string_formatters: Value-to-string formatting utilities"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Utility module references</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.string_utils</span></code>: String formatting utilities</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-vc2_conformance.string_utils">
+<span id="vc2-conformance-string-utils-string-formatting-utilities"></span><h1><a class="reference internal" href="#module-vc2_conformance.string_utils" title="vc2_conformance.string_utils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.string_utils</span></code></a>: String formatting utilities<a class="headerlink" href="#module-vc2_conformance.string_utils" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-vc2_conformance.string_utils" title="vc2_conformance.string_utils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.string_utils</span></code></a> module contains a selection of
+general purpose string formatting routines.</p>
+<dl class="py function">
+<dt id="vc2_conformance.string_utils.indent">
+<code class="sig-name descname"><span class="pre">indent</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'</span>&#160; <span class="pre">'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.string_utils.indent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Indent the string ‘text’ with the prefix string ‘prefix’.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function is provided partly because Python 2.x doesn’t include
+<a class="reference external" href="https://docs.python.org/3/library/textwrap.html#textwrap.indent" title="(in Python v3.9)"><code class="xref py py-func docutils literal notranslate"><span class="pre">textwrap.indent()</span></code></a> in its standard library and partly to
+provide an indent function with sensible defaults (i.e. 2 character
+indent, and always indent every line).</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.string_utils.ellipsise">
+<code class="sig-name descname"><span class="pre">ellipsise</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.string_utils.ellipsise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a string which contains very long sequences of the same character
+(e.g. long mostly constant binary or hex numbers), produce an ‘ellipsised’
+version with some of the repeated characters replaced with ‘…’.</p>
+<p>Exactly one shortening operation will be carried out (on the longest run)
+meaning that so long as the original string length is known, no ambiguity
+is introduced in the ellipsised version.</p>
+<p>For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ellipsise</span><span class="p">(</span><span class="s2">&quot;0b10100000000000000000000000000000000000001&quot;</span><span class="p">)</span>
+<span class="go">&quot;0b1010000...00001&quot;</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>text</strong><span class="classifier">str</span></dt><dd><p>String to ellipsise.</p>
+</dd>
+<dt><strong>context</strong><span class="classifier">int</span></dt><dd><p>The number of repeated characters to retain before and after the
+ellipses.</p>
+</dd>
+<dt><strong>min_length</strong><span class="classifier">int</span></dt><dd><p>The minimum number of characters to bother replacing with ‘…’. This
+means that no change will be made until 2*context + min_length
+character repetitions.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.string_utils.ellipsise_lossy">
+<code class="sig-name descname"><span class="pre">ellipsise_lossy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">80</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.string_utils.ellipsise_lossy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a string which may not fit within a given line length, trnucate the
+string by adding ellipses in the middle.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.string_utils.split_into_line_wrap_blocks">
+<code class="sig-name descname"><span class="pre">split_into_line_wrap_blocks</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wrap_indented_blocks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.string_utils.split_into_line_wrap_blocks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deindent and split a multi-line markdown-style string into blocks of text
+which can be line-wrapped independently.</p>
+<p>For example given a markdown-style string defined like so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    A markdown style title</span>
+<span class="sd">    ======================</span>
+
+<span class="sd">    This is a string with some initial indentation</span>
+<span class="sd">    and also some hard line-wraps inserted too. This</span>
+<span class="sd">    paragraph ought to be line-wrapped as an</span>
+<span class="sd">    independent unit.</span>
+
+<span class="sd">    Here&#39;s a second paragraph which also ought to be</span>
+<span class="sd">    line wrapped as its own unit.</span>
+
+<span class="sd">    * This is a bulleted list</span>
+<span class="sd">    * Each bullet point should be line wrapped as an</span>
+<span class="sd">      individual unit (with the wrapping indented</span>
+<span class="sd">      as shown here).</span>
+<span class="sd">    * Notice that bullets don&#39;t have a newline</span>
+<span class="sd">      between them like paragraphs do.</span>
+
+<span class="sd">    1. Numbered lists are also supported.</span>
+<span class="sd">    2. Here long lines will be line wrapped in much</span>
+<span class="sd">       the same way as a bulleted list.</span>
+
+<span class="sd">    Finally:</span>
+
+<span class="sd">        An intended block will also remain indented.</span>
+<span class="sd">        However, if wrap_indented_blocks is False, the</span>
+<span class="sd">        existing linebreaks will be retained (e.g. for</span>
+<span class="sd">        markdown-style code blocks). If set to True,</span>
+<span class="sd">        the indented block will be line-wrapped.</span>
+<span class="sd">&#39;&#39;&#39;</span>
+</pre></div>
+</div>
+<p>This will be split into independently line wrappable segments (as
+described).</p>
+<dl class="field-list">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl>
+<dt><strong>blocks</strong><span class="classifier">[(first_indent, rest_indent, text), …]</span></dt><dd><p>A series of wrappable blocks. In each tuple:</p>
+<ul class="simple">
+<li><p>first_indent contains a string which should be used to indent the
+first line of the wrapped block.</p></li>
+<li><p>rest_indent should be a string which should be used to indent all
+subsequent lines in the wrapped block. This will be the same length
+as first_indent.</p></li>
+<li><p>text will be an indentation and newline-free string</p></li>
+</ul>
+<p>An empty block (i.e. <code class="docutils literal notranslate"><span class="pre">(&quot;&quot;,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">&quot;&quot;)</span></code>) will be included between
+each paragraph in the input so that the output maintains the same
+vertical whitespace profile.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.string_utils.wrap_blocks">
+<code class="sig-name descname"><span class="pre">wrap_blocks</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">blocks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wrap_indented_blocks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.string_utils.wrap_blocks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a line-wrapped version of a series of text blocks as produced by
+<a class="reference internal" href="#vc2_conformance.string_utils.split_into_line_wrap_blocks" title="vc2_conformance.string_utils.split_into_line_wrap_blocks"><code class="xref py py-func docutils literal notranslate"><span class="pre">split_into_line_wrap_blocks()</span></code></a>.</p>
+<p>Expects a list of (first_line_indent, remaining_line_indent, text) tuples
+to output.</p>
+<p>If ‘width’ is None, assumes an infinite line width.</p>
+<p>If ‘wrap_indented_blocks’ is False (the default) indented (markdown-style)
+code blocks will not be line wrapped while other indented blocks (e.g.
+bullets) will be.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.string_utils.wrap_paragraphs">
+<code class="sig-name descname"><span class="pre">wrap_paragraphs</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wrap_indented_blocks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.string_utils.wrap_paragraphs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Re-line-wrap a markdown-style string with hard-line-wrapped paragraphs,
+bullet points, numbered lists and code blocks (see
+<a class="reference internal" href="#vc2_conformance.string_utils.split_into_line_wrap_blocks" title="vc2_conformance.string_utils.split_into_line_wrap_blocks"><code class="xref py py-func docutils literal notranslate"><span class="pre">split_into_line_wrap_blocks()</span></code></a>).</p>
+<p>If ‘width’ is None, assumes an infinite line width.</p>
+<p>If ‘wrap_indented_blocks’ is False (the default) indented (markdown-style)
+code blocks will not be line wrapped while other indented blocks (e.g.
+bullets) will be.</p>
+</dd></dl>
+
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="string_formatters.html"
+                        title="previous chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.string_formatters</span></code>: Value-to-string formatting utilities</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="py2x_compat.html"
+                        title="next chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.py2x_compat</span></code>: Python 3.x backports</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/utility_modules/string_utils.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="py2x_compat.html" title="vc2_conformance.py2x_compat: Python 3.x backports"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="string_formatters.html" title="vc2_conformance.string_formatters: Value-to-string formatting utilities"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Utility module references</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.string_utils</span></code>: String formatting utilities</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>

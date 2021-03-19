@@ -1,0 +1,1274 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="208.51868mm"
+   height="55.991024mm"
+   viewBox="0 0 738.84571 198.39339"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="noise_gain_accumulation.svg">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="3.0886016"
+     inkscape:cx="558.70464"
+     inkscape:cy="134.45633"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1775"
+     inkscape:window-height="1401"
+     inkscape:window-x="0"
+     inkscape:window-y="18"
+     inkscape:window-maximized="0"
+     fit-margin-top="2"
+     fit-margin-left="2"
+     fit-margin-right="2"
+     fit-margin-bottom="2" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-16.430442,-239.21593)">
+    <g
+       id="g4782"
+       transform="matrix(0,0.50000388,-0.50000388,0,687.26713,163.79596)" />
+    <g
+       id="g6818">
+      <g
+         transform="translate(6.1082387,0)"
+         id="g4178">
+        <rect
+           y="288.94775"
+           x="17.908817"
+           height="127.769"
+           width="127.769"
+           id="rect65608"
+           style="opacity:1;fill:#ffffff;fill-opacity:0.37600002;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+        <text
+           sodipodi:linespacing="125%"
+           id="text65610"
+           y="355.79947"
+           x="81.505409"
+           style="font-style:normal;font-weight:normal;font-size:12.76305962px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           xml:space="preserve"
+           transform="scale(0.99897664,1.0010244)"><tspan
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.76305962px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle"
+             y="355.79947"
+             x="81.505409"
+             id="tspan65612"
+             sodipodi:role="line">1</tspan></text>
+      </g>
+      <text
+         transform="scale(0.99897664,1.0010244)"
+         sodipodi:linespacing="125%"
+         id="text18352"
+         y="429.96964"
+         x="87.961128"
+         style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         xml:space="preserve"><tspan
+           id="tspan18356"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+           y="429.96964"
+           x="87.961128"
+           sodipodi:role="line">No transform</tspan></text>
+      <text
+         transform="scale(0.99897664,1.0010244)"
+         sodipodi:linespacing="125%"
+         id="text18352-1"
+         y="367.26834"
+         x="86.753639"
+         style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         xml:space="preserve"><tspan
+           id="tspan18356-3"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+           y="367.26834"
+           x="86.753639"
+           sodipodi:role="line">DC</tspan></text>
+    </g>
+    <g
+       id="g6785">
+      <g
+         transform="translate(1.6510202,0)"
+         id="g5513">
+        <g
+           id="g4273"
+           transform="translate(-307.81522,0)">
+          <rect
+             y="288.94775"
+             x="479.15714"
+             height="127.769"
+             width="127.769"
+             id="rect4213"
+             style="opacity:1;fill:#ffffff;fill-opacity:0.37600002;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+          <text
+             sodipodi:linespacing="125%"
+             id="text4217"
+             y="324.1232"
+             x="575.9541"
+             style="font-style:normal;font-weight:normal;font-size:12.76305962px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+             xml:space="preserve"
+             transform="scale(0.99897664,1.0010244)"><tspan
+               style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.76305962px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle"
+               y="324.1232"
+               x="575.9541"
+               id="tspan4219"
+               sodipodi:role="line">s<tspan
+   style="font-style:normal;font-size:64.99999762%;baseline-shift:super"
+   id="tspan4400">-1</tspan>αβ</tspan></text>
+          <text
+             transform="scale(0.99897664,1.0010244)"
+             xml:space="preserve"
+             style="font-style:normal;font-weight:normal;font-size:12.76305962px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+             x="511.70676"
+             y="325.98468"
+             id="text4221"
+             sodipodi:linespacing="125%"><tspan
+               sodipodi:role="line"
+               id="tspan4223"
+               x="511.70676"
+               y="325.98468"
+               style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.76305962px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle">sα<tspan
+   id="tspan4271"
+   style="font-style:normal;font-size:64.99999762%;baseline-shift:super">2</tspan></tspan></text>
+          <g
+             id="g4245">
+            <path
+               inkscape:connector-curvature="0"
+               id="path4215"
+               d="m 543.04163,288.44775 0,128.769"
+               style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+          </g>
+          <path
+             inkscape:connector-curvature="0"
+             id="path4252"
+             d="m 607.42614,352.83231 -128.769,0"
+             style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+          <text
+             transform="scale(0.99897664,1.0010244)"
+             xml:space="preserve"
+             style="font-style:normal;font-weight:normal;font-size:12.76305962px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+             x="575.9541"
+             y="388.5593"
+             id="text4261"
+             sodipodi:linespacing="125%"><tspan
+               sodipodi:role="line"
+               id="tspan4263"
+               x="575.9541"
+               y="388.5593"
+               style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.76305962px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle">s<tspan
+   style="font-style:normal;font-size:64.99999762%;baseline-shift:super"
+   id="tspan4408">-1</tspan>β<tspan
+   id="tspan4269"
+   style="font-style:normal;font-size:64.99999762%;baseline-shift:super">2</tspan></tspan></text>
+          <text
+             sodipodi:linespacing="125%"
+             id="text4265"
+             y="387.94229"
+             x="511.70676"
+             style="font-style:normal;font-weight:normal;font-size:12.76305962px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+             xml:space="preserve"
+             transform="scale(0.99897664,1.0010244)"><tspan
+               style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.76305962px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle"
+               y="387.94229"
+               x="511.70676"
+               id="tspan4267"
+               sodipodi:role="line">sαβ</tspan></text>
+        </g>
+        <text
+           transform="scale(0.99897664,1.0010244)"
+           sodipodi:linespacing="125%"
+           id="text5025"
+           y="429.96964"
+           x="235.4133"
+           style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           xml:space="preserve"><tspan
+             id="tspan5027"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+             y="429.96964"
+             x="235.4133"
+             sodipodi:role="line">1-level 2D transform</tspan></text>
+      </g>
+      <g
+         transform="translate(0.35410613,0)"
+         id="g6031">
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           x="204.66263"
+           y="335.509"
+           id="text18352-1-7"
+           sodipodi:linespacing="125%"
+           transform="scale(0.99897664,1.0010244)"><tspan
+             sodipodi:role="line"
+             x="204.66263"
+             y="335.509"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+             id="tspan18356-3-4">LL</tspan></text>
+        <text
+           transform="scale(0.99897664,1.0010244)"
+           sodipodi:linespacing="125%"
+           id="text6019"
+           y="335.509"
+           x="268.82584"
+           style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           xml:space="preserve"><tspan
+             id="tspan6021"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+             y="335.509"
+             x="268.82584"
+             sodipodi:role="line">HL</tspan></text>
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           x="204.57849"
+           y="397.95755"
+           id="text6023"
+           sodipodi:linespacing="125%"
+           transform="scale(0.99897664,1.0010244)"><tspan
+             sodipodi:role="line"
+             x="204.57849"
+             y="397.95755"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+             id="tspan6025">LH</tspan></text>
+        <text
+           transform="scale(0.99897664,1.0010244)"
+           sodipodi:linespacing="125%"
+           id="text6027"
+           y="397.95755"
+           x="269.17776"
+           style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           xml:space="preserve"><tspan
+             id="tspan6029"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+             y="397.95755"
+             x="269.17776"
+             sodipodi:role="line">HH</tspan></text>
+      </g>
+    </g>
+    <g
+       id="g6727">
+      <g
+         transform="translate(-2.395369,0)"
+         id="g5472">
+        <g
+           id="g4887"
+           transform="translate(-154.79295,-146.37112)">
+          <rect
+             y="435.31888"
+             x="479.15714"
+             height="127.769"
+             width="127.769"
+             id="rect4664"
+             style="opacity:1;fill:#ffffff;fill-opacity:0.37600002;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+          <text
+             sodipodi:linespacing="125%"
+             id="text4666"
+             y="470.34451"
+             x="575.95404"
+             style="font-style:normal;font-weight:normal;font-size:12.76305962px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+             xml:space="preserve"
+             transform="scale(0.99897664,1.0010244)"><tspan
+               style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.76305962px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle"
+               y="470.34451"
+               x="575.95404"
+               id="tspan4668"
+               sodipodi:role="line">sαβ</tspan></text>
+          <text
+             transform="scale(0.99897664,1.0010244)"
+             xml:space="preserve"
+             style="font-style:normal;font-weight:normal;font-size:9.30427074px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+             x="495.6767"
+             y="454.78159"
+             id="text4672"
+             sodipodi:linespacing="125%"><tspan
+               sodipodi:role="line"
+               id="tspan4674"
+               x="495.6767"
+               y="454.78159"
+               style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.30427074px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle">s<tspan
+   style="font-style:normal;font-size:6.04777527px;baseline-shift:super"
+   id="tspan4676">2</tspan>α<tspan
+   id="tspan4678"
+   style="font-style:normal;font-size:6.04777527px;baseline-shift:super">4</tspan></tspan></text>
+          <g
+             id="g4680"
+             transform="translate(-1.151e-5,146.37111)">
+            <path
+               inkscape:connector-curvature="0"
+               id="path4682"
+               d="m 543.04163,288.44775 0,128.769"
+               style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+          </g>
+          <path
+             inkscape:connector-curvature="0"
+             id="path4684"
+             d="m 607.42613,499.20342 -128.769,0"
+             style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+          <text
+             transform="scale(0.99897664,1.0010244)"
+             xml:space="preserve"
+             style="font-style:normal;font-weight:normal;font-size:12.76305962px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+             x="575.95404"
+             y="534.78064"
+             id="text4686"
+             sodipodi:linespacing="125%"><tspan
+               sodipodi:role="line"
+               id="tspan4688"
+               x="575.95404"
+               y="534.78064"
+               style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.76305962px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle">sβ<tspan
+   id="tspan4692"
+   style="font-style:normal;font-size:64.99999762%;baseline-shift:super">2</tspan></tspan></text>
+          <text
+             sodipodi:linespacing="125%"
+             id="text4694"
+             y="534.16364"
+             x="511.70676"
+             style="font-style:normal;font-weight:normal;font-size:12.76305962px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+             xml:space="preserve"
+             transform="scale(0.99897664,1.0010244)"><tspan
+               style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.76305962px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle"
+               y="534.16364"
+               x="511.70676"
+               id="tspan4696"
+               sodipodi:role="line">sαβ</tspan></text>
+          <g
+             id="g4770">
+            <g
+               id="g4700"
+               transform="matrix(0.50000388,0,0,0.50000388,239.57643,290.59388)">
+              <path
+                 inkscape:connector-curvature="0"
+                 id="path4702"
+                 d="m 543.04163,288.44775 0,128.769"
+                 style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.9999845px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+            </g>
+          </g>
+          <text
+             sodipodi:linespacing="125%"
+             id="text4708"
+             y="453.87439"
+             x="527.63"
+             style="font-style:normal;font-weight:normal;font-size:9.30427074px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+             xml:space="preserve"
+             transform="scale(0.99897664,1.0010244)"><tspan
+               style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.30427074px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle"
+               y="453.87439"
+               x="527.63"
+               id="tspan4710"
+               sodipodi:role="line">s<tspan
+   style="font-style:normal;font-size:6.04777527px;baseline-shift:super"
+   id="tspan4712">2</tspan>α<tspan
+   style="font-style:normal;font-size:6.04777527px;baseline-shift:super"
+   id="tspan4714">3</tspan>β</tspan></text>
+          <g
+             id="g4778"
+             transform="matrix(0,0.50000388,-0.50000388,0,687.26713,195.73818)">
+            <path
+               inkscape:connector-curvature="0"
+               id="path4780"
+               d="m 543.04163,288.44775 0,128.769"
+               style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.9999845px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+          </g>
+          <text
+             transform="scale(0.99897664,1.0010244)"
+             xml:space="preserve"
+             style="font-style:normal;font-weight:normal;font-size:9.30427074px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+             x="527.63"
+             y="485.78394"
+             id="text4798"
+             sodipodi:linespacing="125%"><tspan
+               sodipodi:role="line"
+               id="tspan4800"
+               x="527.63"
+               y="485.78394"
+               style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.30427074px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle">s<tspan
+   id="tspan4802"
+   style="font-style:normal;font-size:6.04777527px;baseline-shift:super">2</tspan>α<tspan
+   id="tspan4804"
+   style="font-style:normal;font-size:6.04777527px;baseline-shift:super">2</tspan>β<tspan
+   id="tspan4806"
+   style="font-style:normal;font-size:64.99999762%;baseline-shift:super">2</tspan></tspan></text>
+          <text
+             sodipodi:linespacing="125%"
+             id="text4708-3"
+             y="485.78394"
+             x="495.73502"
+             style="font-style:normal;font-weight:normal;font-size:9.30427074px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+             xml:space="preserve"
+             transform="scale(0.99897664,1.0010244)"><tspan
+               style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.30427074px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle"
+               y="485.78394"
+               x="495.73502"
+               id="tspan4710-7"
+               sodipodi:role="line">s<tspan
+   style="font-style:normal;font-size:6.04777527px;baseline-shift:super"
+   id="tspan4712-1">2</tspan>α<tspan
+   style="font-style:normal;font-size:6.04777527px;baseline-shift:super"
+   id="tspan4714-2">3</tspan>β</tspan></text>
+        </g>
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           x="388.88483"
+           y="429.96964"
+           id="text5053"
+           sodipodi:linespacing="125%"
+           transform="scale(0.99897664,1.0010244)"><tspan
+             sodipodi:role="line"
+             x="388.88483"
+             y="429.96964"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+             id="tspan5055">2-level 2D transform</tspan></text>
+      </g>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         x="337.9686"
+         y="316.69543"
+         id="text6105"
+         sodipodi:linespacing="125%"
+         transform="scale(0.99897664,1.0010244)"><tspan
+           sodipodi:role="line"
+           x="337.9686"
+           y="316.69543"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+           id="tspan6107">LL</tspan></text>
+      <text
+         transform="scale(0.99897664,1.0010244)"
+         sodipodi:linespacing="125%"
+         id="text6129"
+         y="316.69543"
+         x="369.73355"
+         style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         xml:space="preserve"><tspan
+           id="tspan6131"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+           y="316.69543"
+           x="369.73355"
+           sodipodi:role="line">HL</tspan></text>
+      <g
+         id="g6313">
+        <g
+           id="g6141">
+          <text
+             transform="scale(0.99897664,1.0010244)"
+             sodipodi:linespacing="125%"
+             id="text6109"
+             y="335.509"
+             x="418.30878"
+             style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+             xml:space="preserve"><tspan
+               id="tspan6111"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+               y="335.509"
+               x="418.30878"
+               sodipodi:role="line">HL</tspan></text>
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+             x="354.06143"
+             y="397.95755"
+             id="text6113"
+             sodipodi:linespacing="125%"
+             transform="scale(0.99897664,1.0010244)"><tspan
+               sodipodi:role="line"
+               x="354.06143"
+               y="397.95755"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+               id="tspan6115">LH</tspan></text>
+          <text
+             transform="scale(0.99897664,1.0010244)"
+             sodipodi:linespacing="125%"
+             id="text6117"
+             y="397.95755"
+             x="418.66071"
+             style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+             xml:space="preserve"><tspan
+               id="tspan6119"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+               y="397.95755"
+               x="418.66071"
+               sodipodi:role="line">HH</tspan></text>
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+             x="369.73355"
+             y="347.51425"
+             id="text6133"
+             sodipodi:linespacing="125%"
+             transform="scale(0.99897664,1.0010244)"><tspan
+               sodipodi:role="line"
+               x="369.73355"
+               y="347.51425"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+               id="tspan6135">HH</tspan></text>
+          <text
+             transform="scale(0.99897664,1.0010244)"
+             sodipodi:linespacing="125%"
+             id="text6137"
+             y="347.51425"
+             x="338.10632"
+             style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+             xml:space="preserve"><tspan
+               id="tspan6139"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+               y="347.51425"
+               x="338.10632"
+               sodipodi:role="line">LH</tspan></text>
+        </g>
+      </g>
+    </g>
+    <g
+       id="g6660">
+      <rect
+         style="opacity:1;fill:#ffffff;fill-opacity:0.37600002;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         id="rect5075"
+         width="127.769"
+         height="127.769"
+         x="470.9447"
+         y="288.94775" />
+      <text
+         transform="scale(0.99897664,1.0010244)"
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:12.76305962px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         x="567.73322"
+         y="324.12317"
+         id="text5077"
+         sodipodi:linespacing="125%"><tspan
+           sodipodi:role="line"
+           id="tspan5079"
+           x="567.73322"
+           y="324.12317"
+           style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.76305962px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle">sαβ</tspan></text>
+      <text
+         sodipodi:linespacing="125%"
+         id="text5083"
+         y="267.49854"
+         x="486.80072"
+         style="font-style:normal;font-weight:normal;font-size:9.30427074px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         xml:space="preserve"
+         transform="scale(0.99897664,1.0010244)"><tspan
+           style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.30427074px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle"
+           y="267.49854"
+           x="486.80072"
+           id="tspan5085"
+           sodipodi:role="line">s<tspan
+   id="tspan5087"
+   style="font-style:normal;font-size:6.04777527px;baseline-shift:super">3</tspan>α<tspan
+   style="font-style:normal;font-size:6.04777527px;baseline-shift:super"
+   id="tspan5089">5</tspan></tspan></text>
+      <path
+         inkscape:connector-curvature="0"
+         id="path5093"
+         d="m 534.82919,288.44774 0,128.769"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <path
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 599.2137,352.8323 -128.769,0"
+         id="path5095"
+         inkscape:connector-curvature="0" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text5097"
+         y="388.5593"
+         x="567.73322"
+         style="font-style:normal;font-weight:normal;font-size:12.76305962px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         xml:space="preserve"
+         transform="scale(0.99897664,1.0010244)"><tspan
+           style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.76305962px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle"
+           y="388.5593"
+           x="567.73322"
+           id="tspan5099"
+           sodipodi:role="line">sβ<tspan
+   style="font-style:normal;font-size:64.99999762%;baseline-shift:super"
+   id="tspan5103">2</tspan></tspan></text>
+      <text
+         transform="scale(0.99897664,1.0010244)"
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:12.76305962px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         x="503.4859"
+         y="387.94229"
+         id="text5105"
+         sodipodi:linespacing="125%"><tspan
+           sodipodi:role="line"
+           id="tspan5107"
+           x="503.4859"
+           y="387.94229"
+           style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.76305962px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle">sαβ</tspan></text>
+      <g
+         id="g5113"
+         transform="matrix(0.50000388,0,0,0.50000388,231.364,144.22276)">
+        <path
+           inkscape:connector-curvature="0"
+           id="path5115"
+           d="m 543.04163,288.44775 0,128.769"
+           style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.9999845px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      </g>
+      <text
+         transform="scale(0.99897664,1.0010244)"
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:9.30427074px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         x="519.40918"
+         y="307.65305"
+         id="text5117"
+         sodipodi:linespacing="125%"><tspan
+           sodipodi:role="line"
+           id="tspan5119"
+           x="519.40918"
+           y="307.65305"
+           style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.30427074px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle">s<tspan
+   id="tspan5121"
+   style="font-style:normal;font-size:6.04777527px;baseline-shift:super">2</tspan>α<tspan
+   id="tspan5123"
+   style="font-style:normal;font-size:6.04777527px;baseline-shift:super">3</tspan>β</tspan></text>
+      <path
+         inkscape:connector-curvature="0"
+         id="path5127"
+         d="m 534.82971,320.88998 -64.385,0"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text5129"
+         y="339.56259"
+         x="519.40918"
+         style="font-style:normal;font-weight:normal;font-size:9.30427074px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         xml:space="preserve"
+         transform="scale(0.99897664,1.0010244)"><tspan
+           style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.30427074px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle"
+           y="339.56259"
+           x="519.40918"
+           id="tspan5131"
+           sodipodi:role="line">s<tspan
+   style="font-style:normal;font-size:6.04777527px;baseline-shift:super"
+   id="tspan5133">2</tspan>α<tspan
+   style="font-style:normal;font-size:6.04777527px;baseline-shift:super"
+   id="tspan5135">2</tspan>β<tspan
+   style="font-style:normal;font-size:64.99999762%;baseline-shift:super"
+   id="tspan5137">2</tspan></tspan></text>
+      <text
+         transform="scale(0.99897664,1.0010244)"
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:9.30427074px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         x="487.51416"
+         y="339.56259"
+         id="text5139"
+         sodipodi:linespacing="125%"><tspan
+           sodipodi:role="line"
+           id="tspan5141"
+           x="487.51416"
+           y="339.56259"
+           style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.30427074px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle">s<tspan
+   id="tspan5143"
+   style="font-style:normal;font-size:6.04777527px;baseline-shift:super">2</tspan>α<tspan
+   id="tspan5145"
+   style="font-style:normal;font-size:6.04777527px;baseline-shift:super">3</tspan>β</tspan></text>
+      <g
+         transform="matrix(0.24999806,0,0,0.24999806,351.15648,216.33638)"
+         id="g5153">
+        <path
+           style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:4.00003099px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           d="m 543.04163,288.44775 0,128.769"
+           id="path5155"
+           inkscape:connector-curvature="0" />
+      </g>
+      <g
+         id="g5159"
+         transform="matrix(0.24999806,0,0,0.24999806,335.18536,216.33638)">
+        <path
+           inkscape:connector-curvature="0"
+           id="path5161"
+           d="m 543.04163,288.44775 0,128.769"
+           style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:4.00003099px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      </g>
+      <text
+         transform="scale(0.99897664,1.0010244)"
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:9.30427074px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         x="506.4545"
+         y="280.01166"
+         id="text5163"
+         sodipodi:linespacing="125%"><tspan
+           sodipodi:role="line"
+           id="tspan5165"
+           x="506.4545"
+           y="280.01166"
+           style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.30427074px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle">s<tspan
+   style="font-style:normal;font-size:6.04777527px;baseline-shift:super"
+   id="tspan5167">3</tspan>α<tspan
+   style="font-style:normal;font-size:64.99999762%;baseline-shift:super"
+   id="tspan5177">4</tspan>β</tspan></text>
+      <path
+         style="opacity:0.41199999;fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 478.93024,304.75746 0,-34.03161"
+         id="path5181"
+         inkscape:connector-curvature="0" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path5183"
+         d="m 494.90136,304.75745 0,-22.033"
+         style="opacity:0.41199999;fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.99999994px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         sodipodi:nodetypes="cc" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         x="535.61548"
+         y="429.96964"
+         id="text5147"
+         sodipodi:linespacing="125%"
+         transform="scale(0.99897664,1.0010244)"><tspan
+           sodipodi:role="line"
+           x="535.61548"
+           y="429.96964"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+           id="tspan5149">2-level 2D + 1-level HO transform</tspan></text>
+      <g
+         id="g6508">
+        <g
+           id="g6379">
+          <g
+             transform="translate(148.97589,0)"
+             id="g6327">
+            <g
+               id="g6329">
+              <text
+                 xml:space="preserve"
+                 style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+                 x="418.30878"
+                 y="335.509"
+                 id="text6331"
+                 sodipodi:linespacing="125%"
+                 transform="scale(0.99897664,1.0010244)"><tspan
+                   sodipodi:role="line"
+                   x="418.30878"
+                   y="335.509"
+                   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+                   id="tspan6333">HL</tspan></text>
+              <text
+                 transform="scale(0.99897664,1.0010244)"
+                 sodipodi:linespacing="125%"
+                 id="text6335"
+                 y="397.95755"
+                 x="354.06143"
+                 style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+                 xml:space="preserve"><tspan
+                   id="tspan6337"
+                   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+                   y="397.95755"
+                   x="354.06143"
+                   sodipodi:role="line">LH</tspan></text>
+              <text
+                 xml:space="preserve"
+                 style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+                 x="418.66071"
+                 y="397.95755"
+                 id="text6339"
+                 sodipodi:linespacing="125%"
+                 transform="scale(0.99897664,1.0010244)"><tspan
+                   sodipodi:role="line"
+                   x="418.66071"
+                   y="397.95755"
+                   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+                   id="tspan6341">HH</tspan></text>
+              <text
+                 transform="scale(0.99897664,1.0010244)"
+                 sodipodi:linespacing="125%"
+                 id="text6343"
+                 y="347.51425"
+                 x="369.73355"
+                 style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+                 xml:space="preserve"><tspan
+                   id="tspan6345"
+                   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+                   y="347.51425"
+                   x="369.73355"
+                   sodipodi:role="line">HH</tspan></text>
+              <text
+                 xml:space="preserve"
+                 style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+                 x="338.10632"
+                 y="347.51425"
+                 id="text6347"
+                 sodipodi:linespacing="125%"
+                 transform="scale(0.99897664,1.0010244)"><tspan
+                   sodipodi:role="line"
+                   x="338.10632"
+                   y="347.51425"
+                   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+                   id="tspan6349">LH</tspan></text>
+              <text
+                 xml:space="preserve"
+                 style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+                 x="369.73355"
+                 y="315.82263"
+                 id="text6353"
+                 sodipodi:linespacing="125%"
+                 transform="scale(0.99897664,1.0010244)"><tspan
+                   sodipodi:role="line"
+                   x="369.73355"
+                   y="315.82263"
+                   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+                   id="tspan6355">HL</tspan></text>
+            </g>
+          </g>
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+             x="495.40695"
+             y="315.82263"
+             id="text6353-1"
+             sodipodi:linespacing="125%"
+             transform="scale(0.99897664,1.0010244)"><tspan
+               sodipodi:role="line"
+               x="495.40695"
+               y="315.82263"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+               id="tspan6355-1">H</tspan></text>
+          <text
+             transform="scale(0.99897664,1.0010244)"
+             sodipodi:linespacing="125%"
+             id="text6375"
+             y="315.82263"
+             x="479.15167"
+             style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+             xml:space="preserve"><tspan
+               id="tspan6377"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+               y="315.82263"
+               x="479.15167"
+               sodipodi:role="line">L</tspan></text>
+        </g>
+      </g>
+    </g>
+    <g
+       id="g6576">
+      <g
+         transform="translate(-3.7773437e-5,0)"
+         id="g5359">
+        <rect
+           style="opacity:1;fill:#ffffff;fill-opacity:0.37600002;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+           id="rect5187"
+           width="127.769"
+           height="127.769"
+           x="619.92059"
+           y="288.94775" />
+        <text
+           transform="scale(0.99897664,1.0010244)"
+           xml:space="preserve"
+           style="font-style:normal;font-weight:normal;font-size:12.76305962px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           x="716.86169"
+           y="324.12317"
+           id="text5189"
+           sodipodi:linespacing="125%"><tspan
+             sodipodi:role="line"
+             id="tspan5191"
+             x="716.86169"
+             y="324.12317"
+             style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.76305962px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle">sαβ</tspan></text>
+        <g
+           transform="translate(140.76343,-1e-5)"
+           id="g5203">
+          <path
+             style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+             d="m 543.04163,288.44775 0,128.769"
+             id="path5205"
+             inkscape:connector-curvature="0" />
+        </g>
+        <path
+           style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           d="m 748.18957,352.8323 -128.769,0"
+           id="path5207"
+           inkscape:connector-curvature="0" />
+        <text
+           sodipodi:linespacing="125%"
+           id="text5209"
+           y="388.5593"
+           x="716.86169"
+           style="font-style:normal;font-weight:normal;font-size:12.76305962px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           xml:space="preserve"
+           transform="scale(0.99897664,1.0010244)"><tspan
+             style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.76305962px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle"
+             y="388.5593"
+             x="716.86169"
+             id="tspan5211"
+             sodipodi:role="line">sβ<tspan
+   style="font-style:normal;font-size:64.99999762%;baseline-shift:super"
+   id="tspan5215">2</tspan></tspan></text>
+        <text
+           transform="scale(0.99897664,1.0010244)"
+           xml:space="preserve"
+           style="font-style:normal;font-weight:normal;font-size:12.76305962px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           x="652.61438"
+           y="387.94229"
+           id="text5217"
+           sodipodi:linespacing="125%"><tspan
+             sodipodi:role="line"
+             id="tspan5219"
+             x="652.61438"
+             y="387.94229"
+             style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.76305962px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle">sαβ</tspan></text>
+        <g
+           id="g5223"
+           transform="translate(140.76344,-146.37112)">
+          <g
+             transform="matrix(0.50000388,0,0,0.50000388,239.57643,290.59388)"
+             id="g5225">
+            <path
+               style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.9999845px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+               d="m 543.04163,288.44775 0,128.769"
+               id="path5227"
+               inkscape:connector-curvature="0" />
+          </g>
+        </g>
+        <text
+           transform="scale(0.99897664,1.0010244)"
+           xml:space="preserve"
+           style="font-style:normal;font-weight:normal;font-size:9.30427074px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           x="668.53766"
+           y="307.65305"
+           id="text5229"
+           sodipodi:linespacing="125%"><tspan
+             sodipodi:role="line"
+             id="tspan5231"
+             x="668.53766"
+             y="307.65305"
+             style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.30427074px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle">s<tspan
+   id="tspan5233"
+   style="font-style:normal;font-size:6.04777527px;baseline-shift:super">2</tspan>α<tspan
+   id="tspan5235"
+   style="font-style:normal;font-size:6.04777527px;baseline-shift:super">3</tspan>β</tspan></text>
+        <g
+           transform="matrix(0,0.50000388,-0.50000388,0,828.03057,49.36706)"
+           id="g5237">
+          <path
+             style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.9999845px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+             d="m 543.04163,288.44775 0,128.769"
+             id="path5239"
+             inkscape:connector-curvature="0" />
+        </g>
+        <text
+           sodipodi:linespacing="125%"
+           id="text5241"
+           y="339.56259"
+           x="668.53766"
+           style="font-style:normal;font-weight:normal;font-size:9.30427074px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           xml:space="preserve"
+           transform="scale(0.99897664,1.0010244)"><tspan
+             style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.30427074px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle"
+             y="339.56259"
+             x="668.53766"
+             id="tspan5243"
+             sodipodi:role="line">s<tspan
+   style="font-style:normal;font-size:6.04777527px;baseline-shift:super"
+   id="tspan5245">2</tspan>α<tspan
+   style="font-style:normal;font-size:6.04777527px;baseline-shift:super"
+   id="tspan5247">2</tspan>β<tspan
+   style="font-style:normal;font-size:64.99999762%;baseline-shift:super"
+   id="tspan5249">2</tspan></tspan></text>
+        <text
+           transform="scale(0.99897664,1.0010244)"
+           xml:space="preserve"
+           style="font-style:normal;font-weight:normal;font-size:9.30427074px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           x="636.64264"
+           y="339.56259"
+           id="text5251"
+           sodipodi:linespacing="125%"><tspan
+             sodipodi:role="line"
+             id="tspan5253"
+             x="636.64264"
+             y="339.56259"
+             style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.30427074px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle">s<tspan
+   id="tspan5255"
+   style="font-style:normal;font-size:6.04777527px;baseline-shift:super">2</tspan>α<tspan
+   id="tspan5257"
+   style="font-style:normal;font-size:6.04777527px;baseline-shift:super">3</tspan>β</tspan></text>
+        <g
+           id="g5259"
+           transform="matrix(0.49999224,0,0,0.49999224,372.36039,71.0417)">
+          <g
+             id="g5261"
+             transform="matrix(0.50000388,0,0,0.50000388,239.57643,290.59388)">
+            <path
+               inkscape:connector-curvature="0"
+               id="path5263"
+               d="m 543.04163,288.44775 0,128.769"
+               style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:4.00003099px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+          </g>
+        </g>
+        <g
+           transform="matrix(0.49999224,0,0,0.49999224,364.37487,71.0417)"
+           id="g5265">
+          <g
+             transform="matrix(0.50000388,0,0,0.50000388,239.57643,290.59388)"
+             id="g5267">
+            <path
+               style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:4.00003099px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+               d="m 543.04163,288.44775 0,128.769"
+               id="path5269"
+               inkscape:connector-curvature="0" />
+          </g>
+        </g>
+        <text
+           transform="scale(0.99897664,1.0010244)"
+           xml:space="preserve"
+           style="font-style:normal;font-weight:normal;font-size:9.30427074px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           x="655.58301"
+           y="280.01166"
+           id="text5271"
+           sodipodi:linespacing="125%"><tspan
+             sodipodi:role="line"
+             id="tspan5273"
+             x="655.58301"
+             y="280.01166"
+             style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.30427074px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle">s<tspan
+   style="font-style:normal;font-size:6.04777527px;baseline-shift:super"
+   id="tspan5275">3</tspan>α<tspan
+   style="font-style:normal;font-size:64.99999762%;baseline-shift:super"
+   id="tspan5277">4</tspan>β</tspan></text>
+        <path
+           style="opacity:0.41199999;fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           d="m 623.91342,304.75746 0,-47.33884"
+           id="path5279"
+           inkscape:connector-curvature="0"
+           sodipodi:nodetypes="cc" />
+        <path
+           inkscape:connector-curvature="0"
+           id="path5281"
+           d="m 643.87724,304.75746 0,-22.03329"
+           style="opacity:0.41199999;fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           sodipodi:nodetypes="cc" />
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           x="684.74396"
+           y="429.96964"
+           id="text5283"
+           sodipodi:linespacing="125%"
+           transform="scale(0.99897664,1.0010244)"><tspan
+             sodipodi:role="line"
+             x="684.74396"
+             y="429.96964"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+             id="tspan5285">2-level 2D + 2-level HO transform</tspan></text>
+        <g
+           transform="matrix(0.49999224,0,0,0.49999224,380.34599,71.0417)"
+           id="g5335">
+          <g
+             transform="matrix(0.50000388,0,0,0.50000388,239.57643,290.59388)"
+             id="g5337">
+            <path
+               style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:4.00003099px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+               d="m 543.04163,288.44775 0,128.769"
+               id="path5339"
+               inkscape:connector-curvature="0" />
+          </g>
+        </g>
+        <path
+           inkscape:connector-curvature="0"
+           id="path5341"
+           d="m 631.89895,304.75746 0,-34.03161"
+           style="opacity:0.41199999;fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+        <text
+           transform="scale(0.99897664,1.0010244)"
+           xml:space="preserve"
+           style="font-style:normal;font-weight:normal;font-size:9.30427074px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           x="632.65356"
+           y="254.07822"
+           id="text5343"
+           sodipodi:linespacing="125%"><tspan
+             sodipodi:role="line"
+             id="tspan5345"
+             x="632.65356"
+             y="254.07822"
+             style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.30427074px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle">s<tspan
+   style="font-style:normal;font-size:6.04777527px;baseline-shift:super"
+   id="tspan5347">4</tspan>α<tspan
+   id="tspan5349"
+   style="font-style:normal;font-size:6.04777527px;baseline-shift:super">6</tspan></tspan></text>
+        <text
+           sodipodi:linespacing="125%"
+           id="text5351"
+           y="267.49854"
+           x="643.48627"
+           style="font-style:normal;font-weight:normal;font-size:9.30427074px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           xml:space="preserve"
+           transform="scale(0.99897664,1.0010244)"><tspan
+             style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.30427074px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle"
+             y="267.49854"
+             x="643.48627"
+             id="tspan5353"
+             sodipodi:role="line">s<tspan
+   id="tspan5355"
+   style="font-style:normal;font-size:6.04777527px;baseline-shift:super">4</tspan>α<tspan
+   id="tspan5357"
+   style="font-style:normal;font-size:64.99999762%;baseline-shift:super">5</tspan>β</tspan></text>
+      </g>
+      <g
+         transform="translate(148.97585,0)"
+         id="g6530">
+        <g
+           id="g6532">
+          <g
+             id="g6534"
+             transform="translate(148.97589,0)">
+            <g
+               id="g6536">
+              <text
+                 transform="scale(0.99897664,1.0010244)"
+                 sodipodi:linespacing="125%"
+                 id="text6538"
+                 y="335.509"
+                 x="418.30878"
+                 style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+                 xml:space="preserve"><tspan
+                   id="tspan6540"
+                   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+                   y="335.509"
+                   x="418.30878"
+                   sodipodi:role="line">HL</tspan></text>
+              <text
+                 xml:space="preserve"
+                 style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+                 x="354.06143"
+                 y="397.95755"
+                 id="text6542"
+                 sodipodi:linespacing="125%"
+                 transform="scale(0.99897664,1.0010244)"><tspan
+                   sodipodi:role="line"
+                   x="354.06143"
+                   y="397.95755"
+                   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+                   id="tspan6544">LH</tspan></text>
+              <text
+                 transform="scale(0.99897664,1.0010244)"
+                 sodipodi:linespacing="125%"
+                 id="text6546"
+                 y="397.95755"
+                 x="418.66071"
+                 style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+                 xml:space="preserve"><tspan
+                   id="tspan6548"
+                   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+                   y="397.95755"
+                   x="418.66071"
+                   sodipodi:role="line">HH</tspan></text>
+              <text
+                 xml:space="preserve"
+                 style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+                 x="369.73355"
+                 y="347.51425"
+                 id="text6550"
+                 sodipodi:linespacing="125%"
+                 transform="scale(0.99897664,1.0010244)"><tspan
+                   sodipodi:role="line"
+                   x="369.73355"
+                   y="347.51425"
+                   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+                   id="tspan6552">HH</tspan></text>
+              <text
+                 transform="scale(0.99897664,1.0010244)"
+                 sodipodi:linespacing="125%"
+                 id="text6554"
+                 y="347.51425"
+                 x="338.10632"
+                 style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+                 xml:space="preserve"><tspan
+                   id="tspan6556"
+                   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+                   y="347.51425"
+                   x="338.10632"
+                   sodipodi:role="line">LH</tspan></text>
+              <text
+                 transform="scale(0.99897664,1.0010244)"
+                 sodipodi:linespacing="125%"
+                 id="text6558"
+                 y="315.82263"
+                 x="369.73355"
+                 style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+                 xml:space="preserve"><tspan
+                   id="tspan6560"
+                   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+                   y="315.82263"
+                   x="369.73355"
+                   sodipodi:role="line">HL</tspan></text>
+            </g>
+          </g>
+          <text
+             transform="scale(0.99897664,1.0010244)"
+             sodipodi:linespacing="125%"
+             id="text6562"
+             y="315.82263"
+             x="495.40695"
+             style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+             xml:space="preserve"><tspan
+               id="tspan6564"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+               y="315.82263"
+               x="495.40695"
+               sodipodi:role="line">H</tspan></text>
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+             x="475.15488"
+             y="315.82263"
+             id="text6566"
+             sodipodi:linespacing="125%"
+             transform="scale(0.99897664,1.0010244)"><tspan
+               sodipodi:role="line"
+               x="475.15488"
+               y="315.82263"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+               id="tspan6568">L</tspan></text>
+          <text
+             transform="scale(0.99897664,1.0010244)"
+             sodipodi:linespacing="125%"
+             id="text6572"
+             y="315.82263"
+             x="483.41635"
+             style="font-style:normal;font-weight:normal;font-size:15.95382404px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;opacity:0.419;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+             xml:space="preserve"><tspan
+               id="tspan6574"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.5px;font-family:'BBC Reith Sans';-inkscape-font-specification:'BBC Reith Sans';text-align:center;text-anchor:middle;fill:#000000"
+               y="315.82263"
+               x="483.41635"
+               sodipodi:role="line">H</tspan></text>
+        </g>
+        <rect
+           y="288.94775"
+           x="470.9447"
+           height="127.769"
+           width="127.769"
+           id="rect6570"
+           style="opacity:1;fill:none;fill-opacity:0.37600002;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      </g>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,359 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vc2_conformance.string_formatters: Value-to-string formatting utilities &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="vc2_conformance.string_utils: String formatting utilities" href="string_utils.html" />
+    <link rel="prev" title="vc2_conformance.fixeddict: Fixed-key dictionaries" href="fixeddict.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="string_utils.html" title="vc2_conformance.string_utils: String formatting utilities"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="fixeddict.html" title="vc2_conformance.fixeddict: Fixed-key dictionaries"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Utility module references</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.string_formatters</span></code>: Value-to-string formatting utilities</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-vc2_conformance.string_formatters">
+<span id="vc2-conformance-string-formatters-value-to-string-formatting-utilities"></span><h1><a class="reference internal" href="#module-vc2_conformance.string_formatters" title="vc2_conformance.string_formatters"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.string_formatters</span></code></a>: Value-to-string formatting utilities<a class="headerlink" href="#module-vc2_conformance.string_formatters" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-vc2_conformance.string_formatters" title="vc2_conformance.string_formatters"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.string_formatters</span></code></a> module contains facilities for
+formatting (or pretty printing) Python values as strings.</p>
+<p>When we say ‘string formatter’ we mean a function/callable which takes a value
+and returns a string representation of that value. Instances of the classes in
+this module act as formatters. For example, the <a class="reference internal" href="#vc2_conformance.string_formatters.Hex" title="vc2_conformance.string_formatters.Hex"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hex</span></code></a> class may be
+used as a formatter for n-digit hexadecimal integers:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">vc2_conformance.string_formatters</span> <span class="kn">import</span> <span class="n">Hex</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Create a formatter for producing 8-digit hex numbers</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">hex32_formatter</span> <span class="o">=</span> <span class="n">Hex</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Format some values</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">hex32_formatter</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="go">&#39;0x00000000&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">hex32_formatter</span><span class="p">(</span><span class="mh">0x1234</span><span class="p">)</span>
+<span class="go">&#39;0x00001234&#39;</span>
+</pre></div>
+</div>
+<dl class="py class">
+<dt id="vc2_conformance.string_formatters.Number">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">Number</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">format_code</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_digits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_digit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'0'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.string_formatters.Number" title="Permalink to this definition">¶</a></dt>
+<dd><p>A formatter which uses Python’s built-in <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str.format" title="(in Python v3.9)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">str.format()</span></code></a> method to
+apply formatting.</p>
+<p>This formatter is quite low level, see <a class="reference internal" href="#vc2_conformance.string_formatters.Hex" title="vc2_conformance.string_formatters.Hex"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hex</span></code></a>, <a class="reference internal" href="#vc2_conformance.string_formatters.Dec" title="vc2_conformance.string_formatters.Dec"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dec</span></code></a>,
+<a class="reference internal" href="#vc2_conformance.string_formatters.Oct" title="vc2_conformance.string_formatters.Oct"><code class="xref py py-class docutils literal notranslate"><span class="pre">Oct</span></code></a> and <a class="reference internal" href="#vc2_conformance.string_formatters.Bin" title="vc2_conformance.string_formatters.Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> for ready to use derivatives.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>format_code</strong><span class="classifier">str</span></dt><dd><p>A python <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str.format" title="(in Python v3.9)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">str.format()</span></code></a> code, e.g. “b” for binary.</p>
+</dd>
+<dt><strong>prefix</strong><span class="classifier">str</span></dt><dd><p>A prefix to add before the formatted number</p>
+</dd>
+<dt><strong>num_digits</strong><span class="classifier">int</span></dt><dd><p>The length to pad the number to.</p>
+</dd>
+<dt><strong>pad_digit</strong><span class="classifier">str</span></dt><dd><p>The value to use to pad absent digits</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="vc2_conformance.string_formatters.Hex">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">Hex</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_digits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_digit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'0'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'0x'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.string_formatters.Hex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prints numbers in hexadecimal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>num_digits</strong><span class="classifier">int</span></dt><dd><p>Minimum number of digits to show.</p>
+</dd>
+<dt><strong>pad_digit</strong><span class="classifier">str</span></dt><dd><p>The value to use to pad absent digits</p>
+</dd>
+<dt><strong>prefix</strong><span class="classifier">str</span></dt><dd><p>Defaults to “0x”</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="vc2_conformance.string_formatters.Dec">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">Dec</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_digits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_digit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'0'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.string_formatters.Dec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prints numbers in decimal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>num_digits</strong><span class="classifier">int</span></dt><dd><p>Minimum number of digits to show.</p>
+</dd>
+<dt><strong>pad_digit</strong><span class="classifier">str</span></dt><dd><p>The value to use to pad absent digits</p>
+</dd>
+<dt><strong>prefix</strong><span class="classifier">str</span></dt><dd><p>Defaults to “”</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="vc2_conformance.string_formatters.Oct">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">Oct</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_digits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_digit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'0'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'0o'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.string_formatters.Oct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prints numbers in octal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>num_digits</strong><span class="classifier">int</span></dt><dd><p>Minimum number of digits to show.</p>
+</dd>
+<dt><strong>pad_digit</strong><span class="classifier">str</span></dt><dd><p>The value to use to pad absent digits</p>
+</dd>
+<dt><strong>prefix</strong><span class="classifier">str</span></dt><dd><p>Defaults to “0o”</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="vc2_conformance.string_formatters.Bin">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">Bin</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_digits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_digit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'0'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'0b'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.string_formatters.Bin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prints numbers in binary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>num_digits</strong><span class="classifier">int</span></dt><dd><p>Minimum number of digits to show.</p>
+</dd>
+<dt><strong>pad_digit</strong><span class="classifier">str</span></dt><dd><p>The value to use to pad absent digits</p>
+</dd>
+<dt><strong>prefix</strong><span class="classifier">str</span></dt><dd><p>Defaults to “0b”</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="vc2_conformance.string_formatters.Bool">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">Bool</span></code><a class="headerlink" href="#vc2_conformance.string_formatters.Bool" title="Permalink to this definition">¶</a></dt>
+<dd><p>A formatter for <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a> (or bool-castable) objects. For the values
+0, 1, False and True, just shows ‘True’ or ‘False’. For all other values,
+shows also the true value in brackets.</p>
+<p>For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">bool_formatter</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bool_formatter</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+<span class="go">&quot;False&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bool_formatter</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">&quot;True&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bool_formatter</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="go">&quot;False&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bool_formatter</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">&quot;True&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bool_formatter</span><span class="p">(</span><span class="mi">123</span><span class="p">)</span>
+<span class="go">&quot;True (123)&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bool_formatter</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+<span class="go">&quot;True (None)&quot;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt id="vc2_conformance.string_formatters.Bits">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">Bits</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'0b'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.string_formatters.Bits" title="Permalink to this definition">¶</a></dt>
+<dd><p>A formatter for <code class="xref py py-class docutils literal notranslate"><span class="pre">bitarray.bitarray</span></code> objects. Shows the value as a
+string of the form ‘0b0101’, using
+<a class="reference internal" href="string_utils.html#vc2_conformance.string_utils.ellipsise" title="vc2_conformance.string_utils.ellipsise"><code class="xref py py-func docutils literal notranslate"><span class="pre">ellipsise()</span></code></a> to shorten very long,
+values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>prefix</strong><span class="classifier">str</span></dt><dd><p>A prefix to add to the string</p>
+</dd>
+<dt><strong>context</strong><span class="classifier">int</span></dt><dd></dd>
+<dt><strong>min_length</strong><span class="classifier">int</span></dt><dd><p>See <a class="reference internal" href="string_utils.html#vc2_conformance.string_utils.ellipsise" title="vc2_conformance.string_utils.ellipsise"><code class="xref py py-func docutils literal notranslate"><span class="pre">ellipsise()</span></code></a>.</p>
+</dd>
+<dt><strong>show_length</strong><span class="classifier">int or bool</span></dt><dd><p>If an integer, show the length of the bitarray in brackets if above the
+specified length (in bits). If a bool, force display (or hiding) of the
+length information.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="vc2_conformance.string_formatters.Bytes">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">Bytes</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'0x'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">separator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'_'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.string_formatters.Bytes" title="Permalink to this definition">¶</a></dt>
+<dd><p>A formatter for <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></a> strings. Shows the value as a string of
+the form ‘0xAB_CD_EF’, using
+<a class="reference internal" href="string_utils.html#vc2_conformance.string_utils.ellipsise" title="vc2_conformance.string_utils.ellipsise"><code class="xref py py-func docutils literal notranslate"><span class="pre">ellipsise()</span></code></a> to shorten very long,
+values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>prefix</strong><span class="classifier">str</span></dt><dd><p>A prefix to add to the string</p>
+</dd>
+<dt><strong>separator</strong><span class="classifier">str</span></dt><dd><p>A string to place between each pair of hex digits.</p>
+</dd>
+<dt><strong>context</strong><span class="classifier">int</span></dt><dd></dd>
+<dt><strong>min_length</strong><span class="classifier">int</span></dt><dd><p>See <a class="reference internal" href="string_utils.html#vc2_conformance.string_utils.ellipsise" title="vc2_conformance.string_utils.ellipsise"><code class="xref py py-func docutils literal notranslate"><span class="pre">ellipsise()</span></code></a>.</p>
+</dd>
+<dt><strong>show_length</strong><span class="classifier">int or bool</span></dt><dd><p>If an integer, show the length of the bitarray in brackets if above the
+specified length (in bytes). If a bool, force display (or hiding) of
+the length information.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="vc2_conformance.string_formatters.Object">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">Object</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'&lt;'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'&gt;'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.string_formatters.Object" title="Permalink to this definition">¶</a></dt>
+<dd><p>A formatter for opaque python Objects. Shows only the object type name.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="vc2_conformance.string_formatters.List">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">List</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">min_run_length=3</span></em>, <em class="sig-param"><span class="pre">formatter=&lt;class</span> <span class="pre">'str'&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.string_formatters.List" title="Permalink to this definition">¶</a></dt>
+<dd><p>A formatter for lists which collapses repeated entries.</p>
+<p>Examples:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Use Python-style notation for repeated entries</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">List</span><span class="p">()([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="go">[1]*4</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Also displays lists with some non-repeated values</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">List</span><span class="p">()([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+<span class="go">[1, 2, 3] + [0]*5 + [4, 5]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># A custom formatter may be supplied for formatting the list</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># entries</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">List</span><span class="p">(</span><span class="n">formatter</span><span class="o">=</span><span class="n">Hex</span><span class="p">())([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="go">[0x1, 0x2, 0x3] + [0x0]*3</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Equality is based on the string formatted value, not the raw</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># value</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">List</span><span class="p">(</span><span class="n">formatter</span><span class="o">=</span><span class="n">Object</span><span class="p">())([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="go">[&lt;int&gt;]*6</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># The minimum run-length before truncation may be overridden</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">List</span><span class="p">(</span><span class="n">min_run_length</span><span class="o">=</span><span class="mi">3</span><span class="p">)([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="go">[1, 2, 2] + [3]*3</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt id="vc2_conformance.string_formatters.MultilineList">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">MultilineList</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">heading=None</span></em>, <em class="sig-param"><span class="pre">formatter=&lt;class</span> <span class="pre">'str'&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.string_formatters.MultilineList" title="Permalink to this definition">¶</a></dt>
+<dd><p>A formatter for lists which displays each value on its own line.</p>
+<p>Examples:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">MultilineList</span><span class="p">()([</span><span class="s2">&quot;one&quot;</span><span class="p">,</span> <span class="s2">&quot;two&quot;</span><span class="p">,</span> <span class="s2">&quot;three&quot;</span><span class="p">])</span>
+<span class="go">0: one</span>
+<span class="go">1: two</span>
+<span class="go">2: three</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># A custom formatter may be supplied for formatting the list</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># entries</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">MultilineList</span><span class="p">(</span><span class="n">formatter</span><span class="o">=</span><span class="n">Hex</span><span class="p">())([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="go">0: 0x1</span>
+<span class="go">1: 0x2</span>
+<span class="go">2: 0x3</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># A heading may be added</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">MultilineList</span><span class="p">(</span><span class="n">heading</span><span class="o">=</span><span class="s2">&quot;MyList&quot;</span><span class="p">)([</span><span class="s2">&quot;one&quot;</span><span class="p">,</span> <span class="s2">&quot;two&quot;</span><span class="p">,</span> <span class="s2">&quot;three&quot;</span><span class="p">])</span>
+<span class="go">MyList</span>
+<span class="go">  0: one</span>
+<span class="go">  1: two</span>
+<span class="go">  2: three</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="fixeddict.html"
+                        title="previous chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.fixeddict</span></code>: Fixed-key dictionaries</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="string_utils.html"
+                        title="next chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.string_utils</span></code>: String formatting utilities</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/utility_modules/string_formatters.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="string_utils.html" title="vc2_conformance.string_utils: String formatting utilities"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="fixeddict.html" title="vc2_conformance.fixeddict: Fixed-key dictionaries"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Utility module references</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.string_formatters</span></code>: Value-to-string formatting utilities</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>

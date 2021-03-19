@@ -1,0 +1,520 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vc2_conformance.encoder: Internal VC-2 encoder &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="vc2_conformance.bitstream: Bitstream manipulation module" href="bitstream.html" />
+    <link rel="prev" title="vc2_conformance.decoder: Reference decoder and bitstream validator" href="decoder.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="bitstream.html" title="vc2_conformance.bitstream: Bitstream manipulation module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="decoder.html" title="vc2_conformance.decoder: Reference decoder and bitstream validator"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.encoder</span></code>: Internal VC-2 encoder</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-vc2_conformance.encoder">
+<span id="vc2-conformance-encoder-internal-vc-2-encoder"></span><span id="maintainer-encoder"></span><h1><a class="reference internal" href="#module-vc2_conformance.encoder" title="vc2_conformance.encoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.encoder</span></code></a>: Internal VC-2 encoder<a class="headerlink" href="#module-vc2_conformance.encoder" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-vc2_conformance.encoder" title="vc2_conformance.encoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.encoder</span></code></a> module implements a simple VC-2 encoder
+which is used to produce test streams for conformance testing purposes (see
+<a class="reference internal" href="test_case_generation/test_cases.html#module-vc2_conformance.test_cases" title="vc2_conformance.test_cases"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.test_cases</span></code></a>). It is extremely slow and performs only
+simple picture compression, but is sufficiently flexible to support all VC-2
+coding modes.</p>
+<p>The encoder is principally concerned with carrying out the following tasks:</p>
+<ul class="simple">
+<li><p>Encoding the video and codec configuration into a sequence header
+(see <a class="reference internal" href="#module-vc2_conformance.encoder.sequence_header" title="vc2_conformance.encoder.sequence_header"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.encoder.sequence_header</span></code></a>).</p></li>
+<li><p>Transforming, slicing and quantizing pictures (i.e. compressing them)
+(see <a class="reference internal" href="#module-vc2_conformance.encoder.pictures" title="vc2_conformance.encoder.pictures"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.encoder.pictures</span></code></a>).</p></li>
+<li><p>Assembling sequences of data units comprising a complete VC-2 stream
+(see <a class="reference internal" href="#module-vc2_conformance.encoder.sequence" title="vc2_conformance.encoder.sequence"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.encoder.sequence</span></code></a>).</p></li>
+</ul>
+<p>This module does not generate serialised VC-2 bitstreams in binary format.
+Instead, it generates a bitstream description data structure which may
+subsequently be serialised by the bitstream serialiser in the
+<a class="reference internal" href="bitstream.html#module-vc2_conformance.bitstream" title="vc2_conformance.bitstream"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.bitstream</span></code></a> module. This design allows the generated
+bitstream to be more easily manipulated prior to serialisation if required for
+a particular test case.</p>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>The encoder behaviour is controlled by a
+<a class="reference internal" href="test_case_generation/codec_features.html#vc2_conformance.codec_features.CodecFeatures" title="vc2_conformance.codec_features.CodecFeatures"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodecFeatures</span></code></a> dictionary. This
+specifies picture/video format to be compressed (e.g. resolution etc.) along
+with the coding options (e.g. wavelet transform and bitrate). See the
+<a class="reference internal" href="test_case_generation/codec_features.html#module-vc2_conformance.codec_features" title="vc2_conformance.codec_features"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.codec_features</span></code></a> module for more details. There are
+essentially two modes of operation, depending on the value of
+<a class="reference internal" href="test_case_generation/codec_features.html#vc2_conformance.codec_features.CodecFeatures" title="vc2_conformance.codec_features.CodecFeatures"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodecFeatures</span></code></a><code class="docutils literal notranslate"><span class="pre">[&quot;lossless&quot;]</span></code>:</p>
+<ul class="simple">
+<li><p>Lossless mode: variable bitrate, qindex is always 0.</p></li>
+<li><p>Lossy mode: fixed bit rate, variable qindex.</p></li>
+</ul>
+<p>A series of pictures may be encoded into a VC-2 sequence using the
+<code class="xref py py-func docutils literal notranslate"><span class="pre">vc2_conformance.encoder.make_sequence()</span></code> function, and then serialised
+into a binary bitstream as illustrated below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Define the video format to be encoded and basic coding options</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">vc2_conformance.codec_features</span> <span class="kn">import</span> <span class="n">CodecFeatures</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">codec_features</span> <span class="o">=</span> <span class="n">CodecFeatures</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Encode a series of pictures</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">vc2_conformance.encoder</span> <span class="kn">import</span> <span class="n">make_sequence</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pictures</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;Y&quot;</span><span class="p">:</span> <span class="o">...</span><span class="p">,</span> <span class="s2">&quot;C1&quot;</span><span class="p">:</span> <span class="o">...</span><span class="p">,</span> <span class="s2">&quot;C2&quot;</span><span class="p">:</span> <span class="o">...</span><span class="p">,</span> <span class="s2">&quot;pic_num&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="c1"># ...</span>
+<span class="gp">... </span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sequence</span> <span class="o">=</span> <span class="n">make_sequence</span><span class="p">(</span><span class="n">codec_features</span><span class="p">,</span> <span class="n">pictures</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Serialise to a file</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">vc2_conformance.bitstream</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="gp">... </span>    <span class="n">Stream</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">autofill_and_serialise_stream</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;bitstream.vc2&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">autofill_and_serialise_stream</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">Stream</span><span class="p">(</span><span class="n">sequences</span><span class="o">=</span><span class="p">[</span><span class="n">sequence</span><span class="p">]))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="bitstream-conformance">
+<h2>Bitstream conformance<a class="headerlink" href="#bitstream-conformance" title="Permalink to this headline">¶</a></h2>
+<p>This encoder will produce bitstreams conformant with the VC-2 specification
+whenever the coding parameters specified represent a legal combination.</p>
+<p>In some cases, invalid coding options will cause the encoder to fail and raise
+an exception in <a class="reference internal" href="#module-vc2_conformance.encoder.exceptions" title="vc2_conformance.encoder.exceptions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.encoder.exceptions</span></code></a>. For example, if
+lossless coding and the low delay profile are requested simultaneously.</p>
+<p>In other cases, the encoder will produce a bitstream, however this bitstream
+will be non-conformant. For example, if the clean area defined is larger than
+the frame size, the encoder will ignore this inconsistency of metadata and
+produce a (non-conformant) bitstream anyway.</p>
+<p>When conformant bitstreams are required, it is the responsibility of the user
+of the encoder to ensure that the provided
+<a class="reference internal" href="test_case_generation/codec_features.html#vc2_conformance.codec_features.CodecFeatures" title="vc2_conformance.codec_features.CodecFeatures"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodecFeatures</span></code></a> are valid. In
+practice, the easiest way to do this is to check for exceptions when the
+encoder is used then use the bitstream validator
+(<a class="reference internal" href="decoder.html#module-vc2_conformance.decoder" title="vc2_conformance.decoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder</span></code></a>) to validate the generated bitstream.</p>
+</div>
+<div class="section" id="module-vc2_conformance.encoder.exceptions">
+<span id="exceptions"></span><h2>Exceptions<a class="headerlink" href="#module-vc2_conformance.encoder.exceptions" title="Permalink to this headline">¶</a></h2>
+<p>The exceptions defined in <a class="reference internal" href="#module-vc2_conformance.encoder.exceptions" title="vc2_conformance.encoder.exceptions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.encoder.exceptions</span></code></a> derive
+from <a class="reference internal" href="#vc2_conformance.encoder.exceptions.UnsatisfiableCodecFeaturesError" title="vc2_conformance.encoder.exceptions.UnsatisfiableCodecFeaturesError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">UnsatisfiableCodecFeaturesError</span></code></a> and are thrown when the
+presented encoder configuration makes encoding impossible. These exceptions
+provide detailed explanations of why encoding was not possible.</p>
+<dl class="py exception">
+<dt id="vc2_conformance.encoder.exceptions.UnsatisfiableCodecFeaturesError">
+<em class="property"><span class="pre">exception</span> </em><code class="sig-name descname"><span class="pre">UnsatisfiableCodecFeaturesError</span></code><a class="headerlink" href="#vc2_conformance.encoder.exceptions.UnsatisfiableCodecFeaturesError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for exceptions thrown by the encoder when it is unable to
+generate a stream in the desired format due to some invalid
+<a class="reference internal" href="test_case_generation/codec_features.html#vc2_conformance.codec_features.CodecFeatures" title="vc2_conformance.codec_features.CodecFeatures"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodecFeatures</span></code></a> configuration.</p>
+<dl class="py method">
+<dt id="vc2_conformance.encoder.exceptions.UnsatisfiableCodecFeaturesError.explain">
+<code class="sig-name descname"><span class="pre">explain</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.encoder.exceptions.UnsatisfiableCodecFeaturesError.explain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produce a detailed human readable explanation of the failure.</p>
+<p>Should return a string which can be re-linewrapped by
+<a class="reference internal" href="utility_modules/string_utils.html#vc2_conformance.string_utils.wrap_paragraphs" title="vc2_conformance.string_utils.wrap_paragraphs"><code class="xref py py-func docutils literal notranslate"><span class="pre">vc2_conformance.string_utils.wrap_paragraphs()</span></code></a>.</p>
+<p>The first line will be used as a summary when the exception is printed
+using <code class="xref py py-func docutils literal notranslate"><span class="pre">str()</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-vc2_conformance.encoder.sequence_header">
+<span id="sequence-header-generation"></span><h2>Sequence header generation<a class="headerlink" href="#module-vc2_conformance.encoder.sequence_header" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="#module-vc2_conformance.encoder.sequence_header" title="vc2_conformance.encoder.sequence_header"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.encoder.sequence_header</span></code></a> module contains routines
+for encoding a set of video format and codec parameters into sequence headers.</p>
+<p>The <a class="reference internal" href="#vc2_conformance.encoder.sequence_header.make_sequence_header_data_unit" title="vc2_conformance.encoder.sequence_header.make_sequence_header_data_unit"><code class="xref py py-func docutils literal notranslate"><span class="pre">make_sequence_header_data_unit()</span></code></a> function is used to generate
+sequence headers by the encoder:</p>
+<dl class="py function">
+<dt id="vc2_conformance.encoder.sequence_header.make_sequence_header_data_unit">
+<code class="sig-name descname"><span class="pre">make_sequence_header_data_unit</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codec_features</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.encoder.sequence_header.make_sequence_header_data_unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a <a class="reference internal" href="bitstream.html#vc2_conformance.bitstream.DataUnit" title="vc2_conformance.bitstream.DataUnit"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataUnit</span></code></a> object containing
+a sequence header which sensibly encodes the features specified in
+<a class="reference internal" href="test_case_generation/codec_features.html#vc2_conformance.codec_features.CodecFeatures" title="vc2_conformance.codec_features.CodecFeatures"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodecFeatures</span></code></a>
+dictionary provided.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>codec_features</strong><span class="classifier"><a class="reference internal" href="test_case_generation/codec_features.html#vc2_conformance.codec_features.CodecFeatures" title="vc2_conformance.codec_features.CodecFeatures"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodecFeatures</span></code></a></span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>data_unit</strong><span class="classifier"><a class="reference internal" href="bitstream.html#vc2_conformance.bitstream.DataUnit" title="vc2_conformance.bitstream.DataUnit"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataUnit</span></code></a></span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><code class="xref py py-exc docutils literal notranslate"><span class="pre">IncompatibleLevelAndVideoFormatError</span></code></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<p>In practice there are often many potential sequence header encodings for a
+given set of video parameters. For example, when a video format closely matches
+a predefined base video format, the various <code class="docutils literal notranslate"><span class="pre">custom_*_flag</span></code> overrides may
+largely be omitted. This is optional, however, and an encoder is free to use
+these overrides explicitly even when they’re not required.</p>
+<p>The <a class="reference internal" href="#vc2_conformance.encoder.sequence_header.make_sequence_header_data_unit" title="vc2_conformance.encoder.sequence_header.make_sequence_header_data_unit"><code class="xref py py-func docutils literal notranslate"><span class="pre">make_sequence_header_data_unit()</span></code></a> function always attempts to use
+the most compact encoding it can. Some test cases, however may wish to use less
+compact encodings and so to support this the <a class="reference internal" href="#vc2_conformance.encoder.sequence_header.iter_sequence_headers" title="vc2_conformance.encoder.sequence_header.iter_sequence_headers"><code class="xref py py-func docutils literal notranslate"><span class="pre">iter_sequence_headers()</span></code></a>
+function is provided:</p>
+<dl class="py function">
+<dt id="vc2_conformance.encoder.sequence_header.iter_sequence_headers">
+<code class="sig-name descname"><span class="pre">iter_sequence_headers</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codec_features</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.encoder.sequence_header.iter_sequence_headers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a series of <a class="reference internal" href="bitstream.html#vc2_conformance.bitstream.SequenceHeader" title="vc2_conformance.bitstream.SequenceHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">SequenceHeader</span></code></a>
+objects which encode the video format specified in
+<a class="reference internal" href="test_case_generation/codec_features.html#vc2_conformance.codec_features.CodecFeatures" title="vc2_conformance.codec_features.CodecFeatures"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodecFeatures</span></code></a> dictionary
+provided.</p>
+<p>This generator will start with an efficient encoding of the required
+features, built on the most closely matched base video format. This will be
+followed by successively less efficient encodings (i.e. using more custom
+fields) but the same (best-matched) base video format. After this,
+encodings based on other base video formats will be produced (again
+starting with the most efficient encoding for each format first).</p>
+<p>This generator may output no items if the VC-2 level specified does not
+permit the format given.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>codec_features</strong><span class="classifier"><a class="reference internal" href="test_case_generation/codec_features.html#vc2_conformance.codec_features.CodecFeatures" title="vc2_conformance.codec_features.CodecFeatures"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodecFeatures</span></code></a></span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Yields</dt>
+<dd class="field-even"><dl>
+<dt><strong>sequence_header</strong><span class="classifier"><a class="reference internal" href="bitstream.html#vc2_conformance.bitstream.SequenceHeader" title="vc2_conformance.bitstream.SequenceHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">SequenceHeader</span></code></a></span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-vc2_conformance.encoder.pictures">
+<span id="picture-encoding-compression"></span><h2>Picture encoding &amp; compression<a class="headerlink" href="#module-vc2_conformance.encoder.pictures" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="#module-vc2_conformance.encoder.pictures" title="vc2_conformance.encoder.pictures"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.encoder.pictures</span></code></a> module contains simple routines
+for compressing pictures in a VC-2 bitstream.</p>
+<p>The picture encoding behaviour used by the encoder is encapsulated by the
+<a class="reference internal" href="#vc2_conformance.encoder.pictures.make_picture_data_units" title="vc2_conformance.encoder.pictures.make_picture_data_units"><code class="xref py py-func docutils literal notranslate"><span class="pre">make_picture_data_units()</span></code></a> function which turns a series of pictures
+(given as raw pixel values) into a series of
+<a class="reference internal" href="bitstream.html#vc2_conformance.bitstream.DataUnit" title="vc2_conformance.bitstream.DataUnit"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataUnits</span></code></a>:</p>
+<dl class="py function">
+<dt id="vc2_conformance.encoder.pictures.make_picture_data_units">
+<code class="sig-name descname"><span class="pre">make_picture_data_units</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codec_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">picture</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minimum_qindex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minimum_slice_size_scaler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.encoder.pictures.make_picture_data_units" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a seires of one or more <a class="reference internal" href="bitstream.html#vc2_conformance.bitstream.DataUnit" title="vc2_conformance.bitstream.DataUnit"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataUnits</span></code></a> containing a compressed version of
+the supplied picture.</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">codec_features[&quot;fragment_slice_count&quot;]</span></code> is 0, a single picture
+parse data unit will be produced. otherwise a series of two or more
+fragment parse data units will be produced.</p>
+<p>A simple wrapper around <code class="xref py py-func docutils literal notranslate"><span class="pre">make_picture_parse_data_unit()</span></code> and
+<code class="xref py py-func docutils literal notranslate"><span class="pre">make_fragment_parse_data_units()</span></code>.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>codec_features</strong><span class="classifier"><a class="reference internal" href="test_case_generation/codec_features.html#vc2_conformance.codec_features.CodecFeatures" title="vc2_conformance.codec_features.CodecFeatures"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodecFeatures</span></code></a></span></dt><dd></dd>
+<dt><strong>picture</strong><span class="classifier">{“Y”: [[s, …], …], “C1”: …, “C2”: …, “pic_num”: int}</span></dt><dd><p>The picture to be encoded. This picture will be compressed using a
+simple VC-2 encoder implementation. It does not necessarily produce the
+most high-quality encodings. If <code class="docutils literal notranslate"><span class="pre">pic_num</span></code> is omitted,
+<code class="docutils literal notranslate"><span class="pre">picture_number</span></code> fields will be omitted in the output.</p>
+</dd>
+<dt><strong>minimum_qindex</strong><span class="classifier">int</span></dt><dd><p>Specifies the minimum quantization index to be used. Must be 0 for
+lossless codecs.</p>
+</dd>
+<dt><strong>minimum_slice_size_scaler</strong><span class="classifier">int</span></dt><dd><p>Specifies the minimum slice_size_scaler to be used for high quality
+pictures. Ignored in low delay mode.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>data_units</strong><span class="classifier">[<a class="reference internal" href="bitstream.html#vc2_conformance.bitstream.DataUnit" title="vc2_conformance.bitstream.DataUnit"><code class="xref py py-class docutils literal notranslate"><span class="pre">vc2_conformance.bitstream.DataUnit</span></code></a>, …]</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="section" id="encoding-algorithm">
+<h3>Encoding algorithm<a class="headerlink" href="#encoding-algorithm" title="Permalink to this headline">¶</a></h3>
+<p>Depending on the lossy/lossless coding mode chosen, one of two simple
+algorithms is used.</p>
+<div class="section" id="lossless-mode">
+<h4>Lossless mode<a class="headerlink" href="#lossless-mode" title="Permalink to this headline">¶</a></h4>
+<p>In lossless mode, every slice’s <code class="docutils literal notranslate"><span class="pre">qindex</span></code> will be set to 0 (no quantization)
+and all transform coefficients will be coded verbatim (though trailing zeros
+will be coded implicitly).</p>
+<p>Slices will be sized as large as necessary, though as small as possible.</p>
+<p>The smallest <code class="docutils literal notranslate"><span class="pre">slice_size_scaler</span></code> possible will be used for each coded picture
+independently.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In principle, lossless modes may occasionally make use of quantization to
+achieve better compression. For example where all transform coefficients
+are a multiple of the same quantisation factor. This encoder, however, does
+not do this.</p>
+</div>
+</div>
+<div class="section" id="lossy-mode">
+<h4>Lossy mode<a class="headerlink" href="#lossy-mode" title="Permalink to this headline">¶</a></h4>
+<p>In lossy mode the <code class="docutils literal notranslate"><span class="pre">qindex</span></code> for each slice is chosen on a slice-by-slice
+basis. The encoder tests quantization indices starting at zero and stopping
+when the transform coefficients fit into the slice.</p>
+<p>Slices are sized such that the picture slice data in the bitstream totals
+<a class="reference internal" href="test_case_generation/codec_features.html#vc2_conformance.codec_features.CodecFeatures" title="vc2_conformance.codec_features.CodecFeatures"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodecFeatures</span></code></a><code class="docutils literal notranslate"><span class="pre">[&quot;picture_bytes&quot;]</span></code>.</p>
+<p>For the high quality profile, the smallest <code class="docutils literal notranslate"><span class="pre">slice_size_scaler</span></code> which can
+encode a slice where a single component consumes a whole slice is used for
+every picture.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The total size of picture slice data may differ from
+<a class="reference internal" href="test_case_generation/codec_features.html#vc2_conformance.codec_features.CodecFeatures" title="vc2_conformance.codec_features.CodecFeatures"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodecFeatures</span></code></a><code class="docutils literal notranslate"><span class="pre">[&quot;picture_bytes&quot;]</span></code> by up to <code class="docutils literal notranslate"><span class="pre">slice_size_scaler</span></code> bytes (for high
+quality profile formats) or one byte (for low delay profile formats). This
+will occur when the number of bytes (or multiple of <code class="docutils literal notranslate"><span class="pre">slice_size_scaler</span></code>
+bytes) is not exactly divisible by the required number of picture bytes.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The total number of bytes used to encode each picture, once other coding
+overheads (such as headers) will be higher than
+<a class="reference internal" href="test_case_generation/codec_features.html#vc2_conformance.codec_features.CodecFeatures" title="vc2_conformance.codec_features.CodecFeatures"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodecFeatures</span></code></a><code class="docutils literal notranslate"><span class="pre">[&quot;picture_bytes&quot;]</span></code>.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This codec may not always produce highest quality pictures possible in
+lossy modes. For example, sometimes chosing higher quantisation indices can
+produce fewer coding artefacts, particularly in concatenated coding
+applications. Similarly, higher picture quality may sometimes be obtained
+by setting later transform coefficients to zero enabling a lower
+quantization index to be used. Other more sophisticated schemes may also
+directly tweak transform coefficients.</p>
+</div>
+</div>
+</div>
+<div class="section" id="use-of-pseudocode">
+<h3>Use of pseudocode<a class="headerlink" href="#use-of-pseudocode" title="Permalink to this headline">¶</a></h3>
+<p>This module uses the pseudocode-derived
+<a class="reference internal" href="pseudocode.html#module-vc2_conformance.pseudocode.picture_encoding" title="vc2_conformance.pseudocode.picture_encoding"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.picture_encoding</span></code></a> module for its
+forward-DWT and <a class="reference internal" href="pseudocode.html#module-vc2_conformance.pseudocode.quantization" title="vc2_conformance.pseudocode.quantization"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.quantization</span></code></a> for
+quantization. Other pseudocode routines are also used where possible, for
+example for computing slice dimensions.</p>
+</div>
+</div>
+<div class="section" id="module-vc2_conformance.encoder.sequence">
+<span id="sequence-generation"></span><h2>Sequence generation<a class="headerlink" href="#module-vc2_conformance.encoder.sequence" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="#module-vc2_conformance.encoder.sequence" title="vc2_conformance.encoder.sequence"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.encoder.sequence</span></code></a> module provides routines for
+constructing complete VC-2 sequences.</p>
+<p>Principally, this module implements the <a class="reference internal" href="#vc2_conformance.encoder.sequence.make_sequence" title="vc2_conformance.encoder.sequence.make_sequence"><code class="xref py py-func docutils literal notranslate"><span class="pre">make_sequence()</span></code></a> function which
+produces <a class="reference internal" href="bitstream.html#vc2_conformance.bitstream.Sequence" title="vc2_conformance.bitstream.Sequence"><code class="xref py py-class docutils literal notranslate"><span class="pre">vc2_conformance.bitstream.Sequence</span></code></a> objects containing
+pictures compressed according to the required codec specifications. This is the
+main entry point to the encoder.</p>
+<dl class="py function">
+<dt id="vc2_conformance.encoder.sequence.make_sequence">
+<code class="sig-name descname"><span class="pre">make_sequence</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codec_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pictures</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">data_unit_patterns</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.encoder.sequence.make_sequence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a complete VC-2 bitstream based on the provided set of codec
+features and containing compressed versions of the specified set of
+pictures.</p>
+<p>This function also takes a small number of additional parameters which
+override certain encoder behaviours as may be required by some test case
+generators.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>codec_features</strong><span class="classifier"><a class="reference internal" href="test_case_generation/codec_features.html#vc2_conformance.codec_features.CodecFeatures" title="vc2_conformance.codec_features.CodecFeatures"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodecFeatures</span></code></a></span></dt><dd></dd>
+<dt><strong>pictures</strong><span class="classifier">[{“Y”: [[s, …], …], “C1”: …, “C2”: …, “pic_num”: int}, …]</span></dt><dd><p>The pictures to be encoded in the bitstream. If <code class="docutils literal notranslate"><span class="pre">pic_num</span></code> is omitted,
+<code class="docutils literal notranslate"><span class="pre">picture_number</span></code> fields will also be omitted in the output (and left
+for, e.g.
+<code class="xref py py-func docutils literal notranslate"><span class="pre">vc2_conformance.bitstream.autofill_and_serialise_stream()</span></code> to
+assign). See <a class="reference internal" href="#module-vc2_conformance.encoder.pictures" title="vc2_conformance.encoder.pictures"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.encoder.pictures</span></code></a> for details of
+the picture compression process.</p>
+</dd>
+<dt><strong>*data_unit_patterns</strong><span class="classifier">str</span></dt><dd><p>Force the generated sequence of data units to match a specified regular
+expression. For example, <code class="docutils literal notranslate"><span class="pre">&quot;(.</span> <span class="pre">padding_data)+</span> <span class="pre">end_of_sequence&quot;</span></code> will
+force a padding data unit to be inserted between each data unit. See
+the <a class="reference internal" href="level_constraints/symbol_re.html#module-vc2_conformance.symbol_re" title="vc2_conformance.symbol_re"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.symbol_re</span></code></a> module for details of the
+regular expression format.</p>
+<p>A sequence of data units matching all specified patterns while meeting
+the requirements of the VC-2 standard will be generated. If this is not
+possible,
+<code class="xref py py-exc docutils literal notranslate"><span class="pre">vc2_conformance.encoder.exceptions.IncompatibleLevelAndDataUnitError</span></code>
+will be raised.</p>
+</dd>
+<dt><strong>minimum_qindex</strong><span class="classifier">int or [int, …]</span></dt><dd><p>Keyword-only argument. Default 0. Specifies the minimum quantization
+index to be used for all picture slices. If a list is provided,
+specifies the minimum quantization index separately for each picture.</p>
+<p>This option may be used by test cases where a particular (very high)
+quantization index must be used. Note that the encoder may still use
+larger quantization indices if a set of transform coefficients still do
+not fit into a slice so the caller must check that this has not
+occurred.</p>
+<p>Must be 0 for lossless coding modes.</p>
+</dd>
+<dt><strong>minimum_slice_size_scaler</strong><span class="classifier">int</span></dt><dd><p>Keyword-only argument. Default 1. Specifies the minimum slice size
+scaler to use.</p>
+<p>For almost all sensible coding modes, the <code class="docutils literal notranslate"><span class="pre">slice_size_scaler</span></code> can be
+set to ‘1’ – and this encoder will do so if possible. To facilitate
+the production of test cases verifying higher values are supported,
+this option may be used to pick a larger value. The encoder may still
+use larger <code class="docutils literal notranslate"><span class="pre">slice_size_scaler</span></code> values if this is necessary, however.</p>
+<p>Only has an effect on high quality profile coding modes, will be
+ignored for the low delay profile modes.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>sequence</strong><span class="classifier"><a class="reference internal" href="bitstream.html#vc2_conformance.bitstream.Sequence" title="vc2_conformance.bitstream.Sequence"><code class="xref py py-class docutils literal notranslate"><span class="pre">vc2_conformance.bitstream.Sequence</span></code></a></span></dt><dd><p>The VC-2 bitstream sequence. This may be serialised by encapsulating
+it in a <a class="reference internal" href="bitstream.html#vc2_conformance.bitstream.Stream" title="vc2_conformance.bitstream.Stream"><code class="xref py py-class docutils literal notranslate"><span class="pre">vc2_conformance.bitstream.Stream</span></code></a> and serialising it
+with
+<a class="reference internal" href="bitstream.html#vc2_conformance.bitstream.vc2_autofill.autofill_and_serialise_stream" title="vc2_conformance.bitstream.vc2_autofill.autofill_and_serialise_stream"><code class="xref py py-func docutils literal notranslate"><span class="pre">autofill_and_serialise_stream()</span></code></a>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>UnsatisfiableCodecFeaturesError</dt><dd><p>Raised if a sequence could not be generated according to the
+requirements given.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="level-constraints">
+<h2>Level constraints<a class="headerlink" href="#level-constraints" title="Permalink to this headline">¶</a></h2>
+<p>For the most part, all of the parameters which could be restricted by a VC-2
+level are chosen in the supplied
+<a class="reference internal" href="test_case_generation/codec_features.html#vc2_conformance.codec_features.CodecFeatures" title="vc2_conformance.codec_features.CodecFeatures"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodecFeatures</span></code></a>. As such, choosing
+parameters which comply with the declared level is the responsibility of the
+caller (see comments above). However, some coding choices restricted by levels
+are left up to this encoder, such as how video parameters are coded in a
+sequence header. In these cases, the encoder makes choices which comply with
+the supplied level, a process which may require a constraint solving procedure.</p>
+<p>In principle level constaints, as expressed by constraints tables (see
+<a class="reference internal" href="level_constraints/constraint_table.html#module-vc2_conformance.constraint_table" title="vc2_conformance.constraint_table"><code class="xref py py-class docutils literal notranslate"><span class="pre">vc2_conformance.constraint_table</span></code></a> and
+<a class="reference internal" href="level_constraints/level_constraints.html#module-vc2_conformance.level_constraints" title="vc2_conformance.level_constraints"><code class="xref py py-class docutils literal notranslate"><span class="pre">vc2_conformance.level_constraints</span></code></a>), could require a full global
+constraint solver to resolve. Fortunately, all existing VC-2 levels are
+specified such that, once the level (and a few other parameters) have been
+defined, almost all constrained parameters are independent meaning that global
+constraint solving is not required. The only case where constraint dependencies
+exist are the parameters relating to sequence headers. As a consequence the
+<a class="reference internal" href="#module-vc2_conformance.encoder.sequence_header" title="vc2_conformance.encoder.sequence_header"><code class="xref py py-mod docutils literal notranslate"><span class="pre">sequence_header</span></code></a> generation module uses a
+simple constraint solver internally.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The constraint parameter independence property of the VC-2 levels mentioned
+above is essential for the encoder to generate level-conforming bitstreams.
+A test in <code class="docutils literal notranslate"><span class="pre">tests/encoder/test_level_constraints_assumptions.py</span></code> is
+provided which will fail should a future VC-2 level not have this property.
+See the detailed documentation at the top of this file for a more thorough
+introduction and discussion of this topic.</p>
+</div>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.encoder</span></code>: Internal VC-2 encoder</a><ul>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+<li><a class="reference internal" href="#bitstream-conformance">Bitstream conformance</a></li>
+<li><a class="reference internal" href="#module-vc2_conformance.encoder.exceptions">Exceptions</a></li>
+<li><a class="reference internal" href="#module-vc2_conformance.encoder.sequence_header">Sequence header generation</a></li>
+<li><a class="reference internal" href="#module-vc2_conformance.encoder.pictures">Picture encoding &amp; compression</a><ul>
+<li><a class="reference internal" href="#encoding-algorithm">Encoding algorithm</a><ul>
+<li><a class="reference internal" href="#lossless-mode">Lossless mode</a></li>
+<li><a class="reference internal" href="#lossy-mode">Lossy mode</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#use-of-pseudocode">Use of pseudocode</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-vc2_conformance.encoder.sequence">Sequence generation</a></li>
+<li><a class="reference internal" href="#level-constraints">Level constraints</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="decoder.html"
+                        title="previous chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder</span></code>: Reference decoder and bitstream validator</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="bitstream.html"
+                        title="next chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.bitstream</span></code>: Bitstream manipulation module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/encoder.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="bitstream.html" title="vc2_conformance.bitstream: Bitstream manipulation module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="decoder.html" title="vc2_conformance.decoder: Reference decoder and bitstream validator"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.encoder</span></code>: Internal VC-2 encoder</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>

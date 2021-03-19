@@ -1,0 +1,495 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vc2_conformance.color_conversion: Color conversion routines &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="vc2_conformance.file_format: Picture file format I/O" href="file_format.html" />
+    <link rel="prev" title="vc2_conformance.dimensions_and_depths: Picture dimension and depth calculation" href="dimensions_and_depths.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="file_format.html" title="vc2_conformance.file_format: Picture file format I/O"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="dimensions_and_depths.html" title="vc2_conformance.dimensions_and_depths: Picture dimension and depth calculation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Test picture generation reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.color_conversion</span></code>: Color conversion routines</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-vc2_conformance.color_conversion">
+<span id="vc2-conformance-color-conversion-color-conversion-routines"></span><h1><a class="reference internal" href="#module-vc2_conformance.color_conversion" title="vc2_conformance.color_conversion"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.color_conversion</span></code></a>: Color conversion routines<a class="headerlink" href="#module-vc2_conformance.color_conversion" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-vc2_conformance.color_conversion" title="vc2_conformance.color_conversion"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.color_conversion</span></code></a> module implements color system
+related functions relating to the color formats supported by VC-2.</p>
+<p>The primary use for this module is to provide routines for converting between
+colors specified by VC-2’s various supported color systems (see Annex (E.1) of
+the VC-2 specification). This functionality is used during the generation of
+certain encoder and decoder test cases (<a class="reference internal" href="../test_case_generation/test_cases.html#module-vc2_conformance.test_cases" title="vc2_conformance.test_cases"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.test_cases</span></code></a>).</p>
+<div class="section" id="high-level-api">
+<h2>High-level API<a class="headerlink" href="#high-level-api" title="Permalink to this headline">¶</a></h2>
+<p>This module implements simple color format conversion routines for converting
+between arbitrary VC-2 color formats via floating point CIE XYZ color. The
+process is implemented by the following high-level functions:</p>
+<dl class="py function">
+<dt id="vc2_conformance.color_conversion.to_xyz">
+<code class="sig-name descname"><span class="pre">to_xyz</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">video_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.color_conversion.to_xyz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a picture from a native VC-2 integer Y C1 C2 format into floating
+point CIE XYZ format.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>y, c1, c2</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.array</span></code></span></dt><dd><p>Three 2D <code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.arrays</span></code> containing integer Y C1
+C2 values for a picture.</p>
+</dd>
+<dt><strong>video_parameters</strong><span class="classifier"><a class="reference internal" href="../pseudocode.html#vc2_conformance.pseudocode.video_parameters.VideoParameters" title="vc2_conformance.pseudocode.video_parameters.VideoParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">VideoParameters</span></code></a></span></dt><dd><p>The VC-2 parameters describing the video format in use. The following
+fields are required:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">color_diff_format_index</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">luma_offset</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">luma_excursion</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">color_diff_offset</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">color_diff_excursion</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">color_primaries</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">color_matrix</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">transfer_function</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>yxz</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.array</span></code></span></dt><dd><p>A 3D <code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.array</span></code> with dimensions <code class="docutils literal notranslate"><span class="pre">(height,</span> <span class="pre">width,</span> <span class="pre">3)</span></code>
+containing floating point CIE XYZ values for a picture.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.color_conversion.from_xyz">
+<code class="sig-name descname"><span class="pre">from_xyz</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">video_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.color_conversion.from_xyz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a picture from CIE XYZ format into a native VC-2 integer, chroma
+subsampled Y C1 C2 format.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>yxz</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.array</span></code></span></dt><dd><p>A 3D <code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.array</span></code> with dimensions <code class="docutils literal notranslate"><span class="pre">(height,</span> <span class="pre">width,</span> <span class="pre">3)</span></code>
+containing floating point CIE XYZ values for a picture.</p>
+</dd>
+<dt><strong>video_parameters</strong><span class="classifier"><a class="reference internal" href="../pseudocode.html#vc2_conformance.pseudocode.video_parameters.VideoParameters" title="vc2_conformance.pseudocode.video_parameters.VideoParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">VideoParameters</span></code></a></span></dt><dd><p>The VC-2 parameters describing the video format to produce. The following
+fields are required:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">color_diff_format_index</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">luma_offset</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">luma_excursion</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">color_diff_offset</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">color_diff_excursion</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">color_primaries</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">color_matrix</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">transfer_function</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>y, c1, c2</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.array</span></code></span></dt><dd><p>A set of three 2D <code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.array</span></code> containing integer Y C1 C2
+values for a picture. If chroma subsampling is used, the C1 and C2
+arrays may differ in size from the Y component.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Color format conversion is an extremely complex problem. The approach used
+by this module is simplistic in both its approach and implementation. While
+it will always produce plausible colors, it may not produce the best
+possible result. To give a few examples of limitations of this module:</p>
+<ul class="simple">
+<li><p>Potential numerical stability issues are ignored (e.g. YCgCo conversions
+may be lossy)</p></li>
+<li><p>No white point correction is applied</p></li>
+<li><p>Out-of-gamut colors are crudely clipped</p></li>
+<li><p>Poor quality antialiasing filters for chroma subsampling/interpolation</p></li>
+</ul>
+<p>Finally, this module should be considered a ‘best effort’ at a correct
+implementation and the resulting color conversion should largely be
+treated as informative.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Support <a class="reference internal" href="#vc2_conformance.color_conversion.to_xyz" title="vc2_conformance.color_conversion.to_xyz"><code class="xref py py-func docutils literal notranslate"><span class="pre">to_xyz()</span></code></a> is limited to only formats using the
+<code class="xref py py-data docutils literal notranslate"><span class="pre">tv_gamma</span></code> transfer
+function. All formats are supported, however, by <a class="reference internal" href="#vc2_conformance.color_conversion.from_xyz" title="vc2_conformance.color_conversion.from_xyz"><code class="xref py py-func docutils literal notranslate"><span class="pre">from_xyz()</span></code></a>.</p>
+</div>
+</div>
+<div class="section" id="low-level-api">
+<h2>Low-level API<a class="headerlink" href="#low-level-api" title="Permalink to this headline">¶</a></h2>
+<p>The conversion processes used by <a class="reference internal" href="#vc2_conformance.color_conversion.to_xyz" title="vc2_conformance.color_conversion.to_xyz"><code class="xref py py-func docutils literal notranslate"><span class="pre">to_xyz()</span></code></a> and <a class="reference internal" href="#vc2_conformance.color_conversion.from_xyz" title="vc2_conformance.color_conversion.from_xyz"><code class="xref py py-func docutils literal notranslate"><span class="pre">from_xyz()</span></code></a> is
+built on a series of lower-level transformations as described by the figure
+below. These lower-level primitives may be used directly to perform more
+specialised conversions.</p>
+<blockquote>
+<div><img alt="../_images/color_conversion_process.svg" src="../_images/color_conversion_process.svg" /></div></blockquote>
+<p>These steps build on the following conversion functions and matrices. These are
+implemented based on the specifications cited by the VC-2 specification.</p>
+<dl class="py function">
+<dt id="vc2_conformance.color_conversion.float_to_int_clipped">
+<code class="sig-name descname"><span class="pre">float_to_int_clipped</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">excursion</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.color_conversion.float_to_int_clipped" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert (an array of) float sample values in the nominal range 0 to +1 or
+-0.5 to +0.5 to integers (with the specified offset and excursion).</p>
+<p>Values which fall outside the range of the integer representation are
+clipped.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.color_conversion.float_to_int">
+<code class="sig-name descname"><span class="pre">float_to_int</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">excursion</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.color_conversion.float_to_int" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert (an array of) float sample values in the nominal range 0 to +1 or
+-0.5 to +0.5 to integers (with the specified offset and excursion).</p>
+<p>Values which fall outside the range of the integer representation are
+<em>not</em> clipped. See <a class="reference internal" href="#vc2_conformance.color_conversion.float_to_int_clipped" title="vc2_conformance.color_conversion.float_to_int_clipped"><code class="xref py py-func docutils literal notranslate"><span class="pre">float_to_int_clipped()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.color_conversion.int_to_float">
+<code class="sig-name descname"><span class="pre">int_to_float</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">excursion</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.color_conversion.int_to_float" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert (an array of) integer sample values from integers (with the
+specified offset and excursion) to floating point values nominally in the
+range 0 to +1 or -0.5 to +0.5.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.color_conversion.from_444">
+<code class="sig-name descname"><span class="pre">from_444</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chroma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subsampling</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.color_conversion.from_444" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subsample a chroma picture component into the specified
+<a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.ColorDifferenceSamplingFormats" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ColorDifferenceSamplingFormats</span></code></a>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This function uses an extremely crude low-pass filter during
+downsampling which is likely to produce aliasing artefacts. As such,
+pictures produced by this function should not be used for anything
+where high fidelity is required.</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.color_conversion.to_444">
+<code class="sig-name descname"><span class="pre">to_444</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chroma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subsampling</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.color_conversion.to_444" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a chroma picture subsampled according to the specified
+<a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.ColorDifferenceSamplingFormats" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ColorDifferenceSamplingFormats</span></code></a>, return an
+upsampled chroma signal.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This function uses an extremely crude anti-aliasing filter during
+upsampling which is likely to produce artefacts. As such, pictures
+produced by this function should not be used for anything where high
+fidelity is required.</p>
+</div>
+</dd></dl>
+
+<dl class="py data">
+<dt id="vc2_conformance.color_conversion.COLOR_MATRICES">
+<code class="sig-name descname"><span class="pre">COLOR_MATRICES</span></code><em class="property"> <span class="pre">=</span> <span class="pre">{&lt;color</span> <span class="pre">matrix</span> <span class="pre">index&gt;:</span> <span class="pre">&lt;3x3</span> <span class="pre">matrix&gt;,</span> <span class="pre">...}</span></em><a class="headerlink" href="#vc2_conformance.color_conversion.COLOR_MATRICES" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each color matrix supported by VC-2, a <span class="math notranslate nohighlight">\(3 \times 3\)</span> matrix which
+transforms from non-linear RGB (<span class="math notranslate nohighlight">\(E_R E_G E_B\)</span>) to Y C1 C2.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="vc2_conformance.color_conversion.INVERSE_COLOR_MATRICES">
+<code class="sig-name descname"><span class="pre">INVERSE_COLOR_MATRICES</span></code><em class="property"> <span class="pre">=</span> <span class="pre">{&lt;color</span> <span class="pre">matrix</span> <span class="pre">index&gt;:</span> <span class="pre">&lt;3x3</span> <span class="pre">matrix&gt;,</span> <span class="pre">...}</span></em><a class="headerlink" href="#vc2_conformance.color_conversion.INVERSE_COLOR_MATRICES" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each color matrix supported by VC-2, a <span class="math notranslate nohighlight">\(3 \times 3\)</span> matrix which
+transforms from Y C1 C2 to non-linear RGB (<span class="math notranslate nohighlight">\(E_R E_G E_B\)</span>).</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="vc2_conformance.color_conversion.TRANSFER_FUNCTIONS">
+<code class="sig-name descname"><span class="pre">TRANSFER_FUNCTIONS</span></code><em class="property"> <span class="pre">=</span> <span class="pre">{&lt;transfer</span> <span class="pre">function</span> <span class="pre">index&gt;:</span> <span class="pre">&lt;function&gt;,</span> <span class="pre">...}</span></em><a class="headerlink" href="#vc2_conformance.color_conversion.TRANSFER_FUNCTIONS" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each set of VC-2’s, supported transfer functions, a Numpy implementation of
+that function. These functions implement the transform from linear to
+non-linear RGB, <span class="math notranslate nohighlight">\(E_R E_G E_B\)</span>. These functions expect and returns a
+single value or Numpy array of values.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="vc2_conformance.color_conversion.INVERSE_TRANSFER_FUNCTIONS">
+<code class="sig-name descname"><span class="pre">INVERSE_TRANSFER_FUNCTIONS</span></code><em class="property"> <span class="pre">=</span> <span class="pre">{&lt;transfer</span> <span class="pre">function</span> <span class="pre">index&gt;:</span> <span class="pre">&lt;function&gt;,</span> <span class="pre">...}</span></em><a class="headerlink" href="#vc2_conformance.color_conversion.INVERSE_TRANSFER_FUNCTIONS" title="Permalink to this definition">¶</a></dt>
+<dd><p>For (a subset of) VC-2’s, supported transfer functions, a Numpy implementation
+of the inverse function. These functions implement the transform from
+non-linear to linear RGB. These functions expect and returns a single value or
+Numpy array of values.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>An inverse transfer function is currently only provided for
+<code class="xref py py-data docutils literal notranslate"><span class="pre">tv_gamma</span></code> because this
+is all that was required at the time of development.</p>
+</div>
+</dd></dl>
+
+<dl class="py data">
+<dt id="vc2_conformance.color_conversion.XYZ_TO_LINEAR_RGB">
+<code class="sig-name descname"><span class="pre">XYZ_TO_LINEAR_RGB</span></code><em class="property"> <span class="pre">=</span> <span class="pre">{&lt;color</span> <span class="pre">primaries</span> <span class="pre">index&gt;:</span> <span class="pre">&lt;3x3</span> <span class="pre">matrix&gt;,</span> <span class="pre">...}</span></em><a class="headerlink" href="#vc2_conformance.color_conversion.XYZ_TO_LINEAR_RGB" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each set of color primaries in
+<a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PresetColorPrimaries" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PresetColorPrimaries</span></code></a>, a <span class="math notranslate nohighlight">\(3 \times 3\)</span> matrix
+which converts from CIE XYZ into linear RGB.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="vc2_conformance.color_conversion.LINEAR_RGB_TO_XYZ">
+<code class="sig-name descname"><span class="pre">LINEAR_RGB_TO_XYZ</span></code><em class="property"> <span class="pre">=</span> <span class="pre">{&lt;color</span> <span class="pre">primaries</span> <span class="pre">index&gt;:</span> <span class="pre">&lt;3x3</span> <span class="pre">matrix&gt;,</span> <span class="pre">...}</span></em><a class="headerlink" href="#vc2_conformance.color_conversion.LINEAR_RGB_TO_XYZ" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each set of color primaries in
+<a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PresetColorPrimaries" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PresetColorPrimaries</span></code></a>, a <span class="math notranslate nohighlight">\(3 \times 3\)</span> matrix
+which converts from linear RGB into CIE XYZ.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="additional-utility-functions">
+<h2>Additional utility functions<a class="headerlink" href="#additional-utility-functions" title="Permalink to this headline">¶</a></h2>
+<p>The following additional utility functions are provided for the manual
+evaluation of certain transform steps.</p>
+<dl class="py function">
+<dt id="vc2_conformance.color_conversion.matmul_colors">
+<code class="sig-name descname"><span class="pre">matmul_colors</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">array</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.color_conversion.matmul_colors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a (height, width, 3) 3D array, return a new 3D array where each
+triple in the first array has been multiplied by the specified <span class="math notranslate nohighlight">\(3
+\times 3\)</span> matrix.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.color_conversion.swap_primaries">
+<code class="sig-name descname"><span class="pre">swap_primaries</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">video_parameters_before</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">video_parameters_after</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.color_conversion.swap_primaries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given an image defined in terms of one set of primaries, return a new image
+defined in terms of a different set of primaries but with the same
+numerical R, G and B values under the new set of primaries.</p>
+<p>This transformation is useful when an image is defined not by absolute
+colors but rather colors relative to whatever primaries are in use. For
+example, a test pattern designed to show swatches of pure color primaries
+may be given relative to a particular set of primaries but needs to be
+adapted for use with another set of primaries.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>xyz</strong><span class="classifier"><span class="math notranslate nohighlight">\(3 \times 3\)</span> array (height, width, 3)</span></dt><dd></dd>
+<dt><strong>video_parameters_before</strong><span class="classifier"><a class="reference internal" href="../pseudocode.html#vc2_conformance.pseudocode.video_parameters.VideoParameters" title="vc2_conformance.pseudocode.video_parameters.VideoParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">VideoParameters</span></code></a></span></dt><dd></dd>
+<dt><strong>video_parameters_after</strong><span class="classifier"><a class="reference internal" href="../pseudocode.html#vc2_conformance.pseudocode.video_parameters.VideoParameters" title="vc2_conformance.pseudocode.video_parameters.VideoParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">VideoParameters</span></code></a></span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>xyz</strong><span class="classifier"><span class="math notranslate nohighlight">\(3 \times 3\)</span> array (height, width, 3)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="color-parameter-sanity-checking">
+<h2>Color parameter sanity checking<a class="headerlink" href="#color-parameter-sanity-checking" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="#vc2_conformance.color_conversion.sanity_check_video_parameters" title="vc2_conformance.color_conversion.sanity_check_video_parameters"><code class="xref py py-func docutils literal notranslate"><span class="pre">sanity_check_video_parameters()</span></code></a> function is provided which can
+check a given VC-2 video format is ‘sane’ – that is it might plausibly be able
+to represent some colors.</p>
+<dl class="py function">
+<dt id="vc2_conformance.color_conversion.sanity_check_video_parameters">
+<code class="sig-name descname"><span class="pre">sanity_check_video_parameters</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.color_conversion.sanity_check_video_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a set of
+<a class="reference internal" href="../pseudocode.html#vc2_conformance.pseudocode.video_parameters.VideoParameters" title="vc2_conformance.pseudocode.video_parameters.VideoParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">VideoParameters</span></code></a>, check that a
+set of video parameters could plausibly be used to encode a color signal
+(regardless of whether the color specification itself is sensible).</p>
+<p>Specifically, the following checks are carried out:</p>
+<ul class="simple">
+<li><p>Are the luma and color difference signals at least 8 bits?</p></li>
+<li><p>Can white, black and saturated primary red, green and blue be encoded?</p></li>
+<li><dl class="simple">
+<dt>When the RGB color matrix is used:</dt><dd><ul>
+<li><p>Is the color difference sampling mode 4:4:4?</p></li>
+<li><p>Are the luma and chroma components the same depth?</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Returns a <a class="reference internal" href="#vc2_conformance.color_conversion.ColorParametersSanity" title="vc2_conformance.color_conversion.ColorParametersSanity"><code class="xref py py-class docutils literal notranslate"><span class="pre">ColorParametersSanity</span></code></a> as a result.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="vc2_conformance.color_conversion.ColorParametersSanity">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">ColorParametersSanity</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">luma_depth_sane</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color_diff_depth_sane</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">black_sane</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">white_sane</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">red_sane</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">green_sane</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blue_sane</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color_diff_format_sane</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">luma_vs_color_diff_depths_sane</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.color_conversion.ColorParametersSanity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Result of <a class="reference internal" href="#vc2_conformance.color_conversion.sanity_check_video_parameters" title="vc2_conformance.color_conversion.sanity_check_video_parameters"><code class="xref py py-func docutils literal notranslate"><span class="pre">sanity_check_video_parameters()</span></code></a>. Indicates the sanity
+(or insanity) of a set of video parameters.</p>
+<p>Truthy if sane, falsey otherwise.</p>
+<p>Use the various properties to determine what is and is not sane.</p>
+<p>Use the <a class="reference internal" href="#vc2_conformance.color_conversion.ColorParametersSanity.explain" title="vc2_conformance.color_conversion.ColorParametersSanity.explain"><code class="xref py py-meth docutils literal notranslate"><span class="pre">explain()</span></code></a> function to return a string with a human
+readable explanation.</p>
+<dl class="py method">
+<dt id="vc2_conformance.color_conversion.ColorParametersSanity.luma_depth_sane">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">luma_depth_sane</span></code><a class="headerlink" href="#vc2_conformance.color_conversion.ColorParametersSanity.luma_depth_sane" title="Permalink to this definition">¶</a></dt>
+<dd><p>True iff the luma component has been assigned at least 8 bits.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.color_conversion.ColorParametersSanity.color_diff_depth_sane">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">color_diff_depth_sane</span></code><a class="headerlink" href="#vc2_conformance.color_conversion.ColorParametersSanity.color_diff_depth_sane" title="Permalink to this definition">¶</a></dt>
+<dd><p>True iff the color difference components have been assigned at least 8
+bits.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.color_conversion.ColorParametersSanity.black_sane">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">black_sane</span></code><a class="headerlink" href="#vc2_conformance.color_conversion.ColorParametersSanity.black_sane" title="Permalink to this definition">¶</a></dt>
+<dd><p>If True, the format can represent (video) black.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.color_conversion.ColorParametersSanity.white_sane">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">white_sane</span></code><a class="headerlink" href="#vc2_conformance.color_conversion.ColorParametersSanity.white_sane" title="Permalink to this definition">¶</a></dt>
+<dd><p>If True, the format can represent (video) white.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.color_conversion.ColorParametersSanity.red_sane">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">red_sane</span></code><a class="headerlink" href="#vc2_conformance.color_conversion.ColorParametersSanity.red_sane" title="Permalink to this definition">¶</a></dt>
+<dd><p>If True, the format can represent (video) primary red.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.color_conversion.ColorParametersSanity.green_sane">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">green_sane</span></code><a class="headerlink" href="#vc2_conformance.color_conversion.ColorParametersSanity.green_sane" title="Permalink to this definition">¶</a></dt>
+<dd><p>If True, the format can represent (video) primary green.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.color_conversion.ColorParametersSanity.blue_sane">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">blue_sane</span></code><a class="headerlink" href="#vc2_conformance.color_conversion.ColorParametersSanity.blue_sane" title="Permalink to this definition">¶</a></dt>
+<dd><p>If True, the format can represent (video) primary blue.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.color_conversion.ColorParametersSanity.color_diff_format_sane">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">color_diff_format_sane</span></code><a class="headerlink" href="#vc2_conformance.color_conversion.ColorParametersSanity.color_diff_format_sane" title="Permalink to this definition">¶</a></dt>
+<dd><p>True iff the color difference sampling format is appropriate for the
+color format.</p>
+<p>False when non-4:4:4 sampling is used for RGB formats.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.color_conversion.ColorParametersSanity.luma_vs_color_diff_depths_sane">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">luma_vs_color_diff_depths_sane</span></code><a class="headerlink" href="#vc2_conformance.color_conversion.ColorParametersSanity.luma_vs_color_diff_depths_sane" title="Permalink to this definition">¶</a></dt>
+<dd><p>True iff the relative offsets/excursions of luma and color difference
+components are appropriately matched.</p>
+<p>False when not identical for RGB formats.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="vc2_conformance.color_conversion.ColorParametersSanity.explain">
+<code class="sig-name descname"><span class="pre">explain</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.color_conversion.ColorParametersSanity.explain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a human-readable explanation of why a video format is not sane
+(or simply state that it is sane, if it is).</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.color_conversion</span></code>: Color conversion routines</a><ul>
+<li><a class="reference internal" href="#high-level-api">High-level API</a></li>
+<li><a class="reference internal" href="#low-level-api">Low-level API</a></li>
+<li><a class="reference internal" href="#additional-utility-functions">Additional utility functions</a></li>
+<li><a class="reference internal" href="#color-parameter-sanity-checking">Color parameter sanity checking</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="dimensions_and_depths.html"
+                        title="previous chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.dimensions_and_depths</span></code>: Picture dimension and depth calculation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="file_format.html"
+                        title="next chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.file_format</span></code>: Picture file format I/O</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/picture_generation/color_conversion.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="file_format.html" title="vc2_conformance.file_format: Picture file format I/O"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="dimensions_and_depths.html" title="vc2_conformance.dimensions_and_depths: Picture dimension and depth calculation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Test picture generation reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.color_conversion</span></code>: Color conversion routines</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>

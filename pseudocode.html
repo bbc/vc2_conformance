@@ -1,0 +1,1240 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vc2_conformance.pseudocode: VC-2 pseudocode function implementations &#8212; SMPTE VC-2 Conformance Software v0.4.2 documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Automated Static Code Verification" href="verification.html" />
+    <link rel="prev" title="vc2_conformance.constraint_table: A simple constraints model" href="level_constraints/constraint_table.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="verification.html" title="Automated Static Code Verification"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="level_constraints/constraint_table.html" title="vc2_conformance.constraint_table: A simple constraints model"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode</span></code>: VC-2 pseudocode function implementations</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-vc2_conformance.pseudocode">
+<span id="vc2-conformance-pseudocode-vc-2-pseudocode-function-implementations"></span><h1><a class="reference internal" href="#module-vc2_conformance.pseudocode" title="vc2_conformance.pseudocode"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode</span></code></a>: VC-2 pseudocode function implementations<a class="headerlink" href="#module-vc2_conformance.pseudocode" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-vc2_conformance.pseudocode" title="vc2_conformance.pseudocode"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode</span></code></a> module contains implementations of
+many of the VC-2 pseudocode functions and associated data structures. In
+particular, it includes everything which can be used as-is in the construction
+of encoders, decoders and so on without any alterations.</p>
+<p>The VC-2 pseudocode is augmented by a modest number of additional functions or
+data structure fields. For instance, additional fields are added to
+<a class="reference internal" href="#vc2_conformance.pseudocode.state.State" title="vc2_conformance.pseudocode.state.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">State</span></code></a> which are used by
+conformance checking routines and forward wavelet transform routines.</p>
+<div class="section" id="module-vc2_conformance.pseudocode.arrays">
+<span id="vc2-conformance-pseudocode-arrays"></span><h2><a class="reference internal" href="#module-vc2_conformance.pseudocode.arrays" title="vc2_conformance.pseudocode.arrays"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.arrays</span></code></a><a class="headerlink" href="#module-vc2_conformance.pseudocode.arrays" title="Permalink to this headline">¶</a></h2>
+<p>VC-2 style 2D array functions (5.5).</p>
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.arrays.new_array">
+<code class="sig-name descname"><span class="pre">new_array</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">dimensions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.arrays.new_array" title="Permalink to this definition">¶</a></dt>
+<dd><p>(5.4.2) Makes an N-dimensional array out of nested lists. Dimensions are
+given in the same order as they are indexed, e.g. <code class="docutils literal notranslate"><span class="pre">new_array(height,</span>
+<span class="pre">width)</span></code>, like <code class="docutils literal notranslate"><span class="pre">array[y][x]</span></code>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.arrays.width">
+<code class="sig-name descname"><span class="pre">width</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.arrays.width" title="Permalink to this definition">¶</a></dt>
+<dd><p>(5.5.4)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.arrays.height">
+<code class="sig-name descname"><span class="pre">height</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.arrays.height" title="Permalink to this definition">¶</a></dt>
+<dd><p>(5.5.4)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.arrays.row">
+<code class="sig-name descname"><span class="pre">row</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.arrays.row" title="Permalink to this definition">¶</a></dt>
+<dd><p>(15.4.1) A 1D-array-like view into a row of a (2D) nested list as returned
+by <a class="reference internal" href="#vc2_conformance.pseudocode.arrays.new_array" title="vc2_conformance.pseudocode.arrays.new_array"><code class="xref py py-func docutils literal notranslate"><span class="pre">new_array()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="vc2_conformance.pseudocode.arrays.column">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">column</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.arrays.column" title="Permalink to this definition">¶</a></dt>
+<dd><p>(15.4.1) A 1D-array-like view into a column of a (2D) nested list as
+returned by <a class="reference internal" href="#vc2_conformance.pseudocode.arrays.new_array" title="vc2_conformance.pseudocode.arrays.new_array"><code class="xref py py-func docutils literal notranslate"><span class="pre">new_array()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.arrays.delete_rows_after">
+<code class="sig-name descname"><span class="pre">delete_rows_after</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.arrays.delete_rows_after" title="Permalink to this definition">¶</a></dt>
+<dd><p>(15.4.5) Delete rows ‘k’ and after in ‘a’.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.arrays.delete_columns_after">
+<code class="sig-name descname"><span class="pre">delete_columns_after</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.arrays.delete_columns_after" title="Permalink to this definition">¶</a></dt>
+<dd><p>(15.4.5) Delete columns ‘k’ and after in ‘a’.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-vc2_conformance.pseudocode.offsetting">
+<span id="vc2-conformance-pseudocode-offsetting"></span><h2><a class="reference internal" href="#module-vc2_conformance.pseudocode.offsetting" title="vc2_conformance.pseudocode.offsetting"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.offsetting</span></code></a><a class="headerlink" href="#module-vc2_conformance.pseudocode.offsetting" title="Permalink to this headline">¶</a></h2>
+<p>Picture component offsetting routines (15)</p>
+<p>This module collects picture component value offsetting functions from (15) and
+augments these with complementary de-offsetting functions (inferred from, but
+not defined by the standard).</p>
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.offsetting.offset_picture">
+<code class="sig-name descname"><span class="pre">offset_picture</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_picture</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.offsetting.offset_picture" title="Permalink to this definition">¶</a></dt>
+<dd><p>(15.5) Remove picture value offsets (added during encoding).</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>state</strong><span class="classifier"><a class="reference internal" href="#vc2_conformance.pseudocode.state.State" title="vc2_conformance.pseudocode.state.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.state.State</span></code></a></span></dt><dd><p>Where <code class="docutils literal notranslate"><span class="pre">luma_depth</span></code> and <code class="docutils literal notranslate"><span class="pre">color_diff_depth</span></code> are defined.</p>
+</dd>
+<dt><strong>current_picture</strong><span class="classifier">{comp: [[pixel_value, …], …], …}</span></dt><dd><p>Will be mutated in-place.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.offsetting.offset_component">
+<code class="sig-name descname"><span class="pre">offset_component</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comp_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.offsetting.offset_component" title="Permalink to this definition">¶</a></dt>
+<dd><p>(15.5) Remove picture value offsets from a single component.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.offsetting.remove_offset_picture">
+<code class="sig-name descname"><span class="pre">remove_offset_picture</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_picture</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.offsetting.remove_offset_picture" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inverse of offset_picture (15.5). Centers picture values around zero.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.offsetting.remove_offset_component">
+<code class="sig-name descname"><span class="pre">remove_offset_component</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comp_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.offsetting.remove_offset_component" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inverse of offset_component (15.5). Centers picture values around zero.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>state</strong><span class="classifier"><a class="reference internal" href="#vc2_conformance.pseudocode.state.State" title="vc2_conformance.pseudocode.state.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.state.State</span></code></a></span></dt><dd><p>Where <code class="docutils literal notranslate"><span class="pre">luma_depth</span></code> and <code class="docutils literal notranslate"><span class="pre">color_diff_depth</span></code> are defined.</p>
+</dd>
+<dt><strong>current_picture</strong><span class="classifier">{comp: [[pixel_value, …], …], …}</span></dt><dd><p>Will be mutated in-place.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-vc2_conformance.pseudocode.parse_code_functions">
+<span id="vc2-conformance-pseudocode-parse-code-functions"></span><h2><a class="reference internal" href="#module-vc2_conformance.pseudocode.parse_code_functions" title="vc2_conformance.pseudocode.parse_code_functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.parse_code_functions</span></code></a><a class="headerlink" href="#module-vc2_conformance.pseudocode.parse_code_functions" title="Permalink to this headline">¶</a></h2>
+<p>Parse code classification functions (Table 10.2)</p>
+<p>These functions all take a ‘state’ dictionary containing at least
+<code class="docutils literal notranslate"><span class="pre">parse_code</span></code> which should be an int or <code class="xref py py-class docutils literal notranslate"><span class="pre">ParseCodes</span></code> enum value.</p>
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.parse_code_functions.is_seq_header">
+<code class="sig-name descname"><span class="pre">is_seq_header</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.parse_code_functions.is_seq_header" title="Permalink to this definition">¶</a></dt>
+<dd><p>(Table 10.2)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.parse_code_functions.is_end_of_sequence">
+<code class="sig-name descname"><span class="pre">is_end_of_sequence</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.parse_code_functions.is_end_of_sequence" title="Permalink to this definition">¶</a></dt>
+<dd><p>(Table 10.2)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.parse_code_functions.is_auxiliary_data">
+<code class="sig-name descname"><span class="pre">is_auxiliary_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.parse_code_functions.is_auxiliary_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>(Table 10.2)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.parse_code_functions.is_padding_data">
+<code class="sig-name descname"><span class="pre">is_padding_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.parse_code_functions.is_padding_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>(Table 10.2)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.parse_code_functions.is_ld">
+<code class="sig-name descname"><span class="pre">is_ld</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.parse_code_functions.is_ld" title="Permalink to this definition">¶</a></dt>
+<dd><p>(Table 10.2)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.parse_code_functions.is_hq">
+<code class="sig-name descname"><span class="pre">is_hq</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.parse_code_functions.is_hq" title="Permalink to this definition">¶</a></dt>
+<dd><p>(Table 10.2)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.parse_code_functions.is_picture">
+<code class="sig-name descname"><span class="pre">is_picture</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.parse_code_functions.is_picture" title="Permalink to this definition">¶</a></dt>
+<dd><p>(Table 10.2)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.parse_code_functions.is_fragment">
+<code class="sig-name descname"><span class="pre">is_fragment</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.parse_code_functions.is_fragment" title="Permalink to this definition">¶</a></dt>
+<dd><p>(Table 10.2)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.parse_code_functions.using_dc_prediction">
+<code class="sig-name descname"><span class="pre">using_dc_prediction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.parse_code_functions.using_dc_prediction" title="Permalink to this definition">¶</a></dt>
+<dd><p>(Table 10.2)</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-vc2_conformance.pseudocode.picture_decoding">
+<span id="vc2-conformance-pseudocode-picture-decoding"></span><h2><a class="reference internal" href="#module-vc2_conformance.pseudocode.picture_decoding" title="vc2_conformance.pseudocode.picture_decoding"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.picture_decoding</span></code></a><a class="headerlink" href="#module-vc2_conformance.pseudocode.picture_decoding" title="Permalink to this headline">¶</a></h2>
+<p>This module contains the wavelet synthesis filters and associated functions
+defined in the pseudocode of the VC-2 standard (15).</p>
+<p>See also <a class="reference internal" href="#module-vc2_conformance.pseudocode.picture_encoding" title="vc2_conformance.pseudocode.picture_encoding"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.picture_encoding</span></code></a>.</p>
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.picture_decoding.inverse_wavelet_transform">
+<code class="sig-name descname"><span class="pre">inverse_wavelet_transform</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.picture_decoding.inverse_wavelet_transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>(15.3)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.picture_decoding.idwt">
+<code class="sig-name descname"><span class="pre">idwt</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coeff_data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.picture_decoding.idwt" title="Permalink to this definition">¶</a></dt>
+<dd><p>(15.4.1)</p>
+<p>Inverse Discrete Wavelet Transform.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>state</strong><span class="classifier"><a class="reference internal" href="#vc2_conformance.pseudocode.state.State" title="vc2_conformance.pseudocode.state.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">State</span></code></a></span></dt><dd><p>A state dictionary containing at least the following:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">wavelet_index</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">wavelet_index_ho</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dwt_depth</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dwt_depth_ho</span></code></p></li>
+</ul>
+</dd>
+<dt><strong>coeff_data</strong><span class="classifier">{level: {orientation: [[coeff, …], …], …}, …}</span></dt><dd><p>The complete (power-of-two dimensioned) transform coefficient data.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>picture</strong><span class="classifier">[[pixel_value, …], …]</span></dt><dd><p>The synthesized picture.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.picture_decoding.h_synthesis">
+<code class="sig-name descname"><span class="pre">h_synthesis</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">H_data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.picture_decoding.h_synthesis" title="Permalink to this definition">¶</a></dt>
+<dd><p>(15.4.2) Horizontal-only synthesis.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.picture_decoding.vh_synthesis">
+<code class="sig-name descname"><span class="pre">vh_synthesis</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LL_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">HL_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LH_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">HH_data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.picture_decoding.vh_synthesis" title="Permalink to this definition">¶</a></dt>
+<dd><p>(15.4.3) Interleaved vertical and horizontal synthesis.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.picture_decoding.oned_synthesis">
+<code class="sig-name descname"><span class="pre">oned_synthesis</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.picture_decoding.oned_synthesis" title="Permalink to this definition">¶</a></dt>
+<dd><p>(15.4.4.1) and (15.4.4.3). Acts in-place on ‘A’</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.picture_decoding.filter_bit_shift">
+<code class="sig-name descname"><span class="pre">filter_bit_shift</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.picture_decoding.filter_bit_shift" title="Permalink to this definition">¶</a></dt>
+<dd><p>(15.4.2) Return the bit shift for the current horizontal-only filter.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.picture_decoding.lift1">
+<code class="sig-name descname"><span class="pre">lift1</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">taps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">S</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.picture_decoding.lift1" title="Permalink to this definition">¶</a></dt>
+<dd><p>(15.4.4.1) Update even, add odd.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.picture_decoding.lift2">
+<code class="sig-name descname"><span class="pre">lift2</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">taps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">S</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.picture_decoding.lift2" title="Permalink to this definition">¶</a></dt>
+<dd><p>(15.4.4.1) Update even, subtract odd.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.picture_decoding.lift3">
+<code class="sig-name descname"><span class="pre">lift3</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">taps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">S</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.picture_decoding.lift3" title="Permalink to this definition">¶</a></dt>
+<dd><p>(15.4.4.1) Update odd, add even.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.picture_decoding.lift4">
+<code class="sig-name descname"><span class="pre">lift4</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">taps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">S</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.picture_decoding.lift4" title="Permalink to this definition">¶</a></dt>
+<dd><p>(15.4.4.1) Update odd, subtract even.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.picture_decoding.idwt_pad_removal">
+<code class="sig-name descname"><span class="pre">idwt_pad_removal</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.picture_decoding.idwt_pad_removal" title="Permalink to this definition">¶</a></dt>
+<dd><p>(15.4.5)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.picture_decoding.offset_picture">
+<code class="sig-name descname"><span class="pre">offset_picture</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_picture</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.picture_decoding.offset_picture" title="Permalink to this definition">¶</a></dt>
+<dd><p>(15.5) Remove picture value offsets (added during encoding).</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>state</strong><span class="classifier"><a class="reference internal" href="#vc2_conformance.pseudocode.state.State" title="vc2_conformance.pseudocode.state.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.state.State</span></code></a></span></dt><dd><p>Where <code class="docutils literal notranslate"><span class="pre">luma_depth</span></code> and <code class="docutils literal notranslate"><span class="pre">color_diff_depth</span></code> are defined.</p>
+</dd>
+<dt><strong>current_picture</strong><span class="classifier">{comp: [[pixel_value, …], …], …}</span></dt><dd><p>Will be mutated in-place.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.picture_decoding.offset_component">
+<code class="sig-name descname"><span class="pre">offset_component</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comp_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.picture_decoding.offset_component" title="Permalink to this definition">¶</a></dt>
+<dd><p>(15.5) Remove picture value offsets from a single component.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.picture_decoding.clip_picture">
+<code class="sig-name descname"><span class="pre">clip_picture</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_picture</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.picture_decoding.clip_picture" title="Permalink to this definition">¶</a></dt>
+<dd><p>(15.5)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.picture_decoding.clip_component">
+<code class="sig-name descname"><span class="pre">clip_component</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comp_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.picture_decoding.clip_component" title="Permalink to this definition">¶</a></dt>
+<dd><p>(15.5)</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="vc2_conformance.pseudocode.picture_decoding.SYNTHESIS_LIFTING_FUNCTION_TYPES">
+<code class="sig-name descname"><span class="pre">SYNTHESIS_LIFTING_FUNCTION_TYPES</span></code><em class="property"> <span class="pre">=</span> <span class="pre">{...}</span></em><a class="headerlink" href="#vc2_conformance.pseudocode.picture_decoding.SYNTHESIS_LIFTING_FUNCTION_TYPES" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lookup from lifting function ID to function implementation for implementing
+wavelet synthesis.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-vc2_conformance.pseudocode.picture_encoding">
+<span id="vc2-conformance-pseudocode-picture-encoding"></span><h2><a class="reference internal" href="#module-vc2_conformance.pseudocode.picture_encoding" title="vc2_conformance.pseudocode.picture_encoding"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.picture_encoding</span></code></a><a class="headerlink" href="#module-vc2_conformance.pseudocode.picture_encoding" title="Permalink to this headline">¶</a></h2>
+<p>This module is the inverse of the
+<a class="reference internal" href="#module-vc2_conformance.pseudocode.picture_decoding" title="vc2_conformance.pseudocode.picture_decoding"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.picture_decoding</span></code></a> module and contains
+functions for performing wavelet analysis filtering.</p>
+<p>This functionality is not specified by the standard but is used to generate
+simple bitstreams (and test cases) in this software (and its test suite).</p>
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.picture_encoding.picture_encode">
+<code class="sig-name descname"><span class="pre">picture_encode</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_picture</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.picture_encoding.picture_encode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inverse of picture_decode (15.2).</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>state</strong><span class="classifier"><a class="reference internal" href="#vc2_conformance.pseudocode.state.State" title="vc2_conformance.pseudocode.state.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.state.State</span></code></a></span></dt><dd><p>A state dictionary containing at least:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">luma_width</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">luma_height</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">color_diff_width</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">color_diff_height</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">luma_depth</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">color_diff_depth</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">wavelet_index</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">wavelet_index_ho</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dwt_depth</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dwt_depth_ho</span></code></p></li>
+</ul>
+<p>The following entries will be added/replaced with the encoded picture.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">y_transform</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">c1_transform</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">c3_transform</span></code></p></li>
+</ul>
+</dd>
+<dt><strong>current_picture</strong><span class="classifier">{component: [[value, …], …], …}</span></dt><dd><p>The picture to be encoded.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.picture_encoding.forward_wavelet_transform">
+<code class="sig-name descname"><span class="pre">forward_wavelet_transform</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_picture</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.picture_encoding.forward_wavelet_transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>(15.3)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.picture_encoding.dwt">
+<code class="sig-name descname"><span class="pre">dwt</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">picture</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.picture_encoding.dwt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Discrete Wavelet Transform, inverse of idwt (15.4.1)</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>state</strong><span class="classifier"><a class="reference internal" href="#vc2_conformance.pseudocode.state.State" title="vc2_conformance.pseudocode.state.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">State</span></code></a></span></dt><dd><p>A state dictionary containing at least the following:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">wavelet_index</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">wavelet_index_ho</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dwt_depth</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dwt_depth_ho</span></code></p></li>
+</ul>
+</dd>
+<dt><strong>picture</strong><span class="classifier">[[pixel_value, …], …]</span></dt><dd><p>The synthesized picture.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>coeff_data</strong><span class="classifier">{level: {orientation: [[coeff, …], …], …}, …}</span></dt><dd><p>The complete (power-of-two dimensioned) transform coefficient data.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.picture_encoding.h_analysis">
+<code class="sig-name descname"><span class="pre">h_analysis</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.picture_encoding.h_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Horizontal-only analysis, inverse of h_synthesis (15.4.2).</p>
+<p>Returns a tuple (L_data, H_data)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.picture_encoding.vh_analysis">
+<code class="sig-name descname"><span class="pre">vh_analysis</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.picture_encoding.vh_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interleaved vertical and horizontal analysis, inverse of vh_synthesis (15.4.3).</p>
+<p>Returns a tuple (LL_data, HL_data, LH_data, HH_data)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.picture_encoding.oned_analysis">
+<code class="sig-name descname"><span class="pre">oned_analysis</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.picture_encoding.oned_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inverse of oned_synthesis (15.4.4.1) and (15.4.4.3). Acts in-place on ‘A’</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.picture_encoding.dwt_pad_addition">
+<code class="sig-name descname"><span class="pre">dwt_pad_addition</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.picture_encoding.dwt_pad_addition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inverse of idwt_pad_removal (15.4.5): pads a picture to a size compatible
+with wavelet filtering at the level specified by the provided
+<a class="reference internal" href="#vc2_conformance.pseudocode.state.State" title="vc2_conformance.pseudocode.state.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">State</span></code></a>.</p>
+<p>Extra values are obtained by copying the final pixels in the existing rows
+and columns.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.picture_encoding.remove_offset_picture">
+<code class="sig-name descname"><span class="pre">remove_offset_picture</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_picture</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.picture_encoding.remove_offset_picture" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inverse of offset_picture (15.5). Centers picture values around zero.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.picture_encoding.remove_offset_component">
+<code class="sig-name descname"><span class="pre">remove_offset_component</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comp_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.picture_encoding.remove_offset_component" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inverse of offset_component (15.5). Centers picture values around zero.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>state</strong><span class="classifier"><a class="reference internal" href="#vc2_conformance.pseudocode.state.State" title="vc2_conformance.pseudocode.state.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.state.State</span></code></a></span></dt><dd><p>Where <code class="docutils literal notranslate"><span class="pre">luma_depth</span></code> and <code class="docutils literal notranslate"><span class="pre">color_diff_depth</span></code> are defined.</p>
+</dd>
+<dt><strong>current_picture</strong><span class="classifier">{comp: [[pixel_value, …], …], …}</span></dt><dd><p>Will be mutated in-place.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt id="vc2_conformance.pseudocode.picture_encoding.ANALYSIS_LIFTING_FUNCTION_TYPES">
+<code class="sig-name descname"><span class="pre">ANALYSIS_LIFTING_FUNCTION_TYPES</span></code><em class="property"> <span class="pre">=</span> <span class="pre">{...}</span></em><a class="headerlink" href="#vc2_conformance.pseudocode.picture_encoding.ANALYSIS_LIFTING_FUNCTION_TYPES" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lookup from lifting function ID to function implementation for implementing
+wavelet analysis.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-vc2_conformance.pseudocode.quantization">
+<span id="vc2-conformance-pseudocode-quantization"></span><h2><a class="reference internal" href="#module-vc2_conformance.pseudocode.quantization" title="vc2_conformance.pseudocode.quantization"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.quantization</span></code></a><a class="headerlink" href="#module-vc2_conformance.pseudocode.quantization" title="Permalink to this headline">¶</a></h2>
+<p>Quantization-related VC-2 pseudocode routines (13.3).</p>
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.quantization.inverse_quant">
+<code class="sig-name descname"><span class="pre">inverse_quant</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quantized_coeff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quant_index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.quantization.inverse_quant" title="Permalink to this definition">¶</a></dt>
+<dd><p>(13.3.1)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.quantization.forward_quant">
+<code class="sig-name descname"><span class="pre">forward_quant</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coeff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quant_index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.quantization.forward_quant" title="Permalink to this definition">¶</a></dt>
+<dd><p>(13.3.1) Based on the informative note 1.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.quantization.quant_factor">
+<code class="sig-name descname"><span class="pre">quant_factor</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.quantization.quant_factor" title="Permalink to this definition">¶</a></dt>
+<dd><p>(13.3.2)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.quantization.quant_offset">
+<code class="sig-name descname"><span class="pre">quant_offset</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.quantization.quant_offset" title="Permalink to this definition">¶</a></dt>
+<dd><p>(13.3.2)</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-vc2_conformance.pseudocode.slice_sizes">
+<span id="vc2-conformance-pseudocode-slice-sizes"></span><h2><a class="reference internal" href="#module-vc2_conformance.pseudocode.slice_sizes" title="vc2_conformance.pseudocode.slice_sizes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.slice_sizes</span></code></a><a class="headerlink" href="#module-vc2_conformance.pseudocode.slice_sizes" title="Permalink to this headline">¶</a></h2>
+<p>Slice size computation functions (13)</p>
+<p>All of the functions below take a ‘state’ argument which should be a dictionary-like
+object containing the following entries:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;luma_width&quot;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;luma_height&quot;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;color_diff_width&quot;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;color_diff_height&quot;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;dwt_depth&quot;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;dwt_depth_ho&quot;</span></code></p></li>
+</ul>
+<p>The <a class="reference internal" href="#vc2_conformance.pseudocode.slice_sizes.slice_bytes" title="vc2_conformance.pseudocode.slice_sizes.slice_bytes"><code class="xref py py-func docutils literal notranslate"><span class="pre">slice_bytes()</span></code></a>, <a class="reference internal" href="#vc2_conformance.pseudocode.slice_sizes.slice_top" title="vc2_conformance.pseudocode.slice_sizes.slice_top"><code class="xref py py-func docutils literal notranslate"><span class="pre">slice_top()</span></code></a>, <a class="reference internal" href="#vc2_conformance.pseudocode.slice_sizes.slice_bottom" title="vc2_conformance.pseudocode.slice_sizes.slice_bottom"><code class="xref py py-func docutils literal notranslate"><span class="pre">slice_bottom()</span></code></a>,
+<a class="reference internal" href="#vc2_conformance.pseudocode.slice_sizes.slice_left" title="vc2_conformance.pseudocode.slice_sizes.slice_left"><code class="xref py py-func docutils literal notranslate"><span class="pre">slice_left()</span></code></a>, <a class="reference internal" href="#vc2_conformance.pseudocode.slice_sizes.slice_right" title="vc2_conformance.pseudocode.slice_sizes.slice_right"><code class="xref py py-func docutils literal notranslate"><span class="pre">slice_right()</span></code></a> and
+<a class="reference internal" href="#vc2_conformance.pseudocode.slice_sizes.slices_have_same_dimensions" title="vc2_conformance.pseudocode.slice_sizes.slices_have_same_dimensions"><code class="xref py py-func docutils literal notranslate"><span class="pre">slices_have_same_dimensions()</span></code></a> functions all additionally require the
+following entries:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;slices_x&quot;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;slices_y&quot;</span></code></p></li>
+</ul>
+<p>Finally <a class="reference internal" href="#vc2_conformance.pseudocode.slice_sizes.slice_bytes" title="vc2_conformance.pseudocode.slice_sizes.slice_bytes"><code class="xref py py-func docutils literal notranslate"><span class="pre">slice_bytes()</span></code></a> function requires the following further values:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;slice_bytes_numerator&quot;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;slice_bytes_denominator&quot;</span></code></p></li>
+</ul>
+<p>The ‘c’ or ‘comp’ arguments should be set to one of the following strings:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;Y&quot;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;C1&quot;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;C2&quot;</span></code></p></li>
+</ul>
+<p>The <a class="reference internal" href="#vc2_conformance.pseudocode.slice_sizes.slices_have_same_dimensions" title="vc2_conformance.pseudocode.slice_sizes.slices_have_same_dimensions"><code class="xref py py-func docutils literal notranslate"><span class="pre">slices_have_same_dimensions()</span></code></a> utility is added beyond the VC-2
+pseudocode functions which determines if all slices will contain the same
+number of samples or not.</p>
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.slice_sizes.subband_width">
+<code class="sig-name descname"><span class="pre">subband_width</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.slice_sizes.subband_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>(13.2.3)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.slice_sizes.subband_height">
+<code class="sig-name descname"><span class="pre">subband_height</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.slice_sizes.subband_height" title="Permalink to this definition">¶</a></dt>
+<dd><p>(13.2.3)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.slice_sizes.slice_bytes">
+<code class="sig-name descname"><span class="pre">slice_bytes</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sy</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.slice_sizes.slice_bytes" title="Permalink to this definition">¶</a></dt>
+<dd><p>(13.5.3.2) Compute the number of bytes in a low-delay picture slice.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.slice_sizes.slice_left">
+<code class="sig-name descname"><span class="pre">slice_left</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.slice_sizes.slice_left" title="Permalink to this definition">¶</a></dt>
+<dd><p>(13.5.6.2) Get the x coordinate of the LHS of the given slice.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.slice_sizes.slice_right">
+<code class="sig-name descname"><span class="pre">slice_right</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.slice_sizes.slice_right" title="Permalink to this definition">¶</a></dt>
+<dd><p>(13.5.6.2) Get the x coordinate of the RHS of the given slice.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.slice_sizes.slice_top">
+<code class="sig-name descname"><span class="pre">slice_top</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.slice_sizes.slice_top" title="Permalink to this definition">¶</a></dt>
+<dd><p>(13.5.6.2) Get the y coordinate of the top of the given slice.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.slice_sizes.slice_bottom">
+<code class="sig-name descname"><span class="pre">slice_bottom</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.slice_sizes.slice_bottom" title="Permalink to this definition">¶</a></dt>
+<dd><p>(13.5.6.2) Get the y coordinate of the bottom of the given slice.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.slice_sizes.slices_have_same_dimensions">
+<code class="sig-name descname"><span class="pre">slices_have_same_dimensions</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.slice_sizes.slices_have_same_dimensions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Utility function, not part of the standard. Tests whether all picture
+slices will have the same dimensions.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-vc2_conformance.pseudocode.state">
+<span id="vc2-conformance-pseudocode-state"></span><h2><a class="reference internal" href="#module-vc2_conformance.pseudocode.state" title="vc2_conformance.pseudocode.state"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.state</span></code></a><a class="headerlink" href="#module-vc2_conformance.pseudocode.state" title="Permalink to this headline">¶</a></h2>
+<p>A <a class="reference internal" href="utility_modules/fixeddict.html#module-vc2_conformance.fixeddict" title="vc2_conformance.fixeddict"><code class="xref py py-mod docutils literal notranslate"><span class="pre">fixeddict</span></code></a> for the ‘state’ object used by the
+pseudocode in the VC-2 spec.</p>
+<dl class="py fixeddict">
+<dt id="vc2_conformance.pseudocode.state.State">
+<em class="property"><span class="pre">fixeddict</span> </em><code class="sig-name descname"><span class="pre">State</span></code><a class="headerlink" href="#vc2_conformance.pseudocode.state.State" title="Permalink to this definition">¶</a></dt>
+<dd><p>The global state variable type.</p>
+<p>Entries prefixed with an underscore (<code class="docutils literal notranslate"><span class="pre">_</span></code>) are not specified by the
+VC-2 pseudocode but may be used by the conformance software.</p>
+<dl class="field-list">
+<dt class="field-odd">Keys</dt>
+<dd class="field-odd"><dl>
+<dt><strong>video_parameters</strong><span class="classifier"><a class="reference internal" href="#vc2_conformance.pseudocode.video_parameters.VideoParameters" title="vc2_conformance.pseudocode.video_parameters.VideoParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">VideoParameters</span></code></a></span></dt><dd><p>Set by (10.4.1) parse_sequence</p>
+</dd>
+<dt><strong>parse_code</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.ParseCodes" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParseCodes</span></code></a></span></dt><dd><p>Set by (10.5.1) parse_info</p>
+</dd>
+<dt><strong>next_parse_offset</strong><span class="classifier">int</span></dt><dd><p>Set by (10.5.1) parse_info</p>
+</dd>
+<dt><strong>previous_parse_offset</strong><span class="classifier">int</span></dt><dd><p>Set by (10.5.1) parse_info</p>
+</dd>
+<dt><strong>picture_coding_mode</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PictureCodingModes" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PictureCodingModes</span></code></a></span></dt><dd><p>Set by (11.1) sequence_header</p>
+</dd>
+<dt><strong>major_version</strong><span class="classifier">int</span></dt><dd><p>Set by (11.2.1) parse_parameters</p>
+</dd>
+<dt><strong>minor_version</strong><span class="classifier">int</span></dt><dd><p>Set by (11.2.1) parse_parameters</p>
+</dd>
+<dt><strong>profile</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.Profiles" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Profiles</span></code></a></span></dt><dd><p>Set by (11.2.1) parse_parameters</p>
+</dd>
+<dt><strong>level</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.Profiles" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Profiles</span></code></a></span></dt><dd><p>Set by (11.2.1) parse_parameters</p>
+</dd>
+<dt><strong>luma_width</strong><span class="classifier">int</span></dt><dd><p>Set by (11.6.2) picture_dimensions</p>
+</dd>
+<dt><strong>luma_height</strong><span class="classifier">int</span></dt><dd><p>Set by (11.6.2) picture_dimensions</p>
+</dd>
+<dt><strong>color_diff_width</strong><span class="classifier">int</span></dt><dd><p>Set by (11.6.2) picture_dimensions</p>
+</dd>
+<dt><strong>color_diff_height</strong><span class="classifier">int</span></dt><dd><p>Set by (11.6.2) picture_dimensions</p>
+</dd>
+<dt><strong>luma_depth</strong><span class="classifier">int</span></dt><dd><p>Set by (11.6.3) video_depth</p>
+</dd>
+<dt><strong>color_diff_depth</strong><span class="classifier">int</span></dt><dd><p>Set by (11.6.3) video_depth</p>
+</dd>
+<dt><strong>picture_number</strong><span class="classifier">int</span></dt><dd><p>Set by (12.2) picture_header and (14.2) fragment_header</p>
+</dd>
+<dt><strong>wavelet_index</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.WaveletFilters" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">WaveletFilters</span></code></a></span></dt><dd><p>Set by (12.4.1) transform_parameters</p>
+</dd>
+<dt><strong>dwt_depth</strong><span class="classifier">int</span></dt><dd><p>Set by (12.4.1) transform_parameters</p>
+</dd>
+<dt><strong>wavelet_index_ho</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.WaveletFilters" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">WaveletFilters</span></code></a></span></dt><dd><p>Set by (12.4.4.1) extended_transform_parameters</p>
+</dd>
+<dt><strong>dwt_depth_ho</strong><span class="classifier">int</span></dt><dd><p>Set by (12.4.4.1) extended_transform_parameters</p>
+</dd>
+<dt><strong>slices_x</strong><span class="classifier">int</span></dt><dd><p>Set by (12.4.5.2) slice_parameters</p>
+</dd>
+<dt><strong>slices_y</strong><span class="classifier">int</span></dt><dd><p>Set by (12.4.5.2) slice_parameters</p>
+</dd>
+<dt><strong>slice_bytes_numerator</strong><span class="classifier">int</span></dt><dd><p>Set by (12.4.5.2) slice_parameters</p>
+</dd>
+<dt><strong>slice_bytes_denominator</strong><span class="classifier">int</span></dt><dd><p>Set by (12.4.5.2) slice_parameters</p>
+</dd>
+<dt><strong>slice_prefix_bytes</strong><span class="classifier">int</span></dt><dd><p>Set by (12.4.5.2) slice_parameters</p>
+</dd>
+<dt><strong>slice_size_scaler</strong><span class="classifier">int</span></dt><dd><p>Set by (12.4.5.2) slice_parameters</p>
+</dd>
+<dt><strong>quant_matrix</strong><span class="classifier">{level: {orient: int, …}, …}</span></dt><dd><p>Set by (12.4.5.3) quant_matrix</p>
+</dd>
+<dt><strong>quantizer</strong><span class="classifier">{level: {orient: int, …}, …}</span></dt><dd><p>Set by (13.5.5) slice_quantizers</p>
+</dd>
+<dt><strong>y_transform</strong><span class="classifier">{level: {orient: [[int, …], …], …}, …}</span></dt><dd><p>Set by (13.5.6.3) slice_band. The dequantised luma transform data
+read from the bitstream. A 2D array for each subband, indexed as
+[level][orient][y][x].</p>
+</dd>
+<dt><strong>c1_transform</strong><span class="classifier">{level: {orient: [[int, …], …], …}, …}</span></dt><dd><p>Set by (13.5.6.3) slice_band and (13.5.6.4)
+color_diff_slice_band. The dequantised color difference 1 transform
+data read from the bitstream. A 2D array for each subband, indexed
+as [level][orient][y][x].</p>
+</dd>
+<dt><strong>c2_transform</strong><span class="classifier">{level: {orient: [[int, …], …], …}, …}</span></dt><dd><p>Set by (13.5.6.3) slice_band and (13.5.6.4)
+color_diff_slice_band. The dequantised color difference 2 transform
+data read from the bitstream. A 2D array for each subband, indexed
+as [level][orient][y][x].</p>
+</dd>
+<dt><strong>fragment_data_length</strong><span class="classifier">int</span></dt><dd><p>Set by (14.2) fragment_header</p>
+</dd>
+<dt><strong>fragment_slice_count</strong><span class="classifier">int</span></dt><dd><p>Set by (14.2) fragment_header</p>
+</dd>
+<dt><strong>fragment_x_offset</strong><span class="classifier">int</span></dt><dd><p>Set by (14.2) fragment_header</p>
+</dd>
+<dt><strong>fragment_y_offset</strong><span class="classifier">int</span></dt><dd><p>Set by (14.2) fragment_header</p>
+</dd>
+<dt><strong>fragment_slices_received</strong><span class="classifier">int</span></dt><dd><p>Set by (14.4) fragment_data</p>
+</dd>
+<dt><strong>fragmented_picture_done</strong><span class="classifier">int</span></dt><dd><p>Set by (14.4) fragment_data</p>
+</dd>
+<dt><strong>current_picture</strong><span class="classifier">{‘pic_num’: int, ‘Y’: [[int, …], …], ‘C1’: [[int, …], …], ‘C2’: [[int, …], …]}</span></dt><dd><p>Set by (15.2) picture_decode, contains the decoded picture.</p>
+</dd>
+<dt><strong>next_bit</strong><span class="classifier">int</span></dt><dd><p>Set by (A.2.1) read_*</p>
+</dd>
+<dt><strong>current_byte</strong><span class="classifier">int</span></dt><dd><p>Set by (A.2.1) read_*</p>
+</dd>
+<dt><strong>bits_left</strong><span class="classifier">int</span></dt><dd><p>Bits left in the current bounded block (A.4.2)</p>
+</dd>
+<dt><strong>_generic_sequence_matcher</strong><span class="classifier"><a class="reference internal" href="level_constraints/symbol_re.html#vc2_conformance.symbol_re.Matcher" title="vc2_conformance.symbol_re.Matcher"><code class="xref py py-class docutils literal notranslate"><span class="pre">vc2_conformance.symbol_re.Matcher</span></code></a></span></dt><dd><p>Not in spec, used by <a class="reference internal" href="decoder.html#module-vc2_conformance.decoder" title="vc2_conformance.decoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder</span></code></a>.
+A <a class="reference internal" href="level_constraints/symbol_re.html#vc2_conformance.symbol_re.Matcher" title="vc2_conformance.symbol_re.Matcher"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matcher</span></code></a> which checks that
+the sequence follows the specified general pattern of data units
+(10.4.1) (e.g. start with a sequence header, end with end of
+sequence).  Other matchers will test for, e.g. level-defined
+patterns.</p>
+</dd>
+<dt><strong>_output_picture_callback</strong><span class="classifier">function({‘pic_num’: int, ‘Y’: [[int, …], …], ‘C1’: [[int, …], …], ‘C2’: [[int, …], …]}, <a class="reference internal" href="#vc2_conformance.pseudocode.video_parameters.VideoParameters" title="vc2_conformance.pseudocode.video_parameters.VideoParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">VideoParameters</span></code></a>, <a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PictureCodingModes" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PictureCodingModes</span></code></a>)</span></dt><dd><p>Not in spec, used by <a class="reference internal" href="decoder.html#module-vc2_conformance.decoder" title="vc2_conformance.decoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder</span></code></a>.
+A callback function to call when <code class="docutils literal notranslate"><span class="pre">output_picture</span></code> (15.2) is
+called. This callback (if defined) will be passed the picture,
+video parameters and picture coding mode.</p>
+</dd>
+<dt><strong>_num_pictures_in_sequence</strong><span class="classifier">int</span></dt><dd><p>Not in spec, used by <a class="reference internal" href="decoder.html#module-vc2_conformance.decoder" title="vc2_conformance.decoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder</span></code></a>.
+(10.4.3) and (12.2) A counter of how many pictures have been
+encountered in the current sequence. Used to determine if all
+fields have been received (when pictures are fields) and that the
+earliest fields have an even picture number. Initialised in
+parse_sequence (10.4.1) and incremented in
+<code class="xref py py-func docutils literal notranslate"><span class="pre">vc2_conformance.decoder.assertions.assert_picture_number_incremented_as_expected()</span></code>,
+called in
+picture_header (12.2), and fragment_header (14.2).</p>
+</dd>
+<dt><strong>_last_parse_info_offset</strong><span class="classifier">int</span></dt><dd><p>Not in spec, used by <a class="reference internal" href="decoder.html#module-vc2_conformance.decoder" title="vc2_conformance.decoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder</span></code></a>.
+(10.5.1) parse_info related state. The byte offset of the
+previously read parse_info block.</p>
+</dd>
+<dt><strong>_recorded_bytes</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytearray" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytearray</span></code></a></span></dt><dd><p>Not in spec, used by <a class="reference internal" href="decoder.html#module-vc2_conformance.decoder" title="vc2_conformance.decoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder</span></code></a>.
+(11.1) sequence_header requires that repeats must be byte-for-byte
+identical. To facilitate this, the
+<a class="reference internal" href="decoder.html#vc2_conformance.decoder.io.record_bitstream_start" title="vc2_conformance.decoder.io.record_bitstream_start"><code class="xref py py-func docutils literal notranslate"><span class="pre">vc2_conformance.decoder.io.record_bitstream_start()</span></code></a>
+and <a class="reference internal" href="decoder.html#vc2_conformance.decoder.io.record_bitstream_finish" title="vc2_conformance.decoder.io.record_bitstream_finish"><code class="xref py py-func docutils literal notranslate"><span class="pre">vc2_conformance.decoder.io.record_bitstream_finish()</span></code></a>
+functions are used to make a recording.  When this entry is absent,
+read_byte works as usual. If it is a <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytearray" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytearray</span></code></a>,
+whenever a byte has been completely read, it will be placed into
+this array.</p>
+</dd>
+<dt><strong>_last_sequence_header_bytes</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytearray" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytearray</span></code></a></span></dt><dd><p>Not in spec, used by <a class="reference internal" href="decoder.html#module-vc2_conformance.decoder" title="vc2_conformance.decoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder</span></code></a>.
+(11.1) the bitstream bytes of the data which encoded the previous
+sequence_header in the sequence. Not present if no previous
+sequence_header has appeared.</p>
+</dd>
+<dt><strong>_last_sequence_header_offset</strong><span class="classifier">int</span></dt><dd><p>Not in spec, used by <a class="reference internal" href="decoder.html#module-vc2_conformance.decoder" title="vc2_conformance.decoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder</span></code></a>.
+(11.1) the bitstream offset in bytes of the data which encoded the
+previous sequence_header in the sequence. Not present if no
+previous sequence_header has appeared.</p>
+</dd>
+<dt><strong>_expected_major_version</strong><span class="classifier">int</span></dt><dd><p>Not in spec, used by <a class="reference internal" href="decoder.html#module-vc2_conformance.decoder" title="vc2_conformance.decoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder</span></code></a>. Used to
+record the expected major_version (11.2.1) for this sequence
+according to the constraints listed in (11.2.2). This field is set
+by
+<code class="xref py py-func docutils literal notranslate"><span class="pre">log_version_lower_bound()</span></code>.</p>
+</dd>
+<dt><strong>_last_picture_number_offset</strong><span class="classifier">(byte offset, next bit)</span></dt><dd><p>Not in spec, used by <a class="reference internal" href="decoder.html#module-vc2_conformance.decoder" title="vc2_conformance.decoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder</span></code></a>.
+(12.2) picture_header and (14.2) fragment_header: The offset of the
+last picture number encountered in the sequence (or absent if no
+pictures have yet been encountered).</p>
+</dd>
+<dt><strong>_last_picture_number</strong><span class="classifier">int</span></dt><dd><p>Not in spec, used by <a class="reference internal" href="decoder.html#module-vc2_conformance.decoder" title="vc2_conformance.decoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder</span></code></a>.
+(12.2) picture_header and (14.2) fragment_header: The last picture
+number encountered in the sequence (or absent if no pictures have
+yet been encountered).</p>
+</dd>
+<dt><strong>_picture_initial_fragment_offset</strong><span class="classifier">(byte offset, next bit)</span></dt><dd><p>Not in spec, used by <a class="reference internal" href="decoder.html#module-vc2_conformance.decoder" title="vc2_conformance.decoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder</span></code></a>.
+(14) The offset in the bitstream of the last fragment with
+fragment_slice_count==0.</p>
+</dd>
+<dt><strong>_fragment_slices_remaining</strong><span class="classifier">int</span></dt><dd><p>Not in spec, used by <a class="reference internal" href="decoder.html#module-vc2_conformance.decoder" title="vc2_conformance.decoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder</span></code></a>.
+(14) The number of fragment slices which remain to be received in
+the current picture. Initialised to zero by parse_sequence
+(10.4.1), reset to the number of slices per picture by
+initialize_fragment_state (14.3) and decremented whenever a slice
+is received by fragment_data (14.4).</p>
+</dd>
+<dt><strong>_file</strong><span class="classifier">file-like</span></dt><dd><p>The Python file-like object from which the bitstream will be read
+by read_byte (A.2.1) .</p>
+</dd>
+<dt><strong>_level_sequence_matcher</strong><span class="classifier"><a class="reference internal" href="level_constraints/symbol_re.html#vc2_conformance.symbol_re.Matcher" title="vc2_conformance.symbol_re.Matcher"><code class="xref py py-class docutils literal notranslate"><span class="pre">vc2_conformance.symbol_re.Matcher</span></code></a></span></dt><dd><p>Not in spec, used by <a class="reference internal" href="decoder.html#module-vc2_conformance.decoder" title="vc2_conformance.decoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder</span></code></a>.
+A <a class="reference internal" href="level_constraints/symbol_re.html#vc2_conformance.symbol_re.Matcher" title="vc2_conformance.symbol_re.Matcher"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matcher</span></code></a> which checks that
+the sequence follows the pattern dictated by the current level.
+Populated after the first (11.2.1) parse_parameters is encountered
+(and should therefore be ignored until that point).</p>
+</dd>
+<dt><strong>_level_constrained_values</strong><span class="classifier">{key: value, …}</span></dt><dd><p>Not in spec, used by <a class="reference internal" href="decoder.html#module-vc2_conformance.decoder" title="vc2_conformance.decoder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.decoder</span></code></a>.
+A dictionary which will be incrementally populated with values read or
+computed from the bitstream which are constrained by the level
+constraints table (see
+<a class="reference internal" href="level_constraints/level_constraints.html#vc2_conformance.level_constraints.LEVEL_CONSTRAINTS" title="vc2_conformance.level_constraints.LEVEL_CONSTRAINTS"><code class="xref py py-data docutils literal notranslate"><span class="pre">vc2_conformance.level_constraints.LEVEL_CONSTRAINTS</span></code></a> and
+<code class="xref py py-func docutils literal notranslate"><span class="pre">vc2_conformance.decoder.assertions.assert_level_constraint()</span></code>).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.state.reset_state">
+<code class="sig-name descname"><span class="pre">reset_state</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.state.reset_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset a <a class="reference internal" href="#vc2_conformance.pseudocode.state.State" title="vc2_conformance.pseudocode.state.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">State</span></code></a> dictionary to only include
+values retained between sequences in a VC-2 stream. Modifies the dictionary
+in place.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-vc2_conformance.pseudocode.vc2_math">
+<span id="vc2-conformance-pseudocode-vc2-math"></span><h2><a class="reference internal" href="#module-vc2_conformance.pseudocode.vc2_math" title="vc2_conformance.pseudocode.vc2_math"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.vc2_math</span></code></a><a class="headerlink" href="#module-vc2_conformance.pseudocode.vc2_math" title="Permalink to this headline">¶</a></h2>
+<p>Mathematical functions and operators defined in the spec (5.5.3)</p>
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.vc2_math.intlog2_float">
+<code class="sig-name descname"><span class="pre">intlog2_float</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.vc2_math.intlog2_float" title="Permalink to this definition">¶</a></dt>
+<dd><p>(5.5.3) Implemented as described in the spec, requiring floating point
+arithmetic.</p>
+<p>In practice, the alternative implementation in <a class="reference internal" href="#vc2_conformance.pseudocode.vc2_math.intlog2" title="vc2_conformance.pseudocode.vc2_math.intlog2"><code class="xref py py-func docutils literal notranslate"><span class="pre">intlog2()</span></code></a> should be
+used instead since it does not rely on floating point arithmetic (and is
+therefore faster and has unlimited precision).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.vc2_math.intlog2">
+<code class="sig-name descname"><span class="pre">intlog2</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.vc2_math.intlog2" title="Permalink to this definition">¶</a></dt>
+<dd><p>(5.5.3) Implemented via pure integer, arbitrary-precision operations.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.vc2_math.sign">
+<code class="sig-name descname"><span class="pre">sign</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.vc2_math.sign" title="Permalink to this definition">¶</a></dt>
+<dd><p>(5.5.3)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.vc2_math.clip">
+<code class="sig-name descname"><span class="pre">clip</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.vc2_math.clip" title="Permalink to this definition">¶</a></dt>
+<dd><p>(5.5.3)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.vc2_math.mean">
+<code class="sig-name descname"><span class="pre">mean</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">S</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.vc2_math.mean" title="Permalink to this definition">¶</a></dt>
+<dd><p>(5.5.3)</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-vc2_conformance.pseudocode.video_parameters">
+<span id="vc2-conformance-pseudocode-video-parameters"></span><h2><a class="reference internal" href="#module-vc2_conformance.pseudocode.video_parameters" title="vc2_conformance.pseudocode.video_parameters"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.video_parameters</span></code></a><a class="headerlink" href="#module-vc2_conformance.pseudocode.video_parameters" title="Permalink to this headline">¶</a></h2>
+<p>Video parameter computation functions (11)</p>
+<p>The functions in this module make up the purely functional (i.e. non
+bitstream-reading) logic for computing video parameters. This predominantly
+consists of preset-loading and component dimension calculation routines.</p>
+<p>For functions below which take a ‘state’ argument, this should be a
+dictionary-like object (e.g.
+<a class="reference internal" href="#vc2_conformance.pseudocode.state.State" title="vc2_conformance.pseudocode.state.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">State</span></code></a>) with the following
+entries:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;frame_width&quot;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;frame_height&quot;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;luma_width&quot;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;luma_height&quot;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;color_diff_width&quot;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;color_diff_height&quot;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;luma_depth&quot;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;color_diff_depth&quot;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;picture_coding_mode&quot;</span></code></p></li>
+</ul>
+<dl class="py fixeddict">
+<dt id="vc2_conformance.pseudocode.video_parameters.VideoParameters">
+<em class="property"><span class="pre">fixeddict</span> </em><code class="sig-name descname"><span class="pre">VideoParameters</span></code><a class="headerlink" href="#vc2_conformance.pseudocode.video_parameters.VideoParameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>(11.4) Video parameters struct.</p>
+<dl class="field-list">
+<dt class="field-odd">Keys</dt>
+<dd class="field-odd"><dl>
+<dt><strong>frame_width</strong><span class="classifier">int</span></dt><dd><p>Set by (11.4.3) frame_size</p>
+</dd>
+<dt><strong>frame_height</strong><span class="classifier">int</span></dt><dd><p>Set by (11.4.3) frame_size</p>
+</dd>
+<dt><strong>color_diff_format_index</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.ColorDifferenceSamplingFormats" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ColorDifferenceSamplingFormats</span></code></a></span></dt><dd><p>Set by (11.4.4) color_diff_sampling_format</p>
+</dd>
+<dt><strong>source_sampling</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.SourceSamplingModes" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">SourceSamplingModes</span></code></a></span></dt><dd><p>Set by (11.4.5) scan_format</p>
+</dd>
+<dt><strong>top_field_first</strong><span class="classifier">bool</span></dt><dd><p>Set by (11.4.5) set_source_defaults</p>
+</dd>
+<dt><strong>frame_rate_numer</strong><span class="classifier">int</span></dt><dd><p>Set by (11.4.6) frame_rate</p>
+</dd>
+<dt><strong>frame_rate_denom</strong><span class="classifier">int</span></dt><dd><p>Set by (11.4.6) frame_rate</p>
+</dd>
+<dt><strong>pixel_aspect_ratio_numer</strong><span class="classifier">int</span></dt><dd><p>Set by (11.4.7) aspect_ratio</p>
+</dd>
+<dt><strong>pixel_aspect_ratio_denom</strong><span class="classifier">int</span></dt><dd><p>Set by (11.4.7) aspect_ratio</p>
+</dd>
+<dt><strong>clean_width</strong><span class="classifier">int</span></dt><dd><p>Set by (11.4.8) clean_area</p>
+</dd>
+<dt><strong>clean_height</strong><span class="classifier">int</span></dt><dd><p>Set by (11.4.8) clean_area</p>
+</dd>
+<dt><strong>left_offset</strong><span class="classifier">int</span></dt><dd><p>Set by (11.4.8) clean_area</p>
+</dd>
+<dt><strong>top_offset</strong><span class="classifier">int</span></dt><dd><p>Set by (11.4.8) clean_area</p>
+</dd>
+<dt><strong>luma_offset</strong><span class="classifier">int</span></dt><dd><p>Set by (11.4.9) signal_range</p>
+</dd>
+<dt><strong>luma_excursion</strong><span class="classifier">int</span></dt><dd><p>Set by (11.4.9) signal_range</p>
+</dd>
+<dt><strong>color_diff_offset</strong><span class="classifier">int</span></dt><dd><p>Set by (11.4.9) signal_range</p>
+</dd>
+<dt><strong>color_diff_excursion</strong><span class="classifier">int</span></dt><dd><p>Set by (11.4.9) signal_range</p>
+</dd>
+<dt><strong>color_primaries_index</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PresetColorPrimaries" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PresetColorPrimaries</span></code></a></span></dt><dd><p>Set by (11.4.10.2) color_primaries</p>
+</dd>
+<dt><strong>color_matrix_index</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PresetColorMatrices" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PresetColorMatrices</span></code></a></span></dt><dd><p>Set by (11.4.10.3) color_matrix</p>
+</dd>
+<dt><strong>transfer_function_index</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PresetTransferFunctions" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PresetTransferFunctions</span></code></a></span></dt><dd><p>Set by (11.4.10.4) transfer_function</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.video_parameters.set_source_defaults">
+<code class="sig-name descname"><span class="pre">set_source_defaults</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_video_format</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.video_parameters.set_source_defaults" title="Permalink to this definition">¶</a></dt>
+<dd><p>(11.4.2) Create a <a class="reference internal" href="#vc2_conformance.pseudocode.video_parameters.VideoParameters" title="vc2_conformance.pseudocode.video_parameters.VideoParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">VideoParameters</span></code></a> object with the parameters
+specified in a base video format.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.video_parameters.set_coding_parameters">
+<code class="sig-name descname"><span class="pre">set_coding_parameters</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">video_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.video_parameters.set_coding_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>(11.6.1) Set picture coding mode parameter.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.video_parameters.picture_dimensions">
+<code class="sig-name descname"><span class="pre">picture_dimensions</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">video_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.video_parameters.picture_dimensions" title="Permalink to this definition">¶</a></dt>
+<dd><p>(11.6.2) Compute the picture component dimensions in global state.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.video_parameters.video_depth">
+<code class="sig-name descname"><span class="pre">video_depth</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">video_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.video_parameters.video_depth" title="Permalink to this definition">¶</a></dt>
+<dd><p>(11.6.3) Compute the bits-per-sample for the decoded video.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.video_parameters.preset_frame_rate">
+<code class="sig-name descname"><span class="pre">preset_frame_rate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.video_parameters.preset_frame_rate" title="Permalink to this definition">¶</a></dt>
+<dd><p>(11.4.6) Set frame rate from preset.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.video_parameters.preset_pixel_aspect_ratio">
+<code class="sig-name descname"><span class="pre">preset_pixel_aspect_ratio</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.video_parameters.preset_pixel_aspect_ratio" title="Permalink to this definition">¶</a></dt>
+<dd><p>(11.4.7) Set pixel aspect ratio from preset.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.video_parameters.preset_signal_range">
+<code class="sig-name descname"><span class="pre">preset_signal_range</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.video_parameters.preset_signal_range" title="Permalink to this definition">¶</a></dt>
+<dd><p>(11.4.7) Set signal range from preset.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.video_parameters.preset_color_primaries">
+<code class="sig-name descname"><span class="pre">preset_color_primaries</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.video_parameters.preset_color_primaries" title="Permalink to this definition">¶</a></dt>
+<dd><p>(11.4.10.2) Set the color primaries parameter from a preset.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.video_parameters.preset_color_matrix">
+<code class="sig-name descname"><span class="pre">preset_color_matrix</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.video_parameters.preset_color_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>(11.4.10.3) Set the color matrix parameter from a preset.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.video_parameters.preset_transfer_function">
+<code class="sig-name descname"><span class="pre">preset_transfer_function</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.video_parameters.preset_transfer_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>(11.4.10.4) Set the transfer function parameter from a preset.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.video_parameters.preset_color_spec">
+<code class="sig-name descname"><span class="pre">preset_color_spec</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.video_parameters.preset_color_spec" title="Permalink to this definition">¶</a></dt>
+<dd><p>(11.4.10.1) Load a preset color specification.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-vc2_conformance.pseudocode.metadata">
+<span id="vc2-conformance-pseudocode-metadata"></span><h2><a class="reference internal" href="#module-vc2_conformance.pseudocode.metadata" title="vc2_conformance.pseudocode.metadata"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.metadata</span></code></a><a class="headerlink" href="#module-vc2_conformance.pseudocode.metadata" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="#module-vc2_conformance.pseudocode.metadata" title="vc2_conformance.pseudocode.metadata"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.metadata</span></code></a> module is used to record the
+relationship between the functions in the <a class="reference internal" href="developer_guide/overview.html#module-vc2_conformance" title="vc2_conformance"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance</span></code></a> software
+and the pseudocode functions in the VC-2 specification documents. This
+information has two main uses:</p>
+<ol class="arabic simple">
+<li><p>To produce more helpful error messages which include cross-references to
+published specifications.</p></li>
+<li><p>To enable automatic verification that the behaviour of this software exactly
+matches the published specifications (see <a class="reference internal" href="verification.html#module-verification" title="verification"><code class="xref py py-mod docutils literal notranslate"><span class="pre">verification</span></code></a>).</p></li>
+</ol>
+<div class="section" id="implementing-pseudocode-functions">
+<h3>Implementing pseudocode functions<a class="headerlink" href="#implementing-pseudocode-functions" title="Permalink to this headline">¶</a></h3>
+<p>Functions in the codebase which implement a pseudocode function in the
+specification must be labelled as such using the <a class="reference internal" href="#vc2_conformance.pseudocode.metadata.ref_pseudocode" title="vc2_conformance.pseudocode.metadata.ref_pseudocode"><code class="xref py py-func docutils literal notranslate"><span class="pre">ref_pseudocode()</span></code></a>
+decorator:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">vc2_conformance.pseudocode.metadata</span> <span class="kn">import</span> <span class="n">ref_pseudocode</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@ref_pseudocode</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">parse_info</span><span class="p">(</span><span class="n">state</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="sd">&#39;&#39;&#39;(10.5.1) Read a parse_info header.&#39;&#39;&#39;</span>
+<span class="gp">... </span>    <span class="n">byte_align</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="n">read_uint_lit</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">state</span><span class="p">[</span><span class="s2">&quot;parse_code&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">read_uint_lit</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">state</span><span class="p">[</span><span class="s2">&quot;next_parse_offset&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">read_uint_lit</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">state</span><span class="p">[</span><span class="s2">&quot;previous_parse_offset&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">read_uint_lit</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <a class="reference internal" href="#vc2_conformance.pseudocode.metadata.ref_pseudocode" title="vc2_conformance.pseudocode.metadata.ref_pseudocode"><code class="xref py py-func docutils literal notranslate"><span class="pre">ref_pseudocode()</span></code></a> decorator will log the existence of the decorated
+function, along with the reference to the spec at the start of its docstring.</p>
+<p>By default, it is implied that a decorated function does <em>not</em> deviate from the
+pseudocode – a fact which is verified by the <a class="reference internal" href="verification.html#module-verification" title="verification"><code class="xref py py-mod docutils literal notranslate"><span class="pre">verification</span></code></a> module in
+the test suite. When a function does deviate (for example for use in
+serialisation/deserialisation) or is not defined in the spec, the <code class="docutils literal notranslate"><span class="pre">deviation</span></code>
+argument should be provided. This is used by the <a class="reference internal" href="verification.html#module-verification" title="verification"><code class="xref py py-mod docutils literal notranslate"><span class="pre">verification</span></code></a> logic
+to determine how the function will be verified. See
+<a class="reference internal" href="verification.html#verification-deviation-types"><span class="std std-ref">Pseudocode deviations</span></a> for the allowed values. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@ref_pseudocode</span><span class="p">(</span><span class="n">deviation</span><span class="o">=</span><span class="s2">&quot;serdes&quot;</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">parse_parameters</span><span class="p">(</span><span class="n">serdes</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="sd">&#39;&#39;&#39;(11.2.1)&#39;&#39;&#39;</span>
+<span class="gp">... </span>    <span class="n">state</span><span class="p">[</span><span class="s2">&quot;major_version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">serdes</span><span class="o">.</span><span class="n">uint</span><span class="p">(</span><span class="s2">&quot;major_version&quot;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">state</span><span class="p">[</span><span class="s2">&quot;minor_version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">serdes</span><span class="o">.</span><span class="n">uint</span><span class="p">(</span><span class="s2">&quot;minor_version&quot;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">state</span><span class="p">[</span><span class="s2">&quot;profile&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">serdes</span><span class="o">.</span><span class="n">uint</span><span class="p">(</span><span class="s2">&quot;profile&quot;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">state</span><span class="p">[</span><span class="s2">&quot;level&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">serdes</span><span class="o">.</span><span class="n">uint</span><span class="p">(</span><span class="s2">&quot;level&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.metadata.ref_pseudocode">
+<code class="sig-name descname"><span class="pre">ref_pseudocode</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.metadata.ref_pseudocode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator for marking functions which are derived from the VC-2 pseudocode.</p>
+<p>Example usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@ref_pseudocode</span>
+<span class="k">def</span> <span class="nf">parse_info</span><span class="p">(</span><span class="n">state</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;&#39;(10.5.1) Read a parse_info header.&#39;&#39;&#39;</span>
+    <span class="c1"># ...</span>
+
+<span class="nd">@ref_pseudocode</span><span class="p">(</span><span class="s2">&quot;10.5.1&quot;</span><span class="p">,</span> <span class="n">deviation</span><span class="o">=</span><span class="s2">&quot;alternative_implementation&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">parse_info</span><span class="p">(</span><span class="n">state</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Some alternative implementation of parse info.&#39;&#39;&#39;</span>
+</pre></div>
+</div>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>deviation</strong><span class="classifier">str or None</span></dt><dd><p>If this function deviates from the pseudocode in any way, indicates the
+nature of this deviation. None indicates that this function exactly
+matches the pseudocode.</p>
+<p>Automatic checks for pseudocode equivalence in the test suite (see
+<a class="reference internal" href="verification.html#module-verification" title="verification"><code class="xref py py-mod docutils literal notranslate"><span class="pre">verification</span></code></a>) will use this value to determine how exactly
+this function must match the pseudocode for tests to pass. See
+<a class="reference internal" href="verification.html#verification-deviation-types"><span class="std std-ref">Pseudocode deviations</span></a> for details of values this field
+may hold.</p>
+</dd>
+<dt><strong>document, section</strong><span class="classifier">str or None</span></dt><dd><p>The name of the document and section defining this function. If None,
+will be extracted from the function docstring. Defaults to the main
+VC-2 specification. If not provided, and not found in the docstring, a
+<a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.9)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">TypeError</span></code></a> will be thrown.</p>
+<p>When extracted from a docstring, a reference of one of the following
+forms must be used at the start of the docstring:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">(1.2.3)</span></code>: Reference a section in the main VC-2 spec</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">(SMPTE</span> <span class="pre">ST</span> <span class="pre">20402-2:2017:</span> <span class="pre">1.2.3)</span></code>: Reference a section in another
+spec</p></li>
+</ul>
+</dd>
+<dt><strong>name</strong><span class="classifier">str or None</span></dt><dd><p>The name of the pseudocode function this function implements. If None,
+the provided function’s name will be used.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="accessing-the-metadata">
+<h3>Accessing the metadata<a class="headerlink" href="#accessing-the-metadata" title="Permalink to this headline">¶</a></h3>
+<p>After all submodules of <a class="reference internal" href="developer_guide/overview.html#module-vc2_conformance" title="vc2_conformance"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance</span></code></a> have been loaded, the
+<a class="reference internal" href="#vc2_conformance.pseudocode.metadata.pseudocode_derived_functions" title="vc2_conformance.pseudocode.metadata.pseudocode_derived_functions"><code class="xref py py-data docutils literal notranslate"><span class="pre">pseudocode_derived_functions</span></code></a> list will be populated with
+<a class="reference internal" href="#vc2_conformance.pseudocode.metadata.PseudocodeDerivedFunction" title="vc2_conformance.pseudocode.metadata.PseudocodeDerivedFunction"><code class="xref py py-class docutils literal notranslate"><span class="pre">PseudocodeDerivedFunction</span></code></a> instances for every pseudocode derived
+function annotated with <a class="reference internal" href="#vc2_conformance.pseudocode.metadata.ref_pseudocode" title="vc2_conformance.pseudocode.metadata.ref_pseudocode"><code class="xref py py-func docutils literal notranslate"><span class="pre">ref_pseudocode()</span></code></a>.</p>
+<dl class="py class">
+<dt id="vc2_conformance.pseudocode.metadata.PseudocodeDerivedFunction">
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">PseudocodeDerivedFunction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deviation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">document</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.metadata.PseudocodeDerivedFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>A record of a pseudocode-derived function within this codebase.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>function</strong><span class="classifier">function</span></dt><dd><p>The Python function which was derived from a pseudocode function.</p>
+</dd>
+<dt><strong>deviation</strong><span class="classifier">str or None</span></dt><dd><p>If this function deviates from the pseudocode in any way, indicates the
+nature of this deviation. None indicates that this function exactly
+matches the pseudocode.</p>
+<p>Automatic checks for pseudocode equivalence in the test suite (see
+<a class="reference internal" href="verification.html#module-verification" title="verification"><code class="xref py py-mod docutils literal notranslate"><span class="pre">verification</span></code></a>) will use this value to determine how exactly
+this function must match the pseudocode for tests to pass. See
+<a class="reference internal" href="verification.html#verification-deviation-types"><span class="std std-ref">Pseudocode deviations</span></a> for details of values this field
+may hold.</p>
+</dd>
+<dt><strong>document, section</strong><span class="classifier">str or None</span></dt><dd><p>The name of the document and section defining this function. If None,
+will be extracted from the function docstring. Defaults to the main
+VC-2 specification. If not provided, and not found in the docstring, a
+<a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.9)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">TypeError</span></code></a> will be thrown.</p>
+<p>When extracted from a docstring, a reference of one of the following
+forms must be used at the start of the docstring:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">(1.2.3)</span></code>: Reference a section in the main VC-2 spec</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">(SMPTE</span> <span class="pre">ST</span> <span class="pre">20402-2:2017:</span> <span class="pre">1.2.3)</span></code>: Reference a section in another
+spec</p></li>
+</ul>
+</dd>
+<dt><strong>name</strong><span class="classifier">str or None</span></dt><dd><p>The name of the pseudocode function this function implements. If None,
+the provided function’s name will be used.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="vc2_conformance.pseudocode.metadata.PseudocodeDerivedFunction.citation">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">citation</span></code><a class="headerlink" href="#vc2_conformance.pseudocode.metadata.PseudocodeDerivedFunction.citation" title="Permalink to this definition">¶</a></dt>
+<dd><p>A human-readable citation string for this pseudocode function.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt id="vc2_conformance.pseudocode.metadata.pseudocode_derived_functions">
+<code class="sig-name descname"><span class="pre">pseudocode_derived_functions</span></code><em class="property"> <span class="pre">=</span> <span class="pre">[PseudocodeDerivedFunction,</span> <span class="pre">...]</span></em><a class="headerlink" href="#vc2_conformance.pseudocode.metadata.pseudocode_derived_functions" title="Permalink to this definition">¶</a></dt>
+<dd><p>The complete set of <a class="reference internal" href="#vc2_conformance.pseudocode.metadata.PseudocodeDerivedFunction" title="vc2_conformance.pseudocode.metadata.PseudocodeDerivedFunction"><code class="xref py py-class docutils literal notranslate"><span class="pre">PseudocodeDerivedFunctions</span></code></a> in this code base, in no particular order.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This array is only completely populated once every module of
+<a class="reference internal" href="developer_guide/overview.html#module-vc2_conformance" title="vc2_conformance"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance</span></code></a> has been loaded.</p>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="pseudocode-tracebacks">
+<h3>Pseudocode tracebacks<a class="headerlink" href="#pseudocode-tracebacks" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference internal" href="#vc2_conformance.pseudocode.metadata.make_pseudocode_traceback" title="vc2_conformance.pseudocode.metadata.make_pseudocode_traceback"><code class="xref py py-func docutils literal notranslate"><span class="pre">make_pseudocode_traceback()</span></code></a> function may be used to convert a
+Python traceback into a pseudocode function traceback.</p>
+<dl class="py function">
+<dt id="vc2_conformance.pseudocode.metadata.make_pseudocode_traceback">
+<code class="sig-name descname"><span class="pre">make_pseudocode_traceback</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tb</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.pseudocode.metadata.make_pseudocode_traceback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a <a class="reference external" href="https://docs.python.org/3/library/traceback.html#traceback.extract_tb" title="(in Python v3.9)"><code class="xref py py-func docutils literal notranslate"><span class="pre">traceback.extract_tb()</span></code></a> generated traceback description,
+return a list of <a class="reference internal" href="#vc2_conformance.pseudocode.metadata.PseudocodeDerivedFunction" title="vc2_conformance.pseudocode.metadata.PseudocodeDerivedFunction"><code class="xref py py-class docutils literal notranslate"><span class="pre">PseudocodeDerivedFunction</span></code></a> objects for the
+stack trace, most recently called last. Entries in the traceback which
+don’t have a corresponding pseudocode-derived function are omitted.</p>
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode</span></code>: VC-2 pseudocode function implementations</a><ul>
+<li><a class="reference internal" href="#module-vc2_conformance.pseudocode.arrays"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.arrays</span></code></a></li>
+<li><a class="reference internal" href="#module-vc2_conformance.pseudocode.offsetting"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.offsetting</span></code></a></li>
+<li><a class="reference internal" href="#module-vc2_conformance.pseudocode.parse_code_functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.parse_code_functions</span></code></a></li>
+<li><a class="reference internal" href="#module-vc2_conformance.pseudocode.picture_decoding"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.picture_decoding</span></code></a></li>
+<li><a class="reference internal" href="#module-vc2_conformance.pseudocode.picture_encoding"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.picture_encoding</span></code></a></li>
+<li><a class="reference internal" href="#module-vc2_conformance.pseudocode.quantization"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.quantization</span></code></a></li>
+<li><a class="reference internal" href="#module-vc2_conformance.pseudocode.slice_sizes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.slice_sizes</span></code></a></li>
+<li><a class="reference internal" href="#module-vc2_conformance.pseudocode.state"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.state</span></code></a></li>
+<li><a class="reference internal" href="#module-vc2_conformance.pseudocode.vc2_math"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.vc2_math</span></code></a></li>
+<li><a class="reference internal" href="#module-vc2_conformance.pseudocode.video_parameters"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.video_parameters</span></code></a></li>
+<li><a class="reference internal" href="#module-vc2_conformance.pseudocode.metadata"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode.metadata</span></code></a><ul>
+<li><a class="reference internal" href="#implementing-pseudocode-functions">Implementing pseudocode functions</a></li>
+<li><a class="reference internal" href="#accessing-the-metadata">Accessing the metadata</a></li>
+<li><a class="reference internal" href="#pseudocode-tracebacks">Pseudocode tracebacks</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="level_constraints/constraint_table.html"
+                        title="previous chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.constraint_table</span></code>: A simple constraints model</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="verification.html"
+                        title="next chapter">Automated Static Code Verification</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/pseudocode.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="verification.html" title="Automated Static Code Verification"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="level_constraints/constraint_table.html" title="vc2_conformance.constraint_table: A simple constraints model"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SMPTE VC-2 Conformance Software v0.4.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.pseudocode</span></code>: VC-2 pseudocode function implementations</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>
