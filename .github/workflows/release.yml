@@ -30,7 +30,7 @@ jobs:
     # Build documentation
     - name: Install doc dependencies
       run: |
-        python setup.py develop
+        pip install -e .
         python -m pip install -r requirements-docs.txt
         sudo apt-get update -y
         sudo apt-get install -y \

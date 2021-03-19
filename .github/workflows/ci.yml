@@ -28,7 +28,7 @@ jobs:
     - name: Install with test dependencies
       shell: bash
       run: |
-        python setup.py develop
+        pip install -e .
         python -m pip install -r requirements-test.txt
     - name: Install ffmpeg and imagemagick (extra test dependencies)
       if: ${{ matrix.os == 'ubuntu-latest' }}
