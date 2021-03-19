@@ -6,18 +6,21 @@
 Generating static wavelet filter analyses
 =========================================
 
+.. note::
+
+    **This section does not apply to most codecs.** You can skip this section
+    if your codec only uses combinations of wavelet transforms and depths for
+    which a default quantisation matrix is defined in annex (D) (even if you
+    don't use the default quantisation matrix).
+
 The generation of certain test cases requires a mathematical analysis of the
 wavelet filter used by the codec under test. The VC-2 conformance software is
 supplied with analyses for all wavelet filter configurations for which a
-default quantisation matrix is available. To enable testing of other codec
-configurations using other wavelets, suitable mathematical analyses must be
-generated, as described below.
-
-.. note::
-
-    The following steps are only necessary if one or more of your codec feature
-    sets use a wavelet transform for which no default quantisation matrix is
-    available.
+default quantisation matrix is defined in annex (D). If your codec uses a
+wavelet and depth combination for which no default quantisation matrix is
+defined, a suitable analysis must be produced to enable tests to be generated
+for this codec. The steps below walk through the process of using the
+``vc2-static-filter-analysis`` tool to produce the required analyses.
 
 
 Step 1: Generating static analyses
