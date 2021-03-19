@@ -90,7 +90,7 @@ For a test case to pass:
 * For lossy encoders, :ref:`vc2-picture-compare` tool might report a difference
   and the quoted PSNR figure should be checked to ensure it is appropriate for
   the intended application of the codec.
-* Input and output pictures should be visually compared and must be
+* Input and output pictures must be visually compared and should be
   visually indistinguishable.
 * No additional pictures must have been decoded.
 
