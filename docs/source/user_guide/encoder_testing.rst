@@ -99,7 +99,8 @@ For a test case to pass:
   and the quoted PSNR figure should be checked to ensure it is appropriate for
   the intended application of the codec.
 * Input and output pictures must be visually compared and should be
-  visually indistinguishable.
+  sufficiently similar as to be suitable for the intended application of the
+  codec.
 * No additional pictures must have been decoded.
 
 .. tip::
