@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>vc2_conformance.color_conversion: Color conversion routines &#8212; SMPTE VC-2 Conformance Software v0.4.3 documentation</title>
+    <title>vc2_conformance.color_conversion: Color conversion routines &#8212; SMPTE VC-2 Conformance Software v0.4.4 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -33,7 +33,7 @@
         <li class="right" >
           <a href="dimensions_and_depths.html" title="vc2_conformance.dimensions_and_depths: Picture dimension and depth calculation"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.4 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Test picture generation reference</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.color_conversion</span></code>: Color conversion routines</a></li> 
       </ul>
@@ -194,7 +194,7 @@ range 0 to +1 or -0.5 to +0.5.</p>
 <dt id="vc2_conformance.color_conversion.from_444">
 <code class="sig-name descname"><span class="pre">from_444</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chroma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subsampling</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.color_conversion.from_444" title="Permalink to this definition">¶</a></dt>
 <dd><p>Subsample a chroma picture component into the specified
-<a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.ColorDifferenceSamplingFormats" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ColorDifferenceSamplingFormats</span></code></a>.</p>
+<a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.ColorDifferenceSamplingFormats" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v1.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ColorDifferenceSamplingFormats</span></code></a>.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>This function uses an extremely crude low-pass filter during
@@ -208,7 +208,7 @@ where high fidelity is required.</p>
 <dt id="vc2_conformance.color_conversion.to_444">
 <code class="sig-name descname"><span class="pre">to_444</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chroma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subsampling</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vc2_conformance.color_conversion.to_444" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a chroma picture subsampled according to the specified
-<a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.ColorDifferenceSamplingFormats" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ColorDifferenceSamplingFormats</span></code></a>, return an
+<a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.ColorDifferenceSamplingFormats" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v1.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ColorDifferenceSamplingFormats</span></code></a>, return an
 upsampled chroma signal.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -261,7 +261,7 @@ is all that was required at the time of development.</p>
 <dt id="vc2_conformance.color_conversion.XYZ_TO_LINEAR_RGB">
 <code class="sig-name descname"><span class="pre">XYZ_TO_LINEAR_RGB</span></code><em class="property"> <span class="pre">=</span> <span class="pre">{&lt;color</span> <span class="pre">primaries</span> <span class="pre">index&gt;:</span> <span class="pre">&lt;3x3</span> <span class="pre">matrix&gt;,</span> <span class="pre">...}</span></em><a class="headerlink" href="#vc2_conformance.color_conversion.XYZ_TO_LINEAR_RGB" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each set of color primaries in
-<a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PresetColorPrimaries" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PresetColorPrimaries</span></code></a>, a <span class="math notranslate nohighlight">\(3 \times 3\)</span> matrix
+<a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PresetColorPrimaries" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v1.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PresetColorPrimaries</span></code></a>, a <span class="math notranslate nohighlight">\(3 \times 3\)</span> matrix
 which converts from CIE XYZ into linear RGB.</p>
 </dd></dl>
 
@@ -269,7 +269,7 @@ which converts from CIE XYZ into linear RGB.</p>
 <dt id="vc2_conformance.color_conversion.LINEAR_RGB_TO_XYZ">
 <code class="sig-name descname"><span class="pre">LINEAR_RGB_TO_XYZ</span></code><em class="property"> <span class="pre">=</span> <span class="pre">{&lt;color</span> <span class="pre">primaries</span> <span class="pre">index&gt;:</span> <span class="pre">&lt;3x3</span> <span class="pre">matrix&gt;,</span> <span class="pre">...}</span></em><a class="headerlink" href="#vc2_conformance.color_conversion.LINEAR_RGB_TO_XYZ" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each set of color primaries in
-<a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PresetColorPrimaries" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PresetColorPrimaries</span></code></a>, a <span class="math notranslate nohighlight">\(3 \times 3\)</span> matrix
+<a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PresetColorPrimaries" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v1.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PresetColorPrimaries</span></code></a>, a <span class="math notranslate nohighlight">\(3 \times 3\)</span> matrix
 which converts from linear RGB into CIE XYZ.</p>
 </dd></dl>
 
@@ -482,14 +482,14 @@ components are appropriately matched.</p>
         <li class="right" >
           <a href="dimensions_and_depths.html" title="vc2_conformance.dimensions_and_depths: Picture dimension and depth calculation"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.4 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" >Test picture generation reference</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.color_conversion</span></code>: Color conversion routines</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2021, BBC.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.3.
     </div>
   </body>
 </html>

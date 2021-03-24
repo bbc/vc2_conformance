@@ -81,6 +81,14 @@ example::
         C2: Different: PSNR = 56.8 dB, 703531 pixels (67.9%) differ
     Summary: 0 identical, 3 different
 
+.. note::
+
+    When provided with two directories to compare the
+    :ref:`vc2-picture-compare` tool will ignore all but the numercial part of
+    the filenames when matching pictures together. Differing names or uses (and
+    non-uses) of leading zeros are ignored. For example, it would compare two
+    files named ``expected/picture_12.raw`` and ``actual/image_0012.raw``.
+
 For a test case to pass:
 
 * The encoder must not raise an error condition during encoding.
@@ -91,7 +99,8 @@ For a test case to pass:
   and the quoted PSNR figure should be checked to ensure it is appropriate for
   the intended application of the codec.
 * Input and output pictures must be visually compared and should be
-  visually indistinguishable.
+  sufficiently similar as to be suitable for the intended application of the
+  codec.
 * No additional pictures must have been decoded.
 
 .. tip::
@@ -114,7 +123,7 @@ what that case failing might indicate.
 
 .. _encoder-test-cases:
 
-Encoder Test Cases
+Encoder test cases
 ------------------
 
 The purpose of each test case (or group of test cases), along with advice on
@@ -127,3 +136,15 @@ debugging failing tests is provided below.
     definition of the auto-documentation extraction routine below.
 
 .. test-case-documentation:: encoder
+
+
+Testing additional bitstreams' conformance
+------------------------------------------
+
+The :ref:`vc2-bitstream-validator` tool may also be used to check the
+conformance of other bitstreams produced by an encoder. For example, you might
+optionally encode your own (short) test sequences and use this tool to validate
+the bitstream. You should follow the procedure described earlier to do this.
+You can also use the :ref:`vc2-picture-compare` utility to compare the decoded
+output produced by :ref:`vc2-bitstream-validator` against your original test
+sequence.

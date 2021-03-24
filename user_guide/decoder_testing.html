@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>VC-2 decoder conformance testing procedure &#8212; SMPTE VC-2 Conformance Software v0.4.3 documentation</title>
+    <title>VC-2 decoder conformance testing procedure &#8212; SMPTE VC-2 Conformance Software v0.4.4 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -32,7 +32,7 @@
         <li class="right" >
           <a href="generating_test_cases.html" title="Generating test cases"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.4 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">User’s guide (for codec testers)</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">VC-2 decoder conformance testing procedure</a></li> 
       </ul>
@@ -85,6 +85,14 @@ Comparing expected/picture_2.raw and actual/picture_2.raw
   Pictures are identical
 Summary: 3 identical, 0 different
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When provided with two directories to compare the
+<a class="reference internal" href="../cli/vc2_picture_compare.html#vc2-picture-compare"><span class="std std-ref">vc2-picture-compare</span></a> tool will ignore all but the numercial part of
+the filenames when matching pictures together. Differing names or uses (and
+non-uses) of leading zeros are ignored. For example, it would compare two
+files named <code class="docutils literal notranslate"><span class="pre">expected/picture_12.raw</span></code> and <code class="docutils literal notranslate"><span class="pre">actual/image_0012.raw</span></code>.</p>
 </div>
 <p>For a test case to pass:</p>
 <ul class="simple">
@@ -359,7 +367,7 @@ are nevertheless valid.</p>
 <p>An informative metadata file is provided along side each test case which
 gives, for each picture in the bitstream, the parts of a decoder which are
 being tested by the test patterns. See
-<a class="reference external" href="https://bbc.github.io/vc2_bit_widths/high_level_api/helpers.html#vc2_bit_widths.helpers.TestPoint" title="(in SMPTE ST 2042-1 (VC-2) Bit Widths v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">vc2_bit_widths.helpers.TestPoint</span></code></a> for details.</p>
+<a class="reference external" href="https://bbc.github.io/vc2_bit_widths/high_level_api/helpers.html#vc2_bit_widths.helpers.TestPoint" title="(in SMPTE ST 2042-1 (VC-2) Bit Widths v1.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">vc2_bit_widths.helpers.TestPoint</span></code></a> for details.</p>
 </div>
 <div class="section" id="test-case-decoder-slice_padding_data">
 <span id="std-decoder-test-case-slice_padding_data"></span><span id="std:decoder-test-case-slice_padding_data"></span><h3>Decoder test case: <code class="docutils literal notranslate"><span class="pre">slice_padding_data</span></code><a class="headerlink" href="#test-case-decoder-slice_padding_data" title="Permalink to this headline">¶</a></h3>
@@ -598,14 +606,14 @@ output range to over-saturated signals.</p>
         <li class="right" >
           <a href="generating_test_cases.html" title="Generating test cases"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.4 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" >User’s guide (for codec testers)</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">VC-2 decoder conformance testing procedure</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2021, BBC.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.3.
     </div>
   </body>
 </html>

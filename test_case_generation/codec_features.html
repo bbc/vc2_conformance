@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>vc2_conformance.codec_features: Codec feature definitions &#8212; SMPTE VC-2 Conformance Software v0.4.3 documentation</title>
+    <title>vc2_conformance.codec_features: Codec feature definitions &#8212; SMPTE VC-2 Conformance Software v0.4.4 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -32,7 +32,7 @@
         <li class="right" >
           <a href="test_cases.html" title="vc2_conformance.test_cases: VC-2 codec test case generation"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.4 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Test case generation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.codec_features</span></code>: Codec feature definitions</a></li> 
       </ul>
@@ -62,16 +62,16 @@ a collection of these, defining support for several picture formats.</p>
 <dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>A unique, human-readable name to identify this collection of features (e.g.
 <code class="docutils literal notranslate"><span class="pre">&quot;uhd_over_hd_sdi&quot;</span></code>).</p>
 </dd>
-<dt><strong>level</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.Levels" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Levels</span></code></a></span></dt><dd><p>The VC-2 level. The user is responsible for choosing settings below which
+<dt><strong>level</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.Levels" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v1.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Levels</span></code></a></span></dt><dd><p>The VC-2 level. The user is responsible for choosing settings below which
 actually conform to this level.</p>
 </dd>
-<dt><strong>profile</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.Profiles" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Profiles</span></code></a></span></dt><dd><p>The VC-2 profile to use.</p>
+<dt><strong>profile</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.Profiles" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v1.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Profiles</span></code></a></span></dt><dd><p>The VC-2 profile to use.</p>
 </dd>
-<dt><strong>picture_coding_mode</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PictureCodingModes" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PictureCodingModes</span></code></a></span></dt><dd><p>The picture coding mode to use.</p>
+<dt><strong>picture_coding_mode</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PictureCodingModes" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v1.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PictureCodingModes</span></code></a></span></dt><dd><p>The picture coding mode to use.</p>
 </dd>
 <dt><strong>video_parameters</strong><span class="classifier"><a class="reference internal" href="../pseudocode.html#vc2_conformance.pseudocode.video_parameters.VideoParameters" title="vc2_conformance.pseudocode.video_parameters.VideoParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">VideoParameters</span></code></a></span></dt><dd><p>The video format to use.</p>
 </dd>
-<dt><strong>wavelet_index, wavelet_index_ho</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.WaveletFilters" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">WaveletFilters</span></code></a></span></dt><dd><p>The wavelet transform to use. For symmetric transforms, both values must be
+<dt><strong>wavelet_index, wavelet_index_ho</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.WaveletFilters" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v1.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">WaveletFilters</span></code></a></span></dt><dd><p>The wavelet transform to use. For symmetric transforms, both values must be
 equal.</p>
 </dd>
 <dt><strong>dwt_depth and dwt_depth_ho</strong><span class="classifier">int</span></dt><dd><p>The transform depths to use. For symmetric transforms, dwt_depth_ho must be
@@ -245,14 +245,14 @@ at these values since all of them are straight-forward to work out.</p>
         <li class="right" >
           <a href="test_cases.html" title="vc2_conformance.test_cases: VC-2 codec test case generation"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.4 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" >Test case generation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.codec_features</span></code>: Codec feature definitions</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2021, BBC.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.3.
     </div>
   </body>
 </html>

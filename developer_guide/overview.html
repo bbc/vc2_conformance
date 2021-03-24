@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>vc2_conformance internals overview &#8212; SMPTE VC-2 Conformance Software v0.4.3 documentation</title>
+    <title>vc2_conformance internals overview &#8212; SMPTE VC-2 Conformance Software v0.4.4 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -32,7 +32,7 @@
         <li class="right" >
           <a href="developer_installation.html" title="Development setup"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.4 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Conformance software development guide</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance</span></code> internals overview</a></li> 
       </ul>
@@ -161,12 +161,12 @@ have been split into their own separate Python packages. These are:</p>
 <dt><a class="reference external" href="https://bbc.github.io/vc2_conformance_data/index.html#module-vc2_conformance_data" title="(in Data Files for SMPTE VC-2 Conformance Testing v1.0.0)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance_data</span></code></a></dt><dd><p>Larger data files (including pictures and precomputed values) which are
 used to generate certain test cases.</p>
 </dd>
-<dt><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#module-vc2_data_tables" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_data_tables</span></code></a></dt><dd><p>General VC-2 related constants (e.g.
-<a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PARSE_INFO_PREFIX" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">PARSE_INFO_PREFIX</span></code></a>), enumerated values (e.g.
-<a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.ParseCodes" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParseCodes</span></code></a>) and tabular data used during
-coding (e.g. <a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PRESET_FRAME_RATES" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">PRESET_FRAME_RATES</span></code></a>).</p>
+<dt><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#module-vc2_data_tables" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v1.0.0)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_data_tables</span></code></a></dt><dd><p>General VC-2 related constants (e.g.
+<a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PARSE_INFO_PREFIX" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v1.0.0)"><code class="xref py py-data docutils literal notranslate"><span class="pre">PARSE_INFO_PREFIX</span></code></a>), enumerated values (e.g.
+<a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.ParseCodes" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v1.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParseCodes</span></code></a>) and tabular data used during
+coding (e.g. <a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PRESET_FRAME_RATES" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v1.0.0)"><code class="xref py py-data docutils literal notranslate"><span class="pre">PRESET_FRAME_RATES</span></code></a>).</p>
 </dd>
-<dt><a class="reference external" href="https://bbc.github.io/vc2_bit_widths/high_level_api/index.html#module-vc2_bit_widths" title="(in SMPTE ST 2042-1 (VC-2) Bit Widths v0.1.6)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_bit_widths</span></code></a></dt><dd><p>Computes near worst-case inputs for VC-2 encoders and decoders which
+<dt><a class="reference external" href="https://bbc.github.io/vc2_bit_widths/high_level_api/index.html#module-vc2_bit_widths" title="(in SMPTE ST 2042-1 (VC-2) Bit Widths v1.0.0)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_bit_widths</span></code></a></dt><dd><p>Computes near worst-case inputs for VC-2 encoders and decoders which
 produce very large signal values. This package is used to generate test
 cases to verify codecs have used large enough integers in their
 implementations.</p>
@@ -236,14 +236,14 @@ implementations.</p>
         <li class="right" >
           <a href="developer_installation.html" title="Development setup"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.4 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" >Conformance software development guide</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance</span></code> internals overview</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2021, BBC.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.3.
     </div>
   </body>
 </html>

@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>vc2_conformance.bitstream: Bitstream manipulation module &#8212; SMPTE VC-2 Conformance Software v0.4.3 documentation</title>
+    <title>vc2_conformance.bitstream: Bitstream manipulation module &#8212; SMPTE VC-2 Conformance Software v0.4.4 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -32,7 +32,7 @@
         <li class="right" >
           <a href="encoder.html" title="vc2_conformance.encoder: Internal VC-2 encoder"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SMPTE VC-2 Conformance Software v0.4.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SMPTE VC-2 Conformance Software v0.4.4 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.bitstream</span></code>: Bitstream manipulation module</a></li> 
       </ul>
     </div>  
@@ -119,7 +119,7 @@ bitstream containing just a single end-of-sequence data unit:</p>
 </pre></div>
 </div>
 <p>To make this somewhat clearer and more robust, a set of <a class="reference internal" href="utility_modules/fixeddict.html#module-vc2_conformance.fixeddict" title="vc2_conformance.fixeddict"><code class="xref py py-mod docutils literal notranslate"><span class="pre">fixeddicts</span></code></a> are provided which may be used instead of bare
-Python dictionaries. The <a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#module-vc2_data_tables" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_data_tables</span></code></a> package also includes many
+Python dictionaries. The <a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#module-vc2_data_tables" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v1.0.0)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_data_tables</span></code></a> package also includes many
 helpful constant definitions.  Together, these make it easier to see what’s
 going on while also eliminating simple mistakes like misspelling a field name.</p>
 <div class="admonition note">
@@ -522,7 +522,7 @@ iteration.</p>
 <dt><strong>padding</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">bitarray</span></code> (autofilled with bitarray())</span></dt><dd><p>Byte alignment padding bits.</p>
 </dd>
 <dt><strong>parse_info_prefix</strong><span class="classifier">int (autofilled with 1111638852)</span></dt><dd></dd>
-<dt><strong>parse_code</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.ParseCodes" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParseCodes</span></code></a> (autofilled with &lt;ParseCodes.end_of_sequence: 16&gt;)</span></dt><dd></dd>
+<dt><strong>parse_code</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.ParseCodes" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v1.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParseCodes</span></code></a> (autofilled with &lt;ParseCodes.end_of_sequence: 16&gt;)</span></dt><dd></dd>
 <dt><strong>next_parse_offset</strong><span class="classifier">int (autofilled with &lt;AUTO&gt;)</span></dt><dd></dd>
 <dt><strong>previous_parse_offset</strong><span class="classifier">int (autofilled with &lt;AUTO&gt;)</span></dt><dd></dd>
 <dt><strong>_offset</strong><span class="classifier">int</span></dt><dd><p>Computed value. The byte offset of the start of this parse_info
@@ -541,9 +541,9 @@ block in the bitstream.</p>
 <dt class="field-odd">Keys</dt>
 <dd class="field-odd"><dl>
 <dt><strong>parse_parameters</strong><span class="classifier"><a class="reference internal" href="#vc2_conformance.bitstream.ParseParameters" title="vc2_conformance.bitstream.ParseParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParseParameters</span></code></a></span></dt><dd></dd>
-<dt><strong>base_video_format</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.BaseVideoFormats" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseVideoFormats</span></code></a> (autofilled with &lt;BaseVideoFormats.custom_format: 0&gt;)</span></dt><dd></dd>
+<dt><strong>base_video_format</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.BaseVideoFormats" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v1.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseVideoFormats</span></code></a> (autofilled with &lt;BaseVideoFormats.custom_format: 0&gt;)</span></dt><dd></dd>
 <dt><strong>video_parameters</strong><span class="classifier"><a class="reference internal" href="#vc2_conformance.bitstream.SourceParameters" title="vc2_conformance.bitstream.SourceParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SourceParameters</span></code></a></span></dt><dd></dd>
-<dt><strong>picture_coding_mode</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PictureCodingModes" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PictureCodingModes</span></code></a> (autofilled with &lt;PictureCodingModes.pictures_are_frames: 0&gt;)</span></dt><dd></dd>
+<dt><strong>picture_coding_mode</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PictureCodingModes" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v1.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PictureCodingModes</span></code></a> (autofilled with &lt;PictureCodingModes.pictures_are_frames: 0&gt;)</span></dt><dd></dd>
 </dl>
 </dd>
 </dl>
@@ -558,8 +558,8 @@ block in the bitstream.</p>
 <dd class="field-odd"><dl>
 <dt><strong>major_version</strong><span class="classifier">int (autofilled with &lt;AUTO&gt;)</span></dt><dd></dd>
 <dt><strong>minor_version</strong><span class="classifier">int (autofilled with 0)</span></dt><dd></dd>
-<dt><strong>profile</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.Profiles" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Profiles</span></code></a> (autofilled with &lt;Profiles.high_quality: 3&gt;)</span></dt><dd></dd>
-<dt><strong>level</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.Levels" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Levels</span></code></a> (autofilled with &lt;Levels.unconstrained: 0&gt;)</span></dt><dd></dd>
+<dt><strong>profile</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.Profiles" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v1.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Profiles</span></code></a> (autofilled with &lt;Profiles.high_quality: 3&gt;)</span></dt><dd></dd>
+<dt><strong>level</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.Levels" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v1.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Levels</span></code></a> (autofilled with &lt;Levels.unconstrained: 0&gt;)</span></dt><dd></dd>
 </dl>
 </dd>
 </dl>
@@ -609,7 +609,7 @@ block in the bitstream.</p>
 <dt class="field-odd">Keys</dt>
 <dd class="field-odd"><dl>
 <dt><strong>custom_color_diff_format_flag</strong><span class="classifier">bool (autofilled with False)</span></dt><dd></dd>
-<dt><strong>color_diff_format_index</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.ColorDifferenceSamplingFormats" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ColorDifferenceSamplingFormats</span></code></a> (autofilled with &lt;ColorDifferenceSamplingFormats.color_4_4_4: 0&gt;)</span></dt><dd></dd>
+<dt><strong>color_diff_format_index</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.ColorDifferenceSamplingFormats" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v1.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ColorDifferenceSamplingFormats</span></code></a> (autofilled with &lt;ColorDifferenceSamplingFormats.color_4_4_4: 0&gt;)</span></dt><dd></dd>
 </dl>
 </dd>
 </dl>
@@ -623,7 +623,7 @@ block in the bitstream.</p>
 <dt class="field-odd">Keys</dt>
 <dd class="field-odd"><dl>
 <dt><strong>custom_scan_format_flag</strong><span class="classifier">bool (autofilled with False)</span></dt><dd></dd>
-<dt><strong>source_sampling</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.SourceSamplingModes" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">SourceSamplingModes</span></code></a> (autofilled with &lt;SourceSamplingModes.progressive: 0&gt;)</span></dt><dd></dd>
+<dt><strong>source_sampling</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.SourceSamplingModes" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v1.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">SourceSamplingModes</span></code></a> (autofilled with &lt;SourceSamplingModes.progressive: 0&gt;)</span></dt><dd></dd>
 </dl>
 </dd>
 </dl>
@@ -637,7 +637,7 @@ block in the bitstream.</p>
 <dt class="field-odd">Keys</dt>
 <dd class="field-odd"><dl>
 <dt><strong>custom_frame_rate_flag</strong><span class="classifier">bool (autofilled with False)</span></dt><dd></dd>
-<dt><strong>index</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PresetFrameRates" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PresetFrameRates</span></code></a> (autofilled with &lt;PresetFrameRates.fps_25: 3&gt;)</span></dt><dd></dd>
+<dt><strong>index</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PresetFrameRates" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v1.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PresetFrameRates</span></code></a> (autofilled with &lt;PresetFrameRates.fps_25: 3&gt;)</span></dt><dd></dd>
 <dt><strong>frame_rate_numer</strong><span class="classifier">int (autofilled with 25)</span></dt><dd></dd>
 <dt><strong>frame_rate_denom</strong><span class="classifier">int (autofilled with 1)</span></dt><dd></dd>
 </dl>
@@ -655,7 +655,7 @@ some parts of the spec).</p>
 <dt class="field-odd">Keys</dt>
 <dd class="field-odd"><dl>
 <dt><strong>custom_pixel_aspect_ratio_flag</strong><span class="classifier">bool (autofilled with False)</span></dt><dd></dd>
-<dt><strong>index</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PresetPixelAspectRatios" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PresetPixelAspectRatios</span></code></a> (autofilled with &lt;PresetPixelAspectRatios.ratio_1_1: 1&gt;)</span></dt><dd></dd>
+<dt><strong>index</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PresetPixelAspectRatios" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v1.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PresetPixelAspectRatios</span></code></a> (autofilled with &lt;PresetPixelAspectRatios.ratio_1_1: 1&gt;)</span></dt><dd></dd>
 <dt><strong>pixel_aspect_ratio_numer</strong><span class="classifier">int (autofilled with 1)</span></dt><dd></dd>
 <dt><strong>pixel_aspect_ratio_denom</strong><span class="classifier">int (autofilled with 1)</span></dt><dd></dd>
 </dl>
@@ -688,7 +688,7 @@ some parts of the spec).</p>
 <dt class="field-odd">Keys</dt>
 <dd class="field-odd"><dl>
 <dt><strong>custom_signal_range_flag</strong><span class="classifier">bool (autofilled with False)</span></dt><dd></dd>
-<dt><strong>index</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PresetSignalRanges" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PresetSignalRanges</span></code></a> (autofilled with &lt;PresetSignalRanges.video_8bit_full_range: 1&gt;)</span></dt><dd></dd>
+<dt><strong>index</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PresetSignalRanges" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v1.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PresetSignalRanges</span></code></a> (autofilled with &lt;PresetSignalRanges.video_8bit_full_range: 1&gt;)</span></dt><dd></dd>
 <dt><strong>luma_offset</strong><span class="classifier">int (autofilled with 0)</span></dt><dd></dd>
 <dt><strong>luma_excursion</strong><span class="classifier">int (autofilled with 1)</span></dt><dd></dd>
 <dt><strong>color_diff_offset</strong><span class="classifier">int (autofilled with 0)</span></dt><dd></dd>
@@ -706,7 +706,7 @@ some parts of the spec).</p>
 <dt class="field-odd">Keys</dt>
 <dd class="field-odd"><dl>
 <dt><strong>custom_color_spec_flag</strong><span class="classifier">bool (autofilled with False)</span></dt><dd></dd>
-<dt><strong>index</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PresetColorSpecs" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PresetColorSpecs</span></code></a> (autofilled with &lt;PresetColorSpecs.hdtv: 3&gt;)</span></dt><dd></dd>
+<dt><strong>index</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PresetColorSpecs" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v1.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PresetColorSpecs</span></code></a> (autofilled with &lt;PresetColorSpecs.hdtv: 3&gt;)</span></dt><dd></dd>
 <dt><strong>color_primaries</strong><span class="classifier"><a class="reference internal" href="#vc2_conformance.bitstream.ColorPrimaries" title="vc2_conformance.bitstream.ColorPrimaries"><code class="xref py py-class docutils literal notranslate"><span class="pre">ColorPrimaries</span></code></a></span></dt><dd></dd>
 <dt><strong>color_matrix</strong><span class="classifier"><a class="reference internal" href="#vc2_conformance.bitstream.ColorMatrix" title="vc2_conformance.bitstream.ColorMatrix"><code class="xref py py-class docutils literal notranslate"><span class="pre">ColorMatrix</span></code></a></span></dt><dd></dd>
 <dt><strong>transfer_function</strong><span class="classifier"><a class="reference internal" href="#vc2_conformance.bitstream.TransferFunction" title="vc2_conformance.bitstream.TransferFunction"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransferFunction</span></code></a></span></dt><dd></dd>
@@ -723,7 +723,7 @@ some parts of the spec).</p>
 <dt class="field-odd">Keys</dt>
 <dd class="field-odd"><dl>
 <dt><strong>custom_color_primaries_flag</strong><span class="classifier">bool (autofilled with False)</span></dt><dd></dd>
-<dt><strong>index</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PresetColorPrimaries" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PresetColorPrimaries</span></code></a> (autofilled with &lt;PresetColorPrimaries.hdtv: 0&gt;)</span></dt><dd></dd>
+<dt><strong>index</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PresetColorPrimaries" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v1.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PresetColorPrimaries</span></code></a> (autofilled with &lt;PresetColorPrimaries.hdtv: 0&gt;)</span></dt><dd></dd>
 </dl>
 </dd>
 </dl>
@@ -737,7 +737,7 @@ some parts of the spec).</p>
 <dt class="field-odd">Keys</dt>
 <dd class="field-odd"><dl>
 <dt><strong>custom_color_matrix_flag</strong><span class="classifier">bool (autofilled with False)</span></dt><dd></dd>
-<dt><strong>index</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PresetColorMatrices" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PresetColorMatrices</span></code></a> (autofilled with &lt;PresetColorMatrices.hdtv: 0&gt;)</span></dt><dd></dd>
+<dt><strong>index</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PresetColorMatrices" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v1.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PresetColorMatrices</span></code></a> (autofilled with &lt;PresetColorMatrices.hdtv: 0&gt;)</span></dt><dd></dd>
 </dl>
 </dd>
 </dl>
@@ -752,7 +752,7 @@ some parts of the spec).</p>
 <dt class="field-odd">Keys</dt>
 <dd class="field-odd"><dl>
 <dt><strong>custom_transfer_function_flag</strong><span class="classifier">bool (autofilled with False)</span></dt><dd></dd>
-<dt><strong>index</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PresetTransferFunctions" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PresetTransferFunctions</span></code></a> (autofilled with &lt;PresetTransferFunctions.tv_gamma: 0&gt;)</span></dt><dd></dd>
+<dt><strong>index</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.PresetTransferFunctions" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v1.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PresetTransferFunctions</span></code></a> (autofilled with &lt;PresetTransferFunctions.tv_gamma: 0&gt;)</span></dt><dd></dd>
 </dl>
 </dd>
 </dl>
@@ -814,7 +814,7 @@ some parts of the spec).</p>
 <dl class="field-list">
 <dt class="field-odd">Keys</dt>
 <dd class="field-odd"><dl>
-<dt><strong>wavelet_index</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.WaveletFilters" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">WaveletFilters</span></code></a> (autofilled with &lt;WaveletFilters.haar_with_shift: 4&gt;)</span></dt><dd></dd>
+<dt><strong>wavelet_index</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.WaveletFilters" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v1.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">WaveletFilters</span></code></a> (autofilled with &lt;WaveletFilters.haar_with_shift: 4&gt;)</span></dt><dd></dd>
 <dt><strong>dwt_depth</strong><span class="classifier">int (autofilled with 0)</span></dt><dd></dd>
 <dt><strong>extended_transform_parameters</strong><span class="classifier"><a class="reference internal" href="#vc2_conformance.bitstream.ExtendedTransformParameters" title="vc2_conformance.bitstream.ExtendedTransformParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExtendedTransformParameters</span></code></a></span></dt><dd></dd>
 <dt><strong>slice_parameters</strong><span class="classifier"><a class="reference internal" href="#vc2_conformance.bitstream.SliceParameters" title="vc2_conformance.bitstream.SliceParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SliceParameters</span></code></a></span></dt><dd></dd>
@@ -833,7 +833,7 @@ defined by <code class="docutils literal notranslate"><span class="pre">extended
 <dt class="field-odd">Keys</dt>
 <dd class="field-odd"><dl>
 <dt><strong>asym_transform_index_flag</strong><span class="classifier">bool (autofilled with False)</span></dt><dd></dd>
-<dt><strong>wavelet_index_ho</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.WaveletFilters" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">WaveletFilters</span></code></a> (autofilled with &lt;WaveletFilters.haar_with_shift: 4&gt;)</span></dt><dd></dd>
+<dt><strong>wavelet_index_ho</strong><span class="classifier"><a class="reference external" href="https://bbc.github.io/vc2_data_tables/api.html#vc2_data_tables.WaveletFilters" title="(in SMPTE ST 2042-1 (VC-2) Data Tables v1.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">WaveletFilters</span></code></a> (autofilled with &lt;WaveletFilters.haar_with_shift: 4&gt;)</span></dt><dd></dd>
 <dt><strong>asym_transform_flag</strong><span class="classifier">bool (autofilled with False)</span></dt><dd></dd>
 <dt><strong>dwt_depth_ho</strong><span class="classifier">int (autofilled with 0)</span></dt><dd></dd>
 </dl>
@@ -2504,13 +2504,13 @@ from/to it.</p>
         <li class="right" >
           <a href="encoder.html" title="vc2_conformance.encoder: Internal VC-2 encoder"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SMPTE VC-2 Conformance Software v0.4.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SMPTE VC-2 Conformance Software v0.4.4 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><code class="xref py py-mod docutils literal notranslate"><span class="pre">vc2_conformance.bitstream</span></code>: Bitstream manipulation module</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2021, BBC.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.3.
     </div>
   </body>
 </html>

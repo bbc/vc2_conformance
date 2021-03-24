@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>VC-2 encoder conformance testing procedure &#8212; SMPTE VC-2 Conformance Software v0.4.3 documentation</title>
+    <title>VC-2 encoder conformance testing procedure &#8212; SMPTE VC-2 Conformance Software v0.4.4 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -32,7 +32,7 @@
         <li class="right" >
           <a href="decoder_testing.html" title="VC-2 decoder conformance testing procedure"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.4 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">User’s guide (for codec testers)</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">VC-2 encoder conformance testing procedure</a></li> 
       </ul>
@@ -113,6 +113,14 @@ Comparing real_pictures/picture_2.raw and real_pictures_decoded/picture_2.raw
 Summary: 0 identical, 3 different
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When provided with two directories to compare the
+<a class="reference internal" href="../cli/vc2_picture_compare.html#vc2-picture-compare"><span class="std std-ref">vc2-picture-compare</span></a> tool will ignore all but the numercial part of
+the filenames when matching pictures together. Differing names or uses (and
+non-uses) of leading zeros are ignored. For example, it would compare two
+files named <code class="docutils literal notranslate"><span class="pre">expected/picture_12.raw</span></code> and <code class="docutils literal notranslate"><span class="pre">actual/image_0012.raw</span></code>.</p>
+</div>
 <p>For a test case to pass:</p>
 <ul class="simple">
 <li><p>The encoder must not raise an error condition during encoding.</p></li>
@@ -123,7 +131,8 @@ Summary: 0 identical, 3 different
 and the quoted PSNR figure should be checked to ensure it is appropriate for
 the intended application of the codec.</p></li>
 <li><p>Input and output pictures must be visually compared and should be
-visually indistinguishable.</p></li>
+sufficiently similar as to be suitable for the intended application of the
+codec.</p></li>
 <li><p>No additional pictures must have been decoded.</p></li>
 </ul>
 <div class="admonition tip">
@@ -142,7 +151,7 @@ encoder is non-conformant to the VC-2 specification.</p>
 what that case failing might indicate.</p>
 </div>
 <div class="section" id="encoder-test-cases">
-<span id="id1"></span><h2>Encoder Test Cases<a class="headerlink" href="#encoder-test-cases" title="Permalink to this headline">¶</a></h2>
+<span id="id1"></span><h2>Encoder test cases<a class="headerlink" href="#encoder-test-cases" title="Permalink to this headline">¶</a></h2>
 <p>The purpose of each test case (or group of test cases), along with advice on
 debugging failing tests is provided below.</p>
 <div class="section" id="test-case-encoder-real_pictures">
@@ -185,7 +194,7 @@ not guaranteed to produce the largest values possible.</p>
 <p>An informative metadata file is provided along side each test case which
 gives, for each picture in the bitstream, the parts of a encoder which are
 being tested by the test patterns. See
-<a class="reference external" href="https://bbc.github.io/vc2_bit_widths/high_level_api/helpers.html#vc2_bit_widths.helpers.TestPoint" title="(in SMPTE ST 2042-1 (VC-2) Bit Widths v0.1.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">vc2_bit_widths.helpers.TestPoint</span></code></a> for details.</p>
+<a class="reference external" href="https://bbc.github.io/vc2_bit_widths/high_level_api/helpers.html#vc2_bit_widths.helpers.TestPoint" title="(in SMPTE ST 2042-1 (VC-2) Bit Widths v1.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">vc2_bit_widths.helpers.TestPoint</span></code></a> for details.</p>
 </div>
 <div class="section" id="test-case-encoder-synthetic_gray">
 <span id="std-encoder-test-case-synthetic_gray"></span><span id="std:encoder-test-case-synthetic_gray"></span><h3>Encoder test case: <code class="docutils literal notranslate"><span class="pre">synthetic_gray</span></code><a class="headerlink" href="#test-case-encoder-synthetic_gray" title="Permalink to this headline">¶</a></h3>
@@ -259,6 +268,16 @@ similar results.</p>
 </div>
 </div>
 </div>
+<div class="section" id="testing-additional-bitstreams-conformance">
+<h2>Testing additional bitstreams’ conformance<a class="headerlink" href="#testing-additional-bitstreams-conformance" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="../cli/vc2_bitstream_validator.html#vc2-bitstream-validator"><span class="std std-ref">vc2-bitstream-validator</span></a> tool may also be used to check the
+conformance of other bitstreams produced by an encoder. For example, you might
+optionally encode your own (short) test sequences and use this tool to validate
+the bitstream. You should follow the procedure described earlier to do this.
+You can also use the <a class="reference internal" href="../cli/vc2_picture_compare.html#vc2-picture-compare"><span class="std std-ref">vc2-picture-compare</span></a> utility to compare the decoded
+output produced by <a class="reference internal" href="../cli/vc2_bitstream_validator.html#vc2-bitstream-validator"><span class="std std-ref">vc2-bitstream-validator</span></a> against your original test
+sequence.</p>
+</div>
 </div>
 
 
@@ -273,7 +292,7 @@ similar results.</p>
 <li><a class="reference internal" href="#">VC-2 encoder conformance testing procedure</a><ul>
 <li><a class="reference internal" href="#encoding-the-reference-bitstreams">Encoding the reference bitstreams</a></li>
 <li><a class="reference internal" href="#checking-the-encoded-bitstreams">Checking the encoded bitstreams</a></li>
-<li><a class="reference internal" href="#encoder-test-cases">Encoder Test Cases</a><ul>
+<li><a class="reference internal" href="#encoder-test-cases">Encoder test cases</a><ul>
 <li><a class="reference internal" href="#test-case-encoder-real_pictures">Encoder test case: <code class="docutils literal notranslate"><span class="pre">real_pictures</span></code></a></li>
 <li><a class="reference internal" href="#test-case-encoder-signal_range">Encoder test case: <code class="docutils literal notranslate"><span class="pre">signal_range</span></code></a></li>
 <li><a class="reference internal" href="#test-case-encoder-synthetic_gray">Encoder test case: <code class="docutils literal notranslate"><span class="pre">synthetic_gray</span></code></a></li>
@@ -282,6 +301,7 @@ similar results.</p>
 <li><a class="reference internal" href="#test-case-encoder-synthetic_noise">Encoder test case: <code class="docutils literal notranslate"><span class="pre">synthetic_noise</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#testing-additional-bitstreams-conformance">Testing additional bitstreams’ conformance</a></li>
 </ul>
 </li>
 </ul>
@@ -328,14 +348,14 @@ similar results.</p>
         <li class="right" >
           <a href="decoder_testing.html" title="VC-2 decoder conformance testing procedure"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.4 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" >User’s guide (for codec testers)</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">VC-2 encoder conformance testing procedure</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2021, BBC.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.3.
     </div>
   </body>
 </html>
