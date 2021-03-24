@@ -52,6 +52,14 @@ For example::
       Pictures are identical
     Summary: 3 identical, 0 different
 
+.. note::
+
+    When provided with two directories to compare the
+    :ref:`vc2-picture-compare` tool will ignore all but the numercial part of
+    the filenames when matching pictures together. Differing names or uses (and
+    non-uses) of leading zeros are ignored. For example, it would compare two
+    files named ``expected/picture_12.raw`` and ``actual/image_0012.raw``.
+
 For a test case to pass:
 
 * The :ref:`vc2-picture-compare` tool must report ``Pictures are identical``, with
