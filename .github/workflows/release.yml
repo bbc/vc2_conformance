@@ -52,11 +52,10 @@ jobs:
         cp docs/build/latex/smpte*.aux docs/build/html/${{ github.event.repository.name }}_manual.aux
     
     # Publish built Python packages to PyPI
-    # TODO
-    ##- name: Publish Python packages to PyPI
-    ##  uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
-    ##  with:
-    ##    password: ${{ secrets.PYPI_API_TOKEN }}
+    - name: Publish Python packages to PyPI
+      uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
+      with:
+        password: ${{ secrets.PYPI_API_TOKEN }}
     
     # Publish docs to GitHub Pages
     - name: Publish HTML and PDF docs to GH Pages
