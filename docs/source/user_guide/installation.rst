@@ -72,7 +72,34 @@ The ``--user`` argument can be omitted for a system-wide installation (strongly
 
         $ export PIP_IGNORE_INSTALLED=0
 
-.. note 
+
+From ``.tar.gz`` packages
+`````````````````````````
+
+If you have received a copy of the VC-2 conformance software as a collection of
+``.tar.gz`` packages, these may be installed as follows (replacing ``X.Y.Z``
+with the version numbers from the files supplied)::
+
+    $ python -m pip install --user vc2_data_tables-X.Y.Z.tar.gz
+    $ python -m pip install --user vc2_bit_widths-X.Y.Z.tar.gz
+    $ python -m pip install --user vc2_conformance_data-X.Y.Z.tar.gz
+    $ python -m pip install --user vc2_conformance-X.Y.Z.tar.gz
+
+.. note::
+
+    The installation order must be as shown above.
+
+The ``--user`` argument can be omitted for a system-wide installation (strongly
+*not* recommended) or when installing in a `Python virtual environment
+<https://docs.python.org/3/tutorial/venv.html>`_.
+
+.. note::
+
+    If installation fails on Debian and Ubuntu systems, you might need to execute
+    the following line prior to the above::
+
+        $ export PIP_IGNORE_INSTALLED=0
+
 
 From source (advanced)
 ``````````````````````
