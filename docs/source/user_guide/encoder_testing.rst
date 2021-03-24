@@ -114,7 +114,7 @@ what that case failing might indicate.
 
 .. _encoder-test-cases:
 
-Encoder Test Cases
+Encoder test cases
 ------------------
 
 The purpose of each test case (or group of test cases), along with advice on
@@ -127,3 +127,15 @@ debugging failing tests is provided below.
     definition of the auto-documentation extraction routine below.
 
 .. test-case-documentation:: encoder
+
+
+Testing additional bitstreams' conformance
+------------------------------------------
+
+The :ref:`vc2-bitstream-validator` tool may also be used to check the
+conformance of other bitstreams produced by an encoder. For example, you might
+optionally encode your own (short) test sequences and use this tool to validate
+the bitstream. You should follow the procedure described earlier to do this.
+You can also use the :ref:`vc2-picture-compare` utility to compare the decoded
+output produced by :ref:`vc2-bitstream-validator` against your original test
+sequence.
