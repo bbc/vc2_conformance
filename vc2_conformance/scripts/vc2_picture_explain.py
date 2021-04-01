@@ -53,11 +53,11 @@ An example invocation is shown below::
     Pictures contain three planar components: Y, Cb and Cr, in that order, which are
     4:2:0 subsampled.
 
-    The Y component consists of 352x144 8 bit values. Values run from 0 (video level
-    0.00) to 255 (video level 1.00).
+    The Y component consists of 352x144 8 bit values. Expressible values run
+    from 0 (video level 0.00) to 255 (video level 1.00).
 
-    The Cb and Cr components consist of 176x72 8 bit values. Values run from 0
-    (video level -0.50) to 255 (video level 0.50).
+    The Cb and Cr components consist of 176x72 8 bit values. Expressible values
+    run from 0 (video level -0.50) to 255 (video level 0.50).
 
     The color model uses the 'sdtv_625' primaries (ITU-R BT.601), the 'sdtv' color
     matrix (ITU-R BT.601) and the 'tv_gamma' transfer function (ITU-R BT.2020).
@@ -310,7 +310,7 @@ def explain_component_sizes(video_parameters, picture_coding_mode):
         padding_bits = (dd.bytes_per_sample * 8) - dd.depth_bits
         out += (
             "{} {}x{} {} bit values{}{}. "
-            "Values run from 0 (video level {:0.2f}) "
+            "Expressible values run from 0 (video level {:0.2f}) "
             "to {} (video level {:0.2f})."
             "\n\n"
         ).format(

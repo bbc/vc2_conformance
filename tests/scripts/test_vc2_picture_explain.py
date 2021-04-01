@@ -180,7 +180,11 @@ def test_explain_component_order_and_sampling(matrix, color_diff_format, expecte
                 color_diff_offset=0,
                 color_diff_excursion=255,
             ),
-            "Each component consists of 200x50 8 bit values. Values run from 0 (video level 0.00) to 255 (video level 1.00).",
+            (
+                "Each component consists of 200x50 8 bit values. "
+                "Expressible values run from 0 (video level 0.00) "
+                "to 255 (video level 1.00)."
+            ),
         ),
         # Components differ in size
         (
@@ -196,10 +200,12 @@ def test_explain_component_order_and_sampling(matrix, color_diff_format, expecte
             ),
             (
                 "The G component consists of 200x50 8 bit values. "
-                "Values run from 0 (video level 0.00) to 255 (video level 1.00)."
+                "Expressible values run from 0 (video level 0.00) "
+                "to 255 (video level 1.00)."
                 "\n\n"
                 "The R and B components consist of 100x25 8 bit values. "
-                "Values run from 0 (video level 0.00) to 255 (video level 1.00)."
+                "Expressible values run from 0 (video level 0.00) "
+                "to 255 (video level 1.00)."
             ),
         ),
         # Components differ in range
@@ -216,10 +222,12 @@ def test_explain_component_order_and_sampling(matrix, color_diff_format, expecte
             ),
             (
                 "The Y component consists of 200x50 8 bit values. "
-                "Values run from 0 (video level 0.00) to 255 (video level 1.00)."
+                "Expressible values run from 0 (video level 0.00) "
+                "to 255 (video level 1.00)."
                 "\n\n"
                 "The Cb and Cr components consist of 200x50 8 bit values. "
-                "Values run from 0 (video level -0.50) to 255 (video level 0.50)."
+                "Expressible values run from 0 (video level -0.50) "
+                "to 255 (video level 0.50)."
             ),
         ),
         # Padded into larger bit depth
@@ -238,12 +246,14 @@ def test_explain_component_order_and_sampling(matrix, color_diff_format, expecte
                 "The Y component consists of 200x50 10 bit values "
                 "stored as 16 bit (2 byte) values (with the 6 most "
                 "significant bits set to 0) in little-endian byte order. "
-                "Values run from 0 (video level 0.00) to 1023 (video level 1.00)."
+                "Expressible values run from 0 (video level 0.00) "
+                "to 1023 (video level 1.00)."
                 "\n\n"
                 "The Cb and Cr components consist of 200x50 10 bit values "
                 "stored as 16 bit (2 byte) values (with the 6 most "
                 "significant bits set to 0) in little-endian byte order. "
-                "Values run from 0 (video level -0.50) to 1023 (video level 0.50)."
+                "Expressible values run from 0 (video level -0.50) "
+                "to 1023 (video level 0.50)."
             ),
         ),
         # Video-range signals
@@ -260,10 +270,12 @@ def test_explain_component_order_and_sampling(matrix, color_diff_format, expecte
             ),
             (
                 "The Y component consists of 200x50 8 bit values. "
-                "Values run from 0 (video level -0.07) to 255 (video level 1.09)."
+                "Expressible values run from 0 (video level -0.07) "
+                "to 255 (video level 1.09)."
                 "\n\n"
                 "The Cb and Cr components consist of 200x50 8 bit values. "
-                "Values run from 0 (video level -0.57) to 255 (video level 0.57)."
+                "Expressible values run from 0 (video level -0.57) "
+                "to 255 (video level 0.57)."
             ),
         ),
     ],
