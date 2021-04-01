@@ -23,23 +23,23 @@ An example invocation is shown below::
 
     Video parameters:
 
-    * frame_width: 352
-    * frame_height: 288
-    * color_diff_format_index: color_4_2_0 (2)
-    * source_sampling: progressive (0)
+    * frame_width: 720
+    * frame_height: 576
+    * color_diff_format_index: color_4_2_2 (1)
+    * source_sampling: interlaced (1)
     * top_field_first: True
     * frame_rate_numer: 25
-    * frame_rate_denom: 2
+    * frame_rate_denom: 1
     * pixel_aspect_ratio_numer: 12
     * pixel_aspect_ratio_denom: 11
-    * clean_width: 352
-    * clean_height: 288
-    * left_offset: 0
+    * clean_width: 704
+    * clean_height: 576
+    * left_offset: 8
     * top_offset: 0
-    * luma_offset: 0
-    * luma_excursion: 255
+    * luma_offset: 16
+    * luma_excursion: 219
     * color_diff_offset: 128
-    * color_diff_excursion: 255
+    * color_diff_excursion: 224
     * color_primaries_index: sdtv_625 (2)
     * color_matrix_index: sdtv (1)
     * transfer_function_index: tv_gamma (0)
@@ -47,17 +47,16 @@ An example invocation is shown below::
     Explanation (informative)
     =========================
 
-    Each raw picture contains a single field (though the underlying video is
-    progressive). The top field comes first.
+    Each raw picture contains a single field. The top field comes first.
 
     Pictures contain three planar components: Y, Cb and Cr, in that order, which are
-    4:2:0 subsampled.
+    4:2:2 subsampled.
 
-    The Y component consists of 352x144 8 bit values. Expressible values run
-    from 0 (video level 0.00) to 255 (video level 1.00).
+    The Y component consists of 720x288 8 bit values. Expressible values run from 0
+    (video level -0.07) to 255 (video level 1.09).
 
-    The Cb and Cr components consist of 176x72 8 bit values. Expressible values
-    run from 0 (video level -0.50) to 255 (video level 0.50).
+    The Cb and Cr components consist of 360x288 8 bit values. Expressible values run
+    from 0 (video level -0.57) to 255 (video level 0.57).
 
     The color model uses the 'sdtv_625' primaries (ITU-R BT.601), the 'sdtv' color
     matrix (ITU-R BT.601) and the 'tv_gamma' transfer function (ITU-R BT.2020).
@@ -72,24 +71,25 @@ An example invocation is shown below::
 
         $ ffplay \
             -f image2 \
-            -video_size 352x144 \
-            -framerate 25 \
-            -pixel_format yuv420p \
+            -video_size 720x288 \
+            -framerate 50 \
+            -pixel_format yuv422p \
             -i path/to/raw/picture_%d.raw \
-            -vf weave=t,scale='trunc((iw*12)/11):ih'
+            -vf weave=t,yadif,scale='trunc((iw*12)/11):ih'
 
     Where:
 
     * `-f image2` = Read pictures from individual files
-    * `-video_size 352x144` = Picture size (not frame size).
-    * `-framerate 25` = Picture rate (not frame rate)
+    * `-video_size 720x288` = Picture size (not frame size).
+    * `-framerate 50` = Picture rate (not frame rate)
     * `-pixel_format` = Specifies raw picture encoding.
     * `yuv` = Y C1 C2 color.
-    * `420` = 4:2:0 color difference subsampling.
+    * `422` = 4:2:2 color difference subsampling.
     * `p` = Planar format.
     * `-i path/to/raw/picture_%d.raw` = Input raw picture filename pattern
     * `-vf` = define a pipeline of video filtering operations
     * `weave=t` = interleave pairs of pictures, top field first
+    * `yadif` = (optional) apply a deinterlacing filter for display purposes
     * `scale='trunc((iw*12)/11):ih'` = rescale non-square pixels for display with
       square pixels
 
@@ -105,27 +105,27 @@ An example invocation is shown below::
     format for viewing in a conventional image viewer:
 
         $ convert \
-            -size 352x144 \
+            -size 720x288 \
             -depth 8 \
-            -sampling-factor 4:2:0 \
+            -sampling-factor 4:2:2 \
             -interlace plane \
             -colorspace sRGB \
-            yuv:path/to/raw/picture_%d.raw \
+            yuv:path/to/raw/picture_0.raw \
             -resize 109.0909090909091%,100% \
-            png24:path/to/raw/picture_%d.png
+            png24:path/to/raw/picture_0.raw
 
     Where:
 
-    * `-size 352x144` = Picture size.
+    * `-size 720x288` = Picture size.
     * `-depth 8` = 8 bit values.
-    * `-sampling-factor 4:2:0` = 4:2:0 color difference subsampling.
+    * `-sampling-factor 4:2:2` = 4:2:2 color difference subsampling.
     * `-interlace plane` = Planar format (not related to video interlace mode).
     * `-colorspace sRGB` = Display as if using sRGB color.
     * `yuv:` = Input is Y C1 C2 picture.
-    * `path/to/raw/picture_%d.raw` = Input filename.
+    * `path/to/raw/picture_0.raw` = Input filename.
     * `-resize 109.0909090909091%,100%` = rescale non-square pixels for display with
       square pixels
-    * `png24:path/to/raw/picture_%d.png` = Save as 24-bit PNG (e.g. 8 bit channels)
+    * `png24:path/to/raw/picture_0.png` = Save as 24-bit PNG (e.g. 8 bit channels)
 
     This command is provided as a minimal example for basic viewing of pictures.
     Interlacing and correct color model conversion are not implemented.
