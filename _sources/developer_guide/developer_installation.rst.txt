@@ -63,7 +63,7 @@ using::
 .. note::
 
     Python virtual environment provides an isolated environment in which
-    packages may be installed without impacting on the rest of the system.
+    packages can be installed without impacting on the rest of the system.
     Once activated, the ``python`` and ``pip`` commands will use the python
     version and packages setup within the virtual environment.
 
@@ -86,7 +86,7 @@ using::
 Development installation
 ------------------------
 
-A development installation of the conformance software may be performed
+A development installation of the conformance software can be performed
 directly from each of the cloned repositories as follows::
 
     $ # Each repo should be installed as follows, in the following order:
@@ -119,7 +119,7 @@ Running tests
 Test routines relating to the code in each repository can be found in the
 ``tests/`` directory of each repository. The test suites are built on `pytest
 <https://docs.pytest.org/en/latest/>`_ and, once a development install has been
-completed, may be executed as follows::
+completed, can be executed as follows::
 
     $ py.test path/to/vc2_data_tables/tests/
     $ py.test path/to/vc2_bit_widths/tests/

@@ -1,0 +1,171 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Testing additional bitstreams’ conformance &#8212; SMPTE VC-2 Conformance Software v0.4.6 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Generating static wavelet filter analyses" href="generating_static_analyses.html" />
+    <link rel="prev" title="VC-2 encoder conformance testing procedure" href="encoder_testing.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generating_static_analyses.html" title="Generating static wavelet filter analyses"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="encoder_testing.html" title="VC-2 encoder conformance testing procedure"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.6 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">User’s guide (for codec testers)</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Testing additional bitstreams’ conformance</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="testing-additional-bitstreams-conformance">
+<span id="guide-bitstream-testing"></span><h1>Testing additional bitstreams’ conformance<a class="headerlink" href="#testing-additional-bitstreams-conformance" title="Permalink to this headline">¶</a></h1>
+<p>the <a class="reference internal" href="../cli/vc2_bitstream_validator.html#vc2-bitstream-validator"><span class="std std-ref">vc2-bitstream-validator</span></a> tool can be used to test any VC-2
+bitstreams, including those produced outside of the conformance testing
+procedures. For example, you might wish to test how an encoder behaves with
+your own test materials. Alternatively you might have existing bitstreams which
+you would like to validate, perhaps because a decoder you’re testing is having
+trouble with them.</p>
+<div class="section" id="bitstream-validation">
+<h2>Bitstream validation<a class="headerlink" href="#bitstream-validation" title="Permalink to this headline">¶</a></h2>
+<p>Any existing bitstream can be validated following a similar manner to the
+<a class="reference internal" href="encoder_testing.html#guide-encoder-testing"><span class="std std-ref">VC-2 encoder conformance testing procedure</span></a> using the <a class="reference internal" href="../cli/vc2_bitstream_validator.html#vc2-bitstream-validator"><span class="std std-ref">vc2-bitstream-validator</span></a> command
+like so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ vc2-bitstream-validator \
+    my_bitstream.vc2 \
+    --output my_decoded_picture_%d.raw
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The bitstream validator always produces a decoded output. If <code class="docutils literal notranslate"><span class="pre">--output</span></code>
+is not given, the decoded pictures will still be produced but given the
+default name <code class="docutils literal notranslate"><span class="pre">picture_%d.raw</span></code>.</p>
+</div>
+<p>If the bitstream is valid, the following message will be produced:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>No errors found in bitstream. Verify decoded pictures to confirm conformance.
+</pre></div>
+</div>
+<p>Otherwise, if a conformance error is found, processing will stop and a detailed
+error message will be produced explaining the problem.</p>
+<p>Once a bitstream has been validated by <a class="reference internal" href="../cli/vc2_bitstream_validator.html#vc2-bitstream-validator"><span class="std std-ref">vc2-bitstream-validator</span></a>, you can
+view the decoded pictures to verify that the bitstream contained the pictures
+and metadata you expected.  You might wish to use <a class="reference internal" href="../cli/vc2_picture_explain.html#vc2-picture-explain"><span class="std std-ref">vc2-picture-explain</span></a> to
+produce an ffmpeg or ImageMagick command to do this.</p>
+</div>
+<div class="section" id="decoded-picture-validation">
+<h2>Decoded picture validation<a class="headerlink" href="#decoded-picture-validation" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="../cli/vc2_bitstream_validator.html#vc2-bitstream-validator"><span class="std std-ref">vc2-bitstream-validator</span></a> tool will correctly decode any valid VC-2
+bitstream. You can therefore use its output to validate that a decoder has
+correctly decoded a given bitstream. The <span class="xref std std-ref">vc2-bitstream-compare</span> command
+can be used to compare a decoder’s output with that of the bitstream validator
+in a manner similar to the <a class="reference internal" href="decoder_testing.html#guide-decoder-testing"><span class="std std-ref">VC-2 decoder conformance testing procedure</span></a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ vc2-picture-compare expected/ actual/
+Comparing expected/picture_0.raw and actual/picture_0.raw
+  Pictures are identical
+Comparing expected/picture_1.raw and actual/picture_1.raw
+  Pictures are identical
+Comparing expected/picture_2.raw and actual/picture_2.raw
+  Pictures are identical
+Summary: 3 identical, 0 different
+</pre></div>
+</div>
+<p>A conformant decoder must produce identical results to the
+<a class="reference internal" href="../cli/vc2_bitstream_validator.html#vc2-bitstream-validator"><span class="std std-ref">vc2-bitstream-validator</span></a> command.</p>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Testing additional bitstreams’ conformance</a><ul>
+<li><a class="reference internal" href="#bitstream-validation">Bitstream validation</a></li>
+<li><a class="reference internal" href="#decoded-picture-validation">Decoded picture validation</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="encoder_testing.html"
+                        title="previous chapter">VC-2 encoder conformance testing procedure</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="generating_static_analyses.html"
+                        title="next chapter">Generating static wavelet filter analyses</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/user_guide/bitstream_testing.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generating_static_analyses.html" title="Generating static wavelet filter analyses"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="encoder_testing.html" title="VC-2 encoder conformance testing procedure"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.6 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >User’s guide (for codec testers)</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Testing additional bitstreams’ conformance</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, BBC.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.3.
+    </div>
+  </body>
+</html>

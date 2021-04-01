@@ -17,6 +17,7 @@ configuring and using the VC-2 conformance testing software.
    generating_test_cases.rst
    decoder_testing.rst
    encoder_testing.rst
+   bitstream_testing.rst
    generating_static_analyses.rst
    debugging.rst
    limitations.rst

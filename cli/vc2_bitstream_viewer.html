@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>vc2-bitstream-viewer &#8212; SMPTE VC-2 Conformance Software v0.4.5 documentation</title>
+    <title>vc2-bitstream-viewer &#8212; SMPTE VC-2 Conformance Software v0.4.6 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -32,7 +32,7 @@
         <li class="right" >
           <a href="vc2_picture_explain.html" title="vc2-picture-explain"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.5 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.6 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Software tools reference</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><code class="docutils literal notranslate"><span class="pre">vc2-bitstream-viewer</span></code></a></li> 
       </ul>
@@ -91,7 +91,7 @@ including padding bits.</p>
 <h2>Displaying an area of interest<a class="headerlink" href="#displaying-an-area-of-interest" title="Permalink to this headline">¶</a></h2>
 <p>It is possible to restrict the output to only parts of the bitstream
 surrounding a particular offset. For example, the <code class="docutils literal notranslate"><span class="pre">--offset</span></code>/<code class="docutils literal notranslate"><span class="pre">-o</span></code> argument
-may be used to restrict display to only the parts of the bitstream surrounding
+can be used to restrict display to only the parts of the bitstream surrounding
 a particular bit offset:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ vc2-bitstream-viewer bitstream.vc2 --offset 40000
 </pre></div>
@@ -116,7 +116,7 @@ headers from a stream:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ vc2-bitstream-viewer bitstream.vc2 --show parse_info
 </pre></div>
 </div>
-<p>Alternatively, you may wish to show everything in a bitstream except for the
+<p>Alternatively, you might wish to show everything in a bitstream except for the
 transform coefficients (slice data):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ vc2-bitstream-viewer bitstream.vc2 --hide slice
 </pre></div>
@@ -129,7 +129,7 @@ is also provided.</p>
 <p>As well as displaying a textual representation of the VC-2 bitstream, this tool
 can also display (a subset of) the internal state of a VC-2 decoder based on
 the pseudocode in the specification at different points during bitstream
-processing. Use the <code class="docutils literal notranslate"><span class="pre">--show-internal-state</span></code> option to enable this. This may
+processing. Use the <code class="docutils literal notranslate"><span class="pre">--show-internal-state</span></code> option to enable this. This can
 be useful when debugging the encoding of transform data whose organisation
 depends on various computed values earlier in the bitstream.</p>
 </div>
@@ -179,11 +179,11 @@ optional arguments:
                         Print the internal state variable used by the VC-2
                         pseudo code after parsing each data unit. Parts of the
                         pseudocode state not directly related to bitstream
-                        processing may or may not be included in this
+                        processing might or might not be included in this
                         printout.
   --ignore-parse-info-prefix, -p
                         By default, parsing is halted if an invalid parse_info
-                        prefix is encountered. Giving this option supresses
+                        prefix is encountered. Giving this option suppresses
                         this check and allows parsing to continue.
   --num-trailing-bits NUM_TRAILING_BITS, -b NUM_TRAILING_BITS
                         When --verbose is used, this argument defines the
@@ -224,7 +224,7 @@ filtering options:
                         Display only parts of the bitstream which are
                         processed by the specified pseudo-code function as
                         described in the VC-2 specification. By default all
-                        parts of the bitstream are displayed. May be used
+                        parts of the bitstream are displayed. Can be used
                         multiple times to show different parts of the
                         bitstream. Supported function names: auxiliary_data,
                         clean_area, color_diff_sampling_format, color_matrix,
@@ -312,7 +312,7 @@ filtering options:
         <li class="right" >
           <a href="vc2_picture_explain.html" title="vc2-picture-explain"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.5 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.6 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" >Software tools reference</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><code class="docutils literal notranslate"><span class="pre">vc2-bitstream-viewer</span></code></a></li> 
       </ul>

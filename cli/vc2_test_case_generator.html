@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>vc2-test-case-generator &#8212; SMPTE VC-2 Conformance Software v0.4.5 documentation</title>
+    <title>vc2-test-case-generator &#8212; SMPTE VC-2 Conformance Software v0.4.6 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -32,7 +32,7 @@
         <li class="right" >
           <a href="index.html" title="Software tools reference"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.5 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.6 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Software tools reference</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><code class="docutils literal notranslate"><span class="pre">vc2-test-case-generator</span></code></a></li> 
       </ul>
@@ -58,16 +58,16 @@ set of codec features to target.</p>
 <a class="reference internal" href="../user_guide/generating_test_cases.html#guide-generating-test-cases"><span class="std std-ref">Generating test cases</span></a>). This can then be processed by
 <code class="docutils literal notranslate"><span class="pre">vc2-test-case-generator</span></code> to generate test cases for the codecs supporting
 the specific codec features described.</p>
-<p>Test case generation may be performed as follows:</p>
+<p>Test case generation is performed as follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ vc2-test-case-generator path/to/codec_features.csv
 </pre></div>
 </div>
 <p>The test cases are written to a <code class="docutils literal notranslate"><span class="pre">test_cases</span></code> in the current working
-directory. The <code class="docutils literal notranslate"><span class="pre">--output</span></code> argument may be given to choose an alternative
+directory. The <code class="docutils literal notranslate"><span class="pre">--output</span></code> argument can be given to choose an alternative
 location. By default, if any existing test cases are present in the output
-directory, the test case generator will not run. The <code class="docutils literal notranslate"><span class="pre">--force</span></code> argument may
+directory, the test case generator will not run. The <code class="docutils literal notranslate"><span class="pre">--force</span></code> argument can
 be added to run the test case generator anyway.</p>
-<p>If only a subset of test cases are required, the following arguments may also
+<p>If only a subset of test cases are required, the following arguments can also
 be used:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">--encoder-only</span></code>: Only generate test cases for encoders</p></li>
@@ -79,11 +79,11 @@ names match a supplied pattern.</p></li>
 <div class="section" id="parallel-execution">
 <h2>Parallel execution<a class="headerlink" href="#parallel-execution" title="Permalink to this headline">¶</a></h2>
 <p>The test case generator can take many hours to run. To speed up execution,
-test cases may be generated in parallel on multi-core machines. To do this the
-<code class="docutils literal notranslate"><span class="pre">--parallel</span></code> argument may be added to <code class="docutils literal notranslate"><span class="pre">vc2-test-case-generator</span></code>. Rather
+test cases can be generated in parallel on multi-core machines. To do this the
+<code class="docutils literal notranslate"><span class="pre">--parallel</span></code> argument is added to <code class="docutils literal notranslate"><span class="pre">vc2-test-case-generator</span></code>. Rather
 than performing test case generation, this command outputs a series of
-newline-separated commands which may be executed in parallel to perform test
-case generation. These may then be executed, for example using <a class="reference external" href="https://www.gnu.org/software/parallel/">GNU Parallel</a>:</p>
+newline-separated commands which can be executed in parallel to perform test
+case generation. These can then be executed, for example using <a class="reference external" href="https://www.gnu.org/software/parallel/">GNU Parallel</a>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ # Write test case generation commands to &#39;commands.txt&#39;
 $ vc2-test-case-generator path/to/codec_features.csv --parallel &gt; commands.txt
 
@@ -126,7 +126,7 @@ optional arguments:
   --version             show program&#39;s version number and exit
   --verbose, -v         Show additional status information during execution.
   --parallel, -p        If given, don&#39;t generate test cases but instead
-                        produce a series of commands on stdout which may be
+                        produce a series of commands on stdout which can be
                         executed in parallel to generate the test cases.
   --output OUTPUT, -o OUTPUT
                         Directory name to write test cases to. Will be created
@@ -205,7 +205,7 @@ optional arguments:
         <li class="right" >
           <a href="index.html" title="Software tools reference"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.5 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.6 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" >Software tools reference</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><code class="docutils literal notranslate"><span class="pre">vc2-test-case-generator</span></code></a></li> 
       </ul>
