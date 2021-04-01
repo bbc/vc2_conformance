@@ -38,8 +38,24 @@ with a number (and the extensions ``.raw`` and ``.json``). For example::
 Differences in the encoded values are reported separately for each picture
 component.
 
-Peak Signal to Noise Ratio (PSNR) figures give the PSNR of the raw signal
-values (and not, for example, linear light levels).
+Peak Signal to Noise Ratio (PSNR) figures give the PSNR of the raw integer
+signal values (and not, for example, linear light levels).
+
+.. note::
+
+    PSNR is computed as:
+
+    .. math::
+
+        \text{MeanSquareError} &= \sum_{i, j} (E_{i, j} - A_{i, j})^2
+        \\
+        \text{MaxE} &= \max_{i, j} (E_{i, j})
+        \\
+        \text{PSNR} &= 20 \log_{10}(\text{MaxE}) - 10 \log_{10}(\text{MeanSquareError})
+
+    Where :math:`E_{i,j}` is pixel :math:`(i, j)` of the raw integer signal
+    value of the test image and :math:`A_{i, j}` is pixel :math:`(i, j)` of the
+    raw integer values of the decoded image.
 
 The number of pixels which are not bit-for-bit identical is also reported.
 
