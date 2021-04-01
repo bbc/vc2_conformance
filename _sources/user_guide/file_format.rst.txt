@@ -221,13 +221,15 @@ For example, given a typical raw 1080i60, 10-bit 4:2:2 video file as input::
     Pictures contain three planar components: Y, Cb and Cr, in that order, which are
     4:2:2 subsampled.
     
-    The Y component consists of 1920x540 10 bit values stored as 16 bit (2 byte)
-    values (with the 6 most significant bits set to 0) in little-endian byte order.
-    Values run from 0 (video level -0.07) to 1023 (video level 1.09).
+    The Y component consists of 1920x540 10 bit values stored as 16 bit (2
+    byte) values (with the 6 most significant bits set to 0) in little-endian
+    byte order.  Expressible values run from 0 (video level -0.07) to 1023
+    (video level 1.09).
     
-    The Cb and Cr components consist of 960x540 10 bit values stored as 16 bit (2
-    byte) values (with the 6 most significant bits set to 0) in little-endian byte
-    order. Values run from 0 (video level -0.57) to 1023 (video level 0.57).
+    The Cb and Cr components consist of 960x540 10 bit values stored as 16 bit
+    (2 byte) values (with the 6 most significant bits set to 0) in
+    little-endian byte order. Expressible values run from 0 (video level -0.57)
+    to 1023 (video level 0.57).
     
     The color model uses the 'hdtv' primaries (ITU-R BT.709), the 'hdtv' color
     matrix (ITU-R BT.709) and the 'tv_gamma' transfer function (ITU-R BT.2020).

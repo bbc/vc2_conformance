@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Video file format &#8212; SMPTE VC-2 Conformance Software v0.4.4 documentation</title>
+    <title>Video file format &#8212; SMPTE VC-2 Conformance Software v0.4.5 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -32,7 +32,7 @@
         <li class="right" >
           <a href="installation.html" title="Conformance Software Installation"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.4 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.5 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">User’s guide (for codec testers)</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Video file format</a></li> 
       </ul>
@@ -239,13 +239,15 @@ Each raw picture contains a single field. The top field comes first.
 Pictures contain three planar components: Y, Cb and Cr, in that order, which are
 4:2:2 subsampled.
 
-The Y component consists of 1920x540 10 bit values stored as 16 bit (2 byte)
-values (with the 6 most significant bits set to 0) in little-endian byte order.
-Values run from 0 (video level -0.07) to 1023 (video level 1.09).
+The Y component consists of 1920x540 10 bit values stored as 16 bit (2
+byte) values (with the 6 most significant bits set to 0) in little-endian
+byte order.  Expressible values run from 0 (video level -0.07) to 1023
+(video level 1.09).
 
-The Cb and Cr components consist of 960x540 10 bit values stored as 16 bit (2
-byte) values (with the 6 most significant bits set to 0) in little-endian byte
-order. Values run from 0 (video level -0.57) to 1023 (video level 0.57).
+The Cb and Cr components consist of 960x540 10 bit values stored as 16 bit
+(2 byte) values (with the 6 most significant bits set to 0) in
+little-endian byte order. Expressible values run from 0 (video level -0.57)
+to 1023 (video level 0.57).
 
 The color model uses the &#39;hdtv&#39; primaries (ITU-R BT.709), the &#39;hdtv&#39; color
 matrix (ITU-R BT.709) and the &#39;tv_gamma&#39; transfer function (ITU-R BT.2020).
@@ -455,7 +457,7 @@ filenames in the generated commands with <code class="docutils literal notransla
         <li class="right" >
           <a href="installation.html" title="Conformance Software Installation"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.4 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.5 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" >User’s guide (for codec testers)</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Video file format</a></li> 
       </ul>

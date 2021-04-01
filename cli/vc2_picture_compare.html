@@ -5,13 +5,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>vc2-picture-compare &#8212; SMPTE VC-2 Conformance Software v0.4.4 documentation</title>
+    <title>vc2-picture-compare &#8212; SMPTE VC-2 Conformance Software v0.4.5 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="vc2-picture-explain" href="vc2_picture_explain.html" />
@@ -32,7 +33,7 @@
         <li class="right" >
           <a href="vc2_bitstream_validator.html" title="vc2-bitstream-validator"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.4 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.5 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Software tools reference</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><code class="docutils literal notranslate"><span class="pre">vc2-picture-compare</span></code></a></li> 
       </ul>
@@ -76,8 +77,21 @@ Summary: 2 identical, 1 different
 </div>
 <p>Differences in the encoded values are reported separately for each picture
 component.</p>
-<p>Peak Signal to Noise Ratio (PSNR) figures give the PSNR of the raw signal
-values (and not, for example, linear light levels).</p>
+<p>Peak Signal to Noise Ratio (PSNR) figures give the PSNR of the raw integer
+signal values (and not, for example, linear light levels).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>PSNR is computed as:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\text{MeanSquareError} &amp;= \sum_{i, j} (E_{i, j} - A_{i, j})^2
+\\
+\text{MaxE} &amp;= \max_{i, j} (E_{i, j})
+\\
+\text{PSNR} &amp;= 20 \log_{10}(\text{MaxE}) - 10 \log_{10}(\text{MeanSquareError})\end{split}\]</div>
+<p>Where <span class="math notranslate nohighlight">\(E_{i,j}\)</span> is pixel <span class="math notranslate nohighlight">\((i, j)\)</span> of the raw integer signal
+value of the test image and <span class="math notranslate nohighlight">\(A_{i, j}\)</span> is pixel <span class="math notranslate nohighlight">\((i, j)\)</span> of the
+raw integer values of the decoded image.</p>
+</div>
 <p>The number of pixels which are not bit-for-bit identical is also reported.</p>
 <p>The tool also compares the metadata of the raw images and will flag up
 differences here too, for example:</p>
@@ -236,7 +250,7 @@ difference image options:
         <li class="right" >
           <a href="vc2_bitstream_validator.html" title="vc2-bitstream-validator"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.4 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.5 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" >Software tools reference</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><code class="docutils literal notranslate"><span class="pre">vc2-picture-compare</span></code></a></li> 
       </ul>
