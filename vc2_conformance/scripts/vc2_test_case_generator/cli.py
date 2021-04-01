@@ -19,17 +19,17 @@ A codec features CSV file should be created (as described in
 ``vc2-test-case-generator`` to generate test cases for the codecs supporting
 the specific codec features described.
 
-Test case generation may be performed as follows::
+Test case generation is performed as follows::
 
     $ vc2-test-case-generator path/to/codec_features.csv
 
 The test cases are written to a ``test_cases`` in the current working
-directory. The ``--output`` argument may be given to choose an alternative
+directory. The ``--output`` argument can be given to choose an alternative
 location. By default, if any existing test cases are present in the output
-directory, the test case generator will not run. The ``--force`` argument may
+directory, the test case generator will not run. The ``--force`` argument can
 be added to run the test case generator anyway.
 
-If only a subset of test cases are required, the following arguments may also
+If only a subset of test cases are required, the following arguments can also
 be used:
 
 * ``--encoder-only``: Only generate test cases for encoders
@@ -42,11 +42,11 @@ Parallel execution
 ------------------
 
 The test case generator can take many hours to run. To speed up execution,
-test cases may be generated in parallel on multi-core machines. To do this the
-``--parallel`` argument may be added to ``vc2-test-case-generator``. Rather
+test cases can be generated in parallel on multi-core machines. To do this the
+``--parallel`` argument is added to ``vc2-test-case-generator``. Rather
 than performing test case generation, this command outputs a series of
-newline-separated commands which may be executed in parallel to perform test
-case generation. These may then be executed, for example using `GNU Parallel
+newline-separated commands which can be executed in parallel to perform test
+case generation. These can then be executed, for example using `GNU Parallel
 <https://www.gnu.org/software/parallel/>`_::
 
     $ # Write test case generation commands to 'commands.txt'
@@ -195,7 +195,7 @@ def parse_args(*args, **kwargs):
         default=False,
         help="""
             If given, don't generate test cases but instead produce a series of
-            commands on stdout which may be executed in parallel to generate
+            commands on stdout which can be executed in parallel to generate
             the test cases.
         """,
     )

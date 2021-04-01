@@ -185,7 +185,7 @@ def read_pictures_with_only_one_metadata_file_required(filename_a, filename_b):
     * ``byte_for_byte_identical``: This indicates that the two raw files
       are byte-for-byte identical, including the bits not responsible for
       encoding images (e.g. when 10-bit values are encoded as 16-bit words,
-      this includes a check of the upper 6 bits). This may catch mistakes in
+      this includes a check of the upper 6 bits). This can catch mistakes in
       formatting raw data files.
     """
     meta_fn_a, pic_fn_a = get_metadata_and_picture_filenames(filename_a)
@@ -633,7 +633,7 @@ def main(*args, **kwargs):
     if a_is_dir and b_is_dir:
         if args.difference_mask is not None:
             sys.stderr.write(
-                "Error: --difference-mask/-D may only be used "
+                "Error: --difference-mask/-D can only be used "
                 "when files (not directories) are compared.\n"
             )
             return 104

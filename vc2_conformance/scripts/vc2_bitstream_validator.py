@@ -63,7 +63,7 @@ displayed::
 Errors include an explanation of the conformance problem (along with references
 to the VC-2 standards documents) along with possible causes of the error.
 Additionally, a sample invocation of :ref:`vc2-bitstream-viewer` is given which
-may be used to display the contents of the bitstream at the offending position.
+can be used to display the contents of the bitstream at the offending position.
 Finally, a stack trace for the VC-2 pseudocode functions involved in parsing
 the stream at the point of failure is also printed.
 

@@ -859,17 +859,17 @@ class TestParseArgs(object):
             ("foo -t bar", r".*relative_int.*"),
             ("foo -t +-1 ", r".*relative_int.*"),
             # Use of context arguments with from/to
-            ("foo -A 10", r".*may only be used with --offset.*"),
-            ("foo -B 10", r".*may only be used with --offset.*"),
-            ("foo -C 10", r".*may only be used with --offset.*"),
+            ("foo -A 10", r".*can only be used with --offset.*"),
+            ("foo -B 10", r".*can only be used with --offset.*"),
+            ("foo -C 10", r".*can only be used with --offset.*"),
             # Use of conflicting context arguments
             (
                 "foo -o 100 -C 10 -A 10",
-                r".*--context may not be used at the same time as.*",
+                r".*--context cannot be used at the same time as.*",
             ),
             (
                 "foo -o 100 -C 10 -B 10",
-                r".*--context may not be used at the same time as.*",
+                r".*--context cannot be used at the same time as.*",
             ),
             # Invalid show/hide arguments
             (

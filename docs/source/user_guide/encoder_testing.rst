@@ -141,7 +141,7 @@ debugging failing tests is provided below.
 Testing additional bitstreams' conformance
 ------------------------------------------
 
-The :ref:`vc2-bitstream-validator` tool may also be used to check the
+The :ref:`vc2-bitstream-validator` tool can also be used to check the
 conformance of other bitstreams produced by an encoder. For example, you might
 optionally encode your own (short) test sequences and use this tool to validate
 the bitstream. You should follow the procedure described earlier to do this.

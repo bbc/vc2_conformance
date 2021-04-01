@@ -77,7 +77,7 @@ From ``.tar.gz`` packages
 `````````````````````````
 
 If you have received a copy of the VC-2 conformance software as a collection of
-``.tar.gz`` packages, these may be installed as follows (replacing ``X.Y.Z``
+``.tar.gz`` packages, these can be installed as follows (replacing ``X.Y.Z``
 with the version numbers from the files supplied)::
 
     $ python -m pip install --user vc2_data_tables-X.Y.Z.tar.gz

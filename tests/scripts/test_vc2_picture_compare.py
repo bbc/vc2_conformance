@@ -870,7 +870,7 @@ class TestMain(object):
 
         assert main([da, db, "--difference-mask", fd]) == 104
         out, err = capsys.readouterr()
-        assert "may only be used when files" in err
+        assert "can only be used when files" in err
 
     def test_comparing_multiple_files(self, tmpdir, capsys):
         da = os.path.join(str(tmpdir), "a")

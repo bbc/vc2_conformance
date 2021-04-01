@@ -12,7 +12,7 @@ Internals
 This command executes the pickled callable passed via its single commandline
 argument. The callable is pickled, zlib compressed and url-safe base64 encoded.
 
-The :py:func:`create_command` function may be passed a callable and its
+The :py:func:`create_command` function can be passed a callable and its
 arguments to produce a ``vc2-test-case-generator-worker`` argument.
 """
 
@@ -39,7 +39,7 @@ def decode(encoded_function_call):
 
 def create_command(fn, *args, **kwargs):
     """
-    Create a ``vc2-test-case-generator-worker`` command which may be used to
+    Create a ``vc2-test-case-generator-worker`` command which can be used to
     execute the provided callable with the specified arguments.
     """
     return "vc2-test-case-generator-worker {}".format(encode(fn, *args, **kwargs))

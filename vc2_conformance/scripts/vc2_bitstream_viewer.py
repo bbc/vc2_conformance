@@ -56,7 +56,7 @@ Displaying an area of interest
 
 It is possible to restrict the output to only parts of the bitstream
 surrounding a particular offset. For example, the ``--offset``/``-o`` argument
-may be used to restrict display to only the parts of the bitstream surrounding
+can be used to restrict display to only the parts of the bitstream surrounding
 a particular bit offset::
 
     $ vc2-bitstream-viewer bitstream.vc2 --offset 40000
@@ -83,7 +83,7 @@ headers from a stream::
 
     $ vc2-bitstream-viewer bitstream.vc2 --show parse_info
 
-Alternatively, you may wish to show everything in a bitstream except for the
+Alternatively, you might wish to show everything in a bitstream except for the
 transform coefficients (slice data)::
 
     $ vc2-bitstream-viewer bitstream.vc2 --hide slice
@@ -97,7 +97,7 @@ Showing VC-2 decoder state
 As well as displaying a textual representation of the VC-2 bitstream, this tool
 can also display (a subset of) the internal state of a VC-2 decoder based on
 the pseudocode in the specification at different points during bitstream
-processing. Use the ``--show-internal-state`` option to enable this. This may
+processing. Use the ``--show-internal-state`` option to enable this. This can
 be useful when debugging the encoding of transform data whose organisation
 depends on various computed values earlier in the bitstream.
 
@@ -441,7 +441,7 @@ class BitstreamViewer(object):
         # Avoid interleaving with stdout (and make causality clearer)
         sys.stdout.flush()
 
-        # The 'trailing bits' print out below may move the read position
+        # The 'trailing bits' print out below might move the read position
         # so record it now.
         if self._reader is not None:
             offset = bitstream.to_bit_offset(*self._reader.tell())
@@ -765,7 +765,7 @@ class BitstreamViewer(object):
                 most_recent_pseudocode_function(sys.exc_info()[2]),
             )
         except Exception:
-            # Other exceptions may be raised during parsing (e.g. due to
+            # Other exceptions might be raised during parsing (e.g. due to
             # invalid bitstream values), attempt to display these sensibly.
             exc_type, exc_value, exc_tb = sys.exc_info()
             if is_internal_error(exc_tb):
@@ -887,8 +887,8 @@ def parse_args(*args, **kwargs):
         help="""
             Print the internal state variable used by the VC-2 pseudo code
             after parsing each data unit. Parts of the pseudocode state not
-            directly related to bitstream processing may or may not be included
-            in this printout.
+            directly related to bitstream processing might or might not be
+            included in this printout.
         """,
     )
 
@@ -899,7 +899,7 @@ def parse_args(*args, **kwargs):
         default=False,
         help="""
             By default, parsing is halted if an invalid parse_info prefix is
-            encountered. Giving this option supresses this check and allows
+            encountered. Giving this option suppresses this check and allows
             parsing to continue.
         """,
     )
@@ -1005,7 +1005,7 @@ def parse_args(*args, **kwargs):
             Display only parts of the bitstream which are processed by the
             specified pseudo-code function as described in the VC-2
             specification. By default all parts of the bitstream are displayed.
-            May be used multiple times to show different parts of the
+            Can be used multiple times to show different parts of the
             bitstream. Supported function names: {}.
         """.format(
             ", ".join(sorted(bitstream.pseudocode_function_to_fixeddicts_recursive))
@@ -1044,7 +1044,7 @@ def parse_args(*args, **kwargs):
 
     from_to_offset = args.from_offset is not None or args.to_offset is not None
     if from_to_offset and args.offset is not None:
-        parser.error("--offset may not be used with --from-offset or --to-offset")
+        parser.error("--offset cannot be used with --from-offset or --to-offset")
 
     # Convert the '--offset' argument into '--from-offset' and '--to-offset'
     # arguments.
@@ -1054,7 +1054,7 @@ def parse_args(*args, **kwargs):
             args.after_context is not None or args.before_context is not None
         ):
             parser.error(
-                "--context may not be used at the same time as --after-context or --before-context"
+                "--context cannot be used at the same time as --after-context or --before-context"
             )
 
         before_context = after_context = None
@@ -1087,11 +1087,11 @@ def parse_args(*args, **kwargs):
 
     # Make sure the --*-context arguments aren't used with --{from,to}-offset
     if args.after_context is not None:
-        parser.error("--after-context may only be used with --offset")
+        parser.error("--after-context can only be used with --offset")
     if args.before_context is not None:
-        parser.error("--before-context may only be used with --offset")
+        parser.error("--before-context can only be used with --offset")
     if args.context is not None:
-        parser.error("--context may only be used with --offset")
+        parser.error("--context can only be used with --offset")
 
     # Set defaults for '--{from,to}-offset'
     if args.from_offset is None:
