@@ -52,7 +52,9 @@ features of a codec under test.
 In :ref:`guide-decoder-testing` and :ref:`guide-encoder-testing` we describe
 how the test pictures and bitstreams should be processed by the codec under
 test. We also describe the procedures for verifying that the codecs behaved as
-expected.
+expected. Additionally, in :ref:`guide-bitstream-testing` we explain how
+bitstreams produced outside of the conformance testing procedures can also be
+tested for conformance.
 
 In :ref:`guide-debugging` we provide some advice on how to approach the problem
 of debugging failing tests.
