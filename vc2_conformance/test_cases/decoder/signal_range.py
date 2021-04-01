@@ -50,8 +50,8 @@ def signal_range(codec_features):
 
     These test cases are produced by encoding pictures consisting test patterns
     made up of entirely of legal (in range) signal values. Nevertheless, the
-    resulting bitstreams may produce large intermediate values within a
-    decoder, though these are not guaranteed to be worst-case.
+    resulting bitstreams produce large intermediate values within a decoder,
+    though these are not guaranteed to be worst-case.
 
     .. note::
 
@@ -152,7 +152,7 @@ def signal_range(codec_features):
             logging.warning(
                 "Could not assign the required qindex to %d picture slices "
                 "for signal range test case due to a small picture_bytes value. "
-                "Peak signal levels may be reduced.",
+                "Peak signal levels might be reduced.",
                 num_unexpected_qindices,
             )
 

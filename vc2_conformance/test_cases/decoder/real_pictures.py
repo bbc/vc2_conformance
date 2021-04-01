@@ -24,7 +24,7 @@ def real_pictures(codec_features):
 
         The images encoded in this sequence are generated from 4256 by 2832
         pixel, 4:4:4, 16 bit, standard dynamic range, RGB color images with the
-        ITU-R BT.709 gamut. As such, the decoded pictures may be of reduced
+        ITU-R BT.709 gamut. As such, the decoded pictures might be of reduced
         technical quality compared with the capabilities of the format. The
         rescaling, color conversion and encoding algorithms used are also basic
         in nature, potentially further reducing the picture quality.

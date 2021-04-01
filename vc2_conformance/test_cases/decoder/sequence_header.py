@@ -55,18 +55,18 @@ def source_parameters_encodings(codec_features):
     ``source_parameters_encodings[custom_flags_combination_?_base_video_format_?]``
         For these test cases, the base video format which most closely matches
         the desired video format is used. Each test case incrementally checks
-        that source parameters may be explicitly set to their desired values
+        that source parameters can be explicitly set to their desired values
         (e.g. by setting ``custom_*_flag`` bits to 1).
 
     ``source_parameters_encodings[base_video_format_?]``
-        These test cases, check that other base video formats may be used (and
+        These test cases, check that other base video formats can be used (and
         overridden) to specify the desired video format. Each of these test
         cases will explicitly specify as few video parameters as possible (e.g.
         setting as many ``custom_*_flag`` fields to 0 as possible).
 
     .. tip::
 
-        The :ref:`vc2-bitstream-viewer` may be used to display the encoding
+        The :ref:`vc2-bitstream-viewer` can be used to display the encoding
         used in a given test case as follows::
 
             $ vc2-bitstream-viewer --show sequence_header path/to/test_case.vc2
@@ -145,7 +145,7 @@ def repeated_sequence_headers(codec_features):
     This test case consists of a sequence containing two frames in which the
     sequence header is repeated before every picture.
 
-    This test may be omitted if the VC-2 level prohibits the repetition of the
+    This test will be omitted if the VC-2 level prohibits the repetition of the
     sequence header.
     """
     try:

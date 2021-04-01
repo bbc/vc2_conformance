@@ -647,7 +647,7 @@ def slice_padding_data(codec_features):
     """
     **Tests that padding bits in picture slices are ignored.**
 
-    Picture slices (13.5.3) and (13.5.4) may contain padding bits beyond the
+    Picture slices (13.5.3) and (13.5.4) might contain padding bits beyond the
     end of the transform coefficients for each picture component. These test
     cases check that decoders correctly ignore these values. Padding values
     will be filled with the following:
@@ -791,7 +791,7 @@ def dangling_bounded_block_data(codec_features):
     .. note::
 
         The value and magnitudes of the dangling values are chosen depending on
-        the wavelet transform in use and may differ from the illustrations
+        the wavelet transform in use and might differ from the illustrations
         above.
     """
     # The magnitude of the dangling value is chosen such that even if it ends
@@ -991,7 +991,7 @@ def static_ramps(codec_features):
     .. image:: /_static/user_guide/static_ramps.png
 
     The color bands must be in the correct order (white, red, green, blue from
-    top to bottom). If not, the color components may have been ordered
+    top to bottom). If not, the color components might have been ordered
     incorrectly.
 
     The red, green and blue colors should correspond to the red, green and blue
@@ -1001,7 +1001,7 @@ def static_ramps(codec_features):
 
         When D-Cinema primaries are specified (preset color primaries index 3),
         red, green and blue are replaced with CIE X, Y and Z respectively. Note
-        that these may not represent physically realisable colors.
+        that these might not represent physically realisable colors.
 
     The left-most pixels in each band are notionally video black and the
     right-most pixels video white, red, green and blue (respectively). That is,
@@ -1010,7 +1010,7 @@ def static_ramps(codec_features):
 
     .. note::
 
-        For lossy codecs, the decoded signal values may vary due to coding
+        For lossy codecs, the decoded signal values might vary due to coding
         artefacts.
 
     The value ramps in the test picture are linear, meaning that the (linear)

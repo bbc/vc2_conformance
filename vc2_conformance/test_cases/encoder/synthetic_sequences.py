@@ -53,7 +53,7 @@ def synthetic_linear_ramps(codec_features):
 
         When D-Cinema primaries are specified (preset color primaries index 3),
         red, green and blue are replaced with CIE X, Y and Z respectively. Note
-        that these may not represent physically realisable colors.
+        that these might not represent physically realisable colors.
 
     The left-most pixels in each band are video black and the right-most pixels
     video white, red, green and blue (respectively). That is, oversaturated

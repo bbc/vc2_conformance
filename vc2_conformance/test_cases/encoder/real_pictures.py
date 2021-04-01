@@ -23,7 +23,7 @@ def real_pictures(codec_features):
 
         The source images for this test case are generated from 4256 by 2832
         pixel, 4:4:4, 16 bit, standard dynamic range, RGB color images with the
-        ITU-R BT.709 gamut. As such, the pictures may be of reduced technical
+        ITU-R BT.709 gamut. As such, the pictures might be of reduced technical
         quality compared with the capabilities of the format. The rescaling and
         color conversion algorithms used are also basic in nature, potentially
         further reducing the picture quality.

@@ -18,7 +18,7 @@ def absent_next_parse_offset(codec_features):
     **Tests handling of missing 'next parse offset' field.**
 
     The 'next parse offset' field of the ``parse_info`` header (see (10.5.1))
-    may be set to zero (i.e. omitted) for pictures. This test case verifies
+    can be set to zero (i.e. omitted) for pictures. This test case verifies
     that decoders are still able to decode streams with this field absent.
     """
     sequence = make_sequence(
