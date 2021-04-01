@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>VC-2 decoder conformance testing procedure &#8212; SMPTE VC-2 Conformance Software v0.4.6 documentation</title>
+    <title>VC-2 decoder conformance testing procedure &#8212; SMPTE VC-2 Conformance Software v0.4.7 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -32,7 +32,7 @@
         <li class="right" >
           <a href="generating_test_cases.html" title="Generating test cases"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.6 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.7 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">User’s guide (for codec testers)</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">VC-2 decoder conformance testing procedure</a></li> 
       </ul>
@@ -118,7 +118,7 @@ provided is a valid bitstream permitted by the spec.</p>
 <span id="std-decoder-test-case-absent_next_parse_offset"></span><span id="std:decoder-test-case-absent_next_parse_offset"></span><h3>Decoder test case: <code class="docutils literal notranslate"><span class="pre">absent_next_parse_offset</span></code><a class="headerlink" href="#test-case-decoder-absent_next_parse_offset" title="Permalink to this headline">¶</a></h3>
 <p><strong>Tests handling of missing ‘next parse offset’ field.</strong></p>
 <p>The ‘next parse offset’ field of the <code class="docutils literal notranslate"><span class="pre">parse_info</span></code> header (see (10.5.1))
-may be set to zero (i.e. omitted) for pictures. This test case verifies
+can be set to zero (i.e. omitted) for pictures. This test case verifies
 that decoders are still able to decode streams with this field absent.</p>
 </div>
 <div class="section" id="test-case-decoder-concatenated_sequences">
@@ -183,7 +183,7 @@ bounded block.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The value and magnitudes of the dangling values are chosen depending on
-the wavelet transform in use and may differ from the illustrations
+the wavelet transform in use and might differ from the illustrations
 above.</p>
 </div>
 </div>
@@ -318,7 +318,7 @@ coding mode is 1 (i.e. pictures are fields) (11.5).</p>
 <p class="admonition-title">Note</p>
 <p>The images encoded in this sequence are generated from 4256 by 2832
 pixel, 4:4:4, 16 bit, standard dynamic range, RGB color images with the
-ITU-R BT.709 gamut. As such, the decoded pictures may be of reduced
+ITU-R BT.709 gamut. As such, the decoded pictures might be of reduced
 technical quality compared with the capabilities of the format. The
 rescaling, color conversion and encoding algorithms used are also basic
 in nature, potentially further reducing the picture quality.</p>
@@ -329,7 +329,7 @@ in nature, potentially further reducing the picture quality.</p>
 <p><strong>Tests the decoder can handle a stream with repeated sequence headers.</strong></p>
 <p>This test case consists of a sequence containing two frames in which the
 sequence header is repeated before every picture.</p>
-<p>This test may be omitted if the VC-2 level prohibits the repetition of the
+<p>This test will be omitted if the VC-2 level prohibits the repetition of the
 sequence header.</p>
 </div>
 <div class="section" id="test-case-decoder-signal_range">
@@ -350,8 +350,8 @@ overflows must occur.</p>
 </dl>
 <p>These test cases are produced by encoding pictures consisting test patterns
 made up of entirely of legal (in range) signal values. Nevertheless, the
-resulting bitstreams may produce large intermediate values within a
-decoder, though these are not guaranteed to be worst-case.</p>
+resulting bitstreams produce large intermediate values within a decoder,
+though these are not guaranteed to be worst-case.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>For informational purposes, an example of a set of test patterns before
@@ -372,7 +372,7 @@ being tested by the test patterns. See
 <div class="section" id="test-case-decoder-slice_padding_data">
 <span id="std-decoder-test-case-slice_padding_data"></span><span id="std:decoder-test-case-slice_padding_data"></span><h3>Decoder test case: <code class="docutils literal notranslate"><span class="pre">slice_padding_data</span></code><a class="headerlink" href="#test-case-decoder-slice_padding_data" title="Permalink to this headline">¶</a></h3>
 <p><strong>Tests that padding bits in picture slices are ignored.</strong></p>
-<p>Picture slices (13.5.3) and (13.5.4) may contain padding bits beyond the
+<p>Picture slices (13.5.3) and (13.5.4) might contain padding bits beyond the
 end of the transform coefficients for each picture component. These test
 cases check that decoders correctly ignore these values. Padding values
 will be filled with the following:</p>
@@ -429,10 +429,10 @@ but in different ways.</p>
 <dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">source_parameters_encodings[custom_flags_combination_?_base_video_format_?]</span></code></dt><dd><p>For these test cases, the base video format which most closely matches
 the desired video format is used. Each test case incrementally checks
-that source parameters may be explicitly set to their desired values
+that source parameters can be explicitly set to their desired values
 (e.g. by setting <code class="docutils literal notranslate"><span class="pre">custom_*_flag</span></code> bits to 1).</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">source_parameters_encodings[base_video_format_?]</span></code></dt><dd><p>These test cases, check that other base video formats may be used (and
+<dt><code class="docutils literal notranslate"><span class="pre">source_parameters_encodings[base_video_format_?]</span></code></dt><dd><p>These test cases, check that other base video formats can be used (and
 overridden) to specify the desired video format. Each of these test
 cases will explicitly specify as few video parameters as possible (e.g.
 setting as many <code class="docutils literal notranslate"><span class="pre">custom_*_flag</span></code> fields to 0 as possible).</p>
@@ -440,7 +440,7 @@ setting as many <code class="docutils literal notranslate"><span class="pre">cus
 </dl>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
-<p>The <a class="reference internal" href="../cli/vc2_bitstream_viewer.html#vc2-bitstream-viewer"><span class="std std-ref">vc2-bitstream-viewer</span></a> may be used to display the encoding
+<p>The <a class="reference internal" href="../cli/vc2_bitstream_viewer.html#vc2-bitstream-viewer"><span class="std std-ref">vc2-bitstream-viewer</span></a> can be used to display the encoding
 used in a given test case as follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ vc2-bitstream-viewer --show sequence_header path/to/test_case.vc2
 </pre></div>
@@ -488,7 +488,7 @@ red, green and blue (in that order, from top-to-bottom) as illustrated
 below:</p>
 <img alt="../_images/static_ramps.png" src="../_images/static_ramps.png" />
 <p>The color bands must be in the correct order (white, red, green, blue from
-top to bottom). If not, the color components may have been ordered
+top to bottom). If not, the color components might have been ordered
 incorrectly.</p>
 <p>The red, green and blue colors should correspond to the red, green and blue
 primaries for the color specification (11.4.10.2).</p>
@@ -496,7 +496,7 @@ primaries for the color specification (11.4.10.2).</p>
 <p class="admonition-title">Note</p>
 <p>When D-Cinema primaries are specified (preset color primaries index 3),
 red, green and blue are replaced with CIE X, Y and Z respectively. Note
-that these may not represent physically realisable colors.</p>
+that these might not represent physically realisable colors.</p>
 </div>
 <p>The left-most pixels in each band are notionally video black and the
 right-most pixels video white, red, green and blue (respectively). That is,
@@ -504,7 +504,7 @@ oversaturated signals (e.g. ‘super-blacks’ and ‘super-white’) are not
 included.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>For lossy codecs, the decoded signal values may vary due to coding
+<p>For lossy codecs, the decoded signal values might vary due to coding
 artefacts.</p>
 </div>
 <p>The value ramps in the test picture are linear, meaning that the (linear)
@@ -606,7 +606,7 @@ output range to over-saturated signals.</p>
         <li class="right" >
           <a href="generating_test_cases.html" title="Generating test cases"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.6 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SMPTE VC-2 Conformance Software v0.4.7 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" >User’s guide (for codec testers)</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">VC-2 decoder conformance testing procedure</a></li> 
       </ul>
