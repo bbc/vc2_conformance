@@ -42,21 +42,7 @@ below.
 
 Via ``pip`` (recommended)
 `````````````````````````
-
-Before installing the VC-2 conformance software you must download and install
-the data files it requires as follows::
-
-    $ python -m pip install --user "vc2_conformance_data @ https://github.com/bbc/vc2_conformance_data/releases/download/v1.0.0/vc2_conformance_data.tar.gz"
-
-.. note::
-
-    We are `currently working
-    <https://github.com/bbc/vc2_conformance/issues/7>`_ to make the download
-    and installation of these data files automatic during the conformance
-    software installation. In the future you will be able to skip the step
-    above.
-
-Next, the VC-2 conformance software, along with all its dependencies, can be
+The VC-2 conformance software, along with all its dependencies, can be
 installed as follows::
 
     $ python -m pip install --user vc2_conformance
