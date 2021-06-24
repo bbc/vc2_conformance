@@ -45,7 +45,7 @@ def parse_stream(state):  # Ref
     """
     (10.3)
     """
-    while not is_end_of_stream(state):  # A.2.1
+    while not is_end_of_stream(state):  # A.2.5
         parse_sequence(state)  # 10.4.1
 
 
@@ -57,19 +57,19 @@ def parse_sequence(state):  # Ref
     """
 
     # Errata: see above
-    reset_state(state)
-    parse_info(state)  # 10.5
+    reset_state(state)  # 10.4.1
+    parse_info(state)  # 10.5.1
     while not is_end_of_sequence(state):  # Table 10.2
         if is_seq_header(state):  # Table 10.2
             # Errata: video parameters are discarded in spec
-            state["video_parameters"] = sequence_header(state)  # 11
+            state["video_parameters"] = sequence_header(state)  # 11.1
         elif is_picture(state):  # Table 10.2
-            picture_parse(state)  # 12
+            picture_parse(state)  # 12.1
             # Errata: picture decoding/output not shown in spec
             picture_decode(state)  # 15.2
         elif is_fragment(state):  # Table 10.2
             # Errata: is 'fragment' in the spec
-            fragment_parse(state)  # 14
+            fragment_parse(state)  # 14.1
             # Errata: picture decoding/output not shown in spec
             if state["fragmented_picture_done"]:  # 14.4
                 picture_decode(state)  # 15.2
@@ -78,7 +78,7 @@ def parse_sequence(state):  # Ref
         # Errata: is 'is_padding' in the spec
         elif is_padding_data(state):  # Table 10.2
             padding(state)  # 10.4.5
-        parse_info(state)  # 10.5
+        parse_info(state)  # 10.5.1
 
 
 # Errata: missing '_' in name
@@ -89,9 +89,9 @@ def auxiliary_data(state):  # Ref
 
     # Errata: Unecessary
     # byte_align(state)
-    for i in range(1, state["next_parse_offset"] - 12):  # 10.5
+    for i in range(1, state["next_parse_offset"] - 12):  # 10.5.1
         # Errata: is 'read_byte' in the spec
-        read_uint_lit(state, 1)  # A.3.4, A.2.2
+        read_uint_lit(state, 1)
 
 
 def padding(state):  # Ref
@@ -101,9 +101,9 @@ def padding(state):  # Ref
 
     # Errata: Unecessary
     # byte_align(state)
-    for i in range(1, state["next_parse_offset"] - 12):  # 10.5
+    for i in range(1, state["next_parse_offset"] - 12):  # 10.5.1
         # Errata: is 'read_byte' in the spec
-        read_uint_lit(state, 1)  # A.3.4, A.2.2
+        read_uint_lit(state, 1)
 
 
 def parse_info(state):  # Comment
@@ -354,11 +354,11 @@ def color_spec(state, video_parameters):  # Ref
     custom_color_spec_flag = read_bool(state)
     if custom_color_spec_flag:
         index = read_uint(state)
-        preset_color_spec(video_parameters, index)
+        preset_color_spec(video_parameters, index)  # 11.4.10.1
         if index == 0:
-            color_primaries(state, video_parameters)  # 11.3.9.1
-            color_matrix(state, video_parameters)  # 11.3.9.2
-            transfer_function(state, video_parameters)  # 11.3.9.3
+            color_primaries(state, video_parameters)  # 11.4.10.2
+            color_matrix(state, video_parameters)  # 11.4.10.3
+            transfer_function(state, video_parameters)  # 11.4.10.4
 
 
 def color_primaries(state, video_parameters):
@@ -456,7 +456,7 @@ def wavelet_transform(state):  # Ref
     """
     (12.3)
     """
-    transform_parameters(state)  # 12.3
+    transform_parameters(state)  # 12.4
     byte_align(state)
     transform_data(state)  # 13
 
@@ -535,7 +535,7 @@ def quant_matrix(state):  # Ref
             state["quant_matrix"][level]["LH"] = read_uint(state)
             state["quant_matrix"][level]["HH"] = read_uint(state)
     else:
-        set_quant_matrix(state)  # Annex D
+        set_quant_matrix(state)  # 12.4.5.3, Annex D
 
 
 # 13: Transform Data Syntax
@@ -653,7 +653,7 @@ def transform_data(state):  # Ref
     state["c2_transform"] = initialize_wavelet_data(state, "C2")  # 13.2.2
     for sy in range(state["slices_y"]):
         for sx in range(state["slices_x"]):
-            slice(state, sx, sy)  # 13.5.3
+            slice(state, sx, sy)  # 13.5.2
     # Errata: '= True' in spec, should be '== True'
     if using_dc_prediction(state):  # 13.5.2
         if state["dwt_depth_ho"] == 0:
@@ -696,7 +696,7 @@ def ld_slice(state, sx, sy):  # Ref
     length_bits = intlog2((8 * slice_bytes(state, sx, sy)) - 7)
     slice_y_length = read_nbits(state, length_bits)
     slice_bits_left -= length_bits
-    state["bits_left"] = slice_y_length  # A.4.2
+    state["bits_left"] = slice_y_length
     if state["dwt_depth_ho"] == 0:
         # Errata: called 'luma_slice_band' in spec and missing y_transform
         # argument.
@@ -715,9 +715,9 @@ def ld_slice(state, sx, sy):  # Ref
         ):
             for orient in ["HL", "LH", "HH"]:
                 slice_band(state, "y_transform", level, orient, sx, sy)  # 13.5.6.3
-    flush_inputb(state)
+    flush_inputb(state)  # A.4.2
     slice_bits_left -= slice_y_length
-    state["bits_left"] = slice_bits_left  # A.4.2
+    state["bits_left"] = slice_bits_left
     # Errata: in spec, the HO/2D cases are not handled correctly (the new
     # code below is based on the code above for the luma case
     if state["dwt_depth_ho"] == 0:
@@ -760,7 +760,7 @@ def hq_slice(state, sx, sy):  # Ref
     slice_quantizers(state, qindex)  # 13.5.5
     for transform in ["y_transform", "c1_transform", "c2_transform"]:
         length = state["slice_size_scaler"] * read_uint_lit(state, 1)
-        state["bits_left"] = 8 * length  # A.4.2
+        state["bits_left"] = 8 * length
         if state["dwt_depth_ho"] == 0:
             slice_band(state, transform, 0, "LL", sx, sy)  # 13.5.6.3
             for level in range(1, state["dwt_depth"] + 1):
@@ -868,7 +868,7 @@ def slice_band(state, transform, level, orient, sx, sy):  # Ref
             val = read_sintb(state)  # A.4.4
             # Errata: qi needlessly set here every loop iteration
             # qi = state[quantizer][level][orient]
-            state[transform][level][orient][y][x] = inverse_quant(val, qi)  # 15.3
+            state[transform][level][orient][y][x] = inverse_quant(val, qi)  # 13.3
 
 
 def color_diff_slice_band(state, level, orient, sx, sy):  # Ref
@@ -888,9 +888,9 @@ def color_diff_slice_band(state, level, orient, sx, sy):  # Ref
             #
             # qi = state[quantizer][level][orient]
             val = read_sintb(state)  # A.4.4
-            state["c1_transform"][level][orient][y][x] = inverse_quant(val, qi)  # 15.3
+            state["c1_transform"][level][orient][y][x] = inverse_quant(val, qi)  # 13.3
             val = read_sintb(state)  # A.4.4
-            state["c2_transform"][level][orient][y][x] = inverse_quant(val, qi)  # 15.3
+            state["c2_transform"][level][orient][y][x] = inverse_quant(val, qi)  # 13.3
 
 
 # 14: Fragment Syntax
@@ -906,7 +906,7 @@ def fragment_parse(state):  # Ref
     fragment_header(state)  # 14.2
     if state["fragment_slice_count"] == 0:
         # Errata: Removed byte_align(state)
-        transform_parameters(state)  # 12.2
+        transform_parameters(state)  # 12.4
         initialize_fragment_state(state)  # 14.3
     else:
         # Errata: Removed byte_align(state)
